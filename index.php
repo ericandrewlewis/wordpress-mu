@@ -148,9 +148,6 @@ function step1() {
     @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/smarty-cache" , 0777 );
     @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/smarty-templates_c" , 0777 );
 
-    // create plugins dir
-    @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/mu-plugins" , 0777 );
-
     // Create Blogs living area.
     @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/blogs.dir", 0777 );
 
