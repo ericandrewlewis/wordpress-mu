@@ -46,19 +46,13 @@ $wpdb->sitemeta         = $table_prefix . 'sitemeta';
 
 // find out what tables to use from $wpblog
 $wpdb->hide_errors();
-$query = "SELECT id
-          FROM   ".$wpdb->site."
-          WHERE  domain = '".$domain."'
-	  AND    path = '".$base."'";
-$site_id = $wpdb->get_var( $query );
 
-$query = "SELECT blog_id, is_public
-          FROM ".$wpdb->blogs." 
-	  WHERE site_id  = '".$site_id."'
-	  AND   blogname = '".$wpblog."'";
-$result = $wpdb->get_row( $query, ARRAY_A );
-$blog_id = $result[ 'blog_id' ];
-$is_public = $result[ 'is_public' ];
+$domain = $_SERVER['HTTP_HOST'];
+
+$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '/'");
+
+$blog_id = $current_blog->blog_id;
+$is_public = $current_blog->is_public;
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
     if ( defined('WP_INSTALLING') ) {

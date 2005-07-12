@@ -120,12 +120,11 @@ if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 	$path = $base_path . '/' . $username;
 }
 
-
-$err = createBlog( $_SERVER[ 'HTTP_HOST' ], $host, $path, $username, $blogname, $email, $username );
+$err = create_blog( $host, $path, $username, $blogname, $email );
 
 ?>
 <h2>You've got a new blog</h2>
-<h3>Your new address is <a href="http://<?php echo $domain . $path; ?>"><?php echo $domain . $path; ?></a></h3>
+<h3>Your new address is <a href="http://<?php echo $host . $path; ?>"><?php echo $host . $path; ?></a></h3>
 <p>You should receive an email with the login details shortly.</p>
 <?php
 } // if error
