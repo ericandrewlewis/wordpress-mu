@@ -34,7 +34,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     }
     print '
 	<th valign="top">Username:</th>
-	<td><input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" /><br />(This will also be your blog address. Letters and numbers only, please.)</td>
+	<td><input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" /><br />(This will also be your blog address. Letters and numbers only, please. Some names are also not allowed.)</td>
 	</tr>';
     if( $errormsg[ 'weblog_title' ] != '' ) {
 	print '<tr class="error">';
@@ -104,7 +104,16 @@ function determineDirPath() {
 switch( $_POST[ 'stage' ] )
 {
     case "1":
+	$illegal_names = get_site_settings( "illegal_names" );
+	if( $illegal_names == false ) {
+	    $illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator" );
+	    add_site_settings( "illegal_names", $illegal_names );
+	}
+
 	$newBlogID = sanitize_title($_POST['weblog_id']);
+	if( in_array( $newBlogID, $illegal_names ) == true ) {
+	    $errormsg[ 'weblog_id' ] = true;
+	}
 	$weblog_title = stripslashes(  $_POST[ 'weblog_title' ] );
 	$admin_email = $_POST[ 'admin_email' ];
 
