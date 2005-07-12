@@ -1,11 +1,4 @@
 <?php
-/*
-// This is a common User Agent used by comment spammers.
-if( $_SERVER["HTTP_USER_AGENT"] == "Mozilla/4.0 (compatible; MSIE 5.5; Windows 98; Win 9x 4.90)" || $_SERVER["HTTP_USER_AGENT"] == 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; .NET CLR 1.1.4322)' ||  $_SERVER["HTTP_USER_AGENT"] == 'Mozilla/3.0 (compatible; Indy Library)' )
-{
-    die();
-}
-*/
 require( dirname(__FILE__) . '/wp-config.php' );
 
 $comment_post_ID = (int) $_POST['comment_post_ID'];
