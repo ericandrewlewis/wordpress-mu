@@ -51,7 +51,6 @@ if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 
 require_once( ABSPATH.'wp-includes/class-smarty.php' );
 $wpmuBaseTablePrefix = $table_prefix;
-define ('WPLANG', '');
 $server = DB_HOST;
 $loginsql = DB_USER;
 $passsql = DB_PASSWORD;
