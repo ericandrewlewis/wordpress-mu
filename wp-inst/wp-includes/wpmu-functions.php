@@ -574,7 +574,7 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
     } else {
 	$adminname = $blogname;
     }
-    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_registered, display_name) VALUES ( NULL, '".$adminname."', MD5('$random_password'), '".$admin_email."', NOW(), 'Administrator' )");
+    $wpdb->query("INSERT INTO $wpdb->users (user_login, user_pass, user_email, user_registered) VALUES ( '$adminname', MD5('$random_password'), '$admin_email', NOW() )");
     $userID = $wpdb->insert_id;
     $metavalues = array( "user_nickname" => addslashes(__('Administrator')), $table_prefix . "user_level" => 10, "source_domain" => $domain );
     reset( $metavalues );
