@@ -1,0 +1,5 @@
+RewriteEngine Off
+
+<Files wp-content/blogs>
+ForceType application/x-httpd-php
+</Files>

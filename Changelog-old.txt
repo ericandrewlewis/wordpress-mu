@@ -1,0 +1,1382 @@
+------------------------------------------------------------------------
+r187 | donncha | 2005-07-12 12:06:55 +0100 (Tue, 12 Jul 2005) | 2 lines
+Changed paths:
+   A /trunk/wp-inst/wp-admin/themes.php
+
+Added support for allowed_themes
+
+------------------------------------------------------------------------
+r186 | donncha | 2005-07-12 11:46:11 +0100 (Tue, 12 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+
+Fix blog themes
+
+------------------------------------------------------------------------
+r185 | donncha | 2005-07-11 20:53:25 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Oops! missing hostname!
+
+------------------------------------------------------------------------
+r184 | donncha | 2005-07-11 20:40:22 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+Fixed file upload realpath.
+
+------------------------------------------------------------------------
+r183 | donncha | 2005-07-11 19:32:15 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Functions to switch blog identities. work in progress
+
+------------------------------------------------------------------------
+r182 | donncha | 2005-07-11 18:45:05 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   A /trunk/wp-inst/wp-admin/upgrade-functions.php
+
+Initial import - don't make custom theme directories.
+
+------------------------------------------------------------------------
+r181 | donncha | 2005-07-11 18:43:21 +0100 (Mon, 11 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+
+Allowed themes fixes.
+Typos fixed.
+
+------------------------------------------------------------------------
+r180 | donncha | 2005-07-11 18:42:36 +0100 (Mon, 11 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-edit.php
+
+Fixes for allowed themes.
+Don't insert options more than once.
+
+------------------------------------------------------------------------
+r179 | donncha | 2005-07-11 10:59:40 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Always use WP Themes
+
+------------------------------------------------------------------------
+r178 | donncha | 2005-07-11 10:59:19 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-comments-post.php
+
+Changes from WP Core.
+
+------------------------------------------------------------------------
+r177 | donncha | 2005-07-11 10:58:50 +0100 (Mon, 11 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-settings.php
+
+Changes from WP Core.
+
+------------------------------------------------------------------------
+r176 | donncha | 2005-07-10 21:34:42 +0100 (Sun, 10 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-edit.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Add lots of *site_settings() functions and use them!
+
+------------------------------------------------------------------------
+r175 | donncha | 2005-07-10 21:33:38 +0100 (Sun, 10 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+
+List disabled themes properly.
+Correct sql for searching blogs.
+
+------------------------------------------------------------------------
+r174 | donncha | 2005-07-08 12:54:44 +0100 (Fri, 08 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+Fix SQL
+
+------------------------------------------------------------------------
+r173 | donncha | 2005-07-08 12:54:31 +0100 (Fri, 08 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-settings.php
+
+Fix site fieldname
+
+------------------------------------------------------------------------
+r172 | donncha | 2005-07-08 12:54:06 +0100 (Fri, 08 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Fix $domain
+
+------------------------------------------------------------------------
+r171 | donncha | 2005-07-08 12:53:49 +0100 (Fri, 08 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/index.php
+
+Fix domain.
+Setup admin user in sitemeta table.
+
+------------------------------------------------------------------------
+r170 | donncha | 2005-07-08 11:33:46 +0100 (Fri, 08 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Added site tables.
+
+------------------------------------------------------------------------
+r169 | donncha | 2005-07-08 11:33:25 +0100 (Fri, 08 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Stripped hostname from domain.
+
+------------------------------------------------------------------------
+r168 | donncha | 2005-07-08 11:33:04 +0100 (Fri, 08 Jul 2005) | 4 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+
+html tidy up.
+Corrected is_archived option.
+themes stuff.
+
+------------------------------------------------------------------------
+r167 | donncha | 2005-07-08 11:32:13 +0100 (Fri, 08 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-edit.php
+
+Insert options that don't exist.
+Update themes list (WIP, may be removed again)
+
+------------------------------------------------------------------------
+r166 | donncha | 2005-07-08 11:31:03 +0100 (Fri, 08 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+Minor corrections to site tables.
+
+------------------------------------------------------------------------
+r165 | donncha | 2005-07-07 21:36:54 +0100 (Thu, 07 Jul 2005) | 5 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+   M /trunk/wp-inst/wp-settings.php
+
+Added site and sitemeta tables.
+is_archived moved to options table.
+Make SQL creation code nicer.
+*wp-newblog.php not updated yet*
+
+------------------------------------------------------------------------
+r164 | donncha | 2005-07-06 18:28:41 +0100 (Wed, 06 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+add another hook.
+
+------------------------------------------------------------------------
+r163 | donncha | 2005-07-06 18:23:06 +0100 (Wed, 06 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-admin.php
+   M /trunk/wp-inst/wp-admin/wpmu-edit.php
+   M /trunk/wp-inst/wp-newblog.php
+
+Added action hooks.
+
+------------------------------------------------------------------------
+r162 | donncha | 2005-07-06 12:33:04 +0100 (Wed, 06 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Add base domain variable.
+
+------------------------------------------------------------------------
+r161 | donncha | 2005-07-06 11:45:23 +0100 (Wed, 06 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Initial MU plugins support.
+
+------------------------------------------------------------------------
+r160 | donncha | 2005-07-05 17:11:59 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Use local variables.
+
+------------------------------------------------------------------------
+r159 | donncha | 2005-07-05 16:58:45 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   A /trunk/wp-inst/favicon.ico
+
+Added browser icon.
+
+------------------------------------------------------------------------
+r158 | donncha | 2005-07-05 16:46:36 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Import lots of changes from Matt's newblog script.
+
+------------------------------------------------------------------------
+r157 | donncha | 2005-07-05 15:15:59 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Add a rule for pages.
+
+------------------------------------------------------------------------
+r156 | matt | 2005-07-05 14:46:45 +0100 (Tue, 05 Jul 2005) | 1 line
+Changed paths:
+   M /trunk/htaccess.dist
+   M /trunk/index.php
+   M /trunk/release.sh
+   M /trunk/wp-inst/go.php
+   M /trunk/wp-inst/htaccess.dist
+   M /trunk/wp-inst/index.php
+   M /trunk/wp-inst/maintenance.php
+   M /trunk/wp-inst/mm-newblog.php
+   M /trunk/wp-inst/pages
+   M /trunk/wp-inst/wp-comments-post.php
+   M /trunk/wp-inst/wp-comments.php
+   M /trunk/wp-inst/wp-config-sample.php
+   M /trunk/wp-inst/wp-counter.php
+   M /trunk/wp-inst/wp-newblog.php
+   M /trunk/wp-inst/wp-settings.php
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+eol:style updates.
+------------------------------------------------------------------------
+r155 | matt | 2005-07-05 14:43:05 +0100 (Tue, 05 Jul 2005) | 1 line
+Changed paths:
+   A /trunk/wp-inst/mm-newblog.php
+   M /trunk/wp-inst/wp-includes/create_smarty_template.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Alternative new blog page to try out, set eol:style
+------------------------------------------------------------------------
+r154 | matt | 2005-07-05 14:00:51 +0100 (Tue, 05 Jul 2005) | 1 line
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Make it a page and not a post.
+------------------------------------------------------------------------
+r153 | donncha | 2005-07-05 13:58:35 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+   M /trunk/wp-inst/wp-admin/wpmu-edit.php
+
+Edit blogs record for blog too.
+
+------------------------------------------------------------------------
+r152 | donncha | 2005-07-05 13:58:07 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Better error reporting.
+
+------------------------------------------------------------------------
+r151 | donncha | 2005-07-05 13:57:30 +0100 (Tue, 05 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+First post is now by blog user.
+Add site admin user to user list.
+
+------------------------------------------------------------------------
+r150 | donncha | 2005-07-05 13:55:58 +0100 (Tue, 05 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   M /trunk/wp-inst/wp-settings.php
+
+Use the "is_public" field
+
+------------------------------------------------------------------------
+r149 | donncha | 2005-07-04 17:08:10 +0100 (Mon, 04 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Fix stats
+Fix search
+
+------------------------------------------------------------------------
+r148 | donncha | 2005-07-04 17:00:51 +0100 (Mon, 04 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Added nice header.
+
+------------------------------------------------------------------------
+r147 | donncha | 2005-07-04 16:59:08 +0100 (Mon, 04 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Add function to get admin user for a particular domain.
+
+------------------------------------------------------------------------
+r146 | donncha | 2005-07-04 16:58:34 +0100 (Mon, 04 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/wpmu-blogs.php
+
+Removed blogname, added "last updated" column.
+
+------------------------------------------------------------------------
+r145 | donncha | 2005-07-04 15:08:02 +0100 (Mon, 04 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/release.sh
+
+Use WP 1.5.1.3
+
+------------------------------------------------------------------------
+r144 | donncha | 2005-07-04 12:39:41 +0100 (Mon, 04 Jul 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Add source domain meta data to user.
+Delete perms for existing users from meta table.
+
+------------------------------------------------------------------------
+r143 | donncha | 2005-07-04 12:12:44 +0100 (Mon, 04 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Record when blogs last updated.
+
+------------------------------------------------------------------------
+r142 | donncha | 2005-07-04 11:09:37 +0100 (Mon, 04 Jul 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+If no hostname on domain, then prefix with www
+
+------------------------------------------------------------------------
+r141 | donncha | 2005-06-30 20:38:52 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+   M /trunk/wp-inst/wp-newblog.php
+
+Strip the slashes!
+
+------------------------------------------------------------------------
+r140 | donncha | 2005-06-30 20:38:33 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Don't strip the domain.
+
+------------------------------------------------------------------------
+r139 | donncha | 2005-06-30 20:25:48 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+   M /trunk/wp-inst/wp-newblog.php
+   M /trunk/wp-inst/wp-settings.php
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Got rid of blogname field in blogs table.
+
+------------------------------------------------------------------------
+r138 | donncha | 2005-06-30 19:46:36 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Only check the pw if it's set!
+
+------------------------------------------------------------------------
+r137 | donncha | 2005-06-30 17:57:21 +0100 (Thu, 30 Jun 2005) | 4 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+When creating a new domain, open wp-newblog.php and create a "main" blog. 
+When you hit submit you'll be asked for the password of the admin user
+created on initial install.
+
+------------------------------------------------------------------------
+r136 | donncha | 2005-06-30 17:53:32 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Make sure initial blog is owned by user "admin"
+
+------------------------------------------------------------------------
+r135 | donncha | 2005-06-30 17:53:01 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+blogname isn't unique by itself.
+
+------------------------------------------------------------------------
+r134 | donncha | 2005-06-30 13:25:57 +0100 (Thu, 30 Jun 2005) | 5 lines
+Changed paths:
+   M /trunk/htaccess.dist
+   M /trunk/index.php
+   M /trunk/wp-inst/htaccess.dist
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   A /trunk/wp-inst/wp-content/blogs
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Requests for files are now handled by a "blogs" script.
+It will have to be expanded to support other requests: themes, style sheets, etc.
+Blogs directory now uses $blog_id instead of blogname to avoid name clashes.
+
+
+------------------------------------------------------------------------
+r133 | donncha | 2005-06-30 10:28:37 +0100 (Thu, 30 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Change images to files.
+
+------------------------------------------------------------------------
+r132 | donncha | 2005-06-29 19:18:45 +0100 (Wed, 29 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/menu.php
+   M /trunk/wp-inst/wp-admin/wpmu-admin.php
+   A /trunk/wp-inst/wp-admin/wpmu-blogs.php
+   M /trunk/wp-inst/wp-admin/wpmu-edit.php
+   A /trunk/wp-inst/wp-admin/wpmu-users.php
+
+Moved blogs and users functions to their own files.
+Can now edit user and usermeta records.
+
+------------------------------------------------------------------------
+r131 | donncha | 2005-06-29 11:52:29 +0100 (Wed, 29 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Functions used by wpmu admin, but could be useful elsewhere.
+
+------------------------------------------------------------------------
+r130 | donncha | 2005-06-29 11:52:02 +0100 (Wed, 29 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-settings.php
+
+Add $base to check for blog_id
+
+------------------------------------------------------------------------
+r129 | matt | 2005-06-29 08:10:10 +0100 (Wed, 29 Jun 2005) | 1 line
+Changed paths:
+   M /trunk/README.txt
+
+Testing again
+------------------------------------------------------------------------
+r128 | matt | 2005-06-29 08:06:54 +0100 (Wed, 29 Jun 2005) | 1 line
+Changed paths:
+   M /trunk/README.txt
+
+Testing...
+------------------------------------------------------------------------
+r127 | donncha | 2005-06-28 18:21:29 +0100 (Tue, 28 Jun 2005) | 6 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/menu.php
+   M /trunk/wp-inst/wp-admin/wpmu-admin.php
+   A /trunk/wp-inst/wp-admin/wpmu-edit.php
+
+Added admin edit page for updating records.
+Fix to permissions.
+Added search for blogs and users.
+Added options page for blogs.
+Added userlist.
+
+------------------------------------------------------------------------
+r126 | donncha | 2005-06-28 08:06:20 +0100 (Tue, 28 Jun 2005) | 3 lines
+Changed paths:
+   D /trunk/wp-inst/wp-admin/install-wpmu.php
+   M /trunk/wp-inst/wp-admin/menu.php
+   A /trunk/wp-inst/wp-admin/wpmu-admin.php
+
+Added WPMU Admin page.
+Removed install file, not required any more.
+
+------------------------------------------------------------------------
+r125 | donncha | 2005-06-28 07:13:01 +0100 (Tue, 28 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Use files intead of images
+
+------------------------------------------------------------------------
+r124 | donncha | 2005-06-27 19:08:35 +0100 (Mon, 27 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/index.php
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Fixed lots of // bugs.
+Ooops. forgot to define $domain if a only a domain.tld was used to install!
+
+------------------------------------------------------------------------
+r123 | donncha | 2005-06-27 18:46:39 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Upgrade before we restore the "main" blog
+
+------------------------------------------------------------------------
+r122 | donncha | 2005-06-27 17:57:39 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+If vhost enable then change URL.
+
+------------------------------------------------------------------------
+r121 | donncha | 2005-06-27 17:57:19 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+If vhost enabled then change URL.
+
+------------------------------------------------------------------------
+r120 | donncha | 2005-06-27 17:56:47 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-config-sample.php
+
+Add virtual hosting config option.
+
+------------------------------------------------------------------------
+r119 | donncha | 2005-06-27 17:56:23 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Virtual server support is now optional.
+
+------------------------------------------------------------------------
+r118 | donncha | 2005-06-27 17:55:22 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Redirect without hosts because host may not always be www.domain.com
+
+------------------------------------------------------------------------
+r117 | donncha | 2005-06-27 16:04:08 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Need to add current hostname to createBlog() call.
+
+------------------------------------------------------------------------
+r116 | donncha | 2005-06-27 16:03:41 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-settings.php
+
+Use the domain instead of hostname.
+
+------------------------------------------------------------------------
+r115 | donncha | 2005-06-27 16:03:14 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Check for virtual host.
+
+------------------------------------------------------------------------
+r114 | donncha | 2005-06-27 16:02:47 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Use a hostname instead of domain.
+
+------------------------------------------------------------------------
+r113 | donncha | 2005-06-27 16:02:18 +0100 (Mon, 27 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Remember to call upgrade_all()!
+$domain may not always resolve. Use the current hostname instead.
+
+------------------------------------------------------------------------
+r112 | donncha | 2005-06-27 13:25:08 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+blog_id can be more than 1 character.
+
+------------------------------------------------------------------------
+r111 | donncha | 2005-06-27 13:11:01 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+If perms on dirs aren't right then don't ask for db info.
+
+------------------------------------------------------------------------
+r110 | donncha | 2005-06-27 13:08:13 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/README.txt
+
+Added Apache docs to configure mod_rewrite.
+
+------------------------------------------------------------------------
+r109 | donncha | 2005-06-27 12:36:21 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+   M /trunk/wp-inst/wp-newblog.php
+
+Fixes to path.
+
+------------------------------------------------------------------------
+r108 | donncha | 2005-06-27 12:35:46 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Fix for paged blog on main blog
+
+------------------------------------------------------------------------
+r107 | donncha | 2005-06-27 12:35:23 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+No need for main blog - created by createBlog()
+
+------------------------------------------------------------------------
+r106 | donncha | 2005-06-27 12:10:09 +0100 (Mon, 27 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Add db creation code.
+
+------------------------------------------------------------------------
+r105 | donncha | 2005-06-24 14:22:08 +0100 (Fri, 24 Jun 2005) | 2 lines
+Changed paths:
+   D /trunk/wp-inst/wp-blogs
+
+Not needed any more.
+
+------------------------------------------------------------------------
+r104 | donncha | 2005-06-24 14:18:55 +0100 (Fri, 24 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/menu.php
+
+Added link to WP themes page.
+
+------------------------------------------------------------------------
+r103 | donncha | 2005-06-24 14:03:09 +0100 (Fri, 24 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Oops. wrong var.
+
+------------------------------------------------------------------------
+r102 | donncha | 2005-06-24 13:30:17 +0100 (Fri, 24 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+get rid of GET variables in URL.
+
+------------------------------------------------------------------------
+r101 | donncha | 2005-06-24 13:21:19 +0100 (Fri, 24 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+No need for blogname with "main" blog.
+
+------------------------------------------------------------------------
+r100 | donncha | 2005-06-23 17:29:51 +0100 (Thu, 23 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Don't forget these vars!
+
+------------------------------------------------------------------------
+r99 | donncha | 2005-06-23 17:19:44 +0100 (Thu, 23 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/index.php
+
+Change installation method to 2 stage process using createBlog()
+
+------------------------------------------------------------------------
+r98 | donncha | 2005-06-23 17:19:16 +0100 (Thu, 23 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Add username to createBlog();
+
+------------------------------------------------------------------------
+r97 | donncha | 2005-06-23 17:17:22 +0100 (Thu, 23 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Use the correct var.
+
+------------------------------------------------------------------------
+r96 | donncha | 2005-06-22 17:39:36 +0100 (Wed, 22 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Detect blog directories correctly!
+
+------------------------------------------------------------------------
+r95 | donncha | 2005-06-22 17:28:01 +0100 (Wed, 22 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Handle calls to the "main" blog better.
+die() if an unknown blog is found. Probably should do a 404 on this too.
+
+------------------------------------------------------------------------
+r94 | donncha | 2005-06-22 17:27:15 +0100 (Wed, 22 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Added rules to handle main blog without "main" part of URL.
+Removed unused stuff.
+
+------------------------------------------------------------------------
+r93 | donncha | 2005-06-22 17:03:31 +0100 (Wed, 22 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-settings.php
+
+Domain support
+
+------------------------------------------------------------------------
+r92 | donncha | 2005-06-22 13:01:46 +0100 (Wed, 22 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+   M /trunk/wp-inst/wp-newblog.php
+
+Moved createBlog() into wpmu-functions.php and 
+removed unused functions.
+
+------------------------------------------------------------------------
+r91 | donncha | 2005-06-21 19:23:56 +0100 (Tue, 21 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Never mind slashes.
+
+------------------------------------------------------------------------
+r90 | donncha | 2005-06-21 19:20:49 +0100 (Tue, 21 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Don't forget to make the home directory!
+
+
+------------------------------------------------------------------------
+r89 | donncha | 2005-06-21 19:04:59 +0100 (Tue, 21 Jun 2005) | 4 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+   M /trunk/wp-inst/wp-settings.php
+
+Move new blog creation into a function.
+This should go into a seperate file later on.
+
+
+------------------------------------------------------------------------
+r88 | donncha | 2005-06-21 19:04:25 +0100 (Tue, 21 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+Add domain and path.
+
+------------------------------------------------------------------------
+r87 | donncha | 2005-06-21 19:03:57 +0100 (Tue, 21 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+No need for this check if we're checking the posts table.
+
+------------------------------------------------------------------------
+r86 | donncha | 2005-06-21 16:03:31 +0100 (Tue, 21 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/release.sh
+
+Delete old wp folder first.
+
+------------------------------------------------------------------------
+r85 | donncha | 2005-06-21 11:47:28 +0100 (Tue, 21 Jun 2005) | 5 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Check for install from posts table.
+Fix setting title and email values.
+Use the usermeta table.
+Small mod to email.
+
+------------------------------------------------------------------------
+r84 | donncha | 2005-06-21 11:45:36 +0100 (Tue, 21 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+If wp-content/themes directory exists then use WP themes.
+
+------------------------------------------------------------------------
+r83 | donncha | 2005-06-20 19:09:37 +0100 (Mon, 20 Jun 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+   A /trunk/wp-inst/wp-settings.php
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Added global blogs db table.
+
+
+------------------------------------------------------------------------
+r82 | donncha | 2005-06-20 18:29:36 +0100 (Mon, 20 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Added rule to rewrite content/themes directory for WP themes.
+
+------------------------------------------------------------------------
+r81 | donncha | 2005-06-20 18:05:25 +0100 (Mon, 20 Jun 2005) | 2 lines
+Changed paths:
+   D /trunk/wp-inst/wp-admin/edit-form-advanced.php
+
+Removed.
+
+------------------------------------------------------------------------
+r80 | donncha | 2005-06-20 17:34:57 +0100 (Mon, 20 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Use wpdb variables.
+
+------------------------------------------------------------------------
+r79 | donncha | 2005-06-20 15:37:36 +0100 (Mon, 20 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/release.sh
+
+Make stable and unstable releases.
+
+------------------------------------------------------------------------
+r78 | donncha | 2005-06-20 15:29:33 +0100 (Mon, 20 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/README.txt
+
+Fixed link to support forum
+
+------------------------------------------------------------------------
+r77 | donncha | 2005-06-20 14:57:33 +0100 (Mon, 20 Jun 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Use wpmu object's variables.
+
+------------------------------------------------------------------------
+r76 | donncha | 2005-05-28 00:12:15 +0100 (Sat, 28 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Fixed siteurl bug reported at http://mu.wordpress.org/forums/topic/52#post-308
+
+------------------------------------------------------------------------
+r75 | donncha | 2005-05-26 22:16:15 +0100 (Thu, 26 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+PHP < 4.3 doesn't have file_get_contents();
+
+------------------------------------------------------------------------
+r74 | donncha | 2005-05-26 22:09:51 +0100 (Thu, 26 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/smarty-plugins/function.popularposts.php
+
+Count popular posts in a better way.
+
+------------------------------------------------------------------------
+r73 | donncha | 2005-05-26 21:35:22 +0100 (Thu, 26 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/plugins/BAStats/BAStats.php
+   M /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_graph.php
+   M /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_logger.php
+   M /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_options.php
+   M /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_reports.php
+
+Updated BAstats to build 8.
+
+------------------------------------------------------------------------
+r72 | donncha | 2005-05-26 16:15:27 +0100 (Thu, 26 May 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Rewrote wp-newblog.php, used lots of Dasher's code.
+Page is still very basic but it's work in progress.
+
+------------------------------------------------------------------------
+r71 | donncha | 2005-05-26 14:43:12 +0100 (Thu, 26 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates/index.html
+
+print.css no longer exists!
+
+------------------------------------------------------------------------
+r70 | donncha | 2005-05-26 14:02:42 +0100 (Thu, 26 May 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Added new rules for wp-newblog.php
+
+------------------------------------------------------------------------
+r69 | donncha | 2005-05-26 13:09:14 +0100 (Thu, 26 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/referers.php
+
+Show all referers by default.
+
+------------------------------------------------------------------------
+r68 | donncha | 2005-05-25 16:06:13 +0100 (Wed, 25 May 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+
+Pages now work through WordPress code.
+
+------------------------------------------------------------------------
+r67 | donncha | 2005-05-25 15:52:14 +0100 (Wed, 25 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Only display permission warnings until user refreshes page 5 times in a session.
+
+------------------------------------------------------------------------
+r66 | donncha | 2005-05-23 11:38:06 +0100 (Mon, 23 May 2005) | 2 lines
+Changed paths:
+   D /trunk/wp-inst/wp-admin/admin.php
+
+Removed - hooks in wpmu-functions.php call wpmu_clear_cache()
+
+------------------------------------------------------------------------
+r65 | donncha | 2005-05-21 09:25:47 +0100 (Sat, 21 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/plugins/wp_ozh_clickcounter.php
+
+Clean up error when remote file is not found.
+
+------------------------------------------------------------------------
+r64 | donncha | 2005-05-21 09:24:56 +0100 (Sat, 21 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/plugins/BAStats/BAStats.php
+
+Fix to get BAStats working again: Thanks Revbob - http://mu.wordpress.org/forums/topic/36#post-233
+
+------------------------------------------------------------------------
+r57 | donncha | 2005-05-09 22:24:29 +0100 (Mon, 09 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+Fixed include paths - http://mu.wordpress.org/forums/topic/30
+
+------------------------------------------------------------------------
+r56 | donncha | 2005-05-09 15:23:05 +0100 (Mon, 09 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/plugins/wpmu-plugin.php
+
+Disabled plugin until further notice. This needs to be tested more.
+
+------------------------------------------------------------------------
+r55 | donncha | 2005-05-09 08:50:41 +0100 (Mon, 09 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Minor change to new blog email.
+
+------------------------------------------------------------------------
+r54 | donncha | 2005-05-08 13:17:39 +0100 (Sun, 08 May 2005) | 2 lines
+Changed paths:
+   A /trunk/release.sh
+
+Run this script to make a WPMU release.
+
+------------------------------------------------------------------------
+r53 | donncha | 2005-05-08 13:01:47 +0100 (Sun, 08 May 2005) | 2 lines
+Changed paths:
+   M /trunk/htaccess.dist
+   M /trunk/wp-inst/pages
+
+Fixed pages support.
+
+------------------------------------------------------------------------
+r52 | donncha | 2005-05-08 12:41:51 +0100 (Sun, 08 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+This file uses "null" as false, should use false. Something to fix in the future!
+
+------------------------------------------------------------------------
+r51 | donncha | 2005-05-08 12:38:34 +0100 (Sun, 08 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/create_smarty_template.php
+
+Handle functions that return references.
+
+------------------------------------------------------------------------
+r50 | donncha | 2005-05-08 12:17:50 +0100 (Sun, 08 May 2005) | 3 lines
+Changed paths:
+   M /trunk/index.php
+
+Add mod_rewrite instructions.
+mkdir() is now quiet.
+
+------------------------------------------------------------------------
+r38 | donncha | 2005-05-02 22:46:07 +0100 (Mon, 02 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-counter.php
+
+Fixed checking of blacklisted referers
+
+------------------------------------------------------------------------
+r37 | donncha | 2005-05-02 22:45:45 +0100 (Mon, 02 May 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/referers.php
+
+Fixed blacklisting of URLs
+
+------------------------------------------------------------------------
+r36 | donncha | 2005-04-30 11:56:47 +0100 (Sat, 30 Apr 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wp-comments-post.php
+
+Core changes.
+
+
+------------------------------------------------------------------------
+r35 | donncha | 2005-04-30 11:56:22 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Check for INSTALLING constant and up the available space.
+
+------------------------------------------------------------------------
+r34 | donncha | 2005-04-30 11:55:53 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Added more bad referers.
+
+------------------------------------------------------------------------
+r33 | donncha | 2005-04-30 11:55:25 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/smarty-plugins/function.popularposts.php
+
+Clean up of old b2 code.
+
+------------------------------------------------------------------------
+r32 | donncha | 2005-04-30 11:55:04 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/smarty-plugins/function.is_aside.php
+
+Remove debug code.
+
+------------------------------------------------------------------------
+r31 | donncha | 2005-04-30 11:54:43 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/smarty-plugins/function.todayayearago.php
+
+Only print published posts
+
+------------------------------------------------------------------------
+r30 | donncha | 2005-04-30 11:54:23 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/smarty-plugins/function.referer.php
+
+Added support for infospace.com
+
+------------------------------------------------------------------------
+r29 | donncha | 2005-04-30 11:50:38 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/pages
+
+Pages live at the same url as Wordpress ones. ie. blog/pagename instead of blog/pages/pagename
+
+------------------------------------------------------------------------
+r28 | donncha | 2005-04-30 11:49:56 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/edit-form-advanced.php
+
+Core changes.
+
+------------------------------------------------------------------------
+r27 | donncha | 2005-04-30 11:49:42 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upload.php
+
+deleted a few lines.
+
+------------------------------------------------------------------------
+r26 | donncha | 2005-04-30 11:49:18 +0100 (Sat, 30 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/admin.php
+
+Core changes
+
+------------------------------------------------------------------------
+r25 | donncha | 2005-04-14 21:09:54 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/install-wpmu.php
+   M /trunk/wp-inst/wp-admin/upgrade-schema.php
+
+Remove queries from one file, into the other.
+
+------------------------------------------------------------------------
+r24 | donncha | 2005-04-14 21:09:33 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/upload.php
+
+Hardcode file upload types.
+
+------------------------------------------------------------------------
+r23 | donncha | 2005-04-14 21:09:11 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/options-misc.php
+
+Removed file upload types
+
+------------------------------------------------------------------------
+r22 | donncha | 2005-04-14 21:05:55 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/edit-form-advanced.php
+
+From WP Core
+
+------------------------------------------------------------------------
+r21 | donncha | 2005-04-14 21:05:32 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/admin.php
+
+From WP Core.
+
+------------------------------------------------------------------------
+r20 | donncha | 2005-04-14 20:47:52 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-newblog.php
+
+Untested - added db creation code, one step install. indented code.
+
+------------------------------------------------------------------------
+r19 | donncha | 2005-04-14 20:08:20 +0100 (Thu, 14 Apr 2005) | 2 lines
+Changed paths:
+   A /trunk/wp-inst/wp-newblog.php
+
+Initial import, do not use, untested!
+
+------------------------------------------------------------------------
+r18 | donncha | 2005-03-29 07:42:31 +0100 (Tue, 29 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/smarty-plugins/function.lastposts.php
+
+Added check for published posts.
+
+------------------------------------------------------------------------
+r17 | donncha | 2005-03-27 17:16:10 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Only prune the cache 1% of the time.
+
+------------------------------------------------------------------------
+r16 | donncha | 2005-03-27 16:15:40 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Don't unset when we still need it!
+
+------------------------------------------------------------------------
+r15 | donncha | 2005-03-27 15:44:20 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Delete Smarty cache files more than a day old.
+
+------------------------------------------------------------------------
+r14 | donncha | 2005-03-27 15:38:50 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/menu.php
+
+Don't need plugin editor.
+
+------------------------------------------------------------------------
+r13 | donncha | 2005-03-27 15:21:16 +0100 (Sun, 27 Mar 2005) | 3 lines
+Changed paths:
+   M /trunk/wp-inst/wpmu-settings.php.dist
+
+global vars aren't always available, from Paul Cook.
+http://blogs.linux.ie/support/topic.php?id=12&page=1#post-603
+
+------------------------------------------------------------------------
+r12 | donncha | 2005-03-27 15:18:28 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/plugins/wpmu-plugin.php
+
+Added warning message
+
+------------------------------------------------------------------------
+r11 | donncha | 2005-03-27 15:05:42 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/plugins/wp_ozh_clickcounter.php
+
+Don't display hits by default.
+
+------------------------------------------------------------------------
+r10 | donncha | 2005-03-27 15:05:17 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-comments-post.php
+
+WP Core Changes.
+
+------------------------------------------------------------------------
+r9 | donncha | 2005-03-27 15:02:14 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/edit-form-advanced.php
+
+Changes from WP core.
+
+------------------------------------------------------------------------
+r8 | donncha | 2005-03-27 15:01:36 +0100 (Sun, 27 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/index.php
+
+Added new referer spammers.
+
+------------------------------------------------------------------------
+r7 | donncha | 2005-03-24 10:24:07 +0000 (Thu, 24 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/go.php
+
+Use 301 redirects instead of 302
+
+------------------------------------------------------------------------
+r6 | donncha | 2005-03-22 23:21:08 +0000 (Tue, 22 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates/index.html
+
+Minor typo
+
+------------------------------------------------------------------------
+r5 | donncha | 2005-03-22 21:59:08 +0000 (Tue, 22 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-admin/options-misc.php
+
+Remove file upload max size option.
+
+------------------------------------------------------------------------
+r4 | donncha | 2005-03-20 13:14:46 +0000 (Sun, 20 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Print size.
+
+------------------------------------------------------------------------
+r3 | donncha | 2005-03-20 13:09:20 +0000 (Sun, 20 Mar 2005) | 2 lines
+Changed paths:
+   M /trunk/wp-inst/wp-includes/wpmu-functions.php
+
+Wrong var used in call to function.
+
+------------------------------------------------------------------------
+r2 | donncha | 2005-03-19 23:16:03 +0000 (Sat, 19 Mar 2005) | 2 lines
+Changed paths:
+   A /trunk/README.txt
+   A /trunk/htaccess.dist
+   A /trunk/index.php
+   A /trunk/wp-inst
+   A /trunk/wp-inst/go.php
+   A /trunk/wp-inst/htaccess.dist
+   A /trunk/wp-inst/index.php
+   A /trunk/wp-inst/maintenance.php
+   A /trunk/wp-inst/pages
+   A /trunk/wp-inst/wp-admin
+   A /trunk/wp-inst/wp-admin/admin.php
+   A /trunk/wp-inst/wp-admin/edit-form-advanced.php
+   A /trunk/wp-inst/wp-admin/install-wpmu.php
+   A /trunk/wp-inst/wp-admin/menu.php
+   A /trunk/wp-inst/wp-admin/options-general.php
+   A /trunk/wp-inst/wp-admin/options-misc.php
+   A /trunk/wp-inst/wp-admin/referers.php
+   A /trunk/wp-inst/wp-admin/template-chooser.php
+   A /trunk/wp-inst/wp-admin/templates.php
+   A /trunk/wp-inst/wp-admin/upgrade-schema.php
+   A /trunk/wp-inst/wp-admin/upload.php
+   A /trunk/wp-inst/wp-blogs
+   A /trunk/wp-inst/wp-blogs/DEFAULT
+   A /trunk/wp-inst/wp-blogs/DEFAULT/wp-config.php
+   A /trunk/wp-inst/wp-comments-post.php
+   A /trunk/wp-inst/wp-comments.php
+   A /trunk/wp-inst/wp-config-sample.php
+   A /trunk/wp-inst/wp-content
+   A /trunk/wp-inst/wp-content/plugins
+   A /trunk/wp-inst/wp-content/plugins/BAStats
+   A /trunk/wp-inst/wp-content/plugins/BAStats/BAStats.php
+   A /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_graph.php
+   A /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_logger.php
+   A /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_options.php
+   A /trunk/wp-inst/wp-content/plugins/BAStats/BAStats_reports.php
+   A /trunk/wp-inst/wp-content/plugins/jb_Recent_Comments_List.php
+   A /trunk/wp-inst/wp-content/plugins/kittens-spaminator.php
+   A /trunk/wp-inst/wp-content/plugins/wp_ozh_clickcounter.php
+   A /trunk/wp-inst/wp-content/plugins/wpmu-plugin.php
+   A /trunk/wp-inst/wp-content/sitetemplates
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/bg.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/bullet.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/date.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/fg.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/footer.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/header.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/posts.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/img/today.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/index.php
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/screenshot-sm.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/screenshot.gif
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates/comments.html
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates/index.html
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates/post.html
+   A /trunk/wp-inst/wp-content/sitetemplates/humancondition/templates/wp-layout.css
+   A /trunk/wp-inst/wp-content/smarty-plugins
+   A /trunk/wp-inst/wp-content/smarty-plugins/custom_fields.enclosure.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/custom_fields.photoblog.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.assign.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.blogroll.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.cork.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.custom_fields.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.eightball.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.get_recent_comments.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.getcustomfield.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.globalvar.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.googleit.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.is_aside.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.lastposts.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.photoblog.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.pirate.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.popularposts.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.referer.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.relatedstories.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.todayayearago.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.wp_ozh_click_comment_author_link.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/function.wp_ozh_click_topclicks.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/insert.getreferer.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/insert.var.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/modifier.highlightsearch.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/outputfilter.protect_email.php
+   A /trunk/wp-inst/wp-content/smarty-plugins/wp_ozh_clickcounter.php
+   A /trunk/wp-inst/wp-content/smarty-templates
+   A /trunk/wp-inst/wp-content/smarty-templates/blogroll.tpl
+   A /trunk/wp-inst/wp-content/smarty-templates/noblogroll.tpl
+   A /trunk/wp-inst/wp-counter.php
+   A /trunk/wp-inst/wp-images
+   A /trunk/wp-inst/wp-images/.htaccess
+   A /trunk/wp-inst/wp-images/wordpress-mu.png
+   A /trunk/wp-inst/wp-includes
+   A /trunk/wp-inst/wp-includes/create_smarty_template.php
+   A /trunk/wp-inst/wp-includes/wpmu-functions.php
+   A /trunk/wp-inst/wpmu-settings.php.dist
+
+Initial Import
+
+------------------------------------------------------------------------
+r1 | matt | 2005-03-06 00:30:26 +0000 (Sun, 06 Mar 2005) | 1 line
+Changed paths:
+   A /branches
+   A /tags
+   A /trunk
+
+Setting up structure
+------------------------------------------------------------------------

@@ -1,0 +1,57 @@
+<h2 id="comments">{comments_number zero="Comments" one="1 Comment" more="% Comments"}
+{if $post->comment_status == 'open'}
+<a href="#postcomment" title="{_e text="Leave a comment";}">&raquo;</a>
+{/if}
+</h2>
+{if $post->ping_status}
+<p>{_e text='The <acronym title="Uniform Resource Identifier">URI</acronym> to TrackBack this entry is:'} <em>{trackback_url}</em></p>
+{/if}
+{if $comments != ''}
+  <ol id="commentlist">
+  {foreach from=$comments key=key item=comment}
+        {globalvar var='comment' value=$comment}
+	<li id="comment-{comment_ID}">
+	{comment_text}
+	<p><cite>{comment_type} {_e text="by"} {comment_author_link} &#8212; {comment_date} @ <a href="#comment-{comment_ID}">{comment_time}</a></cite> {edit_comment_link link='Edit This' before=' |'}</p>
+	</li>
+  {/foreach}
+  </ol>
+{else} <!-- this is displayed if there are no comments so far -->
+	<p>{_e text="No comments yet."}</p>
+{/if}
+<p>{comments_rss_link link_text='<abbr title="Really Simple Syndication">RSS</abbr> feed for comments on this post.'}</p>
+<h2 id="postcomment">{_e text="Leave a comment"}</h2>
+{if 'open' == $post->comment_status}
+<p>{_e text="Line and paragraph breaks automatic, e-mail address never displayed, <acronym title='Hypertext Markup Language'>HTML</acronym> allowed:"} <code>{allowed_tags}</code></p>
+
+<form action="{$siteurl}/wp-comments-post.php" method="post" id="commentform">
+	<p>
+	  <input type="text" name="author" id="author" class="textarea" value="{insert name=var var=comment_author}" size="28" tabindex="1" />
+	   <label for="author">{_e text="Name"}</label> {if $req != ''} {_e text='(required)'} {/if}
+	<input type="hidden" name="comment_post_ID" value="{$post->ID}" />
+	<input type="hidden" name="redirect_to" value="{$redirect_to}" />
+	</p>
+
+	<p>
+	  <input type="text" name="email" id="email" value="{insert name=var var=comment_author_email}" size="28" tabindex="2" />
+	   <label for="email">{_e text="E-mail"}</label> {if $req != ''} {_e text='(required)'}{/if}
+	</p>
+
+	<p>
+	  <input type="text" name="url" id="url" value="{insert name=var var=comment_author_url}" size="28" tabindex="3" />
+	   <label for="url">{_e text="<acronym title='Uniform Resource Identifier'>URI</acronym>"}</label>
+	</p>
+
+	<p>
+	  <label for="comment">{_e text="Your Comment"}</label>
+	<br />
+	  <textarea name="comment" id="comment" cols="60" rows="4" tabindex="4"></textarea>
+	</p>
+
+	<p>
+	  <input name="submit" type="submit" tabindex="5" value="{_e text="Say It!"}" />
+	</p>
+</form>
+{else} <!-- comments are closed -->
+<p>{_e text="Sorry, the comment form is closed at this time."}</p>
+{/if}

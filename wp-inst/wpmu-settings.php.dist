@@ -1,0 +1,91 @@
+<?php
+
+ini_set( "safe_mode", 1 );
+
+$base="BASE";
+
+if( isset( $_REQUEST[ 'wpblog' ] ) ) $wpblog = $_REQUEST[ 'wpblog' ];
+
+if( isset( $wpblog ) == false )
+{
+    if( $base != '/' )
+    {
+        $wpblog = str_replace( $base, "",  $_SERVER[ 'REQUEST_URI' ] );
+    }
+    else
+    {
+        $wpblog = substr( $_SERVER[ 'REQUEST_URI' ], 0, strrpos( $_SERVER[ 'REQUEST_URI' ], "/" ) );
+    }
+    if( strrpos( $wpblog, "/" ) > 0 )
+    {
+        $wpblog = substr( $wpblog, 0, strpos( substr( $wpblog, 1 ) , "/" )+1 );
+    }
+    $wpblog = str_replace( $base, "", $wpblog );
+}
+
+$hostname = $_SERVER[ 'HTTP_HOST' ];
+$domain = $_SERVER[ 'HTTP_HOST' ];
+if( substr_count( $domain, '.' ) > 1 ) {
+    $vhostblog = substr( $domain, 0, strpos( $domain, '.' ) );
+    $basedomain = str_replace( $vhostblog.".", "", $domain );
+    $domain = str_replace( $vhostblog.".", "", $domain );
+} else {
+    $basedomain = $domain;
+    $vhostblog = "main";
+}
+		
+if( strpos( $wpblog, "?" ) ) {
+    $wpblog = substr( $wpblog, 0, strpos( $wpblog, "?" ) );
+}
+if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
+    if( $vhostblog != 'www' && $vhostblog != '' ) {
+	$wpblog = $vhostblog;
+    } else {
+	$wpblog = "main";
+    }
+} elseif( $wpblog == '' ) {
+    $wpblog = 'main';
+} elseif( $wpblog != 'main' && ( is_file( ABSPATH . $wpblog ) == true || is_dir( ABSPATH . $wpblog ) == true ) ) {
+    $wpblog = 'main';
+}
+
+require_once( ABSPATH.'wp-includes/class-smarty.php' );
+$wpmuBaseTablePrefix = $table_prefix;
+define ('WPLANG', '');
+$server = DB_HOST;
+$loginsql = DB_USER;
+$passsql = DB_PASSWORD;
+
+require_once( ABSPATH.'wp-settings.php' );
+require_once( ABSPATH.'wp-includes/wpmu-functions.php' );
+
+$plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php');
+
+if( $plugins ) {
+    foreach ( $plugins as $plugin ) {
+	include_once( $plugin );
+    }
+}
+
+
+if( $redirect )
+{
+    if( $p )
+    {
+        $url = get_permalink( $p );
+    }
+    elseif( $m )
+    {
+        $url = get_settings( 'siteurl' )."/".substr( $m, 0, 4 )."/".substr( $m, 4, 2 );
+    }
+    elseif( $cat )
+    {
+        $query = "SELECT cat_name FROM ".$wpdb->categories." WHERE cat_ID='$cat'";
+        $cat_name = $wpdb->get_var( $query );
+        $url = get_settings( 'siteurl' ). "/category/".$cat_name;
+    }
+    header("HTTP/1.0 301 Moved Permanently");
+    header( "Location: $url" );
+    exit;
+}
+?>

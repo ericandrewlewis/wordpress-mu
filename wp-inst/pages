@@ -1,0 +1,57 @@
+<?php /* Don't remove these lines, they call the b2 function files ! */
+
+/* $Id: pages,v 1.1.1.1 2004/10/14 12:07:23 donncha Exp $ */
+
+$blog = 1;
+if( is_file( "wp-config.php" ) == false )
+{
+  $nosetup = true;
+  include( "../index.php" );
+  die();
+}
+require_once('wp-blog-header.php');
+// not on by default: require_once(ABSPATH.'wp-links/links.weblogs.com.php');
+
+define( 'NODISPLAY', false );
+
+$siteurl = get_settings( 'siteurl' );
+$wpsmarty->assign( 'siteurl', $siteurl );
+$wpsmarty->assign( 'wp_version', $wp_version );
+$wpsmarty->assign( 'wpblog', $wpblog );
+
+get_currentuserinfo();
+
+// Required for caching single posts - useful to put it here anyway
+// as this code would be run multiple times including each wp-comments.php
+$comment_author = (isset($_COOKIE['comment_author_'.$cookiehash])) ? trim($_COOKIE['comment_author_'.$cookiehash]) : '';
+$comment_author_email = (isset($_COOKIE['comment_author_email_'.$cookiehash])) ? trim($_COOKIE['comment_author_email_'.$cookiehash]) : '';
+$comment_author_url = (isset($_COOKIE['comment_author_url_'.$cookiehash])) ? trim($_COOKIE['comment_author_url_'.$cookiehash]) : '';
+
+if( count( $posts ) == 1 )
+{
+    $smartyKey = md5( $comment_author_url.$comment_author.$comment_author_email.$user_login.$_SERVER[ 'REQUEST_URI' ] );
+}
+else
+{
+    $smartyKey = md5( $user_login.$_SERVER[ 'REQUEST_URI' ] );
+}
+
+if( $wpsmarty->is_cached( "index.html", $smartyKey ) == false )
+{
+    $uri = split( '/', $_SERVER[ 'REQUEST_URI' ] );
+    $tpl = $uri[ count( $uri ) - 2 ];
+    $results = $wpdb->get_results( "select * from ".$wpdb->posts." where post_name='".$tpl."'", ARRAY_A );
+    if( is_array( $results ) )
+    {
+        $content = $results[0]['post_content'];
+    }
+    else
+    {
+        $content = "Page Does Not Exist.";
+    }
+    $wpsmarty->assign( 'content', $content );
+}
+
+$wpsmarty->display( 'index.html', $smartyKey );
+
+?>

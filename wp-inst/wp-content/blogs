@@ -1,0 +1,20 @@
+<?php
+require_once( "../wp-config.php" );
+if( is_file( ABSPATH . "wp-content/blogs.dir/" . $blog_id . $_SERVER[ 'REQUEST_URI' ] ) ) {
+    // get mime type
+    $ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
+    if( $ext == 'jpg' )
+	$ext = 'jpeg';
+    $mimetype = "image/$ext";
+    header("Content-type: $mimetype" );
+    readfile( ABSPATH . "wp-content/blogs.dir/" . $blog_id . $_SERVER[ 'REQUEST_URI' ] );
+} else {
+    // 404
+    header("HTTP/1.1 404 Not Found");
+    print "<html><head><title>Error 404! File Not Found!</title></head>";
+    print "<body>";
+    print "<h1>File Not Found!</h1>";
+    print "No! No! Run Away! This file has escaped and is running wild!";
+    print "</body></html>";
+}
+?>
