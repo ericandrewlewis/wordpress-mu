@@ -55,6 +55,7 @@ RewriteRule ^favicon.ico /wp-inst/favicon.ico [L]
 RewriteRule ^robots.txt /wp-inst/robots.txt [L]   
 
 RewriteRule ^wp-newblog.php				BASE/wp-inst/wp-newblog.php [L]
+RewriteRule ^invite/(.*)/?				BASE/wp-inst/wp-newblog.php?u=$1 [L]
 RewriteRule ^index.php					BASE/wp-inst/index.php [L]
 
 RewriteRule ^$ BASE/wp-inst/index.php [L]
