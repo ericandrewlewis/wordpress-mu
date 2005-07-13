@@ -1,7 +1,5 @@
 <?php
 
-// $Id: referers.php,v 1.6 2005/01/25 11:35:39 donncha Exp $
-
 require_once('admin.php');
 $title = "Referers";
 $parent_file = 'edit.php';
@@ -89,7 +87,7 @@ if( $action == 'Delete' )
         reset( $del );
         while( list( $key, $val ) = each( $del ) ) 
         { 
-            $query = "DELETE FROM referer_visitLog
+            $query = "DELETE FROM " . $table_prefix . "referer_visitLog
                       WHERE       visitID = '".$val."'
                       AND          blogID = '".$wpblog."'";
             $result = $wpdb->query($query);
@@ -99,7 +97,7 @@ if( $action == 'Delete' )
 }
 elseif( $action == 'deletedirect' )
 {
-    $query = "DELETE FROM referer_visitLog
+    $query = "DELETE FROM " . $table_prefix . "referer_visitLog
         WHERE        dayofmonth='".$day."'
         AND          referingURL = 'DIRECT'
         AND          blogID = '".$wpblog."'";
@@ -115,13 +113,13 @@ elseif( $action == 'Add To Blacklist' )
         while( list( $key, $val ) = each( $del ) ) 
         { 
             $query = "SELECT referingURL
-                      FROM   referer_visitLog
+                      FROM   " . $table_prefix . "referer_visitLog
                       WHERE  visitID = '".$val."'
                       AND    blogID = '".$wpblog."'";
             $result=$wpdb->get_var( $query );
             if( $result )
             {
-                $query = "INSERT INTO referer_blacklist VALUES( NULL, '".$wpblog."', '".$result."', NOW() )";
+                $query = "INSERT INTO " . $table_prefix . "referer_blacklist VALUES( NULL, '".$wpblog."', '".$result."', NOW() )";
                 $result = $wpdb->query($query);
             }
         }
@@ -135,7 +133,7 @@ elseif( $action == 'deleteblacklist' )
         reset( $del );
         while( list( $key, $val ) = each( $del ) ) 
         { 
-                $query = "DELETE FROM referer_blacklist WHERE ID='".$val."' AND blogID = '".$wpblog."'";
+                $query = "DELETE FROM " . $table_prefix . "referer_blacklist WHERE ID='".$val."' AND blogID = '".$wpblog."'";
                 $result = $wpdb->query($query);
         }
     }
@@ -145,7 +143,7 @@ elseif( $action == 'deleteblacklist' )
 switch( $action )
 {
     case "blacklist":
-        $query = "SELECT * FROM referer_blacklist
+        $query = "SELECT * FROM " . $table_prefix . "referer_blacklist
                   WHERE  blogID = '".$wpblog."'";
         $result = $wpdb->get_results($query, ARRAY_A );
         if( $result )
@@ -188,7 +186,7 @@ switch( $action )
         break;
     case "listday":
 
-        $query = "select visitTimes,referingURL,date_format( visitTime, '%k:%i' ) as visitTime2, visitURL, visitID from referer_visitLog where dayofmonth='".$day."'";
+        $query = "select visitTimes,referingURL,date_format( visitTime, '%k:%i' ) as visitTime2, visitURL, visitID from " . $table_prefix . "referer_visitLog where dayofmonth='".$day."'";
         if( $wpblog != 'root' )
             $query .= " and blogID='".$wpblog."'";
 
@@ -373,10 +371,10 @@ switch( $action )
         }
         break;
     default:
-        $query = "select sum( visitTimes ) as c, dayofmonth from referer_visitLog ";
+        $query = "select sum( visitTimes ) as c, dayofmonth from " . $table_prefix . "referer_visitLog ";
         if( $wpblog != 'root' )
             $query .= "where blogID='".$wpblog."' ";
-        $query .= "group by referer_visitLog.dayofmonth";
+        $query .= "group by " . $table_prefix . "referer_visitLog.dayofmonth";
 	$result = $wpdb->get_results($query, ARRAY_A );
         if( $result )
         {

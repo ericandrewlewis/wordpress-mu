@@ -176,39 +176,29 @@ CREATE TABLE $wpdb->sitemeta (
   KEY meta_key (meta_key),
   KEY site_id (site_id)
 );
-CREATE TABLE `referer_blacklist` (
-  `ID` int(11) NOT NULL auto_increment,
-  `blogID` varchar(32) NOT NULL default '',
-  `URL` varchar(250) NOT NULL default '',
-  `t` timestamp(14) NOT NULL,
-  PRIMARY KEY  (`ID`),
-  KEY `blogID` (`blogID`,`URL`),
-  KEY `URL` (`URL`)
+CREATE TABLE " . $table_prefix . "referer_blacklist (
+  ID int(11) NOT NULL auto_increment,
+  blogID varchar(32) NOT NULL default '',
+  URL varchar(250) NOT NULL default '',
+  t timestamp(14) NOT NULL,
+  PRIMARY KEY  (ID),
+  KEY blogID (blogID,URL),
+  KEY URL (URL)
 );
-CREATE TABLE `referer_visitLog` (
-`blogID` char( 32 ) default NULL ,
-`visitID` int( 11 ) NOT NULL AUTO_INCREMENT ,
-`visitTime` timestamp( 14 ) NOT NULL ,
-`visitURL` char( 250 ) default NULL ,
-`referingURL` char( 250 ) default NULL ,
-`baseDomain` char( 250 ) default NULL ,
-`refpost` int( 11 ) NOT NULL default '0',
-`visitTimes` int( 10 ) NOT NULL default '0',
-`dayofmonth` smallint( 2 ) NOT NULL default '0',
-PRIMARY KEY ( `visitID` ) ,
-KEY `blogID` ( `blogID` ) ,
-KEY `refpost` ( `refpost` ) ,
-KEY `dayofmonth` ( `dayofmonth` )
-);
-CREATE TABLE `wp_linkclicks` (
-  `blogID` varchar(11) default NULL,
-  `link_id` int(11) NOT NULL auto_increment,
-  `link_url` text NOT NULL,
-  `link_clicks` int(11) NOT NULL default '0',
-  `link_date` datetime NOT NULL default '0000-00-00 00:00:00',
-  `link_title` text NOT NULL,
-  UNIQUE KEY `link_id` (`link_id`),
-  KEY `blogID` (`blogID`)
+CREATE TABLE " . $table_prefix . "referer_visitLog (
+blogID char( 32 ) default NULL ,
+visitID int( 11 ) NOT NULL AUTO_INCREMENT ,
+visitTime timestamp( 14 ) NOT NULL ,
+visitURL char( 250 ) default NULL ,
+referingURL char( 250 ) default NULL ,
+baseDomain char( 250 ) default NULL ,
+refpost int( 11 ) NOT NULL default '0',
+visitTimes int( 10 ) NOT NULL default '0',
+dayofmonth smallint( 2 ) NOT NULL default '0',
+PRIMARY KEY ( visitID ) ,
+KEY blogID ( blogID ) ,
+KEY refpost ( refpost ) ,
+KEY dayofmonth ( dayofmonth )
 );
 ";
 
