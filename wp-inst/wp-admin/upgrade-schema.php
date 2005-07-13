@@ -176,30 +176,6 @@ CREATE TABLE $wpdb->sitemeta (
   KEY meta_key (meta_key),
   KEY site_id (site_id)
 );
-CREATE TABLE " . $table_prefix . "referer_blacklist (
-  ID int(11) NOT NULL auto_increment,
-  blogID varchar(32) NOT NULL default '',
-  URL varchar(250) NOT NULL default '',
-  t timestamp(14) NOT NULL,
-  PRIMARY KEY  (ID),
-  KEY blogID (blogID,URL),
-  KEY URL (URL)
-);
-CREATE TABLE " . $table_prefix . "referer_visitLog (
-blogID char( 32 ) default NULL ,
-visitID int( 11 ) NOT NULL AUTO_INCREMENT ,
-visitTime timestamp( 14 ) NOT NULL ,
-visitURL char( 250 ) default NULL ,
-referingURL char( 250 ) default NULL ,
-baseDomain char( 250 ) default NULL ,
-refpost int( 11 ) NOT NULL default '0',
-visitTimes int( 10 ) NOT NULL default '0',
-dayofmonth smallint( 2 ) NOT NULL default '0',
-PRIMARY KEY ( visitID ) ,
-KEY blogID ( blogID ) ,
-KEY refpost ( refpost ) ,
-KEY dayofmonth ( dayofmonth )
-);
 ";
 
 function populate_options() {
