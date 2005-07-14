@@ -2,6 +2,7 @@
 require('wp-config.php');
 
 do_action( "newblogheader", "" );
+include( "wp-newblog.inc.php" );
 
 get_header();
 ?>
@@ -24,7 +25,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
 	print "<p>There was a problem, please correct the form below and try again.</p>";
     }
     print '
-	<form name="setup" id="setup" method="post" action="wp-newblog.php">
+	<form name="setupform" id="setupform" method="post" action="wp-newblog.php">
 	<input type="hidden" name="stage" value="1">
 	<table border="0" width="100%">';
     if( isset( $errormsg[ 'weblog_id' ] ) == true ) {
@@ -68,7 +69,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     print '
    	<tr>
    		<th scope="row">&nbsp;</th>
-   		<td><input type="submit" name="Submit" class="submit" value="Sign Up &raquo;" /></td>
+   		<td><input id="submit" type="submit" name="Submit" class="submit" value="Sign Up &raquo;" /></td>
   		</tr>';
     do_action( "newblogform", "" );
     print '
@@ -125,6 +126,8 @@ switch( $_POST[ 'stage' ] )
 
 	if( empty( $weblog_title ) )
 	    $errormsg[ 'weblog_title' ] = true;
+
+	$newBlogID = apply_filters( "newblog_id", $newBlogID );
 
 	if( is_array( $errormsg ) ) {
 	    displayInitialForm( $_POST[ 'weblog_id' ], $weblog_title, $_POST[ 'admin_email' ], $_POST[ 'admin_login' ], 'userform', $errormsg );
