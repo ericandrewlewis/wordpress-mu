@@ -576,7 +576,10 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
     }
     $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_registered, display_name) VALUES ( NULL, '".$adminname."', MD5('$random_password'), '".$admin_email."', NOW(), 'Administrator' )");
     $userID = $wpdb->insert_id;
-    $metavalues = array( "user_nickname" => addslashes(__('Administrator')), $table_prefix . "user_level" => 10, "source_domain" => $domain );
+    $metavalues = array( "user_nickname" 		=> addslashes(__('Administrator')), 
+                         $table_prefix . "user_level" 	=> 10, 
+			 "source_domain" 		=> $domain, 
+			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)) );
     reset( $metavalues );
     while( list( $key, $val ) = each ( $metavalues ) )
     {
@@ -728,7 +731,10 @@ function create_blog( $domain, $path, $username, $weblog_title, $admin_email, $s
 
     $wpdb->query("INSERT INTO $wpdb->users (user_login, user_pass, user_email, user_registered) VALUES ( '$username', MD5('$random_password'), '$admin_email', NOW() )");
     $userID = $wpdb->insert_id;
-    $metavalues = array( "user_nickname" => addslashes(__('Administrator')), $table_prefix . "user_level" => 10, "source_domain" => $domain );
+    $metavalues = array( "user_nickname" 		=> addslashes(__('Administrator')), 
+                         $table_prefix . "user_level" 	=> 10, 
+			 "source_domain" 		=> $domain, 
+			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)) );
     reset( $metavalues );
     while( list( $key, $val ) = each ( $metavalues ) )
     {
