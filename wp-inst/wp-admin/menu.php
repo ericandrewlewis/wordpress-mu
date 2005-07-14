@@ -45,6 +45,9 @@ $submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.p
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
 
+if( $wpblog == 'main' && current_user_can( "level_10" ) ) {
+        $menu[1] = array(__('Site Admin'), 10, 'wpmu-admin.php' );
+}
 $submenu[ 'wpmu-admin.php' ][5] = array( 'Blogs', 10, 'wpmu-blogs.php' );
 $submenu[ 'wpmu-admin.php' ][10] = array( 'Users', 10, 'wpmu-users.php' );
 
