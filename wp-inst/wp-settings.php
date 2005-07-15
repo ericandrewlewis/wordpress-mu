@@ -141,6 +141,17 @@ require (ABSPATH . WPINC . '/links.php');
 require (ABSPATH . WPINC . '/kses.php');
 require (ABSPATH . WPINC . '/version.php');
 
+require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
+
+$plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php');
+
+if( $plugins ) {
+    foreach ( $plugins as $plugin ) {
+	include_once( $plugin );
+    }
+}
+
+
 $is_archived = get_settings( "is_archived" );
 if( $is_archived == 'yes' ) {
     die( "This blog has been archived or suspended temporarily. Please check back later." );

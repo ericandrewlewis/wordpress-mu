@@ -51,21 +51,12 @@ if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 
 require_once( ABSPATH.'wp-includes/class-smarty.php' );
 $wpmuBaseTablePrefix = $table_prefix;
+define ('WPLANG', '');
 $server = DB_HOST;
 $loginsql = DB_USER;
 $passsql = DB_PASSWORD;
 
 require_once( ABSPATH.'wp-settings.php' );
-require_once( ABSPATH.'wp-includes/wpmu-functions.php' );
-
-$plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php');
-
-if( $plugins ) {
-    foreach ( $plugins as $plugin ) {
-	include_once( $plugin );
-    }
-}
-
 
 if( $redirect )
 {
