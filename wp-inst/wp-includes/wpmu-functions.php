@@ -611,22 +611,6 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
 	      AND    meta_key = '".$table_prefix."user_level'";
     $wpdb->query( $query );
 
-    // insert admin user into user table.
-    $adminusers = get_admin_users_for_domain();
-    if( is_array( $adminusers ) ) {
-	reset( $adminusers );
-	while( list( $key, $val ) = each( $adminusers ) ) { 
-	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-		      VALUES ( NULL, '".$val[ 'ID' ]."', '".$table_prefix."user_level' , '10')";
-	    $wpdb->query( $query );
-	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-		      VALUES ( NULL, '".$val[ 'ID' ]."', '".$table_prefix."capabilities' , '".serialize(array('administrator' => true))."')";
-	    $wpdb->query( $query );
-	}
-    } else {
-	die( "Problem getting admin users!" );
-    }
-
     // restore wpdb variables
     reset( $tmp );
     while( list( $key, $val ) = each( $tmp ) ) 
@@ -767,21 +751,6 @@ function create_blog( $domain, $path, $username, $weblog_title, $admin_email, $s
     $query = "DELETE FROM $wpdb->usermeta WHERE user_id != '$userID' AND meta_key = '".$table_prefix."user_level'";
     $wpdb->query( $query );
 
-    $adminusers = get_admin_users_for_domain();
-    if( is_array( $adminusers ) ) {
-	reset( $adminusers );
-	while( list( $key, $val ) = each( $adminusers ) ) { 
-	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-		      VALUES ( NULL, '".$val[ 'ID' ]."', '".$table_prefix."user_level' , '10')";
-	    $wpdb->query( $query );
-	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-		      VALUES ( NULL, '".$val[ 'ID' ]."', '".$table_prefix."capabilities' , '".serialize(array('administrator' => true))."')";
-	    $wpdb->query( $query );
-	}
-    } else {
-	die( "Problem getting admin users!" );
-    }
-
     // restore wpdb variables
     reset( $tmp );
     while( list( $key, $val ) = each( $tmp ) ) 
@@ -839,6 +808,7 @@ function get_sitestats() {
     return $stats;
 
 }
+
 function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
     global $domain, $base, $basedomain, $wpdb, $wpmuBaseTablePrefix;
     if( $sitedomain == '' ) {
@@ -864,6 +834,16 @@ function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
     }
 
     return $details;
+}
+
+function is_site_admin( $user_id ) {
+    global $wpdb, $current_user;
+
+    if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
+	return false;
+    } else {
+	return true;
+    }
 }
 
 function get_site_settings( $option ) {
