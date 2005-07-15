@@ -843,12 +843,13 @@ function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
     global $domain, $base, $basedomain, $wpdb, $wpmuBaseTablePrefix;
     if( $sitedomain == '' ) {
 	$sitedomain = $basedomain;
+	$path = $base;
 	$site_id = $wpdb->siteid;
     } else {
 	$query = "SELECT id
                   FROM   ".$wpdb->site."
-                  WHERE  domain = '".$domain."'
-	          AND    path = '".$base."'";
+                  WHERE  domain = '".$sitedomain."'
+	          AND    path = '".$path."'";
         $site_id = $wpdb->get_var( $query );
     }
     if( $site_id != false ) {
