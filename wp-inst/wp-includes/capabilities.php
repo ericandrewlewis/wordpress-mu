@@ -62,9 +62,9 @@ class WP_Roles {
 		return $this->role_names;
 	}
 
-	function is_role($caps)
+	function is_role($role)
 	{
-		return empty($this->role_names[$cap]);
+		return empty($this->role_names[$role]);
 	}	
 }
 
@@ -102,18 +102,29 @@ class WP_Role {
 
 class WP_User {
 	var $data;
-	var $id;
-	var $caps;
+	var $id = 0;
+	var $caps = array();
 	var $cap_key;
-	var $roles;
-	var $allcaps;
+	var $roles = array();
+	var $allcaps = array();
 
 	function WP_User($id) {
 		global $wp_roles, $table_prefix;
-		$this->id = $id;
-		$this->data = get_userdata($id);
+
+		if ( is_numeric($id) ) {
+			$this->data = get_userdata($id);
+		} else {
+			$this->data = get_userdatabylogin($id);
+		}
+
+		if ( empty($this->data->ID) )
+			return;
+
+		$this->id = $this->data->ID;
 		$this->cap_key = $table_prefix . 'capabilities';
 		$this->caps = &$this->data->{$this->cap_key};
+		if ( ! is_array($this->caps) )
+			$this->caps = array();
 		$this->get_role_caps();
 	}
 	
@@ -140,8 +151,9 @@ class WP_User {
 	}
 	
 	function remove_role($role) {
-		if(!empty($this->roles[$role]) && (count($this->roles) > 1))
-		unset($this->caps[$cap]);
+		if ( empty($this->roles[$role]) || (count($this->roles) <= 1) )
+			return;
+		unset($this->caps[$role]);
 		update_usermeta($this->id, $this->cap_key, $this->caps);
 		$this->get_role_caps();
 	}
@@ -177,7 +189,7 @@ class WP_User {
 	}
 
 	function remove_cap($cap) {
-		if(!empty($this->roles[$role])) return;
+		if ( empty($this->roles[$cap]) ) return;
 		unset($this->caps[$cap]);
 		update_usermeta($this->id, $this->cap_key, $this->caps);
 	}
@@ -258,6 +270,76 @@ function current_user_can($capability) {
 		return false;
 
 	return call_user_func_array(array(&$current_user, 'has_cap'), $args);
+}
+
+//
+// These are deprecated.  Use current_user_can().
+//
+
+/* returns true if $user_id can create a new post */
+function user_can_create_post($user_id, $blog_id = 1, $category_id = 'None') {
+	$author_data = get_userdata($user_id);
+	return ($author_data->user_level > 1);
+}
+
+/* returns true if $user_id can create a new post */
+function user_can_create_draft($user_id, $blog_id = 1, $category_id = 'None') {
+	$author_data = get_userdata($user_id);
+	return ($author_data->user_level >= 1);
+}
+
+/* returns true if $user_id can edit $post_id */
+function user_can_edit_post($user_id, $post_id, $blog_id = 1) {
+	$author_data = get_userdata($user_id);
+	$post = get_post($post_id);
+	$post_author_data = get_userdata($post->post_author);
+
+	if ( (($user_id == $post_author_data->ID) && !($post->post_status == 'publish' &&  $author_data->user_level < 2))
+	     || ($author_data->user_level > $post_author_data->user_level)
+	     || ($author_data->user_level >= 10) ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+
+/* returns true if $user_id can delete $post_id */
+function user_can_delete_post($user_id, $post_id, $blog_id = 1) {
+	// right now if one can edit, one can delete
+	return user_can_edit_post($user_id, $post_id, $blog_id);
+}
+
+/* returns true if $user_id can set new posts' dates on $blog_id */
+function user_can_set_post_date($user_id, $blog_id = 1, $category_id = 'None') {
+	$author_data = get_userdata($user_id);
+	return (($author_data->user_level > 4) && user_can_create_post($user_id, $blog_id, $category_id));
+}
+
+/* returns true if $user_id can edit $post_id's date */
+function user_can_edit_post_date($user_id, $post_id, $blog_id = 1) {
+	$author_data = get_userdata($user_id);
+	return (($author_data->user_level > 4) && user_can_edit_post($user_id, $post_id, $blog_id));
+}
+
+/* returns true if $user_id can edit $post_id's comments */
+function user_can_edit_post_comments($user_id, $post_id, $blog_id = 1) {
+	// right now if one can edit a post, one can edit comments made on it
+	return user_can_edit_post($user_id, $post_id, $blog_id);
+}
+
+/* returns true if $user_id can delete $post_id's comments */
+function user_can_delete_post_comments($user_id, $post_id, $blog_id = 1) {
+	// right now if one can edit comments, one can delete comments
+	return user_can_edit_post_comments($user_id, $post_id, $blog_id);
+}
+
+function user_can_edit_user($user_id, $other_user) {
+	$user  = get_userdata($user_id);
+	$other = get_userdata($other_user);
+	if ( $user->user_level > $other->user_level || $user->user_level > 8 || $user->ID == $other->ID )
+		return true;
+	else
+		return false;
 }
 
 ?>
