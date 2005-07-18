@@ -166,6 +166,17 @@ if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF']
 	define('COOKIEHASH', $cookiehash); 
 endif;
 
+if ( !defined('USER_COOKIE') )
+	define('USER_COOKIE', 'wordpressuser_'. COOKIEHASH);
+if ( !defined('PASS_COOKIE') )
+	define('PASS_COOKIE', 'wordpresspass_'. COOKIEHASH);
+if ( !defined('COOKIEPATH') )
+	define('COOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('home') . '/' ) );
+if ( !defined('SITECOOKIEPATH') )
+	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('siteurl') . '/' ) );
+if ( !defined('COOKIE_DOMAIN') )
+	define('COOKIE_DOMAIN', false);
+
 require (ABSPATH . WPINC . '/vars.php');
 
 do_action('core_files_loaded');
