@@ -4,7 +4,7 @@
 function write_post() {
 	global $user_ID;
 
-	if ( !user_can_create_draft($user_ID) )
+	if ( ! current_user_can('edit_posts') )
 		die( __('You are not allowed to create posts or drafts on this blog.') );
 
 	// Rename.
@@ -21,11 +21,8 @@ function write_post() {
 		$_POST['post_author'] = (int) $_POST['user_ID'];
 	}
 
-	if ( !user_can_edit_user($user_ID, $_POST['post_author']) )
+	if ( ($_POST['post_author'] != $_POST['user_ID']) && ! current_user_can('edit_others_posts') )
 		die( __('You cannot post as this user.') );
-	
-	if ( 'publish' == $_POST['post_status'] && (!user_can_create_post($user_ID)) )
-		$_POST['post_status'] = 'draft';
 	
 	// What to do based on which button they pressed
 	if ('' != $_POST['saveasdraft']) $_POST['post_status'] = 'draft';
@@ -33,8 +30,11 @@ function write_post() {
 	if ('' != $_POST['publish']) $_POST['post_status'] = 'publish';
 	if ('' != $_POST['advanced']) $_POST['post_status'] = 'draft';
 	if ('' != $_POST['savepage']) $_POST['post_status'] = 'static';
-		
-	if (user_can_set_post_date($user_ID) && (!empty($_POST['edit_date']))) {
+
+	if ( 'publish' == $_POST['post_status'] && ! current_user_can('publish_posts') )
+		$_POST['post_status'] = 'draft';
+
+	if ( !empty($_POST['edit_date']) ) {
 		$aa = $_POST['aa'];
 		$mm = $_POST['mm'];
 		$jj = $_POST['jj'];
@@ -60,12 +60,9 @@ function write_post() {
 function edit_post() {
 	global $user_ID;
 
-	if ( !isset($blog_ID) ) 
-		$blog_ID = 1;
-
 	$post_ID = (int) $_POST['post_ID'];
 
-	if (!user_can_edit_post($user_ID, $post_ID, $blog_ID))
+	if ( ! current_user_can('edit_post', $post_ID) )
 		die( __('You are not allowed to edit this post.') );
 
 	// Rename.
@@ -83,10 +80,20 @@ function edit_post() {
 		$_POST['post_author'] = (int) $_POST['user_ID'];
 	}
 
-	if ( !user_can_edit_user($user_ID, $_POST['post_author']) )
+	if ( ($_POST['post_author'] != $_POST['user_ID']) && ! current_user_can('edit_others_posts') )
 		die( __('You cannot post as this user.') );
 
-	if (user_can_set_post_date($user_ID) && (!empty($_POST['edit_date']))) {
+	// What to do based on which button they pressed
+	if ('' != $_POST['saveasdraft']) $_POST['post_status'] = 'draft';
+	if ('' != $_POST['saveasprivate']) $_POST['post_status'] = 'private';
+	if ('' != $_POST['publish']) $_POST['post_status'] = 'publish';
+	if ('' != $_POST['advanced']) $_POST['post_status'] = 'draft';
+	if ('' != $_POST['savepage']) $_POST['post_status'] = 'static';
+
+	if ( 'publish' == $_POST['post_status'] && ! current_user_can('publish_posts') )
+		$_POST['post_status'] = 'draft';
+		
+	if ( !empty($_POST['edit_date']) ) {
 		$aa = $_POST['aa'];
 		$mm = $_POST['mm'];
 		$jj = $_POST['jj'];
@@ -125,7 +132,7 @@ function edit_comment() {
 	$comment_ID = (int) $_POST['comment_ID'];
 	$comment_post_ID = (int) $_POST['comment_post_ID'];
 
-	if (!user_can_edit_post_comments($user_ID, $comment_post_ID))
+	if ( ! current_user_can('edit_post', $comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post, so you cannot edit this comment.') );
 
 	$_POST['comment_author'] = $_POST['newcomment_author'];
@@ -135,7 +142,7 @@ function edit_comment() {
 	$_POST['comment_content'] = $_POST['content'];
 	$_POST['comment_ID'] = (int) $_POST['comment_ID'];
  
-	if (user_can_edit_post_date($user_ID, $post_ID) && (!empty($_POST['edit_date']))) {
+	if ( !empty($_POST['edit_date']) ) {
 		$aa = $_POST['aa'];
 		$mm = $_POST['mm'];
 		$jj = $_POST['jj'];
@@ -749,8 +756,8 @@ function update_meta($mid, $mkey, $mvalue) {
 }
 
 function touch_time($edit = 1, $for_post = 1) {
-	global $month, $postdata, $commentdata;
-	if ( $for_post && ('draft' == $postdata->post_status) ) {
+	global $month, $post, $comment;
+	if ( $for_post && ('draft' == $post->post_status) ) {
 		$checked = 'checked="checked" ';
 		$edit = false;
 	} else {
@@ -760,7 +767,7 @@ function touch_time($edit = 1, $for_post = 1) {
 	echo '<fieldset><legend><input type="checkbox" class="checkbox" name="edit_date" value="1" id="timestamp" '.$checked.'/> <label for="timestamp">' . __('Edit timestamp') . '</label></legend>';
 	
 	$time_adj = time() + (get_settings('gmt_offset') * 3600);
-	$post_date = ($for_post) ? $postdata->post_date : $commentdata['comment_date'];
+	$post_date = ($for_post) ? $post->post_date : $comment->comment_date;
 	$jj = ($edit) ? mysql2date('d', $post_date) : gmdate('d', $time_adj);
 	$mm = ($edit) ? mysql2date('m', $post_date) : gmdate('m', $time_adj);
 	$aa = ($edit) ? mysql2date('Y', $post_date) : gmdate('Y', $time_adj);
@@ -791,7 +798,7 @@ function touch_time($edit = 1, $for_post = 1) {
 <?php _e('Existing timestamp'); ?>: 
 	<?php
 		// We might need to readjust to display proper existing timestamp
-		if ( $for_post && ('draft' == $postdata->post_status) ) {
+		if ( $for_post && ('draft' == $post->post_status) ) {
 			$jj = mysql2date('d', $post_date);
 			$mm = mysql2date('m', $post_date);
 			$aa = mysql2date('Y', $post_date);

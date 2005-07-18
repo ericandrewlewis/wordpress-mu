@@ -327,21 +327,23 @@ function get_alloptions() {
 
 function update_option($option_name, $newvalue) {
 	global $wpdb, $cache_settings;
+
+	if ( is_string($newvalue) )
+		$newvalue = trim($newvalue);
+	
+	// If the new and old values are the same, no need to update.
+	if ( $newvalue == get_option($option_name) )
+		return true;
+
 	if ( is_array($newvalue) || is_object($newvalue) )
 		$newvalue = serialize($newvalue);
-
-	$newvalue = trim($newvalue); // I can't think of any situation we wouldn't want to trim
-
-    // If the new and old values are the same, no need to update.
-    if ($newvalue == get_option($option_name)) {
-        return true;
-    }
 
 	// If it's not there add it
 	if ( !$wpdb->get_var("SELECT option_name FROM $wpdb->options WHERE option_name = '$option_name'") )
 		add_option($option_name);
 
 	$newvalue = $wpdb->escape($newvalue);
+	$option_name = $wpdb->escape( $option_name );
 	$wpdb->query("UPDATE $wpdb->options SET option_value = '$newvalue' WHERE option_name = '$option_name'");
 	$cache_settings = get_alloptions(); // Re cache settings
 	return true;
@@ -1412,6 +1414,12 @@ function is_paged () {
     return $wp_query->is_paged;
 }
 
+function in_the_loop() {
+	global $wp_query;
+	
+	return $wp_query->in_the_loop;
+}
+
 function get_query_var($var) {
   global $wp_query;
 
@@ -1944,21 +1952,23 @@ function get_usermeta( $user_id, $meta_key = '') {
 
 	if ( !empty($meta_key) ) {
 		$meta_key = preg_replace('|a-z0-9_|i', '', $meta_key);
-		$metas = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
+		$metas = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
 	} else {
-		$metas = $wpdb->get_results("SELECT * FROM $wpdb->usermeta WHERE user_id = '$user_id'");
+		$metas = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id'");
 	}
 
 	foreach ($metas as $index => $meta) {
-		@ $value = unserialize($meta->meta_key);
-		if ($value !== FALSE)
-			$metas[$index]->meta_key = $value;			
+		@ $value = unserialize($meta->meta_value);
+		if ($value === FALSE)
+			$value = $meta->meta_value;
+			
+		$values[] = $value;
 	}
 
-	if ( !empty($meta_key) )
-		return $metas[0];
+	if ( count($values) == 1 )
+		return $values[0];
 	else
-		return $metas;
+		return $values;
 }
 
 function update_usermeta( $user_id, $meta_key, $meta_value ) {

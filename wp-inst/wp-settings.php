@@ -190,14 +190,6 @@ if ( defined('WP_CACHE') && function_exists('wp_cache_postload') )
 
 do_action('plugins_loaded');
 
-define('TEMPLATEPATH', get_template_directory());
-
-// Load the default text localization domain.
-load_default_textdomain();
-
-// Pull in locale data after loading text domain.
-require_once(ABSPATH . WPINC . '/locale.php');
-
 // If already slashed, strip.
 if ( get_magic_quotes_gpc() ) {
 	$_GET    = stripslashes_deep($_GET   );

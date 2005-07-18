@@ -276,6 +276,7 @@ function populate_roles() {
 												'edit_published_posts' => true,
 												'publish_posts' => true,
 												'edit_pages' => true,
+												'moderate_comments' => true,
 												'manage_categories' => true,
 												'manage_links' => true,
 												'upload_files' => true,
@@ -308,9 +309,10 @@ function populate_roles() {
 												'edit_published_posts' => true,
 												'publish_posts' => true,
 												'edit_pages' => true,
+												'moderate_comments' => true,
 												'manage_categories' => true,
 												'manage_links' => true,
-												'upload_images' => true,
+												'upload_files' => true,
 												'read' => true,
 												'level_7' => true,
 												'level_6' => true,
@@ -327,7 +329,7 @@ function populate_roles() {
 											'capabilities' => array(
 												'edit_posts' => true,
 												'publish_posts' => true,
-												'upload_images' => true,
+												'upload_files' => true,
 												'read' => true,
 												'level_2' => true,
 												'level_1' => true,
@@ -354,7 +356,10 @@ function populate_roles() {
 									array('name' => __('Inactive'),
 												'capabilities' => array())
 									);
-
-	add_option($table_prefix . 'user_roles', $roles);
+	// FIXME: Temporary code to reset roles and caps if flag is set.
+	if ( defined('RESET_CAPS') )
+		update_option($table_prefix . 'user_roles', $roles);
+	else
+		add_option($table_prefix . 'user_roles', $roles);
 }
 ?>
