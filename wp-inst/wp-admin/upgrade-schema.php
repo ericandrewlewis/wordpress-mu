@@ -154,7 +154,7 @@ CREATE TABLE $wpdb->blogs (
   registered datetime NOT NULL default '0000-00-00 00:00:00',
   last_updated datetime NOT NULL default '0000-00-00 00:00:00',
   is_public enum('yes','no') NOT NULL default 'yes',
-  blog_status enum('public', 'private', 'archived') NOT NULL default 'public',
+  blog_status enum('public', 'private') NOT NULL default 'public',
   PRIMARY KEY  (blog_id),
   KEY site_id (site_id),
   KEY domain (domain)
