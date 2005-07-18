@@ -452,7 +452,8 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $query = "SELECT blog_id
 	      FROM   ".$wpdb->blogs."
 	      WHERE  site_id = '".$site_id."'
-	      AND    blogname = '".$blogname."'";
+	      AND    domain  = '".$domain."'
+	      AND    path    = '".$path."'";
     $blog_id = $wpdb->get_var( $query );
     if( $blog_id != false ) {
 	return "error: blogname used";

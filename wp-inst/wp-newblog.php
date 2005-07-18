@@ -142,11 +142,7 @@ switch( $_POST[ 'stage' ] )
 		displayInitialForm( $_POST[ 'weblog_id' ], $weblog_title, $_POST[ 'admin_email' ], $_POST[ 'admin_login' ], 'adminform' );
 		$setup = false;
 	    } elseif( $newBlogID == 'main' && isset( $_POST[ 'admin_pw' ] ) == true ) {
-		$query = "SELECT ID
-		          FROM   ".$wpdb->users."
-			  WHERE  user_pass = '".md5( $_POST[ 'admin_pw' ] )."'
-			  AND    user_login = 'admin'";
-		$admin_id = $wpdb->get_var( $query );
+		$admin_id = $wpdb->get_var( "SELECT ID FROM   ".$wpdb->users." WHERE  user_pass = '".md5( $_POST[ 'admin_pw' ] )."' AND    user_login = 'admin'" );
 		if( $admin_id != 1 ) {
 		    displayInitialForm( $_POST[ 'weblog_id' ], $_POST[ 'weblog_title' ], $_POST[ 'admin_email' ], $_POST[ 'admin_login' ], 'adminform' );
 		    $setup = false;
@@ -166,7 +162,7 @@ switch( $_POST[ 'stage' ] )
 		} else {
 		    $url = 'http://'.$serverName.$scriptBaseName.$newBlogID."/";
 		}
-		$err = createBlog( $_SERVER[ 'HTTP_HOST' ], $domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email, $newBlogID );
+		$err = createBlog( $newBlogID.".".$domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email );
 		if( $err == 'ok' ) {
 		    displaySecondForm();
 		} else {
