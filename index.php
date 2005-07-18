@@ -328,6 +328,7 @@ function step3() {
     $wpdb->query( $query );
     $query = "INSERT INTO wp_sitemeta (meta_id, site_id, meta_key, meta_value) VALUES (2, 1, 'admin_user_id', '1')";
     $wpdb->query( $query );
+    $wpdb->query( "INSERT INTO wp_site ( id, domain, path ) VALUES ( '', '$domain', '$base' )" );
 
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
     if( $res == 'ok' ) {
@@ -339,6 +340,9 @@ function step3() {
 	$realpath = dirname(__FILE__);
 	do_htaccess( "htaccess.dist", ".htaccess", $realpath, $base, $url );
 	do_htaccess( "wp-inst/htaccess.dist", "wp-inst/.htaccess", $realpath, $base, $url );
+
+	$illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator" );
+	add_site_settings( "illegal_names", $illegal_names );
 
 	print "<p>Well Done! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
 	print "<p>You may view your new blog by visiting <a href='".$url."'>".$url."</a>!</p>";
