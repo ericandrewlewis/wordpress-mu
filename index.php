@@ -317,8 +317,8 @@ function step3() {
     global $wpdb;
     $base = dirname( $_SERVER["SCRIPT_NAME"] );
     $domain = $_SERVER[ 'HTTP_HOST' ];
-
-    $hostname = $_SERVER["HTTP_HOST"];
+    if( substr( $domain, 0, 4 ) == 'www.' )
+	$domain = substr( $domain, 4 );
 
     $email = $wpdb->escape( $_POST[ 'email' ] );
     $weblog_title = $wpdb->escape( $_POST[ 'weblog_title' ] );
@@ -329,8 +329,7 @@ function step3() {
     $query = "INSERT INTO wp_sitemeta (meta_id, site_id, meta_key, meta_value) VALUES (2, 1, 'admin_user_id', '1')";
     $wpdb->query( $query );
 
-
-    $res = create_blog( $domain, $base, 'admin', $weblog_title, $email);
+    $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
     if( $res == 'ok' ) {
 	if( $base == '/' ) {
 		$url = "http://".$_SERVER["HTTP_HOST"] . '/';
