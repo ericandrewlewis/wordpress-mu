@@ -148,23 +148,21 @@ CREATE TABLE $wpdb->usermeta (
 CREATE TABLE $wpdb->blogs (
   blog_id bigint(20) NOT NULL auto_increment,
   site_id bigint(20) NOT NULL default '0',
-  domain varchar(255) NOT NULL default '',
-  path varchar(255) NOT NULL default '',
+  domain varchar(200) NOT NULL default '',
+  path varchar(100) NOT NULL default '',
   registered datetime NOT NULL default '0000-00-00 00:00:00',
   last_updated datetime NOT NULL default '0000-00-00 00:00:00',
   is_public enum('yes','no') NOT NULL default 'yes',
   PRIMARY KEY  (blog_id),
   KEY site_id (site_id),
-  KEY domain (domain),
-  KEY path ( path )
+  KEY domain (domain,path)
 );
 CREATE TABLE $wpdb->site (
   id bigint(20) NOT NULL auto_increment,
-  domain varchar(255) NOT NULL default '',
-  path varchar(255) NOT NULL default '',
+  domain varchar(200) NOT NULL default '',
+  path varchar(100) NOT NULL default '',
   PRIMARY KEY  (id),
-  KEY domain (domain),
-  KEY path (path)
+  KEY domain (domain,path)
 );
 CREATE TABLE $wpdb->sitemeta (
   meta_id bigint(20) NOT NULL auto_increment,
