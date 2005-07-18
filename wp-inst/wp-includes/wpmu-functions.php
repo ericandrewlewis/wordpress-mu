@@ -1,11 +1,6 @@
 <?PHP
 /*
 	Helper functions for WPMU
-	4th March 2005
-	
-	There are 2 types of helper functions; those that use hooks (do_action, apply_filters hooks) and those that support WPMU the Administration plugin.
-	
-	Where possible - existing hooks have been used, but occasionally - extra hooks have been implemented in the WP Core.
 */
 
 /**
@@ -429,50 +424,30 @@ if (is_null($pendingPlugins)) {
 	}
 }
 
-function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin_email, $username='' ) {
+function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $site_id = 1 ) {
     global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix;
 
-	$blogname     = addslashes( $blogname );
+	$domain       = addslashes( $domain );
 	$weblog_title = addslashes( $weblog_title );
 	$admin_email  = addslashes( $admin_email );
 	$username     = addslashes( $username );	
+
+    if( empty($path) )
+	    $path = '/';
 	
+    // Check if the domain has been used already. We should return an error message.
+    if( $wpdb->get_var("SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'" ) )
+	return 'error: Blog URL already taken.';
+
     // Check if the username has been used already. We should return an error message.
-    if( $username == '' ) {
-	$query = "SELECT ID
-	          FROM   ".$wpdb->users."
-		  WHERE  user_login = '".$blogname."'";
-	$ID = $wpdb->get_var( $query );
-	if( $ID != false ) {
-	    return "error: blogname used by user";
-	}
-    } else {
-	$query = "SELECT ID
-	          FROM   ".$wpdb->users."
-		  WHERE  user_login = '".$username."'";
-	$ID = $wpdb->get_var( $query );
-	if( $ID != false ) {
-	    return "error: username used";
-	}
-    }
+    if( $wpdb->get_var( "SELECT ID FROM   ".$wpdb->users." WHERE  user_login = '".$username."'" ) == true )
+	return "error: username used";
 
     // Need to backup wpdb table names, and create a new wp_blogs entry for new blog.
     // Need to get blog_id from wp_blogs, and create new table names.
     // Must restore table names at the end of function.
 
     $wpdb->hide_errors();
-    $query = "SELECT id
-              FROM   ".$wpdb->site."
-	      WHERE  domain = '".$domain."'
-	      AND    path = '".$path."'";
-    $site_id = $wpdb->get_var( $query );
-
-    if( $site_id == false ) {
-	$query = "INSERT INTO `wp_site` ( `id` , `domain` , `path` )
-	          VALUES ( NULL, '".$domain."', '".$path."')";
-	$wpdb->query( $query );
-	$site_id = $wpdb->insert_id;
-    }
 
     $query = "SELECT blog_id
 	      FROM   ".$wpdb->blogs."
@@ -482,8 +457,7 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
     if( $blog_id != false ) {
 	return "error: blogname used";
     }
-    $query = "INSERT INTO ".$wpdb->blogs." ( blog_id, site_id, blogname, registered )
-	      VALUES ( NULL, '".$site_id."', '".$blogname."', NOW( ))";
+    $query = "INSERT INTO $wpdb->blogs ( blog_id, site_id, domain, path, registered ) VALUES ( NULL, '$site_id', '$domain', '$path', NOW( ))";
     if( $wpdb->query( $query ) == false ) {
 	return "error: problem creating blog entry";
     }
@@ -530,16 +504,12 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
 	    $slash = $path;
     }
     if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
-	if( $blogname == 'main' ) {
-	    $url = "http://".$hostname.$path.$slash;
-	} else {
-	    $url = "http://".$blogname.".".$domain.$path.$slash;
-	}
+	$url = "http://".$domain.$path.$slash;
     } else {
 	if( $blogname == 'main' ) {
-	    $url = "http://".$hostname.$path.$slash;
+	    $url = "http://".$domain.$path.$slash;
 	} else {
-	    $url = "http://".$hostname.$path.$blogname.$slash;
+	    $url = "http://".$domain.$path.$blogname.$slash;
 	}
     }
 
@@ -569,12 +539,7 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
 
     // Set up admin user
     $random_password = substr(md5(uniqid(microtime())), 0, 6);
-    if( $username != '' ) {
-	$adminname = $username;
-    } else {
-	$adminname = $blogname;
-    }
-    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_registered, display_name) VALUES ( NULL, '".$adminname."', MD5('$random_password'), '".$admin_email."', NOW(), 'Administrator' )");
+    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '".$admin_email."', NOW(), 'Administrator' )");
     $userID = $wpdb->insert_id;
     $metavalues = array( "user_nickname" 		=> addslashes(__('Administrator')), 
                          $table_prefix . "user_level" 	=> 10, 
@@ -583,8 +548,7 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
     reset( $metavalues );
     while( list( $key, $val ) = each ( $metavalues ) )
     {
-	$query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-	          VALUES ( NULL, '".$userID."', '".$key."' , '".$val."')";
+	$query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '".$userID."', '".$key."' , '".$val."')";
 	$wpdb->query( $query );
     }
 
@@ -611,145 +575,6 @@ function createBlog( $hostname, $domain, $path, $blogname, $weblog_title, $admin
 	      AND    meta_key = '".$table_prefix."user_level'";
     $wpdb->query( $query );
 
-    // restore wpdb variables
-    reset( $tmp );
-    while( list( $key, $val ) = each( $tmp ) ) 
-    { 
-	$wpdb->$key = $val;
-    }
-    $table_prefix = $tmptable_prefix;
-
-    $wpdb->show_errors();
-
-    return "ok";
-}
-
-// New create blog
-
-function create_blog( $domain, $path, $username, $weblog_title, $admin_email, $site_id = 1 ) {
-    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix;
-
-	$domain       = addslashes( $domain );
-	$weblog_title = addslashes( $weblog_title );
-	$admin_email  = addslashes( $admin_email );
-	$username     = addslashes( $username );	
-
-    if( empty($path) )
-	    $path = '/';
-
-    // Check if the username has been used already. We should return an error message.
-	if( $wpdb->get_var("SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'" ) )
-		return 'Blog URL already taken.';
-
-    // Need to backup wpdb table names, and create a new wp_blogs entry for new blog.
-    // Need to get blog_id from wp_blogs, and create new table names.
-    // Must restore table names at the end of function.
-
-	$wpdb->hide_errors();
-	
-	$query = "INSERT INTO $wpdb->blogs ( site_id, domain, path, registered ) VALUES ( '$site_id', '$domain', '$path', NOW() )";
-	if( $wpdb->query( $query ) == false ) {
-	return "error: problem creating blog entry";
-	}
-    $blog_id = $wpdb->insert_id;
-
-    // backup
-    $tmp[ 'siteid' ]         = $wpdb->siteid;
-    $tmp[ 'blogid' ]         = $wpdb->blogid;
-    $tmp[ 'posts' ]          = $wpdb->posts;
-    $tmp[ 'categories' ]     = $wpdb->categories;
-    $tmp[ 'post2cat' ]       = $wpdb->post2cat;
-    $tmp[ 'comments' ]       = $wpdb->comments;
-    $tmp[ 'links' ]          = $wpdb->links;
-    $tmp[ 'linkcategories' ] = $wpdb->linkcategories;
-    $tmp[ 'option' ]         = $wpdb->option;
-    $tmp[ 'postmeta' ]       = $wpdb->postmeta;
-    $tmptable_prefix         = $table_prefix;
-
-    // fix the new prefix.
-    $table_prefix = $wpmuBaseTablePrefix . $blog_id . "_";
-    $wpdb->siteid           = $site_id;
-    $wpdb->blogid           = $blog_id;
-    $wpdb->posts            = $table_prefix . 'posts';
-    $wpdb->categories       = $table_prefix . 'categories';
-    $wpdb->post2cat         = $table_prefix . 'post2cat';
-    $wpdb->comments         = $table_prefix . 'comments';
-    $wpdb->links            = $table_prefix . 'links';
-    $wpdb->linkcategories   = $table_prefix . 'linkcategories';
-    $wpdb->options          = $table_prefix . 'options';
-    $wpdb->postmeta         = $table_prefix . 'postmeta';
-
-    @mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id, 0777 );
-    @mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id."/files", 0777 );
-
-    require_once( ABSPATH . 'wp-admin/upgrade-functions.php');
-    $wpdb->hide_errors();
-
-    flush();
-
-	$url = 'http://' . $domain . $path;
-
-    // Set everything up
-    make_db_current_silent();
-    populate_options();
-
-    // fix url.
-    update_option('siteurl', $url);
-
-    $wpdb->query("UPDATE $wpdb->options SET option_value = '$weblog_title' WHERE option_name = 'blogname'");
-    $wpdb->query("UPDATE $wpdb->options SET option_value = '$admin_email' WHERE option_name = 'admin_email'");
-
-    // Now drop in some default links
-    $wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://blog.carthik.net/index.php', 'Carthik', 1, 'http://blog.carthik.net/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://blogs.linux.ie/xeer/', 'Donncha', 1, 'http://blogs.linux.ie/xeer/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://zengun.org/weblog/', 'Michel', 1, 'http://zengun.org/weblog/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://boren.nu/', 'Ryan', 1, 'http://boren.nu/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://photomatt.net/', 'Matt', 1, 'http://xml.photomatt.net/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://zed1.com/journalized/', 'Mike', 1, 'http://zed1.com/journalized/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://www.alexking.org/', 'Alex', 1, 'http://www.alexking.org/blog/wp-rss2.php');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://dougal.gunters.org/', 'Dougal', 1, 'http://dougal.gunters.org/feed/');");
-
-    // Default category
-    $wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."')");
-
-    // Set up admin user
-    $random_password = substr(md5(uniqid(microtime())), 0, 6);
-
-    $wpdb->query("INSERT INTO $wpdb->users (user_login, user_pass, user_email, user_registered) VALUES ( '$username', MD5('$random_password'), '$admin_email', NOW() )");
-    $userID = $wpdb->insert_id;
-    $metavalues = array( "user_nickname" 		=> addslashes(__('Administrator')), 
-                         $table_prefix . "user_level" 	=> 10, 
-			 "source_domain" 		=> $domain, 
-			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)) );
-    reset( $metavalues );
-    while( list( $key, $val ) = each ( $metavalues ) )
-    {
-	$query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-	          VALUES ( NULL, '".$userID."', '".$key."' , '".$val."')";
-	$wpdb->query( $query );
-    }
-
-    // First post
-    $now = date('Y-m-d H:i:s');
-    $now_gmt = gmdate('Y-m-d H:i:s');
-    $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('Welcome to WordPress MU. This is your first post. Edit or delete it, then start blogging!'))."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
-    $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '".addslashes(__('About'))."', '0', '".addslashes(__('about'))."', '$now', '$now_gmt', 'static')");
-
-    $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
-    $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
-
-    // Default comment
-    $wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://wordpress.org', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
-
-    $message_headers = 'From: ' . stripslashes($weblog_title) . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-    $message = __("Dear User,\n\nYour new WordPressMU blog has been successfully set up at:\n".$url."\n\nYou can log in to the administrator account with the following information:\n Username: ".$adminname."\n Password: ".$random_password."\nLogin Here: ".$url."wp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPressMU Team\nhttp://mu.wordpress.org/\n");
-    @mail($admin_email, __('New WordPress MU Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
-
-    upgrade_all();
-    // remove all perms except for the login user.
-    $query = "DELETE FROM $wpdb->usermeta WHERE user_id != '$userID' AND meta_key = '".$table_prefix."user_level'";
-    $wpdb->query( $query );
 
     // restore wpdb variables
     reset( $tmp );
