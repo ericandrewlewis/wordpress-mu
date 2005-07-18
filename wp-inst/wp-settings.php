@@ -53,8 +53,9 @@ if( substr( $domain, 0, 4 ) == 'www.' )
 
 $current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$base'");
 
-$blog_id = $current_blog->blog_id;
+$blog_id   = $current_blog->blog_id;
 $is_public = $current_blog->is_public;
+$site_id   = $current_blog->site_id;
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
     if ( defined('WP_INSTALLING') ) {
