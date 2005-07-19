@@ -49,7 +49,6 @@ if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
     $wpblog = 'main';
 }
 
-require_once( ABSPATH.'wp-includes/class-smarty.php' );
 $wpmuBaseTablePrefix = $table_prefix;
 define ('WPLANG', '');
 $server = DB_HOST;
