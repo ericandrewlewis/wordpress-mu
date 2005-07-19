@@ -26,6 +26,12 @@ $submenu['edit.php'][20] = array(__('Comments'), 'edit_posts', 'edit-comments.ph
 $awaiting_mod = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = '0'");
 $submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), $awaiting_mod), 'edit_posts', 'moderation.php');
 $submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
+$invites_left = get_usermeta( $user_ID, 'invites_left' );
+if( $invites_left == '' ) {
+    $invites_left = get_site_settings( 'invites_per_user' );
+    update_usermeta( $user_ID, "invites_left", $invites_left );
+}
+$submenu['edit.php'][35] = array(sprintf(__("Invites (%s)"), $invites_left ), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
 
 $submenu['link-manager.php'][5] = array(__('Manage Links'), 'manage_links', 'link-manager.php');
 $submenu['link-manager.php'][10] = array(__('Add Link'), 'manage_links', 'link-add.php');
