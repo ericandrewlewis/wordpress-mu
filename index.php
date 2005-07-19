@@ -328,6 +328,8 @@ function step3() {
     $wpdb->query( $query );
     $query = "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (2, 1, 'admin_user_id', '1')";
     $wpdb->query( $query );
+    $query = "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (3, 1, 'siteurl', $domain)";
+    $wpdb->query( $query );
     $wpdb->query( "INSERT INTO ".$wpdb->site." ( id, domain, path ) VALUES ( '', '$domain', '$base' )" );
 
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
