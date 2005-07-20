@@ -571,11 +571,8 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 
     upgrade_all();
     // remove all perms except for the login user.
-    $query = "DELETE FROM ".$wpdb->usermeta."
-              WHERE  user_id != '".$userID."'
-	      AND    meta_key = '".$table_prefix."user_level'";
-    $wpdb->query( $query );
-
+    $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."user_level'" );
+    $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."capabilities'" );
 
     // restore wpdb variables
     reset( $tmp );
