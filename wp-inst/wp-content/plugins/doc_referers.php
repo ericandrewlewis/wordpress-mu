@@ -32,7 +32,6 @@ class DOC_Referers {
     function DOC_Referers() {
 	add_action('admin_menu', array(&$this, 'admin_menu'));
 	add_action('admin_footer', array(&$this, 'admin_footer'));
-	add_action('wp_head', array(&$this, 'wp_head'));
 	add_action('template_redirect', array(&$this, 'template_redirect'));
 	$this->settings = get_settings('doc_referers');
 	$this->wpdb_tables();
