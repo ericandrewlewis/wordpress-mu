@@ -81,7 +81,7 @@ function invites_admin_send_form() {
     <?php
     // must also list stats on current invites and drill down into specifics.
 }
-add_action('wpmuadmindefaultpage', 'invites_admin_send_form');
+# add_action('wpmuadmindefaultpage', 'invites_admin_send_form');
 
 function invites_admin_result() {
     switch( $_GET[ 'result' ] ) {
