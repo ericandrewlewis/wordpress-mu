@@ -21,6 +21,12 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 	}
 }
 
+$errors = array();
+
+// Only allow site admins to edit every user.
+if( $user_ID != get_site_settings( "admin_user_id" ) )
+	if( false == $wpdb->get_var("SELECT user_id FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '".$wpdb->prefix."capabilities'") ) $errors['head'] = __('You do not have permission to edit this user.');
+
 switch ($action) {
 case 'switchposts':
 
@@ -32,11 +38,11 @@ break;
 
 case 'update':
 
-$errors = array();
 if(empty($wp_user)) {
 	$wp_user = new WP_User($user_id);
 	$edituser = &$wp_user->data;
 }
+
 
 if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permission to edit this user.');
 
@@ -114,7 +120,7 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 	<p><strong><?php _e('User updated.') ?></strong></p>
 </div>
 <?php endif; ?>
-<?php if ( isset($errors) ) : ?>
+<?php if ( count($errors) > 0) : ?>
 <div class="error">
 	<ul>
 	<?php

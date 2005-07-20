@@ -46,10 +46,12 @@ switch( $_GET[ 'action' ] ) {
 	<tr><th style='text-align: left'>Name</th><th style='text-align: left'>Value</th><th style='text-align: left'>Delete</th></tr>
     <?php
     while( list( $key, $val ) = each( $usermetadetails ) ) { 
+	if( substr( $val[ 'meta_key' ], -12 ) == 'capabilities' )
+	    return;
     ?>
 	<tr valign="top"> 
 	<th width="33%" scope="row"><input name="metaname[<?php echo $val[ 'umeta_id' ] ?>]" type="text" id="<?php echo $val[ 'meta_key' ] ?>" value="<?php echo $val[ 'meta_key' ] ?>"></th> 
-	<td><input name="meta[<?php echo $val[ 'umeta_id' ] ?>]" type="text" id="<?php echo $val[ 'meta_value' ] ?>" value="<?php echo $val[ 'meta_value' ] ?>" size="40" /></td> 
+	<td><input name="meta[<?php echo $val[ 'umeta_id' ] ?>]" type="text" id="<?php echo $val[ 'meta_value' ] ?>" value="<?php echo addslashes( $val[ 'meta_value' ] ) ?>" size="40" /></td> 
 	<td><input type='checkbox' name='metadelete[<?php echo $val[ 'umeta_id' ] ?>]'></td>
 	</tr> 
     <?php
@@ -156,7 +158,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_edit':
 		?>
-		<td><?php echo "<a href='wpmu-users.php?action=edit&amp;id=".$user[ 'ID' ]."' class='edit'>" . __('Edit') . "</a>"; ?></td>
+		<td><?php echo "<a href='user-edit.php?user_id=".$user[ 'ID' ]."' class='edit'>" . __('Edit') . "</a>"; ?></td>
 		<?php
 		break;
 

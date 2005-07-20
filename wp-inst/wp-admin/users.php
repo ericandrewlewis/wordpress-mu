@@ -174,7 +174,11 @@ default:
 	
 	include ('admin-header.php');
 	
-	$userids = $wpdb->get_col("SELECT ID FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities'");
+	if( $user_ID == get_site_settings( "admin_user_id" ) ) {
+	    $userids = $wpdb->get_col("SELECT ID FROM $wpdb->users");
+	} else {
+	    $userids = $wpdb->get_col("SELECT ID FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities'");
+	}
 	
 	foreach($userids as $userid) {
 		$tmp_user = new WP_User($userid);
