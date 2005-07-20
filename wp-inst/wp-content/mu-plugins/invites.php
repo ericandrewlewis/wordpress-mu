@@ -1,4 +1,32 @@
 <?php
+if( substr( $_SERVER[ 'PHP_SELF' ], -14 ) == 'wpmu-admin.php' || substr( $_SERVER[ 'PHP_SELF' ], -11 ) == 'invites.php' ) {
+	if( '' ==  get_site_settings( "invites_default_message" ) ) {
+		$msg = 
+"Dear FIRSTNAME LASTNAME,
+---------------------------------------------
+PERSONALMESSAGE
+---------------------------------------------
+You have been invited to open a free WordPress weblog.
+
+To accept this invitation and register for your weblog, visit
+REGURL
+
+This invitation can only be used to set up one weblog.
+
+Regards,
+The WordPress Team
+
+(If clicking the URLs in this message does not work, copy and paste them
+into the address bar of your browser).";
+		update_site_settings( "invites_default_message", $msg );
+	}
+
+	if( '' == get_site_settings( "invites_default_subject" ) ) {
+		$subject = "FIRSTNAME, USERNAME has invited you to use WordPress";
+		update_site_settings( "invites_default_subject", $subject );
+	}
+
+}
 
 $u = '';
 if( $_POST[ 'u' ] ) {

@@ -12,35 +12,10 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    $subject = get_site_settings( "invites_default_subject" );
 	    $from    = $cache_userdata[ $user_ID ]->user_email;
 
-	    if( $msg == '' ) {
-		$msg = 
-"Dear FIRSTNAME LASTNAME,
----------------------------------------------
-PERSONALMESSAGE
----------------------------------------------
-You have been invited to open a free WordPress weblog.
-
-To accept this invitation and register for your weblog, visit
-REGURL
-This invitation can only be used to set up one weblog.
-
-Regards,
-The WordPress Team
-
-(If clicking the URLs in this message does not work, copy and paste them
-into the address bar of your browser).";
-		update_site_settings( "invites_default_message", $msg );
-	    }
-
-	    if( $subject == '' ) {
-		$subject = "FIRSTNAME, USERNAME has invited you to use WordPress";
-		update_site_settings( "invites_default_subject", $subject );
-	    }
-
 	    $msg = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $msg );
 	    $msg = str_replace( "LASTNAME", $_POST[ 'lname' ], $msg );
 	    $msg = str_replace( "PERSONALMESSAGE", $_POST[ 'personalmessage' ], $msg );
-	    $msg = str_replace( "\\r\\n", "\n", stripslashes( str_replace( "REGURL", get_site_settings( "siteurl" ) . "/invite/".md5( $_POST[ 'email' ] ), $msg ) ) );
+	    $msg = str_replace( "\\r\\n", "\n", stripslashes( str_replace( "REGURL", "http://" . $current_site->domain . "/invite/".md5( $_POST[ 'email' ] ), $msg ) ) );
 
 	    $subject = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $subject );
 	    if( $cache_userdata[ $user_ID ]->display_name != '' ) {
@@ -60,19 +35,26 @@ into the address bar of your browser).";
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')";
 	    $wpdb->query( $query );
 	    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
-	    $invites_left = $invites_left - 1;
-	    update_usermeta( $user_ID, "invites_left", $invites_left );
+	    if( $user_ID != get_site_settings( "admin_user_id" ) ) {
+		    $invites_left = $invites_left - 1;
+		    update_usermeta( $user_ID, "invites_left", $invites_left );
+	    }
 	    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=sent&to=" . urlencode(  $email ) );
 	    exit;
 	}
+    } else {
+	    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=notsent&to=" . urlencode(  $email ) );
+	    exit;
     }
 } elseif( $_POST[ 'personalmessage' ] == '' ) {
     $_POST[ 'personalmessage' ] = "I've been using WordPress and thought you might like to try it out.  Here's an invitation to create an account.";
 }
 
 include('admin-header.php');
-if (isset($_GET['result'] ) == 'sent' ) {
+if (isset($_GET['result'] ) && $_GET['result'] == 'sent' ) {
     ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
+} elseif (isset($_GET['result'] ) && $_GET['result'] == 'notsent' ) {
+    ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Not Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 }
 ?>
  
