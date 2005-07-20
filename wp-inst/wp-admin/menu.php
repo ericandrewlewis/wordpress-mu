@@ -45,7 +45,6 @@ $submenu['options-general.php'][5] = array(__('General'), 'manage_options', 'opt
 $submenu['options-general.php'][10] = array(__('Writing'), 'manage_options', 'options-writing.php');
 $submenu['options-general.php'][15] = array(__('Reading'), 'manage_options', 'options-reading.php');
 $submenu['options-general.php'][20] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
-$submenu['options-general.php'][30] = array(__('Miscellaneous'), 'manage_options', 'options-misc.php');
 
 $submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 
