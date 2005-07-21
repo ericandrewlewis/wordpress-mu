@@ -257,7 +257,7 @@ class spam_killer
 
 	function spam_killer( $post )
 	{
-		global $wpdb;
+		global $wpdb, $wpmuBaseTablePrefix;
 		$options = array(
 		//==================================================================
 		//	Adjust the number of strikes needed to reject a comment
@@ -290,13 +290,11 @@ class spam_killer
 		$this->post = $post;
 		$this->strike_cnt = 0;
 		$this->word_list = get_settings('moderation_keys');
-		/*
-		if( $wpdb->options != 'wp_main_options' )
+		if( $wpdb->options != $wpmuBaseTablePrefix . '_1_options' )
 		{
-		    $query = "SELECT option_value from wp_main_options WHERE option_name='moderation_keys'";
+		    $query = "SELECT option_value from " . $wpmuBaseTablePrefix . $wpdb->blogid . "_options WHERE option_name='moderation_keys'";
 		    $this->word_list .= "\n" . $wpdb->get_var( $query );
 		}
-		*/
 	}
 
 	function count_strikes( $str = 0, $how )
