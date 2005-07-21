@@ -99,7 +99,7 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
     }
     if( is_file( $oldfilename ) )
     {
-        $fp = fopen( $oldfilename, "r" );
+        $fp = @fopen( $oldfilename, "r" );
         if( $fp )
         {
             while( !feof( $fp ) )
@@ -113,7 +113,14 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
             $fp = fopen( $newfilename, "w" );
             fwrite( $fp, $htaccess );
             fclose( $fp );
-        }
+        } else {
+	    print "<p>There was a problem creating the .htaccess file in $realpath. Please ensure that the webserver can write to this directory.</p>";
+	    print "<p>If all else fails then you'll have to create it by hand:";
+	    print "<ul><li> Download htaccess.dist to your computer and open it in your favourite text editor.</li>
+	               <li> Replace the following text:<ul><li>REALPATH by $realpath</li><li>BASE by $base</li><li>HOST by $url</li></li>
+		       <li> Rename htaccess.dist to .htaccess and upload it back to the same directory.</li></ul>";
+	    die( "Installation Aborted!" );
+	}
     }
 }
 
