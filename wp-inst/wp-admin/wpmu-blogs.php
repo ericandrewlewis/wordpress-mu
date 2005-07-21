@@ -266,7 +266,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_backend':
 		?>
-		<td valign='top'><?php echo "<a href='".get_blogaddress_by_name( $blog[ 'blogname' ] )."wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
+		<td valign='top'><?php echo "<a href='http://" . $blog[ 'domain' ] . $current_site->path . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
 		<?php
 		break;
 
