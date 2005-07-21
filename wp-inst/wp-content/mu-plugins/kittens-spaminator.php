@@ -358,7 +358,11 @@ class spam_killer
 		/// Set up vars to use:
 		
 		$type    = $this->post['comment_type'];
-		$url     = parse_url( $this->post['comment_author_url'] );
+		if( $this->post['comment_author_url'] != 'http://' ) {
+		    $url     = parse_url( $this->post['comment_author_url'] );
+		} else {
+		    $url = '';
+		}
 		$postID  = $this->post['comment_post_ID'];
 		$author  = $this->post['comment_author'];
 		if ( empty( $this->post['comment_author_email'] ) ) {
