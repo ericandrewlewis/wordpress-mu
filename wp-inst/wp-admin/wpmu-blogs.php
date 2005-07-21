@@ -65,12 +65,42 @@ switch( $_GET[ 'action' ] ) {
     </td></tr>
     <?php
     while( list( $key, $val ) = each( $options ) ) { 
-    ?>
-	<tr valign="top"> 
-	<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
-	<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo $val[ 'option_value' ] ?>" size="40" /></td> 
-	</tr> 
-    <?php
+	$kellog = @unserialize( $val[ 'option_value' ] );
+	if( is_array( $kellog ) ) {
+		print '<tr valign="top"> 
+		       <th scope="row">' . ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) . '</th> 
+		       <td>';
+		print '<textarea rows="5" cols="40" disabled>';
+		reset( $kellog );
+		while( list( $key, $val ) = each( $kellog ) ) 
+		{ 
+		    if( is_array( $val ) ) {
+			print "$key:\n";
+			while( list( $k, $v ) = each( $val ) ) {
+			    if( is_array( $v ) ) {
+				print "    $k:\n";
+				while( list( $k1, $v1 ) = each( $v ) ) {
+				    print "      $k1 -> $v1\n"; 
+				}
+			    } else {
+				if( $v1 != '' )
+				    print "  $k1 -> $v1\n";
+			    }
+			}
+		    } else {
+			if( $val != '' )
+			    print "$key -> $val\n";
+		    }
+		}
+		print '</textarea></td></tr>';
+	} else {
+	    	?>
+		<tr valign="top"> 
+		<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
+		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo $val[ 'option_value' ] ?>" size="40" /></td> 
+		</tr> 
+		<?php
+	}
     }
     ?>
     </table>
@@ -193,14 +223,14 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'blogname':
 		?>
-		<td><?php echo $blog[ 'blogname' ] ?>
+		<td><?php echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ) ?>
 		</td>
 		<?php
 		break;
 
 	case 'last_updated':
 		?>
-		<td><?php echo $blog[ 'last_updated' ] ?></td>
+		<td><?php echo $blog[ 'last_updated' ] == '0000-00-00 00:00:00' ? "Never" : $blog[ 'last_updated' ] ?></td>
 		<?php
 		break;
 
@@ -212,7 +242,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_view':
 		?>
-		<td><a href="<?php echo get_blogaddress_by_name( $blog[ 'blogname' ] ); ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
+		<td><a href="http://<?php echo $blog[ 'domain' ]; ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
 		<?php
 		break;
 
