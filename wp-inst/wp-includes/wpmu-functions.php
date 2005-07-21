@@ -574,9 +574,6 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."user_level'" );
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."capabilities'" );
 
-    // activate kitten's spaminator
-    update_option( 'active_plugins', array( 'kittens-spaminator.php' ) );
-
     // restore wpdb variables
     reset( $tmp );
     while( list( $key, $val ) = each( $tmp ) ) 
