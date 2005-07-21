@@ -93,7 +93,8 @@ $posts_columns = array(
   'user_login'      => __('Login'),
   'user_email'      => __('Email'),
   'display_name'    => __('Name'),
-  'user_registered' => __('Registered')
+  'user_registered' => __('Registered'),
+  'blogs'           => __('Blogs')
 );
 $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 
@@ -153,6 +154,12 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	case 'user_registered':
 		?>
 		<td><?php echo $user[ 'user_registered' ] ?></td>
+		<?php
+		break;
+
+	case 'blogs':
+		?>
+		<td><?php $blogs = get_blogs_of_user( $user[ 'ID' ] ); if( is_array( $blogs ) ) while( list( $key, $val ) = each( $blogs ) ) { print '<a href="http://test.wordpress.com/wp-admin/wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain ) . '</a><BR>'; } ?></td>
 		<?php
 		break;
 

@@ -37,10 +37,11 @@ switch( $_GET[ 'action' ] ) {
     }
 
     // update blogs table
-    if( $_POST[ 'blog' ][ 'blogname' ] != 'main' ) {
+    if( $_POST[ 'blog' ][ 'domain' ] != $current_site->domain ) {
 	$query = "UPDATE ".$wpdb->blogs."
-                  SET    blogname = '".$_POST[ 'blog' ][ 'blogname' ]."',
-	                 registered = '".$_POST[ 'blog' ][ 'registered' ]."',
+                  SET    domain       = '".$_POST[ 'blog' ][ 'domain' ]."',
+	                 path         = '".$_POST[ 'blog' ][ 'path' ]."',
+	                 registered   = '".$_POST[ 'blog' ][ 'registered' ]."',
 		         last_updated = '".$_POST[ 'blog' ][ 'last_updated' ]."',
 		         is_public    = '".$_POST[ 'blog' ][ 'is_public' ]."'
 	          WHERE  blog_id = '".$_POST[ 'id' ]."'";

@@ -772,4 +772,17 @@ function restore_current_blogid() {
     $wpdb->postmeta = $tmpoldblogdetails[ 'postmeta' ];
     $wpdb->prefix = $tmpoldblogdetails[ 'prefix' ];
 }
+
+function get_users_of_blog( $id ) {
+    global $wpdb, $wpmuBaseTablePrefix;
+    $users = $wpdb->get_results( "SELECT user_id, user_login FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND meta_key LIKE '" . $wpmuBaseTablePrefix . $id . "%capabilities'" );
+    return $users;
+}
+
+function get_blogs_of_user( $id ) {
+    global $wpdb, $wpmuBaseTablePrefix;
+    $blogs = $wpdb->get_results( "SELECT domain, REPLACE( REPLACE( meta_key, '$wpmuBaseTablePrefix', '' ), '_capabilities', '' ) as userblog_id  FROM $wpdb->blogs, $wpdb->usermeta WHERE $wpdb->blogs.blog_id = REPLACE( REPLACE( $wpdb->usermeta.meta_key, '$wpmuBaseTablePrefix', '' ), '_capabilities', '' ) AND user_id = '$id' AND meta_key LIKE '%capabilities'" );
+
+    return $blogs;
+}
 ?>

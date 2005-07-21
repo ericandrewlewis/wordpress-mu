@@ -16,7 +16,8 @@ switch( $_GET[ 'action' ] ) {
     $options_table_name = $wpmuBaseTablePrefix . $_GET[ 'id' ] ."_options";
     $query = "SELECT *
               FROM   ".$options_table_name."
-	      WHERE  option_name NOT LIKE 'rss%'";
+	      WHERE  option_name NOT LIKE 'rss%'
+	      AND    option_name NOT LIKE '%user_roles'";
     $options = $wpdb->get_results( $query, ARRAY_A );
     $query = "SELECT * 
 	      FROM ".$wpdb->blogs." 
@@ -33,8 +34,12 @@ switch( $_GET[ 'action' ] ) {
     <table><td valign='top'>
     <table width="100%" border='0' cellspacing="2" cellpadding="5" class="editform"> 
 	<tr valign="top"> 
-	<th scope="row">Blogname</th> 
-	<td><input name="blog[blogname]" type="text" id="blog_name" value="<?php echo $details[ 'blogname' ] ?>" size="20" />.<?php echo $domain; ?></td> 
+	<th scope="row">URL</th> 
+	<td>http://<input name="blog[domain]" type="text" id="domain" value="<?php echo $details[ 'domain' ] ?>" size="33" /></td> 
+	</tr> 
+	<tr valign="top"> 
+	<th scope="row">Path</th> 
+	<td><input name="blog[path]" type="text" id="path" value="<?php echo $details[ 'path' ] ?>" size="40" /></td> 
 	</tr> 
 	<tr valign="top"> 
 	<th scope="row">Registered</th> 
@@ -132,7 +137,7 @@ switch( $_GET[ 'action' ] ) {
 
 	    $out .= '
 		<tr valign="top"> 
-		<th title="'.$val[ "Description" ].'" scope="row">'.$key.'</th> 
+		<th title="' . htmlspecialchars( $val[ "Description" ] ) . '" scope="row">'.$key.'</th> 
 		<td><input name="theme['.$key.']" type="checkbox" id="'.$key.'" value="on" '.$checked.'/></td> 
 		</tr> ';
 	}
@@ -181,7 +186,8 @@ $posts_columns = array(
   'id'           => __('ID'),
   'blogname'     => __('Blog Name'),
   'last_updated' => __('Last Updated'),
-  'registered'   => __('Registered')
+  'registered'   => __('Registered'),
+  'users'        => __('Users')
 );
 $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 
@@ -223,50 +229,56 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'blogname':
 		?>
-		<td><?php echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ) ?>
+		<td valign='top'><?php echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ) ?>
 		</td>
 		<?php
 		break;
 
 	case 'last_updated':
 		?>
-		<td><?php echo $blog[ 'last_updated' ] == '0000-00-00 00:00:00' ? "Never" : $blog[ 'last_updated' ] ?></td>
+		<td valign='top'><?php echo $blog[ 'last_updated' ] == '0000-00-00 00:00:00' ? "Never" : $blog[ 'last_updated' ] ?></td>
 		<?php
 		break;
 
 	case 'registered':
 		?>
-		<td><?php echo $blog[ 'registered' ] ?></td>
+		<td valign='top'><?php echo $blog[ 'registered' ] ?></td>
+		<?php
+		break;
+
+	case 'users':
+		?>
+		<td valign='top'><?php $blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); if( is_array( $blogusers ) ) while( list( $key, $val ) = each( $blogusers ) ) { print '<a href="http://test.wordpress.com/wp-admin/user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a><BR>'; }  ?></td>
 		<?php
 		break;
 
 	case 'control_view':
 		?>
-		<td><a href="http://<?php echo $blog[ 'domain' ]; ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
+		<td valign='top'><a href="http://<?php echo $blog[ 'domain' ]; ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
 		<?php
 		break;
 
 	case 'control_edit':
 		?>
-		<td><?php echo "<a href='wpmu-blogs.php?action=editblog&amp;id=".$blog[ 'blog_id' ]."' class='edit'>" . __('Edit') . "</a>"; ?></td>
+		<td valign='top'><?php echo "<a href='wpmu-blogs.php?action=editblog&amp;id=".$blog[ 'blog_id' ]."' class='edit'>" . __('Edit') . "</a>"; ?></td>
 		<?php
 		break;
 
 	case 'control_backend':
 		?>
-		<td><?php echo "<a href='".get_blogaddress_by_name( $blog[ 'blogname' ] )."wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
+		<td valign='top'><?php echo "<a href='".get_blogaddress_by_name( $blog[ 'blogname' ] )."wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
 		<?php
 		break;
 
 	case 'control_delete':
 		?>
-		<td><?php echo "<a href='wpmu-edit.php?action=deleteblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
+		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deleteblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
 		<?php
 		break;
 
 	default:
 		?>
-		<td><?php do_action('manage_posts_custom_column', $column_name, $id); ?></td>
+		<td valign='top'><?php do_action('manage_posts_custom_column', $column_name, $id); ?></td>
 		<?php
 		break;
 	}
