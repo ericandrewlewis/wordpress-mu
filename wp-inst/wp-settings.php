@@ -154,7 +154,8 @@ $plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php');
 
 if( $plugins ) {
     foreach ( $plugins as $plugin ) {
-	include_once( $plugin );
+	if( is_file( $plugin ) )
+		include_once( $plugin );
     }
 }
 
