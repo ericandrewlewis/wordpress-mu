@@ -25,6 +25,10 @@ session_start();
  * Type: bool
  * Purpose: If true, sends logs to the admin email address
  */
+
+if ( defined('HASHCASH_DEBUG') )
+	return;
+
 define('HASHCASH_DEBUG', true);
 
 /**
