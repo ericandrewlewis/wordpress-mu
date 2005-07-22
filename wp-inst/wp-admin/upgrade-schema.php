@@ -173,6 +173,14 @@ CREATE TABLE $wpdb->sitemeta (
   KEY meta_key (meta_key),
   KEY site_id (site_id)
 );
+CREATE TABLE $wpdb->sitecategories (
+  cat_ID bigint(20) NOT NULL auto_increment,
+  cat_name varchar(55) NOT NULL default '',
+  category_nicename varchar(200) NOT NULL default '',
+  category_description longtext NOT NULL,
+  PRIMARY KEY  (cat_ID),
+  KEY category_nicename (category_nicename)
+);
 ";
 
 function populate_options() {

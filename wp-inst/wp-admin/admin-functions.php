@@ -261,6 +261,8 @@ function wp_insert_category($catarr) {
 		do_action('create_category', $cat_ID);
 	}
 
+	list( $update, $cat_ID, $category_nicename, $cat_name, $rval ) = apply_filters( "new_category", $update, $cat_ID, $category_nicename, $cat_name, $rval );
+
 	return $rval;
 }
 

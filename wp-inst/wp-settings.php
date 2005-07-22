@@ -43,6 +43,7 @@ $wpdb->users            = $table_prefix . 'users';
 $wpdb->usermeta         = $table_prefix . 'usermeta';
 $wpdb->site             = $table_prefix . 'site';
 $wpdb->sitemeta         = $table_prefix . 'sitemeta';
+$wpdb->sitecategories	= $table_prefix . 'sitecategories';
 
 // find out what tables to use from $wpblog
 $wpdb->hide_errors();
