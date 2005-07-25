@@ -86,6 +86,37 @@ function check_writeable_dir( $dir, $ret )
     }
 }
 
+function filestats( $err ) {
+    print "<h1>Server Summary</h1>";
+    print "<p>If you post a message to the MU support forum at <a target='_blank' href='http://mu.wordpress.org/forums/'>http://mu.wordpress.org/forums/</a> then copy and paste the following information into your message:</p>";
+
+    print "<blockquote style='background: #eee; border: 1px solid #333; padding: 5px;'>";
+    print "<br /><strong>ERROR: $err</strong></br >";
+    clearstatcache();
+    $files = array( "htaccess.dist", ".htaccess" );
+    while( list( $key, $val ) = each( $files ) ) { 
+	$stats = @stat( $val );
+	if( $stats ) {
+	    print "<h2>$val</h2>";
+	    print "&nbsp;&nbsp;&nbsp;&nbsp;uid/gid: " . $stats[ 'uid' ] . "/" . $stats[ 'gid' ] . "<br />\n";
+	    print "&nbsp;&nbsp;&nbsp;&nbsp;size: " . $stats[ 'size' ] . "<br />";
+	    print "&nbsp;&nbsp;&nbsp;&nbsp;perms: " . substr( sprintf('%o', fileperms( $val ) ), -4 ) . "<br />";
+	    print "&nbsp;&nbsp;&nbsp;&nbsp;readable: ";
+	    print is_readable( $val ) == true ? "yes" : "no";
+	    print "<br />";
+	    print "&nbsp;&nbsp;&nbsp;&nbsp;writeable: ";
+	    print is_writeable( $val ) == true ? "yes" : "no";
+	    print "<br />";
+	    
+	} elseif( file_exists( $val ) == false ) {
+	    print "<h2>$val</h2>";
+	    print "&nbsp;&nbsp;&nbsp;&nbsp;FILE NOT FOUND: $val<br>";
+	}
+    }
+    print "</blockquote>";
+
+}
+
 function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
 {
     // remove ending slash from $base and $url
@@ -97,11 +128,10 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
     if( substr($url, -1 ) == '/') {
 	$url = substr($url, 0, -1);
     }
-    if( is_file( $oldfilename ) )
-    {
+    $err = '';
+    if( is_file( $oldfilename ) ) {
         $fp = @fopen( $oldfilename, "r" );
-        if( $fp )
-        {
+        if( $fp ) {
             while( !feof( $fp ) )
             {
                 $htaccess .= fgets( $fp, 4096 );
@@ -111,16 +141,39 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
             $htaccess = str_replace( "BASE", $base, $htaccess );
             $htaccess = str_replace( "HOST", $url, $htaccess );
             $fp = fopen( $newfilename, "w" );
-            fwrite( $fp, $htaccess );
-            fclose( $fp );
+	    if( $fp ) {
+		fwrite( $fp, $htaccess );
+		fclose( $fp );
+	    } else {
+		$err = "could not open $newfilename for writing";
+	    }
         } else {
-	    print "<p>There was a problem creating the .htaccess file in $realpath. Please ensure that the webserver can write to this directory.</p>";
+	    $err = "could not open $oldfilename for reading";
+	}
+    } else {
+	$err = "$oldfilename not found";
+    }
+
+    if( $err != '' ) {
+	    print "<h1>Warning!</h1>";
+	    print "<p><strong>There was a problem creating the .htaccess file in $realpath.</strong> </p>";
+	    print "<p style='color: #900'>Error: ";
+	    if( $err == "could not open $newfilename for writing" ) {
+		print "Could Not Write To $newfilename.";
+	    } elseif( $err == "could not open $oldfilename for reading" ) {
+		print "I could not read from $oldfilename. ";
+	    } elseif( $err == "$oldfilename not found" ) {
+		print "The file, $oldfilename, is missing.";
+	    }
+	    print "</p>";
+	    filestats( $err );
+
+	    print "<p>Please ensure that the webserver can write to this directory.</p>";
 	    print "<p>If all else fails then you'll have to create it by hand:";
 	    print "<ul><li> Download htaccess.dist to your computer and open it in your favourite text editor.</li>
-	               <li> Replace the following text:<ul><li>REALPATH by $realpath</li><li>BASE by $base</li><li>HOST by $url</li></li>
-		       <li> Rename htaccess.dist to .htaccess and upload it back to the same directory.</li></ul>";
+		<li> Replace the following text:<ul><li>REALPATH by '$realpath'</li><li>BASE by '$base'</li><li>HOST by '$url'</li></li>
+		<li> Rename htaccess.dist to .htaccess and upload it back to the same directory.</li></ul>";
 	    die( "Installation Aborted!" );
-	}
     }
 }
 
@@ -129,7 +182,6 @@ function checkdirs() {
     $ret = check_writeable_dir( dirname(__FILE__), $ret );
     $ret = check_writeable_dir( dirname(__FILE__) . "/wp-inst", $ret );
     $ret = check_writeable_dir( dirname(__FILE__) . "/wp-inst/wp-content/", $ret );
-    $ret = check_writeable_dir( dirname(__FILE__) . "/wp-inst/wp-content/smarty-templates", $ret );
 
     if( $ret == false )
     {
