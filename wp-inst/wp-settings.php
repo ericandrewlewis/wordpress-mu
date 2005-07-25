@@ -151,15 +151,15 @@ require (ABSPATH . WPINC . '/version.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
 
-$plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php');
-
-if( $plugins ) {
-    foreach ( $plugins as $plugin ) {
-	if( is_file( $plugin ) )
-		include_once( $plugin );
-    }
+$wpdb->hide_errors();
+$plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php' );
+if( is_array( $plugins ) ) {
+	foreach ( $plugins as $plugin ) {
+		if( is_file( $plugin ) )
+			include_once( $plugin );
+	}
 }
-
+$wpdb->show_errors();
 
 $is_archived = get_settings( "is_archived" );
 if( $is_archived == 'yes' ) {
