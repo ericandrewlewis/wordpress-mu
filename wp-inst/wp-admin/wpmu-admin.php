@@ -24,6 +24,24 @@ switch( $_GET[ 'action' ] ) {
     There are currently ".$stats[ 'blogs' ]." <a href='wpmu-blogs.php'>blogs</a> running on this server and ".$stats[ 'users' ]." <a href='wpmu-users.php'>users</a>.</p><br /><br />
     ";
 
+    print "<table>";
+    #$blogs = get_blog_list();
+    #print "<br>blogs: <br>";
+    #print_r( $blogs );
+
+    $most_active = get_most_active( 10, false );
+    if( is_array( $most_active ) ) {
+	$most_active = array_slice( $most_active, 0, 10 );
+	print "<caption>Most Active Blogs</caption>";
+	print "<tr><th scope='col'>ID</th><th scope='col'>Address</th><th scope='col'>Posts</th></tr>";
+	while( list( $key, $details ) = each( $most_active ) ) { 
+	    $class = ('alternate' == $class) ? '' : 'alternate';
+	    $url = "http://" . $details[ 'domain' ] . $details[ 'path' ];
+	    print "<tr class='$class'><td>" . $details[ 'blog_id' ] . "</td><td><a href='$url'>$url</a></td><td>" . $details[ 'postcount' ] . "</td></tr>";
+	}
+    }
+    print "</table>";
+
     do_action( "wpmuadmindefaultpage", "" );
     break;
 }

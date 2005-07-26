@@ -782,4 +782,102 @@ function get_blogs_of_user( $id ) {
 
     return $blogs;
 }
+
+function is_archived( $id ) {
+    global $wpdb, $wpmuBaseTablePrefix;
+    $is_archived = $wpdb->get_var( "SELECT option_value FROM " . $wpmuBaseTablePrefix . $id . "_options WHERE option_name = 'is_archived'" );
+    if( $is_archived == false )
+	$is_archived = 'no';
+
+    return $is_archived;
+}
+
+function get_last_updated( $display = false ) {
+    global $wpdb;
+    $blogs = $wpdb->get_results( "SELECT blog_id domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND last_updated != '0000-00-00 00:00:00' ORDER BY last_updated DESC limit 0,40", ARRAY_A );
+    if( is_array( $blogs ) ) {
+	while( list( $key, $details ) = each( $blogs ) ) { 
+	    if( is_archived( $details[ 'blog_id' ] ) == 'yes' )
+		unset( $blogs[ $key ] );
+	}
+    }
+
+    return $blogs;
+}
+
+function get_most_active( $num = 10, $display = true ) {
+    global $wpdb;
+    $most_active = get_site_settings( "most_active" );
+    $update = false;
+    if( is_array( $most_active ) ) {
+	if( ( $most_active[ 'time' ] + 60 ) < time() ) { // cache for 60 seconds.
+	    $update = true;
+	}
+    } else {
+	$update = true;
+    }
+
+    if( $update == true ) {
+	unset( $most_active );
+	$blogs = get_blog_list(); // $blog_id -> $details
+	if( is_array( $blogs ) ) {
+	    reset( $blogs );
+	    while( list( $key, $details ) = each( $blogs ) ) { 
+		$most_active[ $details[ 'blog_id' ] ] = $details[ 'postcount' ];
+	    }
+	    arsort( $most_active );
+	    reset( $most_active );
+	    while( list( $key, $details ) = each( $most_active ) ) { 
+		$t[ $key ] = $blogs[ $key ];
+	    }
+	    unset( $most_active );
+	    $most_active = $t;
+	}
+	update_site_settings( "most_active", $most_active );
+    }
+
+    if( $display == true ) {
+	if( is_array( $most_active ) ) {
+	    while( list( $key, $details ) = each( $most_active ) ) { 
+		$url = "http://" . $details[ 'domain' ] . $details[ 'path' ];
+		print "<li>" . $details[ 'postcount' ] . " <a href='$url'>$url</a></li>";
+	    }
+	}
+    }
+
+    return $most_active;
+}
+
+function get_blog_list( $start = 0, $num = 10, $display = true ) {
+    global $wpdb, $wpmuBaseTablePrefix;
+
+    $blogs = get_site_settings( "blog_list" );
+    $update = false;
+    if( is_array( $blogs ) ) {
+	if( ( $blogs[ 'time' ] + 60 ) < time() ) { // cache for 60 seconds.
+	    $update = true;
+	}
+    } else {
+	$update = true;
+    }
+
+    if( $update == true ) {
+	unset( $blogs );
+	$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered ASC", ARRAY_A );
+	if( is_array( $blogs ) ) {
+	    while( list( $key, $details ) = each( $blogs ) ) { 
+		if( is_archived( $details[ 'blog_id' ] ) == 'yes' )
+		    unset( $blogs[ $key ] );
+
+		$blog_list[ $details[ 'blog_id' ] ] = $details;
+		$blog_list[ $details[ 'blog_id' ] ][ 'postcount' ] = $wpdb->get_var( "SELECT count(*) FROM " . $wpmuBaseTablePrefix . $details[ 'blog_id' ] . "_posts WHERE post_status='publish'" );
+	    }
+	    unset( $blogs );
+	    $blogs = $blog_list;
+	}
+	update_site_settings( "blog_list", $blogs );
+    }
+
+    return $blogs;
+}
 ?>
