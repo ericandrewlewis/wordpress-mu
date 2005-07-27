@@ -40,6 +40,12 @@ class wpdb {
 	//	DB Constructor - connects to the server and selects a database
 
 	function wpdb($dbuser, $dbpassword, $dbname, $dbhost) {
+
+		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true ) {
+			$this->db_connect( $query );
+			return true;
+		}
+
 		$this->dbh = @mysql_connect($dbhost, $dbuser, $dbpassword);
 		if (!$this->dbh) {
 			$this->bail("
@@ -58,14 +64,14 @@ class wpdb {
 		$this->db_password	= $dbpass;
 		$this->db_name		= $dbname;
 
-		$this->select($dbname);
+		$this->select($dbname, $this->dbh);
 	}
 
 	// ==================================================================
 	//	Select a DB (if another one needs to be selected)
 
-	function select($db) {
-		if (!@mysql_select_db($db, $this->dbh)) {
+	function select($db, &$dbh) {
+		if (!@mysql_select_db($db, $dbh)) {
 			$this->bail("
 <h1>Can&#8217;t select database</h1>
 <p>We were able to connect to the database server (which means your username and password is okay) but not able to select the <code>$db</code> database.</p>
@@ -128,28 +134,23 @@ class wpdb {
 		$this->last_query = null;
 	}
 
-	function db_connect( $query ) {
+	function db_connect( $query = "SELECT" ) {
 		global $db_list;
 		if( is_array( $db_list ) == false )
 			return true;
 
 		if ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
+			$action = 'write';
 			$details = $db_list[ 'write' ][ mt_rand( 0, count( $db_list[ 'write' ] ) -1 ) ];
 		} else {
+			$action = '';
 			$details = $db_list[ 'read' ][ mt_rand( 0, count( $db_list[ 'read' ] ) -1 ) ];
 		}
 
-		if( $this->db_host != $details[ 'db_host' ] || $this->db_user != $details[ 'db_user' ] || $this->db_password != $details[ 'db_password' ] ) {
-			if ($this->dbh) {
-				@mysql_close( $this->dbh );
-			}
-			$this->db_host		= $details[ 'db_host' ];
-			$this->db_user		= $details[ 'db_user' ];
-			$this->db_password	= $details[ 'db_password' ];
-
-			$this->dbh = @mysql_connect( $details[ 'db_host' ], $details[ 'db_user' ], $details[ 'db_password' ] );
-			if (!$this->dbh) {
-				$this->bail("
+		$dbhname = "dbh" . $action;
+		$this->$dbhname = @mysql_connect( $details[ 'db_host' ], $details[ 'db_user' ], $details[ 'db_password' ] );
+		if (!$this->$dbhname ) {
+			$this->bail("
 <h1>Error establishing a database connection</h1>
 <p>This either means that the username and password information in your <code>wp-config.php</code> file is incorrect or we can't contact the database server at <code>$dbhost</code>. This could mean your host's database server is down.</p>
 <ul>
@@ -159,15 +160,8 @@ class wpdb {
 </ul>
 <p>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://wordpress.org/support/'>WordPress Support Forums</a>.</p>
 ");
-			}
-			$this->db_name = $details[ 'db_name' ];
-			$this->select( $details[ 'db_name' ] );
 		}
-
-		if( $this->db_name != $details[ 'db_name' ] ) {
-			$this->db_name = $details[ 'db_name' ];
-			$this->select( $details[ 'db_name' ] );
-		}
+		$this->select( $details[ 'db_name' ], $this->$dbhname );
 	}
 
 	// ==================================================================
@@ -188,10 +182,19 @@ class wpdb {
 		if (SAVEQUERIES)
 			$this->timer_start();
 		
-		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true )
-			$this->db_connect( $query );
+		// use $this->dbh for read ops, and $this->dbhwrite for write ops
+		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true ) {
+			if ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
+				$this->db_connect( $query );
+				$dbh =& $this->dbhwrite;
+			} else {
+				$dbh =& $this->dbh;
+			}
+		} else {
+			$dbh =& $this->dbh;
+		}
 
-		$this->result = @mysql_query($query, $this->dbh);
+		$this->result = @mysql_query($query, $dbh);
 		++$this->num_queries;
 
 		if (SAVEQUERIES)
@@ -204,10 +207,10 @@ class wpdb {
 		}
 
 		if ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
-			$this->rows_affected = mysql_affected_rows();
+			$this->rows_affected = mysql_affected_rows($dbh);
 			// Take note of the insert_id
 			if ( preg_match("/^\\s*(insert|replace) /i",$query) ) {
-				$this->insert_id = mysql_insert_id($this->dbh);	
+				$this->insert_id = mysql_insert_id($dbh);	
 			}
 			// Return number of rows affected
 			$return_val = $this->rows_affected;
