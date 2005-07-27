@@ -53,6 +53,10 @@ class wpdb {
 <p>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://wordpress.org/support/'>WordPress Support Forums</a>.</p>
 ");
 		}
+		$this->db_host		= $dbhost;
+		$this->db_user		= $dbuser;
+		$this->db_password	= $dbpass;
+		$this->db_name		= $dbname;
 
 		$this->select($dbname);
 	}
@@ -124,6 +128,48 @@ class wpdb {
 		$this->last_query = null;
 	}
 
+	function db_connect( $query ) {
+		global $db_list;
+		if( is_array( $db_list ) == false )
+			return true;
+
+		if ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
+			$details = $db_list[ 'write' ][ mt_rand( 0, count( $db_list[ 'write' ] ) -1 ) ];
+		} else {
+			$details = $db_list[ 'read' ][ mt_rand( 0, count( $db_list[ 'read' ] ) -1 ) ];
+		}
+
+		if( $this->db_host != $details[ 'db_host' ] || $this->db_user != $details[ 'db_user' ] || $this->db_password != $details[ 'db_password' ] ) {
+			if ($this->dbh) {
+				@mysql_close( $this->dbh );
+			}
+			$this->db_host		= $details[ 'db_host' ];
+			$this->db_user		= $details[ 'db_user' ];
+			$this->db_password	= $details[ 'db_password' ];
+
+			$this->dbh = @mysql_connect( $details[ 'db_host' ], $details[ 'db_user' ], $details[ 'db_password' ] );
+			if (!$this->dbh) {
+				$this->bail("
+<h1>Error establishing a database connection</h1>
+<p>This either means that the username and password information in your <code>wp-config.php</code> file is incorrect or we can't contact the database server at <code>$dbhost</code>. This could mean your host's database server is down.</p>
+<ul>
+	<li>Are you sure you have the correct username and password?</li>
+	<li>Are you sure that you have typed the correct hostname?</li>
+	<li>Are you sure that the database server is running?</li>
+</ul>
+<p>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://wordpress.org/support/'>WordPress Support Forums</a>.</p>
+");
+			}
+			$this->db_name = $details[ 'db_name' ];
+			$this->select( $details[ 'db_name' ] );
+		}
+
+		if( $this->db_name != $details[ 'db_name' ] ) {
+			$this->db_name = $details[ 'db_name' ];
+			$this->select( $details[ 'db_name' ] );
+		}
+	}
+
 	// ==================================================================
 	//	Basic Query	- see docs for more detail
 
@@ -142,6 +188,9 @@ class wpdb {
 		if (SAVEQUERIES)
 			$this->timer_start();
 		
+		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true )
+			$this->db_connect( $query );
+
 		$this->result = @mysql_query($query, $this->dbh);
 		++$this->num_queries;
 

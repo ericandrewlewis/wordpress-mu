@@ -52,12 +52,38 @@ $domain = $_SERVER['HTTP_HOST'];
 if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
 
+function is_installed() {
+    global $wpdb, $domain, $base;
+    $check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+    if( $check == false ) {
+	$msg = '<strong>Database Tables Missing.</strong><br /> The table <em>' . DB_NAME . '::' . $wpdb->site . '</em> is missing. Delete the .htaccess file and run the installer again!<br />';
+    } else {
+	$msg = '<strong>Could Not Find Blog!</strong><br />';
+	$msg .= "Searched for <em>" . $domain . $base . "</em> in " . DB_NAME . "::" . $wpdb->blogs . " table. Is that right?<br />";
+    }
+    $msg .= "Please check that your database contains the following tables:<ul>
+    <li> $wpdb->blogs </li>
+    <li> $wpdb->users </li>
+    <li> $wpdb->usermeta </li>
+    <li> $wpdb->site </li>
+    <li> $wpdb->sitemeta </li>
+    <li> $wpdb->sitecategories </li>
+    </ul>";
+    $msg .= "If you suspect a problem please report it to <a href='http://mu.wordpress.org/forums/'>support forums</a>!";
+    die( "<h1>Fatal Error</h1> " . $msg );
+}
 $current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$base'");
+if( $current_blog == false ) {
+    is_installed();
+}
 $blog_id   = $current_blog->blog_id;
 $is_public = $current_blog->is_public;
 $site_id   = $current_blog->site_id;
 
 $current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='$site_id'");
+if( $current_site == false ) {
+    is_installed();
+}
 if( $current_site->domain == $domain && $current_site->path == $base ) {
 	$wpblog = 'main';
 }
@@ -76,7 +102,13 @@ if( $blog_id == false ) {
 	    $blog_id = 1;
 	}
     } else {
-	die( "No Blog by that name on this system." );
+	$check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+	if( $check == false ) {
+	    $msg = ': DB Tables Missing';
+	} else {
+	    $msg = '';
+	}
+	die( "No Blog by that name on this system." . $msg );
     }
 }
 
