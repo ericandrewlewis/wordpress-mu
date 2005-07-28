@@ -194,7 +194,7 @@ function wpmu_checkAvailableSpace($action) {
 	global $wpblog, $blog_id;
 	
 	// Default space allowed is 10 MB 
-	$spaceAllowed = wpmu_adminOption_get("wpmu_space_allocated", 10485760 );
+	$spaceAllowed = ( wpmu_adminOption_get("wpmu_space_allocated", 10485760 ) / 1024 );
 	
 	$dirName = ABSPATH."wp-content/blogs.dir/".$blog_id."/files/";
 	
@@ -211,11 +211,12 @@ function wpmu_checkAvailableSpace($action) {
 	   }
 	}
 	$dir->close();
+	$size = $size / 1024;
 	
 	?>	
 	<table align="center" width="20%" cellpadding="0" cellspacing="0">
 	<tr>
-	<td>Space Available (<?php print $spaceAllowed-$size ?><i>bytes)</i></td>
+	<td>Space Available (<?php printf( "%2.2f", ( ($spaceAllowed-$size) / 1024 ) ) ?><i>MB)</i></td>
 	</tr>
 	<tr>
 	<td bgcolor="<?php echo ((($size/$spaceAllowed)*100)<70)?"Green":"Red"; ?>">&nbsp;</td><td bgcolor="Black" width="<?php echo (($size/$spaceAllowed)*100); ?>%"></td>
