@@ -11,7 +11,7 @@ include('admin-header.php');
   <h2><?php _e('Writing Options') ?></h2> 
   <form name="form1" method="post" action="options.php"> 
     <input type="hidden" name="action" value="update" /> 
-    <input type="hidden" name="page_options" value="'default_post_edit_rows','use_smilies','use_balanceTags','ping_sites','mailserver_url', 'mailserver_port','mailserver_login','mailserver_pass','default_category','default_email_category'" /> 
+    <input type="hidden" name="page_options" value="'default_post_edit_rows','use_smilies','use_balanceTags','mailserver_url', 'mailserver_port','mailserver_login','mailserver_pass','default_category','default_email_category'" /> 
     <table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
       <tr valign="top"> 
         <th width="33%" scope="row"> <?php _e('Size of the post box:') ?></th> 
@@ -79,12 +79,6 @@ endforeach;
 	</table>
 </fieldset>
 
-<fieldset class="options">
-	<legend><?php _e('Update Services') ?></legend>
-          <p><?php _e('When you publish a new post, WordPress automatically notifies the following site update services. For more about this, see <a href="http://codex.wordpress.org/Update_Services">Update Services</a> on the Codex. Separate multiple service URIs with line breaks.') ?></p>
-	
-	<textarea name="ping_sites" id="ping_sites" style="width: 98%;" rows="3" cols="50"><?php form_option('ping_sites'); ?></textarea>
-</fieldset>
 
 <p class="submit"> 
 	<input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" /> 
