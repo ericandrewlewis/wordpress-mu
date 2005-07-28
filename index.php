@@ -202,8 +202,8 @@ function checkdirs() {
 }
 
 function step1() {
-    print "You're probably seeing this message because you're installing WPMU!<br><br>";
-    print "If it's already installed, then <b>mod_rewrite</b> is disabled. Ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.<br><br>";
+    print "<h1>Welcome to WPMU</h1>";
+    print "<p>Please make sure mod_rewrite is installed as it will be activated at the end of this install.</p><p>If mod_rewrite is disabled ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.</p>";
     if( checkdirs() == false ) {
 	return false;
     }
