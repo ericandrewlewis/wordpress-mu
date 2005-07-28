@@ -10,7 +10,7 @@ $menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
 $menu[20] = array(__('Links'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
 $menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
-$menu[35] = array(__('Users'), 'read', 'profile.php');
+$menu[35] = array(__('Profile'), 'read', 'profile.php');
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
 
 if ( get_option('use_fileupload') )
