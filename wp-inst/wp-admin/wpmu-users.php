@@ -159,7 +159,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'blogs':
 		?>
-		<td><?php $blogs = get_blogs_of_user( $user[ 'ID' ] ); if( is_array( $blogs ) ) while( list( $key, $val ) = each( $blogs ) ) { print '<a href="http://test.wordpress.com/wp-admin/wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain ) . '</a><BR>'; } ?></td>
+		<td><?php $blogs = get_blogs_of_user( $user[ 'ID' ] ); if( is_array( $blogs ) ) while( list( $key, $val ) = each( $blogs ) ) { print '<a href="wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain ) . '</a><BR>'; } ?></td>
 		<?php
 		break;
 
