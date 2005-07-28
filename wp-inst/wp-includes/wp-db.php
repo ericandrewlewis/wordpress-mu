@@ -59,10 +59,6 @@ class wpdb {
 <p>If you're unsure what these terms mean you should probably contact your host. If you still need help you can always visit the <a href='http://wordpress.org/support/'>WordPress Support Forums</a>.</p>
 ");
 		}
-		$this->db_host		= $dbhost;
-		$this->db_user		= $dbuser;
-		$this->db_password	= $dbpass;
-		$this->db_name		= $dbname;
 
 		$this->select($dbname, $this->dbh);
 	}
