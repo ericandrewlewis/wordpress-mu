@@ -59,6 +59,24 @@ $db_list = array(
 		)
 	);
 
+$global_db_list = array( 
+			array(	"db_name"	=> "GLOBAL_DB_NAME1",
+				"db_user"	=> "GLOBAL_DB_USER1",
+				"db_password"	=> "GLOBAL_DB_PASS1",
+				"db_host"	=> "GLOBAL_DB_HOST1"
+			),
+			array(	"db_name"	=> "GLOBAL_DB_NAME2",
+				"db_user"	=> "GLOBAL_DB_USER2",
+				"db_password"	=> "GLOBAL_DB_PASS2",
+				"db_host"	=> "GLOBAL_DB_HOST2"
+			),
+			array(	"db_name"	=> "GLOBAL_DB_NAME3",
+				"db_user"	=> "GLOBAL_DB_USER3",
+				"db_password"	=> "GLOBAL_DB_PASS3",
+				"db_host"	=> "GLOBAL_DB_HOST3"
+			)
+			);
+
 /* Stop editing */
 
 define('ABSPATH', dirname(__FILE__).'/');
