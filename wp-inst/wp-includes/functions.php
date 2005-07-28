@@ -311,16 +311,18 @@ function get_alloptions() {
 	}
 	$wpdb->show_errors();
 
-	foreach ($options as $option) {
-		// "When trying to design a foolproof system, 
-		//  never underestimate the ingenuity of the fools :)" -- Dougal
-		if ('siteurl' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
-		if ('home' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
-		if ('category_base' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
-		@ $value = unserialize($option->option_value);
-		if ($value === FALSE)
-			$value = $option->option_value;
-		$all_options->{$option->option_name} = apply_filters('pre_option_' . $option->option_name, $value);
+	if( is_array( $options ) ) {
+		foreach ($options as $option) {
+			// "When trying to design a foolproof system, 
+			//  never underestimate the ingenuity of the fools :)" -- Dougal
+			if ('siteurl' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
+			if ('home' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
+			if ('category_base' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
+			@ $value = unserialize($option->option_value);
+			if ($value === FALSE)
+				$value = $option->option_value;
+			$all_options->{$option->option_name} = apply_filters('pre_option_' . $option->option_name, $value);
+		}
 	}
 	return apply_filters('all_options', $all_options);
 }
