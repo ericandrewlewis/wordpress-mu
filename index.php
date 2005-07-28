@@ -140,12 +140,18 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
             $htaccess = str_replace( "REALPATH", $realpath, $htaccess );
             $htaccess = str_replace( "BASE", $base, $htaccess );
             $htaccess = str_replace( "HOST", $url, $htaccess );
-            $fp = fopen( $newfilename, "w" );
-	    if( $fp ) {
-		fwrite( $fp, $htaccess );
-		fclose( $fp );
+	    if( touch( $newfilename ) ) {
+		    chmod( $newfilename, 0666 );
+		    $fp = fopen( $newfilename, "w" );
+		    if( $fp ) {
+			    fwrite( $fp, $htaccess );
+			    fclose( $fp );
+		    } else {
+			    $err = "could not open $newfilename for writing";
+		    }
+		    chmod( $newfilename, 0644 );
 	    } else {
-		$err = "could not open $newfilename for writing";
+		    $err = "could not open $newfilename for writing";
 	    }
         } else {
 	    $err = "could not open $oldfilename for reading";
