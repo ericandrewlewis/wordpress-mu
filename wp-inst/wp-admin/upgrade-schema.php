@@ -224,7 +224,7 @@ function populate_options() {
 	add_option('links_recently_updated_prepend', '<em>');
 	add_option('links_recently_updated_append', '</em>');
 	add_option('links_recently_updated_time', 120);
-	add_option('comment_moderation', 1);
+	add_option('comment_moderation', 0);
 	add_option('moderation_notify', 0);
 	add_option('permalink_structure', '/%year%/%monthnum%/%day%/%postname%/');
 	add_option('gzipcompression', 0);
