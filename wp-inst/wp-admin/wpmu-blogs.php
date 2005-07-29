@@ -122,7 +122,7 @@ switch( $_GET[ 'action' ] ) {
     $blog_allowed_themes = $wpdb->get_var( $query );
     if( $blog_allowed_themes != false )
 	$blog_allowed_themes = unserialize( $blog_allowed_themes );
-    $allowed_themes = get_site_settings( "allowed_themes" );
+    $allowed_themes = get_site_option( "allowed_themes" );
     if( $allowed_themes == false ) {
 	$allowed_themes = array_keys( $themes );
     }
@@ -297,7 +297,7 @@ print "</table>";
 } // end if ($blogs)
 
     $themes = get_themes();
-    $allowed_themes = get_site_settings( "allowed_themes" );
+    $allowed_themes = get_site_option( "allowed_themes" );
     if( $allowed_themes == false ) {
 	$allowed_themes = array_keys( $themes );
     }

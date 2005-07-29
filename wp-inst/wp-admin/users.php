@@ -174,7 +174,7 @@ default:
 	
 	include ('admin-header.php');
 	
-	if( $user_ID == get_site_settings( "admin_user_id" ) ) {
+	if( $user_ID == get_site_option( "admin_user_id" ) ) {
 	    $userids = $wpdb->get_col("SELECT ID FROM $wpdb->users");
 	} else {
 	    $userids = $wpdb->get_col("SELECT ID FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities'");
@@ -250,7 +250,7 @@ default:
 	$style = '';
 	foreach ($roleclass as $user_object) {
 	    $user_data = &$user_object->data;
-	    if( $user_data->ID != get_site_settings( "admin_user_id" ) ) {
+	    if( $user_data->ID != get_site_option( "admin_user_id" ) ) {
 		$email = $user_data->user_email;
 		$url = $user_data->user_url;
 		$short_url = str_replace('http://', '', $url);

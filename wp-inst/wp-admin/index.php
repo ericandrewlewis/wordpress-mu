@@ -106,15 +106,23 @@ foreach ($rss->items as $item ) {
 </div>
 
 <h2><?php _e('Dashboard'); ?></h2>
-<p><?php _e('Below is the latest news from the official WordPress development blog, click on a title to read the full entry.'); ?></p>
 <?php
-$rss = @fetch_rss('http://wordpress.org/development/feed/');
+if( get_site_option( 'customizefeed1' ) == 0 ) {
+	$rss = @fetch_rss(get_site_option( 'dashboardfeed1' ));
+	$custom = true;
+} else {
+	$rss = @fetch_rss('http://wordpress.org/development/feed/');
+	$custom = false;
+}
+
 if ( isset($rss->items) && 0 != count($rss->items) ) {
-?>
-<h3>WordPress Development Blog</h3>
-<?php
-$rss->items = array_slice($rss->items, 0, 3);
-foreach ($rss->items as $item ) {
+	if( $custom == false ) {
+		print "<h3>WordPress Development Blog</h3>";
+	} else {
+		print "<h3>Your Custom Feed</h3>";
+	}
+	$rss->items = array_slice($rss->items, 0, 3);
+	foreach ($rss->items as $item ) {
 ?>
 <h4><a href='<?php echo wp_filter_kses($item['link']); ?>'><?php echo wp_specialchars($item['title']); ?></a> &#8212; <?php echo human_time_diff( strtotime($item['pubdate'], time() ) ); ?> <?php _e('ago'); ?></h4>
 <p><?php echo $item['description']; ?></p>
@@ -125,6 +133,11 @@ foreach ($rss->items as $item ) {
 
 
 <?php
+if( get_site_option( 'customizefeed2' ) == 0 ) {
+	$rss = @fetch_rss(get_site_option( 'dashboardfeed2' ));
+} else {
+	$rss = @fetch_rss('http://wordpress.org/development/feed/');
+}
 $rss = @fetch_rss('http://planet.wordpress.org/feed/');
 if ( isset($rss->items) && 0 != count($rss->items) ) {
 ?>

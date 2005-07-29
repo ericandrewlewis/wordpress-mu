@@ -28,7 +28,7 @@ $submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), $awaiti
 $submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
 $invites_left = get_usermeta( $user_ID, 'invites_left' );
 if( $invites_left == '' ) {
-    $invites_left = get_site_settings( 'invites_per_user' );
+    $invites_left = get_site_option( 'invites_per_user' );
     update_usermeta( $user_ID, "invites_left", $invites_left );
 }
 $submenu['edit.php'][35] = array(sprintf(__("Invites (%s)"), $invites_left ), 'edit_posts', 'invites.php'); // TODO: put somewhere else.

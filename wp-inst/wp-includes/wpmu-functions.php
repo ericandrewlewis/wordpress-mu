@@ -685,6 +685,10 @@ function get_site_settings( $option ) {
     return $option;
 }
 
+function get_site_option( $key, $value ) {
+	return get_site_settings( $key, $value );
+}
+
 function add_site_settings( $key, $value ) {
     global $wpdb;
     if( $value != get_site_settings( $key ) ) {
@@ -702,6 +706,10 @@ function add_site_settings( $key, $value ) {
     }
 }
 
+function add_site_option( $key, $value ) {
+	return add_site_settings( $key, $value );
+}
+
 function update_site_settings( $key, $value ) {
     global $wpdb;
     if( $value != get_site_settings( $key ) ) {
@@ -714,7 +722,7 @@ function update_site_settings( $key, $value ) {
 	          WHERE  meta_key = '$key'
 	          AND    site_id = '".$wpdb->siteid."'";
        if( $wpdb->get_var( $query ) == false ) {
-	   add_site_settings( $key, $value );
+	   add_site_option( $key, $value );
        } else {
 	   $query = "UPDATE ".$wpdb->sitemeta."
 	             SET    meta_value = '".$wpdb->escape( $value )."'
@@ -722,6 +730,10 @@ function update_site_settings( $key, $value ) {
 	   $wpdb->query( $query );
        }
     }
+}
+
+function update_site_option( $key, $value ) {
+	return update_site_settings( $key, $value );
 }
 
 function switch_to_blogid( $blog_id ) {
@@ -808,7 +820,7 @@ function get_last_updated( $display = false ) {
 
 function get_most_active( $num = 10, $display = true ) {
     global $wpdb;
-    $most_active = get_site_settings( "most_active" );
+    $most_active = get_site_option( "most_active" );
     $update = false;
     if( is_array( $most_active ) ) {
 	if( ( $most_active[ 'time' ] + 60 ) < time() ) { // cache for 60 seconds.
@@ -834,7 +846,7 @@ function get_most_active( $num = 10, $display = true ) {
 	    unset( $most_active );
 	    $most_active = $t;
 	}
-	update_site_settings( "most_active", $most_active );
+	update_site_option( "most_active", $most_active );
     }
 
     if( $display == true ) {
@@ -852,7 +864,7 @@ function get_most_active( $num = 10, $display = true ) {
 function get_blog_list( $start = 0, $num = 10, $display = true ) {
     global $wpdb, $wpmuBaseTablePrefix;
 
-    $blogs = get_site_settings( "blog_list" );
+    $blogs = get_site_option( "blog_list" );
     $update = false;
     if( is_array( $blogs ) ) {
 	if( ( $blogs[ 'time' ] + 60 ) < time() ) { // cache for 60 seconds.
@@ -876,7 +888,7 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 	    unset( $blogs );
 	    $blogs = $blog_list;
 	}
-	update_site_settings( "blog_list", $blogs );
+	update_site_option( "blog_list", $blogs );
     }
 
     return $blogs;

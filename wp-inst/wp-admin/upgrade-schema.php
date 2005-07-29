@@ -255,6 +255,11 @@ function populate_options() {
 	// 1.6
 	add_option('default_role', 'inactive');
 
+	add_site_option( 'customizefeed1', '0' );
+	add_site_option( 'customizefeed2', '0' );
+	add_site_option( 'dashboardfeed1', 'http://wordpress.org/development/feed/' );
+	add_site_option( 'dashboardfeed2', 'http://planet.wordpress.org/feed/' );
+
 	populate_roles();
 
 	// Delete unused options

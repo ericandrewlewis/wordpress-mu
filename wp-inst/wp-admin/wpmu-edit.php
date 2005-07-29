@@ -4,6 +4,13 @@ require_once('admin.php');
 do_action( "wpmuadminedit", "" );
 
 switch( $_GET[ 'action' ] ) {
+    case "updatefeeds":
+	update_site_option( "customizefeed1", $_POST[ 'customizefeed1' ] );
+    	update_site_option( "customizefeed2", $_POST[ 'customizefeed2' ] );
+	update_site_option( "dashboardfeed1", $_POST[ 'dashboardfeed1' ] );
+	update_site_option( "dashboardfeed2", $_POST[ 'dashboardfeed2' ] );
+	header( "Location: wpmu-feeds.php?updated=true" );
+    break;
     case "updateblog":
     $options_table_name = $wpmuBaseTablePrefix . $_POST[ 'id' ] ."_options";
 
@@ -92,7 +99,7 @@ switch( $_GET[ 'action' ] ) {
 	    if( $_POST[ 'theme' ][ addslashes( $key ) ] == 'enabled' )
 		$allowed_themes[ $key ] = true;
 	}
-	update_site_settings( 'allowed_themes', $allowed_themes );
+	update_site_option( 'allowed_themes', $allowed_themes );
     }
     header( "Location: wpmu-blogs.php?updated=true" );
     break;

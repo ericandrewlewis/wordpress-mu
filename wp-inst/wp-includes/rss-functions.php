@@ -662,8 +662,8 @@ class RSSCache {
 		if ( !$wpdb->get_var("SELECT option_name FROM $wpdb->options WHERE option_name = '$cache_timestamp'") )
 			add_option($cache_timestamp, '', '', 'no');
 		
-		update_option($cache_option, $rss);
-		update_option($cache_timestamp, time() );
+		update_site_option($cache_option, $rss);
+		update_site_option($cache_timestamp, time() );
 		
 		return $cache_option;
 	}
@@ -678,14 +678,14 @@ class RSSCache {
 		$this->ERROR = "";
 		$cache_option = 'rss_' . $this->file_name( $url );
 		
-		if ( ! get_option( $cache_option ) ) {
+		if ( ! get_site_option( $cache_option ) ) {
 			$this->debug( 
 				"Cache doesn't contain: $url (cache option: $cache_option)"
 			);
 			return 0;
 		}
 		
-		$rss = get_option( $cache_option );
+		$rss = get_site_option( $cache_option );
 		
 		return $rss;
 	}

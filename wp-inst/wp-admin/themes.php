@@ -31,7 +31,7 @@ require_once('admin-header.php');
 
 <?php
 $themes = get_themes();
-$allowed_themes = get_site_settings( "allowed_themes" );
+$allowed_themes = get_site_option( "allowed_themes" );
 if( $allowed_themes == false ) {
     $allowed_themes = $themes;
 }

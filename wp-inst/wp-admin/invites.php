@@ -8,8 +8,8 @@ if( $_POST[ 'action' ] == 'send' ) {
     $invites_left = get_usermeta( $user_ID, 'invites_left' );
     if( $invites_left != false ) {
 	if( $_POST[ 'email' ] != '' && is_email( $_POST[ 'email' ] ) ) {
-	    $msg     = get_site_settings( "invites_default_message" );
-	    $subject = get_site_settings( "invites_default_subject" );
+	    $msg     = get_site_option( "invites_default_message" );
+	    $subject = get_site_option( "invites_default_subject" );
 	    $from    = $cache_userdata[ $user_ID ]->user_email;
 
 	    $msg = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $msg );
@@ -35,7 +35,7 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')";
 	    $wpdb->query( $query );
 	    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
-	    if( $user_ID != get_site_settings( "admin_user_id" ) ) {
+	    if( $user_ID != get_site_option( "admin_user_id" ) ) {
 		    $invites_left = $invites_left - 1;
 		    update_usermeta( $user_ID, "invites_left", $invites_left );
 	    }

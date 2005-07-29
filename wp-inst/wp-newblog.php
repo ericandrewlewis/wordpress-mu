@@ -105,10 +105,10 @@ function determineDirPath() {
 switch( $_POST[ 'stage' ] )
 {
     case "1":
-	$illegal_names = get_site_settings( "illegal_names" );
+	$illegal_names = get_site_option( "illegal_names" );
 	if( $illegal_names == false ) {
 	    $illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator" );
-	    add_site_settings( "illegal_names", $illegal_names );
+	    add_site_option( "illegal_names", $illegal_names );
 	}
 
 	$newBlogID = sanitize_title($_POST['weblog_id']);
@@ -165,7 +165,7 @@ switch( $_POST[ 'stage' ] )
 		$err = createBlog( $newBlogID.".".$domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email );
 		if( $err == 'ok' ) {
 		    displaySecondForm();
-		    $admin_email = get_site_settings( "admin_email" );
+		    $admin_email = get_site_option( "admin_email" );
 		    $msg = "A new blog has been created on " . $current_site->domain . $current_site->path . "\n";
 		    $msg .= "Address: http://" . $newBlogID . "." . $domain . $scriptBaseName . "\n";
 		    $msg .= "Title: $weblog_title\n";
