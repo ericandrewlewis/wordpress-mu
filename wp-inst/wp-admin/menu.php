@@ -55,6 +55,7 @@ if( $wpblog == 'main' && current_user_can( "level_10" ) ) {
 }
 $submenu[ 'wpmu-admin.php' ][5] = array( 'Blogs', 10, 'wpmu-blogs.php' );
 $submenu[ 'wpmu-admin.php' ][10] = array( 'Users', 10, 'wpmu-users.php' );
+$submenu[ 'wpmu-admin.php' ][15] = array( 'Feeds', 10, 'wpmu-feeds.php' );
 
 // Create list of page plugin hook names.
 foreach ($menu as $menu_page) {
