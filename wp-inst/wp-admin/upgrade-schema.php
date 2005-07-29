@@ -225,7 +225,7 @@ function populate_options() {
 	add_option('links_recently_updated_append', '</em>');
 	add_option('links_recently_updated_time', 120);
 	add_option('comment_moderation', 0);
-	add_option('moderation_notify', 0);
+	add_option('moderation_notify', 1);
 	add_option('permalink_structure', '/%year%/%monthnum%/%day%/%postname%/');
 	add_option('gzipcompression', 0);
 	add_option('hack_file', 0);
@@ -243,7 +243,7 @@ function populate_options() {
 	add_option('use_linksupdate', 0);
 	add_option('template', 'default');
 	add_option('stylesheet', 'default');
-	add_option('comment_whitelist', 1);
+	add_option('comment_whitelist', 0);
 	add_option('page_uris');
 	add_option('blacklist_keys');
 	add_option('comment_registration', 0);
