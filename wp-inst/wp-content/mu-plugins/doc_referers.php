@@ -25,6 +25,9 @@ Author URI: http://blogs.linux.ie/xeer/
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
+if( defined( "WP_INSTALLING" ) )
+	return true;
+
 class DOC_Referers {
 
     var $table_version = 0.1;
