@@ -58,7 +58,7 @@ define('HASHCASH_FORM_ID', 'setupform');
  * that supports my work on this plugin, and my dedication to 
  * supporting it.
  */
-define('HASHCASH_LINK', true);
+define('HASHCASH_LINK', false);
 
 /**
  * Type: bool
