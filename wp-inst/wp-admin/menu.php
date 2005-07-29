@@ -9,7 +9,7 @@ $menu[5] = array(__('Write'), 'edit_posts', 'post.php');
 $menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
 $menu[20] = array(__('Links'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
-$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+#$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 $menu[35] = array(__('Profile'), 'read', 'profile.php');
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
 
@@ -46,7 +46,7 @@ $submenu['options-general.php'][10] = array(__('Writing'), 'manage_options', 'op
 $submenu['options-general.php'][15] = array(__('Reading'), 'manage_options', 'options-reading.php');
 $submenu['options-general.php'][20] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
 
-$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+#$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
 
