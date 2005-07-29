@@ -135,14 +135,15 @@ if ( isset($rss->items) && 0 != count($rss->items) ) {
 <?php
 if( get_site_option( 'customizefeed2' ) == 0 ) {
 	$rss = @fetch_rss(get_site_option( 'dashboardfeed2' ));
+	$custom = true;
 } else {
 	$rss = @fetch_rss('http://wordpress.org/development/feed/');
+	$custom = false;
 }
-$rss = @fetch_rss('http://planet.wordpress.org/feed/');
 if ( isset($rss->items) && 0 != count($rss->items) ) {
 ?>
 <div id="planetnews">
-<h3><?php _e('Other WordPress News'); ?> <a href="http://planet.wordpress.org/"><?php _e('more'); ?> &raquo;</a></h3>
+<h3><?php if( $custom == false ) { _e('Other WordPress News'); ?> <a href="http://planet.wordpress.org/"><?php _e('more'); ?> &raquo;</a><?php } else { ?>Your Custom Feed<?php } ?> </h3>
 <ul>
 <?php
 $rss->items = array_slice($rss->items, 0, 20);
