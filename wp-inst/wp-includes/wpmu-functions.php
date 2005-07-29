@@ -685,8 +685,8 @@ function get_site_settings( $option ) {
     return $option;
 }
 
-function get_site_option( $key, $value ) {
-	return get_site_settings( $key, $value );
+function get_site_option( $option ) {
+	return get_site_settings( $option );
 }
 
 function add_site_settings( $key, $value ) {
