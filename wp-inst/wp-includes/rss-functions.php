@@ -657,10 +657,10 @@ class RSSCache {
 		$cache_option = 'rss_' . $this->file_name( $url );
 		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 		
-		if ( !$wpdb->get_var("SELECT option_name FROM $wpdb->options WHERE option_name = '$cache_option'") )
-			add_option($cache_option, '', '', 'no');
-		if ( !$wpdb->get_var("SELECT option_name FROM $wpdb->options WHERE option_name = '$cache_timestamp'") )
-			add_option($cache_timestamp, '', '', 'no');
+		if ( !$wpdb->get_var("SELECT meta_key FROM $wpdb->sitemeta WHERE meta_key = '$cache_option'") )
+			add_site_option($cache_option, '', '', 'no');
+		if ( !$wpdb->get_var("SELECT meta_key FROM $wpdb->sitemeta WHERE meta_key = '$cache_timestamp'") )
+			add_site_option($cache_timestamp, '', '', 'no');
 		
 		update_site_option($cache_option, $rss);
 		update_site_option($cache_timestamp, time() );
