@@ -259,6 +259,8 @@ function populate_options() {
 	add_site_option( 'customizefeed2', '0' );
 	add_site_option( 'dashboardfeed1', 'http://wordpress.org/development/feed/' );
 	add_site_option( 'dashboardfeed2', 'http://planet.wordpress.org/feed/' );
+	add_site_option( 'dashboardfeed1name', 'WordPress Development Blog' );
+	add_site_option( 'dashboardfeed2name', 'Other WordPress News' );
 
 	populate_roles();
 

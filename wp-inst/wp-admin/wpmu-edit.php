@@ -5,10 +5,12 @@ do_action( "wpmuadminedit", "" );
 
 switch( $_GET[ 'action' ] ) {
     case "updatefeeds":
-	update_site_option( "customizefeed1", $_POST[ 'customizefeed1' ] );
-    	update_site_option( "customizefeed2", $_POST[ 'customizefeed2' ] );
-	update_site_option( "dashboardfeed1", $_POST[ 'dashboardfeed1' ] );
-	update_site_option( "dashboardfeed2", $_POST[ 'dashboardfeed2' ] );
+	update_site_option( "customizefeed1", $wpdb->escape( $_POST[ 'customizefeed1' ] ) );
+    	update_site_option( "customizefeed2", $wpdb->escape( $_POST[ 'customizefeed2' ] ) );
+	update_site_option( "dashboardfeed1", $wpdb->escape( $_POST[ 'dashboardfeed1' ] ) );
+	update_site_option( "dashboardfeed2", $wpdb->escape( $_POST[ 'dashboardfeed2' ] ) );
+	update_site_option( "dashboardfeed1name", $wpdb->escape( $_POST[ 'dashboardfeed1name' ] ) );
+	update_site_option( "dashboardfeed2name", $wpdb->escape( $_POST[ 'dashboardfeed2name' ] ) );
 	header( "Location: wpmu-feeds.php?updated=true" );
     break;
     case "updateblog":

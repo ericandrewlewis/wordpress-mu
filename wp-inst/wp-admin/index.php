@@ -107,20 +107,22 @@ foreach ($rss->items as $item ) {
 
 <h2><?php _e('Dashboard'); ?></h2>
 <?php
-if( get_site_option( 'customizefeed1' ) == 0 ) {
-	$rss = @fetch_rss(get_site_option( 'dashboardfeed1' ));
-	$custom = true;
-} else {
+$rss = @fetch_rss(get_site_option( 'dashboardfeed1' ));
+$title = get_site_option( 'dashboardfeed1name' );
+if( get_site_option( 'customizefeed1' ) == 1 ) {
+	if( get_option( 'dashboardfeed1' ) == 0 ) {
+		$rss = @fetch_rss(get_option( 'dashboardfeed1' ));
+		$title = get_option( 'dashboardfeed1name' );
+	}
+} 
+
+if( $rss == false ) {
 	$rss = @fetch_rss('http://wordpress.org/development/feed/');
-	$custom = false;
+	$title = "WordPress Development Blog";
 }
 
 if ( isset($rss->items) && 0 != count($rss->items) ) {
-	if( $custom == false ) {
-		print "<h3>WordPress Development Blog</h3>";
-	} else {
-		print "<h3>Your Custom Feed</h3>";
-	}
+	print "<h3>$title</h3>";
 	$rss->items = array_slice($rss->items, 0, 3);
 	foreach ($rss->items as $item ) {
 ?>
@@ -133,17 +135,22 @@ if ( isset($rss->items) && 0 != count($rss->items) ) {
 
 
 <?php
-if( get_site_option( 'customizefeed2' ) == 0 ) {
-	$rss = @fetch_rss(get_site_option( 'dashboardfeed2' ));
-	$custom = true;
-} else {
+$rss = @fetch_rss(get_site_option( 'dashboardfeed2' ));
+$title = get_site_option( 'dashboardfeed2name' );
+if( get_site_option( 'customizefeed2' ) == 1 ) {
+	if( get_option( 'dashboardfeed2' ) == 0 ) {
+		$rss = @fetch_rss(get_option( 'dashboardfeed2' ));
+		$title = get_option( 'dashboardfeed2name' );
+	}
+} 
+if( $rss == false ) {
 	$rss = @fetch_rss('http://wordpress.org/development/feed/');
-	$custom = false;
 }
+
 if ( isset($rss->items) && 0 != count($rss->items) ) {
 ?>
 <div id="planetnews">
-<h3><?php if( $custom == false ) { _e('Other WordPress News'); ?> <a href="http://planet.wordpress.org/"><?php _e('more'); ?> &raquo;</a><?php } else { ?>Your Custom Feed<?php } ?> </h3>
+<h3><?php _e( $title ); ?> &raquo;</a></h3>
 <ul>
 <?php
 $rss->items = array_slice($rss->items, 0, 20);
