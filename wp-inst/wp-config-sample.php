@@ -17,6 +17,9 @@ $table_prefix  = 'wp_';   // example: 'wp_' or 'b2' or 'mylogin_'
 define ('WPLANG', '');
 
 define( "WP_USE_MULTIPLE_DB", false );
+/*
+   All databases must use different usernames and passwords!
+*/
 $db_list = array( 
 	"write" => array( 
 			array(	"db_name"	=> "WRITE_DB_NAME1",
