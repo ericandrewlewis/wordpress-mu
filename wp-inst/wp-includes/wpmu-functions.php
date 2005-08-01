@@ -535,6 +535,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://zed1.com/journalized/', 'Mike', 1, 'http://zed1.com/journalized/feed/');");
     $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://www.alexking.org/', 'Alex', 1, 'http://www.alexking.org/blog/wp-rss2.php');");
     $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://dougal.gunters.org/', 'Dougal', 1, 'http://dougal.gunters.org/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://www.wordpress.com/', 'WordPress', 1, 'http://www.wordpress.com/feed/');");
 
     // Default category
     $wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."')");
@@ -557,18 +558,18 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     // First post
     $now = date('Y-m-d H:i:s');
     $now_gmt = gmdate('Y-m-d H:i:s');
-    $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('Welcome to WordPress MU. This is your first post. Edit or delete it, then start blogging!'))."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
+    $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('Welcome to <a href=\"http://www.wordpress.com/\">WordPress.com</a>. This is your first post. Edit or delete it, then start blogging!'))."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
     $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '".addslashes(__('About'))."', '0', '".addslashes(__('about'))."', '$now', '$now_gmt', 'static')");
 
     $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
     $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
 
     // Default comment
-    $wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://wordpress.org', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
+    $wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://www.wordpress.com', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
 
     $message_headers = 'From: ' . stripslashes($weblog_title) . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-    $message = __("Dear User,\n\nYour new WordPressMU blog has been successfully set up at:\n".$url."\n\nYou can log in to the administrator account with the following information:\n Username: ".$username."\n Password: ".$random_password."\nLogin Here: ".$url."wp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPressMU Team\nhttp://mu.wordpress.org/\n");
-    @mail($admin_email, __('New WordPress MU Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
+    $message = __("Dear User,\n\nYour new WordPress.com blog has been successfully set up at:\n".$url."\n\nYou can log in to the administrator account with the following information:\n Username: ".$username."\n Password: ".$random_password."\nLogin Here: ".$url."wp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPress Team\nhttp://www.wordpress.com/\n");
+    @mail($admin_email, __('New WordPress.com Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
     upgrade_all();
     // remove all perms except for the login user.

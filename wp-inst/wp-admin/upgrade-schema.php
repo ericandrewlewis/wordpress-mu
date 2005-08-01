@@ -189,7 +189,7 @@ function populate_options() {
 	$guessurl = preg_replace('|/wp-admin/.*|i', '', 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 	add_option('siteurl', $guessurl, __('WordPress web address'));
 	add_option('blogname', __('My Weblog'), __('Blog title'));
-	add_option('blogdescription', __('Just another WordPress weblog'), __('Short tagline'));
+	add_option('blogdescription', __('Just another WordPress.com weblog'), __('Short tagline'));
 	add_option('new_users_can_blog', 0);
 	add_option('users_can_register', 0);
 	add_option('admin_email', 'you@example.com');
