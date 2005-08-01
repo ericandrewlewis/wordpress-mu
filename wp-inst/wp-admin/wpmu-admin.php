@@ -29,9 +29,8 @@ switch( $_GET[ 'action' ] ) {
     #print "<br>blogs: <br>";
     #print_r( $blogs );
 
-    $most_active = get_most_active( 10, false );
+    $most_active = get_most_active_blogs( 10, false );
     if( is_array( $most_active ) ) {
-	$most_active = array_slice( $most_active, 0, 10 );
 	print "<caption>Most Active Blogs</caption>";
 	print "<tr><th scope='col'>ID</th><th scope='col'>Address</th><th scope='col'>Posts</th></tr>";
 	while( list( $key, $details ) = each( $most_active ) ) { 

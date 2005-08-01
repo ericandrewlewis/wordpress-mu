@@ -819,7 +819,7 @@ function get_last_updated( $display = false ) {
     return $blogs;
 }
 
-function get_most_active( $num = 10, $display = true ) {
+function get_most_active_blogs( $num = 10, $display = true ) {
     global $wpdb;
     $most_active = get_site_option( "most_active" );
     $update = false;
@@ -833,16 +833,17 @@ function get_most_active( $num = 10, $display = true ) {
 
     if( $update == true ) {
 	unset( $most_active );
-	$blogs = get_blog_list(); // $blog_id -> $details
+	$blogs = get_blog_list( 0, 'all', false ); // $blog_id -> $details
 	if( is_array( $blogs ) ) {
 	    reset( $blogs );
 	    while( list( $key, $details ) = each( $blogs ) ) { 
 		$most_active[ $details[ 'blog_id' ] ] = $details[ 'postcount' ];
+		$blog_list[ $details[ 'blog_id' ] ] = $details; // array_slice() removes keys!!
 	    }
 	    arsort( $most_active );
 	    reset( $most_active );
 	    while( list( $key, $details ) = each( $most_active ) ) { 
-		$t[ $key ] = $blogs[ $key ];
+		$t[ $key ] = $blog_list[ $key ];
 	    }
 	    unset( $most_active );
 	    $most_active = $t;
@@ -851,15 +852,16 @@ function get_most_active( $num = 10, $display = true ) {
     }
 
     if( $display == true ) {
-	if( is_array( $most_active ) ) {
-	    while( list( $key, $details ) = each( $most_active ) ) { 
-		$url = "http://" . $details[ 'domain' ] . $details[ 'path' ];
-		print "<li>" . $details[ 'postcount' ] . " <a href='$url'>$url</a></li>";
+	    if( is_array( $most_active ) ) {
+		    reset( $most_active );
+		    while( list( $key, $details ) = each( $most_active ) ) { 
+			    $url = "http://" . $details[ 'domain' ] . $details[ 'path' ];
+			    print "<li>" . $details[ 'postcount' ] . " <a href='$url'>$url</a></li>";
+		    }
 	    }
-	}
     }
 
-    return $most_active;
+    return array_slice( $most_active, 0, $num );
 }
 
 function get_blog_list( $start = 0, $num = 10, $display = true ) {
@@ -877,7 +879,7 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 
     if( $update == true ) {
 	unset( $blogs );
-	$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered ASC", ARRAY_A );
+	$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered DESC", ARRAY_A );
 	if( is_array( $blogs ) ) {
 	    while( list( $key, $details ) = each( $blogs ) ) { 
 		if( is_archived( $details[ 'blog_id' ] ) == 'yes' )
@@ -892,6 +894,10 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 	update_site_option( "blog_list", $blogs );
     }
 
-    return $blogs;
+    if( $num == 'all' ) {
+	    return array_slice( $blogs, $start, count( $blogs ) );
+    } else {
+	    return array_slice( $blogs, $start, $num );
+    }
 }
 ?>
