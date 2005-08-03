@@ -3,22 +3,23 @@ require_once('admin.php');
 
 do_action( "wpmuadminedit", "" );
 
+$id = $wpdb->escape( $_POST[ 'id' ] );
 switch( $_GET[ 'action' ] ) {
 	case "searchusers":
-	$search = $wpdb->escape( $_GET[ 'search' ] );
-	$id = $wpdb->escape( $_GET[ 'id' ] );
-	$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . ", " . $wpdb->usermeta . " WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND " . $wpdb->usermeta . ".meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'";
-	$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%'";
-	$users = $wpdb->get_results( $query );
-	if( is_array( $users ) ) {
-		while( list( $key, $val ) = each( $users ) ) 
-		{ 
-			print '<span onclick="javascript:return updateUserBox(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
+		$search = $wpdb->escape( $_GET[ 'search' ] );
+		$id = $wpdb->escape( $_GET[ 'id' ] );
+		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . ", " . $wpdb->usermeta . " WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND " . $wpdb->usermeta . ".meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'";
+		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%' limit 0,10";
+		$users = $wpdb->get_results( $query );
+		if( is_array( $users ) ) {
+			while( list( $key, $val ) = each( $users ) ) 
+			{ 
+				print '<span onclick="javascript:return updateUserBox(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
+			}
+		} else {
+			print "No Users Found";
 		}
-	} else {
-		print "No Users Found";
-	}
-	exit;
+		exit;
 	break;
 	case "updatefeeds":
 		update_site_option( "customizefeed1", $wpdb->escape( $_POST[ 'customizefeed1' ] ) );
@@ -30,7 +31,7 @@ switch( $_GET[ 'action' ] ) {
 		header( "Location: wpmu-feeds.php?updated=true" );
 	break;
     case "updateblog":
-    $options_table_name = $wpmuBaseTablePrefix . $_POST[ 'id' ] ."_options";
+    $options_table_name = $wpmuBaseTablePrefix . $id ."_options";
 
     // themes
     if( is_array( $_POST[ 'theme' ] ) ) {
@@ -69,7 +70,7 @@ switch( $_GET[ 'action' ] ) {
 	                 registered   = '".$_POST[ 'blog' ][ 'registered' ]."',
 		         last_updated = '".$_POST[ 'blog' ][ 'last_updated' ]."',
 		         is_public    = '".$_POST[ 'blog' ][ 'is_public' ]."'
-	          WHERE  blog_id = '".$_POST[ 'id' ]."'";
+	          WHERE  blog_id = '".$id."'";
         $wpdb->query( $query );
     }
 
@@ -77,7 +78,7 @@ switch( $_GET[ 'action' ] ) {
     if( is_array( $_POST[ 'blogusers' ] ) ) {
 	    reset( $_POST[ 'blogusers' ] );
 	    while( list( $key, $val ) = each( $_POST[ 'blogusers' ] ) ) { 
-		    $wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $_POST[ 'id' ] . "_capabilities' AND user_id = '$key'" );
+		    $wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities' AND user_id = '" . $wpdb->escape( $key ) . "'" );
 	    }
     }
 
@@ -87,11 +88,12 @@ switch( $_GET[ 'action' ] ) {
 	    $newuser = $wpdb->escape( $_POST[ 'newuser' ] );
 	    $userid = $wpdb->get_var( "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '$newuser'" );
 	    if( $userid ) {
-		    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
-			    	   VALUES ( NULL, '$userid', 'wp_" . $_POST[ 'id' ] . "_capabilities', 'a:1:{s:13:\"inactive\";b:1;}')" );
+		    $user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );
+		    if( $user == false )
+			    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', 'wp_" . $id . "_capabilities', 'a:1:{s:13:\"inactive\";b:1;}')" );
 	    }
     }
-    header( "Location: wpmu-blogs.php?action=editblog&id=".$_POST[ 'id' ]."&updated=true" );
+    header( "Location: wpmu-blogs.php?action=editblog&id=".$id."&updated=true" );
     break;
     case "deleteblog":
 	$query = "UPDATE ".$wpdb->blogs."
@@ -105,7 +107,7 @@ switch( $_GET[ 'action' ] ) {
         while( list( $key, $val ) = each( $_POST[ 'option' ] ) ) { 
     	$query = "UPDATE ".$wpdb->users."
     	          SET    ".$key." = '".$val."'
-    	          WHERE  ID  = '".$_POST[ 'id' ]."'";
+    	          WHERE  ID  = '".$id."'";
     	$wpdb->query( $query );
         }
     }
@@ -125,7 +127,7 @@ switch( $_GET[ 'action' ] ) {
 	    $wpdb->query( $query );
         }
     }
-    header( "Location: wpmu-users.php?action=edit&id=".$_POST[ 'id' ]."&updated=true" );
+    header( "Location: wpmu-users.php?action=edit&id=".$id."&updated=true" );
     break;
     case "updatethemes":
     if( is_array( $_POST[ 'theme' ] ) ) {
