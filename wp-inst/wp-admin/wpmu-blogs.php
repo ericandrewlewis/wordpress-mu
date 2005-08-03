@@ -62,9 +62,6 @@ switch( $_GET[ 'action' ] ) {
 	    </td> 
 	</tr> 
     <tr><td colspan='2'>
-    <p class="submit">
-      <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
-    </p>
     <br />
     <br />
     </td></tr>
@@ -149,7 +146,102 @@ switch( $_GET[ 'action' ] ) {
 	print $out;
 	print "</table>";
     }
+    $blogusers = get_users_of_blog( $_GET[ 'id' ] );
+    print "<h3>Blog Users</h3>";
+    if( is_array( $blogusers ) ) {
+	    print "<table width='100%'><caption>Current Users</caption>";
+	    print "<tr><th>User</th><th>Remove</th><th></th></tr>";
+	    reset( $blogusers );
+	    while( list( $key, $val ) = each( $blogusers ) ) 
+	    { 
+		    print "<tr><td>" . $val->user_login . "</td>";
+		    if( $val->user_id != $current_user->data->ID ) {
+			    print "<td><input title='Click to remove user' type='checkbox' name='blogusers[" . $val->user_id . "]'></td>";
+		    } else {
+			    print "<td><b>N/A</b></td>";
+		    }
+		    print "<td><a href='user-edit.php?user_id=" . $val->user_id . "'>Edit</td></tr>";
+	    }
+	    print "</table>";
+    }
+    print "<h3>Add a new user</h3>";
     ?>
+<p>As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.</p>
+<table>
+<tr><td>User&nbsp;Login: </td><td><input type="text" name="newuser" id="newuser"></td><td><a href="javascript:doSearch();">Search</a></td></tr>
+<tr><td></td><td colspan='2'><div style='border: 1px solid #000; margin: 5px; padding: 5px; width=20px;' id="searchresults"><?php _e( 'Search Results' ) ?></div></td>
+	  </tr>
+</table>
+<br />
+<p class="submit">
+<input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
+</p> 
+
+<script language="JavaScript">
+
+function updateUserBox( username )
+{
+	document.form1.newuser.value=username;
+	document.getElementById("searchresults").innerHTML = "<?php _e( 'Search Results' ) ?>";
+	return false;
+}
+
+// from js_util.js by scottandrew.com/junkyard/js/
+function addEvent(elm, evType, fn, useCapture)
+{
+  if (elm.addEventListener){
+    elm.addEventListener(evType, fn, useCapture);
+    return true;
+  } else if (elm.attachEvent){
+    var r = elm.attachEvent("on"+evType, fn);
+    return r;
+  } else {
+    alert("Handler could not be removed");
+  }
+}
+// end from scottandrew.com/junkyard/js/
+
+var valBox = document.getElementById("newuser");
+var displayBox = document.getElementById("searchresults");
+addEvent(valBox, 'keyup', doTest, false);
+var keyPressDelay = '';
+
+var xmlhttp=false;
+ try {
+  xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+ } catch (e) {
+  try {
+   xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+  } catch (E) {
+   xmlhttp = false;
+  }
+ }
+
+if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+  xmlhttp = new XMLHttpRequest();
+}
+
+function doTest() {
+        if (keyPressDelay) {
+                window.clearTimeout(keyPressDelay);
+        }
+
+        if(valBox.value != '') {
+                keyPressDelay = window.setTimeout('doSearch()',800);
+        }
+}
+
+function doSearch() {
+	displayBox.innerHTML = "Searching ...";
+        xmlhttp.open("GET","wpmu-edit.php?action=searchusers&search="+valBox.value,true);
+	xmlhttp.onreadystatechange=function() {
+                if (xmlhttp.readyState==4) {
+		        displayBox.innerHTML = xmlhttp.responseText;
+                }
+        }
+        xmlhttp.send(null);
+}
+</script>
     </td>
     </table>
     <?php

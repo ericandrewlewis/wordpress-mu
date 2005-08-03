@@ -4,15 +4,31 @@ require_once('admin.php');
 do_action( "wpmuadminedit", "" );
 
 switch( $_GET[ 'action' ] ) {
-    case "updatefeeds":
-	update_site_option( "customizefeed1", $wpdb->escape( $_POST[ 'customizefeed1' ] ) );
-    	update_site_option( "customizefeed2", $wpdb->escape( $_POST[ 'customizefeed2' ] ) );
-	update_site_option( "dashboardfeed1", $wpdb->escape( $_POST[ 'dashboardfeed1' ] ) );
-	update_site_option( "dashboardfeed2", $wpdb->escape( $_POST[ 'dashboardfeed2' ] ) );
-	update_site_option( "dashboardfeed1name", $wpdb->escape( $_POST[ 'dashboardfeed1name' ] ) );
-	update_site_option( "dashboardfeed2name", $wpdb->escape( $_POST[ 'dashboardfeed2name' ] ) );
-	header( "Location: wpmu-feeds.php?updated=true" );
-    break;
+	case "searchusers":
+	$search = $wpdb->escape( $_GET[ 'search' ] );
+	$id = $wpdb->escape( $_GET[ 'id' ] );
+	$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . ", " . $wpdb->usermeta . " WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND " . $wpdb->usermeta . ".meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'";
+	$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%'";
+	$users = $wpdb->get_results( $query );
+	if( is_array( $users ) ) {
+		while( list( $key, $val ) = each( $users ) ) 
+		{ 
+			print '<span onclick="javascript:return updateUserBox(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
+		}
+	} else {
+		print "No Users Found";
+	}
+	exit;
+	break;
+	case "updatefeeds":
+		update_site_option( "customizefeed1", $wpdb->escape( $_POST[ 'customizefeed1' ] ) );
+		update_site_option( "customizefeed2", $wpdb->escape( $_POST[ 'customizefeed2' ] ) );
+		update_site_option( "dashboardfeed1", $wpdb->escape( $_POST[ 'dashboardfeed1' ] ) );
+		update_site_option( "dashboardfeed2", $wpdb->escape( $_POST[ 'dashboardfeed2' ] ) );
+		update_site_option( "dashboardfeed1name", $wpdb->escape( $_POST[ 'dashboardfeed1name' ] ) );
+		update_site_option( "dashboardfeed2name", $wpdb->escape( $_POST[ 'dashboardfeed2name' ] ) );
+		header( "Location: wpmu-feeds.php?updated=true" );
+	break;
     case "updateblog":
     $options_table_name = $wpmuBaseTablePrefix . $_POST[ 'id' ] ."_options";
 
@@ -55,6 +71,25 @@ switch( $_GET[ 'action' ] ) {
 		         is_public    = '".$_POST[ 'blog' ][ 'is_public' ]."'
 	          WHERE  blog_id = '".$_POST[ 'id' ]."'";
         $wpdb->query( $query );
+    }
+
+    // remove user
+    if( is_array( $_POST[ 'blogusers' ] ) ) {
+	    reset( $_POST[ 'blogusers' ] );
+	    while( list( $key, $val ) = each( $_POST[ 'blogusers' ] ) ) { 
+		    $wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $_POST[ 'id' ] . "_capabilities' AND user_id = '$key'" );
+	    }
+    }
+
+
+    // add user?
+    if( $_POST[ 'newuser' ] != '' ) {
+	    $newuser = $wpdb->escape( $_POST[ 'newuser' ] );
+	    $userid = $wpdb->get_var( "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '$newuser'" );
+	    if( $userid ) {
+		    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
+			    	   VALUES ( NULL, '$userid', 'wp_" . $_POST[ 'id' ] . "_capabilities', 'a:1:{s:13:\"inactive\";b:1;}')" );
+	    }
     }
     header( "Location: wpmu-blogs.php?action=editblog&id=".$_POST[ 'id' ]."&updated=true" );
     break;
