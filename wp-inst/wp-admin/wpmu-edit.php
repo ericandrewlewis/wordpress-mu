@@ -90,7 +90,7 @@ switch( $_GET[ 'action' ] ) {
 	    if( $userid ) {
 		    $user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );
 		    if( $user == false )
-			    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', 'wp_" . $id . "_capabilities', 'a:1:{s:13:\"inactive\";b:1;}')" );
+			    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', 'wp_" . $id . "_capabilities', 'a:1:{s:8:\"inactive\";b:1;}')" );
 	    }
     }
     header( "Location: wpmu-blogs.php?action=editblog&id=".$id."&updated=true" );
