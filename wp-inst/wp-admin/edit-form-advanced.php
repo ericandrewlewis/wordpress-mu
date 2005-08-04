@@ -87,8 +87,8 @@ window.onload = focusit;
 <h3 class="dbx-handle"><?php _e('Categories') ?></h3> 
 <div class="dbx-content"><div><?php dropdown_categories(get_settings('default_category')); ?></div>
 <p id="ajaxcat">
-  <input type="text" name="newcat" id="newcat" size="16" /> 
-  <input type="button" name="Button" value="+">
+  <input type="text" name="cat_name" id="cat_name" size="16" /> 
+  <input type="submit" name="save" value="+">
 </p>
 </div>
 </fieldset>

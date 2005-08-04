@@ -27,6 +27,14 @@ if (false !== strpos($_SERVER['HTTP_REFERER'], 'edit-pages.php')) $submenu_file 
 
 $editing = true;
 
+if( $_POST[ 'cat_name' ] ) {
+	if ( current_user_can('manage_categories') ) {
+		$_POST[ 'category_parent' ] = 0;
+		$_POST[ 'category_description' ] = '';
+		wp_insert_category($_POST);
+	}
+}
+
 switch($action) {
 case 'post':
 
