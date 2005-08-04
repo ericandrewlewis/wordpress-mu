@@ -11,7 +11,7 @@ include('admin-header.php');
   <h2><?php _e('General Options') ?></h2> 
   <form name="form1" method="post" action="options.php"> 
     <input type="hidden" name="action" value="update" /> 
-	<input type="hidden" name="action" value="update" /> <input type="hidden" name="page_options" value="'blogname','blogdescription','users_can_register','gmt_offset','date_format','time_format','start_of_week','comment_registration','default_role'" /> 
+	<input type="hidden" name="action" value="update" /> <input type="hidden" name="page_options" value="'blogname','blogdescription','users_can_register','gmt_offset','date_format','time_format','start_of_week','comment_registration','default_role', 'WPLANG'" /> 
     <table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
       <tr valign="top"> 
         <th width="33%" scope="row"><?php _e('Weblog title:') ?></th> 
@@ -40,6 +40,33 @@ include('admin-header.php');
 			</label>
 </td> 
       </tr> 
+	<?php
+	$lang_files = glob( ABSPATH . WPINC . "/languages/*" );
+	$lang = get_option( "WPLANG" );
+	if( $lang == false ) {
+		$lang = get_site_option( "WPLANG" );
+		add_option( "WPLANG", $lang );
+	}
+
+	if( is_array( $lang_files ) ) {
+		?>
+		<tr valign="top"> 
+		<th width="33%" scope="row"><?php _e('Language:') ?></th> 
+		<td><select name="WPLANG" id="WPLANG">
+		<?php
+		echo "<option value=''>Default</option>";
+		while( list( $key, $val ) = each( $lang_files ) ) { 
+			$l = basename( $val, ".mo" );
+			echo "<option value='$l'";
+			echo $lang == $l ? " selected" : "";
+			echo "> $l</option>";
+		}
+		?>
+		</select></td>
+		</tr> 
+		<?php
+	} // languages
+	?>
     </table> 
     <fieldset class="options"> 
     <legend><?php _e('Date and Time') ?></legend> 

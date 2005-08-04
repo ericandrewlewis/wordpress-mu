@@ -1,10 +1,21 @@
 <?php
 require_once('admin.php');
 
+if( $wpblog != 'main' || $user_level < 10) {
+    die( __('<p>You do not have permission to access this page.</p>') );
+}
+
 do_action( "wpmuadminedit", "" );
 
 $id = $wpdb->escape( $_POST[ 'id' ] );
 switch( $_GET[ 'action' ] ) {
+	case "siteoptions":
+		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
+		update_site_option( "illegal_names", split( ' ', $wpdb->escape( $_POST[ 'illegal_names' ] ) ) );
+		update_site_option( "limited_email_domains", split( ' ', $wpdb->escape( $_POST[ 'limited_email_domains' ] ) ) );
+		header( "Location: wpmu-options.php?updated=true" );
+		exit;
+	break;
 	case "searchcategories":
 		$search = $wpdb->escape( $_GET[ 'search' ] );
 		$id = $wpdb->escape( $_GET[ 'id' ] );
