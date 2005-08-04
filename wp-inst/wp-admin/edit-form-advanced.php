@@ -89,7 +89,9 @@ window.onload = focusit;
 <p id="ajaxcat">
   <input type="text" name="cat_name" id="cat_name" size="16" /> 
   <input type="submit" name="save" value="+">
+  <div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
 </p>
+<?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
 </div>
 </fieldset>
 

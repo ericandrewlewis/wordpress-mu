@@ -176,72 +176,8 @@ switch( $_GET[ 'action' ] ) {
 <p class="submit">
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
 </p> 
+<?php AJAX_search_box( "wpmu-edit.php?action=searchusers&search=", "newuser", "searchresults" ); ?>
 
-<script language="JavaScript">
-
-function updateUserBox( username )
-{
-	document.form1.newuser.value=username;
-	document.getElementById("searchresults").innerHTML = "<?php _e( 'Search Results' ) ?>";
-	return false;
-}
-
-// from js_util.js by scottandrew.com/junkyard/js/
-function addEvent(elm, evType, fn, useCapture)
-{
-  if (elm.addEventListener){
-    elm.addEventListener(evType, fn, useCapture);
-    return true;
-  } else if (elm.attachEvent){
-    var r = elm.attachEvent("on"+evType, fn);
-    return r;
-  } else {
-    alert("Handler could not be removed");
-  }
-}
-// end from scottandrew.com/junkyard/js/
-
-var valBox = document.getElementById("newuser");
-var displayBox = document.getElementById("searchresults");
-addEvent(valBox, 'keyup', doTest, false);
-var keyPressDelay = '';
-
-var xmlhttp=false;
- try {
-  xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
- } catch (e) {
-  try {
-   xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-  } catch (E) {
-   xmlhttp = false;
-  }
- }
-
-if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
-  xmlhttp = new XMLHttpRequest();
-}
-
-function doTest() {
-        if (keyPressDelay) {
-                window.clearTimeout(keyPressDelay);
-        }
-
-        if(valBox.value != '') {
-                keyPressDelay = window.setTimeout('doSearch()',800);
-        }
-}
-
-function doSearch() {
-	displayBox.innerHTML = "Searching ...";
-        xmlhttp.open("GET","wpmu-edit.php?action=searchusers&search="+valBox.value,true);
-	xmlhttp.onreadystatechange=function() {
-                if (xmlhttp.readyState==4) {
-		        displayBox.innerHTML = xmlhttp.responseText;
-                }
-        }
-        xmlhttp.send(null);
-}
-</script>
     </td>
     </table>
     <?php

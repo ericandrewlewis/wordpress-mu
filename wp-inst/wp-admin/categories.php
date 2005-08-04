@@ -146,7 +146,9 @@ cat_rows();
     <form name="addcat" id="addcat" action="categories.php" method="post">
         
         <p><?php _e('Name:') ?><br />
-        <input type="text" name="cat_name" value="" /></p>
+        <input type="text" name="cat_name" id='cat_name' value="" /></p>
+	<div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
+	<?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
         <p><?php _e('Category parent:') ?><br />
         <select name='category_parent' class='postform'>
         <option value='0'><?php _e('None') ?></option>

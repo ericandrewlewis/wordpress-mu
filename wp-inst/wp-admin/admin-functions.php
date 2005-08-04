@@ -1380,4 +1380,76 @@ function documentation_link( $for ) {
 	return;
 }
 
+function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_field = 'searchresults' ) {
+	?>
+	<script language="JavaScript">
+
+	function update_AJAX_search_box( username )
+	{
+		document.getElementById("<?php echo $search_field ?>").value=username;
+		document.getElementById("<?php echo $search_results_field ?>").innerHTML = "<?php _e( 'Search Results' ) ?>";
+		document.getElementById("<?php echo $search_results_field ?>").style.display = 'none';
+		return false;
+	}
+
+	// from js_util.js by scottandrew.com/junkyard/js/
+	function addEvent(elm, evType, fn, useCapture)
+	{
+		if (elm.addEventListener){
+			elm.addEventListener(evType, fn, useCapture);
+			return true;
+		} else if (elm.attachEvent){
+			var r = elm.attachEvent("on"+evType, fn);
+			return r;
+		} else {
+			alert("Handler could not be removed");
+		}
+	}
+	// end from scottandrew.com/junkyard/js/
+
+	var valBox = document.getElementById("<?php echo $search_field ?>");
+	var displayBox = document.getElementById("<?php echo $search_results_field ?>");
+	addEvent(valBox, 'keyup', doTest, false);
+	var keyPressDelay = '';
+
+	var xmlhttp=false;
+	try {
+		xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+	} catch (e) {
+		try {
+			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+		} catch (E) {
+			xmlhttp = false;
+		}
+	}
+
+	if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+		xmlhttp = new XMLHttpRequest();
+	}
+
+	function doTest() {
+		if (keyPressDelay) {
+			window.clearTimeout(keyPressDelay);
+		}
+
+		if(valBox.value != '') {
+			keyPressDelay = window.setTimeout('doSearch()',800);
+		}
+	}
+
+	function doSearch() {
+		displayBox.style.display = '';
+		displayBox.innerHTML = "Searching ...";
+		xmlhttp.open("GET","<?php echo $get_url ?>"+valBox.value,true);
+		xmlhttp.onreadystatechange=function() {
+			if (xmlhttp.readyState==4) {
+				displayBox.innerHTML = xmlhttp.responseText;
+			}
+		}
+		xmlhttp.send(null);
+	}
+	</script>
+	<?php
+}
+
 ?>

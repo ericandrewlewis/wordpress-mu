@@ -5,6 +5,19 @@ do_action( "wpmuadminedit", "" );
 
 $id = $wpdb->escape( $_POST[ 'id' ] );
 switch( $_GET[ 'action' ] ) {
+	case "searchcategories":
+		$search = $wpdb->escape( $_GET[ 'search' ] );
+		$id = $wpdb->escape( $_GET[ 'id' ] );
+		$query = "SELECT cat_name FROM " . $wpdb->sitecategories . " WHERE cat_name LIKE '%" . $search . "%' limit 0,10";
+		$cats = $wpdb->get_results( $query );
+		if( is_array( $cats ) ) {
+			while( list( $key, $val ) = each( $cats ) ) 
+			{ 
+				print '<span onclick="javascript:return update_AJAX_search_box(\'' . $val->cat_name . '\');"><a>' . $val->cat_name . '</a></span><br>';
+			}
+		}
+		exit;
+	break;
 	case "searchusers":
 		$search = $wpdb->escape( $_GET[ 'search' ] );
 		$id = $wpdb->escape( $_GET[ 'id' ] );
@@ -14,7 +27,7 @@ switch( $_GET[ 'action' ] ) {
 		if( is_array( $users ) ) {
 			while( list( $key, $val ) = each( $users ) ) 
 			{ 
-				print '<span onclick="javascript:return updateUserBox(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
+				print '<span onclick="javascript:return update_AJAX_search_box(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
 			}
 		} else {
 			print "No Users Found";
