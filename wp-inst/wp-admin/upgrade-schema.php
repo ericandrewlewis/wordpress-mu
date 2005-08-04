@@ -254,6 +254,7 @@ function populate_options() {
 	add_option('use_trackback', 0);
 	// 1.6
 	add_option('default_role', 'inactive');
+	add_option('rich_editing', 'true');
 
 	add_site_option( 'customizefeed1', '0' );
 	add_site_option( 'customizefeed2', '0' );

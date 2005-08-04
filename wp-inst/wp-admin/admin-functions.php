@@ -393,14 +393,16 @@ function get_nested_categories($default = 0, $parent = 0) {
  $cats = return_categories_list($parent);
  $result = array();
 
- foreach($cats as $cat) {
-   $result[$cat]['children'] = get_nested_categories($default, $cat);
-   $result[$cat]['cat_ID'] = $cat;
-   $result[$cat]['checked'] = in_array($cat, $checked_categories);
-   $result[$cat]['cat_name'] = get_the_category_by_ID($cat);
- }
+	if ( is_array( $cats ) ) {
+		foreach($cats as $cat) {
+			$result[$cat]['children'] = get_nested_categories($default, $cat);
+			$result[$cat]['cat_ID'] = $cat;
+			$result[$cat]['checked'] = in_array($cat, $checked_categories);
+			$result[$cat]['cat_name'] = get_the_category_by_ID($cat);
+		}
+	}
 
- return $result;
+	return $result;
 }
 
 function write_nested_categories($categories) {
@@ -1200,7 +1202,7 @@ function get_real_file_to_edit($file) {
 
 $wp_file_descriptions = 
 	array(
-	'index.php' => __('Main Template'),
+	'index.php' => __('Main Index Template'),
 	'style.css' => __('Stylesheet'),
 	'comments.php' => __('Comments Template'),
 	'comments-popup.php' => __('Popup Comments Template'),
