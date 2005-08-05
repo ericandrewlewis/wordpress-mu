@@ -393,7 +393,7 @@ function step3() {
     $query = "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_user_id', '1')";
     $wpdb->query( $query );
     $wpdb->query( "INSERT INTO ".$wpdb->site." ( id, domain, path ) VALUES ( NULL, '$domain', '$base' )" );
-    $wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (1, 'Uncategorized', 'uncategorized', '')";
+    $wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (1, 'Uncategorized', 'uncategorized', '')" );
 
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
     if( $res == 'ok' ) {
