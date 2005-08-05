@@ -186,9 +186,11 @@ require (ABSPATH . WPINC . '/version.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
 
-$locale = get_option( "WPLANG" );
-if( $locale == false )
-	$locale = get_site_option( "WPLANG" );
+if( defined( "WP_INSTALLING" ) == false ) {
+	$locale = get_option( "WPLANG" );
+	if( $locale == false )
+		$locale = get_site_option( "WPLANG" );
+}
 
 $wpdb->hide_errors();
 $plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php' );
