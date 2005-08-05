@@ -1432,7 +1432,7 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 			window.clearTimeout(keyPressDelay);
 		}
 
-		if(valBox.value != '') {
+		if(valBox.value.length > 2) {
 			keyPressDelay = window.setTimeout('doSearch()',800);
 		}
 	}
