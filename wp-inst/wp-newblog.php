@@ -165,14 +165,14 @@ switch( $_POST[ 'stage' ] )
 		$err = createBlog( $newBlogID.".".$domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email );
 		if( $err == 'ok' ) {
 		    displaySecondForm();
-		    $admin_email = get_site_option( "admin_email" );
+		    $email = get_site_option( "admin_email" );
 		    $msg = "A new blog has been created on " . $current_site->domain . $current_site->path . "\n";
 		    $msg .= "Address: http://" . $newBlogID . "." . $domain . $scriptBaseName . "\n";
 		    $msg .= "Title: $weblog_title\n";
 		    $msg .= "Email: $admin_email\n";
-		    $msg .= "Backend: " . $current_site->domain . $current_site->path . "wp-login.php (You can login with your admin u/p)\n";
+		    $msg .= "Backend: http://" . $newBlogID . "." . $domain . $scriptBaseName . "wp-login.php (You can login with your admin u/p)\n";
 		    $subject = "New Blog on: http://" . $current_site->domain . $current_site->path;
-		    mail( $admin_email, $subject, $msg, "From: WordPress <" . $admin_email . ">" );
+		    mail( $email, $subject, $msg, "From: WordPress <" . $admin_email . ">" );
 		} else {
 		    if( $err == 'error: username used' ) {
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
