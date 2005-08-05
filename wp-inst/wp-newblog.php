@@ -176,6 +176,8 @@ switch( $_POST[ 'stage' ] )
 		} else {
 		    if( $err == 'error: username used' ) {
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
+		    } elseif( $err == 'error: email domain not allowed' ) {
+			$errormsg[ 'admin_email' ] = "Sorry, that email address is not allowed!";
 		    } else {
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
 		    }

@@ -436,6 +436,13 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     if( empty($path) )
 	    $path = '/';
 	
+    $limited_email_domains = get_site_settings( 'limited_email_domains' );
+    if( is_array( $limited_email_domains ) ) {
+	    $emaildomain = substr( $admin_email, 1 + strpos( $admin_email, '@' ) );
+	    if( in_array( $emaildomain, $limited_email_domains ) == false ) {
+		    return "error: email domain not allowed";
+	    }
+    }
     // Check if the domain has been used already. We should return an error message.
     if( $wpdb->get_var("SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'" ) )
 	return 'error: Blog URL already taken.';
