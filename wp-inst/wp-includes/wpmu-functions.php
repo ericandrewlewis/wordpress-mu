@@ -652,7 +652,7 @@ function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
 	          FROM   ".$wpdb->users.", ".$wpdb->sitemeta."
 		  WHERE  meta_key = 'admin_user_id'
 		  AND    ".$wpdb->users.".ID = ".$wpdb->sitemeta.".meta_value
-		  AND    site_id = '".$site_id."'";
+		  AND    ".$wpdb->sitemeta.".site_id = '".$site_id."'";
 	$details = $wpdb->get_results( $query, ARRAY_A );
     } else {
 	$details = false;
