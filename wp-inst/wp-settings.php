@@ -82,6 +82,8 @@ if( $current_blog == false ) {
 $blog_id   = $current_blog->blog_id;
 $is_public = $current_blog->is_public;
 $site_id   = $current_blog->site_id;
+if( $site_id == 0 )
+	$site_id = 1;
 
 $current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='$site_id'");
 if( $current_site == false ) {
