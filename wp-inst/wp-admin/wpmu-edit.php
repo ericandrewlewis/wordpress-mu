@@ -13,6 +13,7 @@ switch( $_GET[ 'action' ] ) {
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
 		update_site_option( "illegal_names", split( ' ', $wpdb->escape( $_POST[ 'illegal_names' ] ) ) );
 		update_site_option( "limited_email_domains", split( ' ', $wpdb->escape( $_POST[ 'limited_email_domains' ] ) ) );
+		update_site_option( "menu_items", $_POST[ 'menu_items' ] );
 		header( "Location: wpmu-options.php?updated=true" );
 		exit;
 	break;

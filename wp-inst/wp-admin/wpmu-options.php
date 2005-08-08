@@ -45,7 +45,7 @@ if (isset($_GET['updated'])) {
 		</table>
 	</fieldset>
 	<fieldset class="options">
-		<legend><?php _e('Operational Settings <em>(These settings cannot be modified by blog owners)') ?></legend> 
+		<legend><?php _e('Operational Settings <em>(These settings cannot be modified by blog owners)</em>') ?></legend> 
 		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 		<tr valign="top"> 
 		<th scope="row"><?php _e('Banned Names:') ?></th> 
@@ -60,6 +60,27 @@ if (isset($_GET['updated'])) {
 		<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?></td> 
 		</tr> 
 		</table>
+	</fieldset>
+	<fieldset class="options">
+		<legend><?php _e('Menus <em>(Enable or disable WP Backend Menus)</em>') ?></legend> 
+		<table cellspacing="2" cellpadding="5" class="editform"> 
+		<tr><th scope='row'>Menu</th><th scope='row'>Enabled</th></tr>
+		<?php
+		$menu_perms = get_site_option( "menu_items" );
+		$menu_items = array( "plugins" );
+		while( list( $key, $val ) = each( $menu_items ) ) 
+		{ 
+			if( $menu_perms[ $val ] == '1' ) {
+				$checked = ' checked';
+			} else {
+				$checked = '';
+			}
+			print "<tr><th scope='row'>" . ucfirst( $val ) . "</th><td><input type='checkbox' name='menu_items[" . $val . "]' value='1'" . $checked . "></tr>"; 
+		}
+		?>
+		</table>
+	</fieldset>
+	<fieldset class="options">
 	</fieldset>
 	<p class="submit"> 
 	<input type="submit" name="Submit" value="<?php _e('Update Options') ?>" /> 

@@ -4,12 +4,18 @@
 // Menu item name
 // The minimum level the user needs to access the item: between 0 and 10
 // The URL of the item's file
+
+$menu_perms = get_site_option( "menu_items" );
+if( is_array( $menu_perms ) == false )
+	$menu_perms = array();
+
 $menu[0] = array(__('Dashboard'), 'read', 'index.php');
 $menu[5] = array(__('Write'), 'edit_posts', 'post.php');
 $menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
 $menu[20] = array(__('Links'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
-#$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+if( $menu_perms[ 'plugins' ] == 1 )
+	$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 if ( current_user_can('edit_users') )
 	$menu[35] = array(__('Users'), 'read', 'profile.php');
 else
@@ -48,8 +54,6 @@ $submenu['options-personal.php'][5] = array(__('Personal'), 'read', 'options-per
 $submenu['options-personal.php'][10] = array(__('General'), 'manage_options', 'options-general.php');
 $submenu['options-personal.php'][15] = array(__('Writing'), 'manage_options', 'options-writing.php');
 $submenu['options-personal.php'][20] = array(__('Reading'), 'manage_options', 'options-reading.php');
-
-#$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
 

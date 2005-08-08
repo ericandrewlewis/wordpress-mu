@@ -1,6 +1,12 @@
 <?php
-return;
 require_once('admin.php');
+
+$menu_perms = get_site_option( "menu_items" );
+if( is_array( $menu_perms ) == false )
+	$menu_perms = array();
+
+if( $menu_perms[ 'plugins' ] != 1 )
+	return;
 
 if ( isset($_GET['action']) ) {
 	check_admin_referer();
