@@ -725,11 +725,11 @@ function update_site_settings( $key, $value ) {
 	    $value = serialize($value);
 
 	$value = trim($value); // I can't think of any situation we wouldn't want to trim
-	$query = "SELECT meta_value 
+	$query = "SELECT meta_key, meta_value 
                   FROM   ".$wpdb->sitemeta." 
 	          WHERE  meta_key = '$key'
 	          AND    site_id = '".$wpdb->siteid."'";
-       if( $wpdb->get_var( $query ) == false ) {
+       if( $wpdb->get_row( $query ) == false ) {
 	   add_site_option( $key, $value );
        } else {
 	   $query = "UPDATE ".$wpdb->sitemeta."
