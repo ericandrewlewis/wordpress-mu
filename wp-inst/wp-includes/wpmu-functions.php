@@ -578,10 +578,11 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $message = __("Dear User,\n\nYour new WordPress.com blog has been successfully set up at:\n".$url."\n\nYou can log in to the administrator account with the following information:\n Username: ".$username."\n Password: ".$random_password."\nLogin Here: ".$url."wp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPress Team\nhttp://www.wordpress.com/\n");
     @mail($admin_email, __('New WordPress.com Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
-    upgrade_all();
     // remove all perms except for the login user.
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."user_level'" );
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."capabilities'" );
+    if( $userID != 1 )
+	    $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$userID."' AND meta_key = '" . $wpmuBaseTablePrefix . "1_capabilities'" );
 
     // restore wpdb variables
     reset( $tmp );
