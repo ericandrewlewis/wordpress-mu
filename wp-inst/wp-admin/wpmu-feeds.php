@@ -8,7 +8,7 @@ if( $wpblog != 'main' || $user_level < 10) {
     die( __('<p>You do not have permission to access this page.</p>') );
 }
 if (isset($_GET['updated'])) {
-    ?><div class="updated"><p><strong><?php _e('Options saved.') ?></strong></p></div><?php
+	?><div id="message" class="updated fade"><p><?php _e('Options saved.') ?></p></div><?php
 }
 print '<div class="wrap">';
 switch( $_GET[ 'action' ] ) {
