@@ -275,11 +275,10 @@ default:
 				echo "<a href='user-edit.php?user_id=$user_data->ID' class='edit'>".__('Edit')."</a>";
 			echo '</td>';
 			echo '</tr>';
+		} else {
+			echo "<tr class='alternate'><td><label for='user_{$user_data->ID}'>{$user_data->ID}</label></td><td><label for='user_{$user_data->ID}'><strong>$user_data->user_login</strong></label></td><td><label for='user_{$user_data->ID}'>$user_data->first_name $user_data->last_name</label></td><td colspan='4'><strong>Cannot Edit Site Administrator</strong></td></tr>";
 		}
-	?>
-	
-
-<?php
+	}
 	}
 ?>
   </table>
