@@ -51,17 +51,17 @@ foreach ($check_plugins as $check_plugin) {
 ?>
 
 <?php if (isset($_GET['activate'])) : ?>
-<div class="updated"><p><?php _e('Plugin <strong>activated</strong>.') ?></p>
+<div id="message" class="updated fade"><p><?php _e('Plugin <strong>activated</strong>.') ?></p>
 </div>
 <?php endif; ?>
 <?php if (isset($_GET['deactivate'])) : ?>
-<div class="updated"><p><?php _e('Plugin <strong>deactivated</strong>.') ?></p>
+<div id="message" class="updated fade"><p><?php _e('Plugin <strong>deactivated</strong>.') ?></p>
 </div>
 <?php endif; ?>
 
 <div class="wrap">
 <h2><?php _e('Plugin Management'); ?></h2>
-<p><?php _e('Plugins are files you usually download separately from WordPress that add functionality. To install a plugin you generally just need to put the plugin file into your <code>wp-content/plugins</code> directory. Once a plugin is installed, you may activate it or deactivate it here. If something goes wrong with a plugin and you can&#8217;t use WordPress, delete that plugin from the <code>wp-content/plugins</code> directory and it will be automatically deactivated.'); ?></p>
+<p><?php _e('Plugins extend and expand the functionality of WordPress. Once a plugin is installed, you may activate it or deactivate it here.'); ?></p>
 <?php
 
 if ( get_settings('active_plugins') )
@@ -77,7 +77,6 @@ if (empty($plugins)) {
 	<tr>
 		<th><?php _e('Plugin'); ?></th>
 		<th><?php _e('Version'); ?></th>
-		<th><?php _e('Author'); ?></th>
 		<th><?php _e('Description'); ?></th>
 		<th><?php _e('Action'); ?></th>
 	</tr>
@@ -97,11 +96,10 @@ if (empty($plugins)) {
 		if ($style != '') $style = 'class="' . $style . '"';
 		echo "
 	<tr $style>
-		<td class=\"name\">{$plugin_data['Title']}</td>
-		<td class=\"vers\">{$plugin_data['Version']}</td>
-		<td class=\"auth\">{$plugin_data['Author']}</td>
-		<td class=\"desc\">{$plugin_data['Description']}</td>
-		<td class=\"togl\">$action</td>
+		<td class='name'>{$plugin_data['Title']}</td>
+		<td class='vers'>{$plugin_data['Version']}</td>
+		<td class='desc'>{$plugin_data['Description']} <cite>By {$plugin_data['Author']}.</cite></td>
+		<td class='togl'>$action</td>
 	</tr>";
 	}
 ?>
@@ -110,6 +108,8 @@ if (empty($plugins)) {
 <?php
 }
 ?>
+
+<p><?php _e('If something goes wrong with a plugin and you can&#8217;t use WordPress, delete or rename that file in the <code>wp-content/plugins</code> directory and it will be automatically deactivated.'); ?></p>
 
 <h2><?php _e('Get More Plugins'); ?></h2>
 <p><?php _e('You can find additional plugins for your site in the <a href="http://wordpress.org/extend/plugins/">WordPress plugin directory</a>. To install a plugin you generally just need to upload the plugin file into your <code>wp-content/plugins</code> directory. Once a plugin is uploaded, you may activate it here.'); ?></p>

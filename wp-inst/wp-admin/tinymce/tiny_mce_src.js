@@ -4,7 +4,7 @@
  * $Date: 2005/06/23 12:04:41 $
  *
  * @author Moxiecode
- * @copyright Copyright © 2004, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright  2004, Moxiecode Systems AB, All rights reserved.
  */
 
 function TinyMCE() {

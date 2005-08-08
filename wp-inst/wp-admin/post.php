@@ -92,7 +92,7 @@ case 'edit':
 
 	<div class="storycontent">
 	<?php 
-	echo apply_filters('the_content', $post->post_content);
+	echo apply_filters('the_content', html_entity_decode($post->post_content) );
 	?>
 	</div>
 	</div>
@@ -323,7 +323,7 @@ default:
 	require_once ('./admin-header.php');
 ?>
 <?php if ( isset($_GET['posted']) ) : ?>
-<div class="updated"><p><?php printf(__('Post saved. <a href="%s">View site &raquo;</a>'), get_bloginfo('home')); ?></p></div>
+<div id="message" class="updated fade"><p><?php printf(__('Post saved. <a href="%s">View site &raquo;</a>'), get_bloginfo('home')); ?></p></div>
 <?php endif; ?>
 <?php
 	if ( current_user_can('edit_posts') ) {

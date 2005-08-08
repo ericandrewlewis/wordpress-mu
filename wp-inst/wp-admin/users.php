@@ -196,17 +196,17 @@ default:
 		switch($_GET['update']) {
 		case 'del':
 		?>
-			<div class="updated"><p><?php _e('User deleted.'); ?></p></div>
+			<div id="message" class="updated fade"><p><?php _e('User deleted.'); ?></p></div>
 		<?php
 			break;
 		case 'add':
 		?>
-			<div class="updated"><p><?php _e('New user created.'); ?></p></div>
+			<div id="message" class="updated fade"><p><?php _e('New user created.'); ?></p></div>
 		<?php
 			break;
 		case 'promote':
 		?>
-			<div class="updated"><p><?php _e('Changed roles.'); ?></p></div>
+			<div id="message" class="updated fade"><p><?php _e('Changed roles.'); ?></p></div>
 		<?php
 			break;
 		}
@@ -249,37 +249,33 @@ default:
 	<?php
 	$style = '';
 	foreach ($roleclass as $user_object) {
-	    $user_data = &$user_object->data;
-	    if( $user_data->ID != get_site_option( "admin_user_id" ) ) {
-		$email = $user_data->user_email;
-		$url = $user_data->user_url;
-		$short_url = str_replace('http://', '', $url);
-		$short_url = str_replace('www.', '', $short_url);
-		if ('/' == substr($short_url, -1))
-		    $short_url = substr($short_url, 0, -1);
-		if (strlen($short_url) > 35)
-		    $short_url =  substr($short_url, 0, 32).'...';
-		$style = ('class="alternate"' == $style) ? '' : 'class="alternate"';
-		$numposts = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_author = '$user_data->ID' and post_status = 'publish'");
-		if (0 < $numposts) $numposts = "<a href='edit.php?author=$user_data->ID' title='" . __('View posts') . "'>$numposts</a>";
-		echo "
-		    <tr $style>
-		    <td><input type='checkbox' name='users[]' id='user_{$user_data->ID}' value='{$user_data->ID}' /> <label for='user_{$user_data->ID}'>{$user_data->ID}</label></td>
-		    <td><label for='user_{$user_data->ID}'><strong>$user_data->user_login</strong></label></td>
-		    <td><label for='user_{$user_data->ID}'>$user_data->first_name $user_data->last_name</label></td>
-		    <td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>
-		    <td><a href='$url' title='website: $url'>$short_url</a></td>";
-		echo "<td align='right'>$numposts</td>";
-		echo '<td>';
-		if (current_user_can('edit_users'))
-		    echo "<a href='user-edit.php?user_id=$user_data->ID' class='edit'>".__('Edit')."</a>";
-		echo '</td>';
-		echo '</tr>';
-	    } else {
-		echo "<tr class='alternate'><td><label for='user_{$user_data->ID}'>{$user_data->ID}</label></td><td><label for='user_{$user_data->ID}'><strong>$user_data->user_login</strong></label></td><td><label for='user_{$user_data->ID}'>$user_data->first_name $user_data->last_name</label></td><td colspan='4'><strong>Cannot Edit Site Administrator</strong></td></tr>";
-	    }
-	}
-	
+		$user_data = &$user_object->data;
+		if( $user_data->ID != get_site_option( "admin_user_id" ) ) {
+			$email = $user_data->user_email;
+			$url = $user_data->user_url;
+			$short_url = str_replace('http://', '', $url);
+			$short_url = str_replace('www.', '', $short_url);
+			if ('/' == substr($short_url, -1))
+				$short_url = substr($short_url, 0, -1);
+			if (strlen($short_url) > 35)
+				$short_url =  substr($short_url, 0, 32).'...';
+			$style = ('class="alternate"' == $style) ? '' : 'class="alternate"';
+			$numposts = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_author = '$user_data->ID' and post_status = 'publish'");
+			if (0 < $numposts) $numposts = "<a href='edit.php?author=$user_data->ID' title='" . __('View posts') . "'>$numposts</a>";
+			echo "
+				<tr $style>
+				<td><input type='checkbox' name='users[]' id='user_{$user_data->ID}' value='{$user_data->ID}' /> <label for='user_{$user_data->ID}'>{$user_data->ID}</label></td>
+				<td><label for='user_{$user_data->ID}'><strong>$user_data->user_login</strong></label></td>
+				<td><label for='user_{$user_data->ID}'>$user_data->first_name $user_data->last_name</label></td>
+				<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>
+				<td><a href='$url' title='website: $url'>$short_url</a></td>";
+			echo "<td align='right'>$numposts</td>";
+			echo '<td>';
+			if (current_user_can('edit_users'))
+				echo "<a href='user-edit.php?user_id=$user_data->ID' class='edit'>".__('Edit')."</a>";
+			echo '</td>';
+			echo '</tr>';
+		}
 	?>
 	
 

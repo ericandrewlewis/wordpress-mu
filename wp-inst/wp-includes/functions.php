@@ -299,6 +299,16 @@ function get_option($option) {
 	return get_settings($option);
 }
 
+function get_user_option( $option ) {
+	global $wpdb, $current_user;
+	if ( isset( $current_user->data->{$wpdb->prefix . $option} ) ) // Blog specific
+		return $current_user->data->{$wpdb->prefix . $option};
+	elseif ( isset( $current_user->data->{$option} ) ) // User specific and cross-blog
+		return $current_user->data->{$option};
+	else // Blog global
+		return get_option( $option );
+}
+
 function form_option($option) {
 	echo htmlspecialchars( get_option($option), ENT_QUOTES );
 }
@@ -312,17 +322,17 @@ function get_alloptions() {
 	$wpdb->show_errors();
 
 	if( is_array( $options ) ) {
-		foreach ($options as $option) {
-			// "When trying to design a foolproof system, 
-			//  never underestimate the ingenuity of the fools :)" -- Dougal
-			if ('siteurl' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
-			if ('home' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
-			if ('category_base' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
-			@ $value = unserialize($option->option_value);
-			if ($value === FALSE)
-				$value = $option->option_value;
-			$all_options->{$option->option_name} = apply_filters('pre_option_' . $option->option_name, $value);
-		}
+	foreach ($options as $option) {
+		// "When trying to design a foolproof system, 
+		//  never underestimate the ingenuity of the fools :)" -- Dougal
+		if ('siteurl' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
+		if ('home' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
+		if ('category_base' == $option->option_name) $option->option_value = preg_replace('|/+$|', '', $option->option_value);
+		@ $value = unserialize($option->option_value);
+		if ($value === FALSE)
+			$value = $option->option_value;
+		$all_options->{$option->option_name} = apply_filters('pre_option_' . $option->option_name, $value);
+	}
 	}
 	return apply_filters('all_options', $all_options);
 }
@@ -351,6 +361,12 @@ function update_option($option_name, $newvalue) {
 	return true;
 }
 
+function update_user_option( $user_id, $option_name, $newvalue, $global = false ) {
+	global $wpdb;
+	if ( !$global )
+		$option_name = $wpdb->prefix . $option_name;
+	return update_usermeta( $user_id, $option_name, $newvalue );
+}
 
 // thx Alex Stapleton, http://alex.vort-x.net/blog/
 function add_option($name, $value = '', $description = '', $autoload = 'yes') {
@@ -1513,9 +1529,6 @@ function get_theme_data($theme_file) {
 	$name = $theme_name[1];
 	$name = trim($name);
 	$theme = $name;
-	if ('' != $theme_uri[1] && '' != $name) {
-		$theme = '<a href="' . $theme_uri[1] . '" title="' . __('Visit theme homepage') . '">' . $theme . '</a>';
-	}
 
 	if ('' == $author_uri[1]) {
 		$author = $author_name[1];
@@ -1571,7 +1584,7 @@ function get_themes() {
 
 	foreach($theme_files as $theme_file) {
 		$theme_data = get_theme_data("$theme_root/$theme_file");
-	  
+
 		$name = $theme_data['Name']; 
 		$title = $theme_data['Title'];
 		$description = wptexturize($theme_data['Description']);
@@ -1579,6 +1592,12 @@ function get_themes() {
 		$author = $theme_data['Author'];
 		$template = $theme_data['Template'];
 		$stylesheet = dirname($theme_file);
+
+		$screenshot = glob("$theme_root/$stylesheet/screenshot.png");
+		if ( !empty( $screenshot ) )
+			$screenshot = basename( $screenshot[0] );
+		else
+			$screenshot = false;
 
 		if (empty($name)) {
 			$name = dirname($theme_file);
@@ -1642,7 +1661,7 @@ function get_themes() {
 			}
 		}
 		
-		$themes[$name] = array('Name' => $name, 'Title' => $title, 'Description' => $description, 'Author' => $author, 'Version' => $version, 'Template' => $template, 'Stylesheet' => $stylesheet, 'Template Files' => $template_files, 'Stylesheet Files' => $stylesheet_files, 'Template Dir' => $template_dir, 'Stylesheet Dir' => $stylesheet_dir, 'Status' => $theme_data['Status']);
+		$themes[$name] = array('Name' => $name, 'Title' => $title, 'Description' => $description, 'Author' => $author, 'Version' => $version, 'Template' => $template, 'Stylesheet' => $stylesheet, 'Template Files' => $template_files, 'Stylesheet Files' => $stylesheet_files, 'Template Dir' => $template_dir, 'Stylesheet Dir' => $stylesheet_dir, 'Status' => $theme_data['Status'], 'Screenshot' => $screenshot);
 	}
 
 	// Resolve theme dependencies.
@@ -1871,8 +1890,7 @@ function load_template($file) {
 	global $posts, $post, $wp_did_header, $wp_did_template_redirect, $wp_query,
 		$wp_rewrite, $wpdb;
 
-	if( is_array( $wp_query->query_vars ) )
-	    extract($wp_query->query_vars);
+	extract($wp_query->query_vars);
 
 	require_once($file);
 }

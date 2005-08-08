@@ -9,43 +9,19 @@ if (!isset($_GET["page"])) require_once('admin.php'); ?>
 <link rel="stylesheet" href="<?php echo get_settings('siteurl') ?>/wp-admin/wp-admin.css?version=<?php bloginfo('version'); ?>" type="text/css" />
 <meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_settings('blog_charset'); ?>" />
 
-<?php if ( get_option('rich_editing') ) :?>
-<script type="text/javascript" src="tinymce/tiny_mce_gzip.php"></script>
-<script type="text/javascript">
-tinyMCE.init({
-	mode : "specific_textareas",
-	textarea_trigger : "title",
-	theme : "advanced",
-	theme_advanced_buttons1 : "bold,italic,strikethrough,separator,bullist,numlist,separator,justifyleft,justifycenter,justifyright,separator,link,unlink,image,emotions,separator,undo,redo,code",
-	theme_advanced_buttons2 : "",
-	theme_advanced_buttons3 : "",
-	theme_advanced_toolbar_location : "top",
-	theme_advanced_toolbar_align : "left",
-	theme_advanced_path_location : "bottom",
-	entity_encoding : "numeric",
-	extended_valid_elements : "a[name|href|target|title|onclick],img[class|src|border=0|alt|title|width|height|align],hr[class|width|size|noshade],font[face|size|color|style],span[class|align|style]",
-	plugins : "emotions"
-});
-</script>
-<?php endif; ?>
-
 <script type="text/javascript">
 //<![CDATA[
 
-function customToggleLink() {
-	// TODO: Only show link if there's a hidden row
-	document.write('<small>(<a href="javascript:;" id="customtoggle" onclick="toggleHidden()"><?php _e('Show hidden'); ?></a>)</small>');
-	// TODO: Rotate link to say "show" or "hide"
-	// TODO: Use DOM
-}
-
-function toggleHidden() {
-	var allElements = document.getElementsByTagName('tr');
-	for (i = 0; i < allElements.length; i++) {
-		if ( allElements[i].className.indexOf('hidden') != -1 ) {
-			 allElements[i].className = allElements[i].className.replace('hidden', '');
-		}
-	}
+function addLoadEvent(func) {
+  var oldonload = window.onload;
+  if (typeof window.onload != 'function') {
+    window.onload = func;
+  } else {
+    window.onload = function() {
+      oldonload();
+      func();
+    }
+  }
 }
 
 <?php if ( isset($xfn) ) : ?>
@@ -95,13 +71,32 @@ function blurry() {
 	}
 }
 
-window.onload = blurry;
+addLoadEvent(blurry);
 <?php endif; ?>
-
-
 //]]>
 </script>
-
+<script type="text/javascript" src="fat.js"></script>
+<?php if ( get_option('rich_editing') ) :?>
+<script type="text/javascript" src="tinymce/tiny_mce_src.js"></script>
+<script type="text/javascript">
+tinyMCE.init({
+	mode : "specific_textareas",
+	textarea_trigger : "title",
+	width : "100%",
+	theme : "advanced",
+	theme_advanced_buttons1 : "bold,italic,strikethrough,separator,bullist,numlist,separator,justifyleft,justifycenter,justifyright,separator,link,unlink,image,emotions,separator,undo,redo,code",
+	theme_advanced_buttons2 : "",
+	theme_advanced_buttons3 : "",
+	theme_advanced_toolbar_location : "top",
+	theme_advanced_toolbar_align : "left",
+	theme_advanced_path_location : "bottom",
+	entity_encoding : "raw",
+	extended_valid_elements : "a[id|href|title|onclick],img[class|src|alt|title|width|height|align]",
+	plugins : "emotions"
+	<?php do_action('mce_options'); ?>
+});
+</script>
+<?php endif; ?>
 <?php if ( isset( $editing ) ) : ?>
 <script type="text/javascript" src="dbx.js"></script>
 <script type="text/javascript" src="dbx-key.js"></script>
@@ -114,6 +109,9 @@ window.onload = blurry;
 <div id="wphead">
 <h1><?php echo wptexturize(get_settings(('blogname'))); ?> <span>(<a href="<?php echo get_settings('home') . '/'; ?>"><?php _e('View site') ?> &raquo;</a>)</span></h1>
 </div>
+
+<div id="user_info"><p><?php printf(__('Howdy, <strong>%s</strong>.'), $user_identity) ?> [<a href="<?php echo get_settings('siteurl')
+	 ?>/wp-login.php?action=logout" title="<?php _e('Log out of this account') ?>"><?php _e('Sign Out'); ?></a>, <a href="profile.php"><?php _e('My Account'); ?></a>] </p></div>
 
 <?php
 require(ABSPATH . '/wp-admin/menu-header.php');

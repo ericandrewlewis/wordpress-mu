@@ -3,7 +3,7 @@ return;
 require_once('admin.php');
 
 $title = __('Permalink Options');
-$parent_file = 'options-general.php';
+$parent_file = 'options-personal.php';
 
 function add_js() {
 ?>
@@ -90,7 +90,7 @@ save_mod_rewrite_rules();
 ?>
 
 <?php if (isset($_POST['submit'])) : ?>
-<div class="updated"><p><?php
+<div id="message" class="updated fade"><p><?php
 if ($writable)
 	_e('Permalink structure updated.');
 else

@@ -4,7 +4,7 @@ $messages[2] = __('Custom field updated');
 $messages[3] = __('Custom field deleted.');
 ?>
 <?php if (isset($_GET['message'])) : ?>
-<div class="updated"><p><?php echo $messages[$_GET['message']]; ?></p></div>
+<div id="message" class="updated fade"><p><?php echo $messages[$_GET['message']]; ?></p></div>
 <?php endif; ?>
 
 <form name="post" action="post.php" method="post" id="post">
@@ -48,13 +48,11 @@ if (empty($post->post_status)) $post->post_status = 'draft';
 <?php echo $form_extra ?>
 <?php if (isset($_GET['message']) && 2 > $_GET['message']) : ?>
 <script type="text/javascript">
-<!--
 function focusit() {
 	// focus on first input field
 	document.post.title.focus();
 }
-window.onload = focusit;
-//-->
+addLoadEvent(focusit);
 </script>
 <?php endif; ?>
 <div id="poststuff">
@@ -173,7 +171,7 @@ if ('publish' != $post_status || 0 == $post_ID) {
 	<input name="referredby" type="hidden" id="referredby" value="<?php echo wp_specialchars($_SERVER['HTTP_REFERER']); ?>" />
 </p>
 
-<?php do_action('edit_form_advanced', ''); ?>
+<?php do_action('edit_form_advanced'); ?>
 
 <div id="advancedstuff" class="dbx-group" >
 

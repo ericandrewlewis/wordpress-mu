@@ -215,7 +215,7 @@ function populate_options() {
 	add_option('default_comment_status', 'open');
 	add_option('default_ping_status', 'open');
 	add_option('default_pingback_flag', 1);
-	add_option('default_post_edit_rows', 9);
+	add_option('default_post_edit_rows', 10);
 	add_option('posts_per_page', 10);
 	add_option('what_to_show', 'posts');
 	add_option('date_format', __('F j, Y'));

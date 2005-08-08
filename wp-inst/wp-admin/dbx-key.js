@@ -1,7 +1,6 @@
 
-
 //initialisation function
-window.onload = function()
+addLoadEvent( function()
 {
 	//initialise the docking boxes manager 
 	var manager = new dbxManager('postmeta'); 	//session ID [/-_a-zA-Z0-9/]
@@ -10,8 +9,8 @@ window.onload = function()
 	//create new docking boxes group
 	var meta = new dbxGroup(
 		'grabit', 		// container ID [/-_a-zA-Z0-9/]
-		'vertical', 		// orientation ['vertical'|'horizontal']
-		'7', 			// drag threshold ['n' pixels]
+		'vertical', 	// orientation ['vertical'|'horizontal']
+		'10', 			// drag threshold ['n' pixels]
 		'no',			// restrict drag movement to container axis ['yes'|'no']
 		'10', 			// animate re-ordering [frames per transition, or '0' for no effect]
 		'yes', 			// include open/close toggle buttons ['yes'|'no']
@@ -28,7 +27,7 @@ window.onload = function()
 	var advanced = new dbxGroup(
 		'advancedstuff', 		// container ID [/-_a-zA-Z0-9/]
 		'vertical', 		// orientation ['vertical'|'horizontal']
-		'7', 			// drag threshold ['n' pixels]
+		'10', 			// drag threshold ['n' pixels]
 		'yes',			// restrict drag movement to container axis ['yes'|'no']
 		'10', 			// animate re-ordering [frames per transition, or '0' for no effect]
 		'yes', 			// include open/close toggle buttons ['yes'|'no']
@@ -41,4 +40,4 @@ window.onload = function()
 		', or press the enter key to %toggle% it',  // pattern-match sentence-fragment for "(open|close) this box" by keyboard
 		'%mytitle%  [%dbxtitle%]' // pattern-match syntax for title-attribute conflicts
 		);
-};
+});
