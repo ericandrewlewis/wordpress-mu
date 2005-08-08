@@ -186,10 +186,14 @@ class wpdb {
 		// use $this->dbhglobal for gloal table ops
 		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true ) {
 			if( $this->blogs != '' && preg_match("/(" . $this->blogs . "|" . $this->users . "|" . $this->usermeta . "|" . $this->site . "|" . $this->sitemeta . "|" . $this->sitecategories . ")/i",$query) ) {
-				$this->db_connect( $query );
+				if( false == isset( $this->dbhglobal ) ) {
+					$this->db_connect( $query );
+				}
 				$dbh =& $this->dbhglobal;
 			} elseif ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
-				$this->db_connect( $query );
+				if( false == isset( $this->dbhwrite ) ) {
+					$this->db_connect( $query );
+				}
 				$dbh =& $this->dbhwrite;
 			} else {
 				$dbh =& $this->dbh;
