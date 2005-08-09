@@ -251,9 +251,9 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     <form method='post' action='index.php'> 
     <input type='hidden' name='action' value='step2'>
     <h1>Virtual Server Support</h1>
-    <p><strong>Do you want to enable virtual server support?&nbsp;&nbsp;&nbsp;Yes <input type='radio' name='vhost' value='yes'>   No <input type='radio' name='vhost' value='no' checked></strong></p>
-    <p>If you do, your blog addresses will appear like <span class='fakelink'>http://joesblog.example.com/</span> instead of <span class='fakelink'>http://www.example.com/joesblog/</span> but you need to do a few more things to Apache and your DNS settings before it'll work.<br />
-    If this is your first time installing WPMU then leave this at <em>No</em>.</p>
+    <p>Each blog on your site will have their own hostname or 'sub domain'. Your blog addresses will appear like <span class='fakelink'>http://joesblog.example.com/</span> instead of <span class='fakelink'>http://www.example.com/joesblog/</span> but you need to do a few more things to Apache and your DNS settings before it'll work.</p>
+    <p>Apache will have to have a <q>wildcard</q> alias configured in the virtual server definition of your server. You'll have to add a wildcard DNS record for your domain too. That's usually as easy as adding a <q>*</q> hostname in your online dns software.</p>
+    <p>More: <ul><li> <a href='http://codewalkers.com/archives/general_admin/234.html'>Sub-domain catch-all with Apache</a> via <a href='http://www.google.com/search?q=apache+wildcard+alias'>Google Search: apache wildcard alias</a></li><li> <a href='http://photomatt.net/2003/10/10/wildcard-dns-and-sub-domains/'>Wildcard dns and sub domains</a> via <a href='http://www.google.com/search?q=dns+wildcard+sub+domain'>Google Search: dns wildcard sub domain</a></li><li><a href='http://mu.wordpress.org/forums/topic/126#post-677'>mu forums: how to setup vhosts</a></li></ul></p>
     <br />
     <h1>Database</h1>
 <p>We need some information on the database. You will need to know the following items before proceeding.</p> 
@@ -340,7 +340,7 @@ function step2() {
 		fwrite($handle, str_replace("localhost", $dbhost, $line));
 	    break;
 	    case "define('VHOST', ":
-		fwrite($handle, str_replace("VHOSTSETTING", $vhost, $line));
+		fwrite($handle, str_replace("VHOSTSETTING", 'yes', $line));
 	    break;
 	    case '$table_prefix  =':
 	    fwrite($handle, str_replace('wp_', $prefix, $line));
