@@ -169,8 +169,7 @@ switch( $_GET[ 'action' ] ) {
 <p>As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.</p>
 <table>
 <tr><td>User&nbsp;Login: </td><td><input type="text" name="newuser" id="newuser"></td><td><a href="javascript:doSearch();">Search</a></td></tr>
-<tr><td></td><td colspan='2'><div style='border: 1px solid #000; margin: 5px; padding: 5px; width=20px;' id="searchresults"><?php _e( 'Search Results' ) ?></div></td>
-	  </tr>
+<tr><td></td><td colspan='2'><div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div></td> </tr>
 </table>
 <br />
 <p class="submit">
