@@ -87,8 +87,10 @@ addLoadEvent(focusit);
 <p id="ajaxcat">
   <input type="text" name="newcat" id="newcat" size="16" onkeyup="ajaxNewCatKeyUp(event);" /> 
   <input type="button" name="Button" value="+" onclick="ajaxNewCat();" />
+  <div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
 </p>
 </div>
+<?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 </fieldset>
 
 <fieldset class="dbx-box">

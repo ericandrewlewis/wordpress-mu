@@ -1393,7 +1393,6 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 	function update_AJAX_search_box( username )
 	{
 		document.getElementById("<?php echo $search_field ?>").value=username;
-		document.getElementById("<?php echo $search_results_field ?>").innerHTML = "<?php _e( 'Search Results' ) ?>";
 		document.getElementById("<?php echo $search_results_field ?>").style.display = 'none';
 		return false;
 	}
@@ -1444,12 +1443,16 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 	}
 
 	function doSearch() {
-		displayBox.style.display = '';
-		displayBox.innerHTML = "Searching ...";
 		xmlhttp.open("GET","<?php echo $get_url ?>"+valBox.value,true);
 		xmlhttp.onreadystatechange=function() {
 			if (xmlhttp.readyState==4) {
-				displayBox.innerHTML = xmlhttp.responseText;
+				if( xmlhttp.responseText != '' ) {
+					displayBox.style.display = '';
+					displayBox.innerHTML = xmlhttp.responseText;
+				} else {
+					valBox.focus();
+					displayBox.style.display = 'none';
+				}
 			}
 		}
 		xmlhttp.send(null);
