@@ -4,8 +4,8 @@ $REMOTE_ADDR = getenv('REMOTE_ADDR'); /* visitor's IP */
 $HTTP_USER_AGENT = getenv('HTTP_USER_AGENT'); /* visitor's browser */
 
 // Turn register globals off - Christian Schmidt
-foreach ( array_merge($_REQUEST, $_SERVER, $_ENV) as $name => $value )
-	unset($$name);
+//foreach ( array_merge($_REQUEST, $_SERVER, $_ENV) as $name => $value )
+	//unset($$name);
 
 // Fix for IIS, which doesn't set REQUEST_URI
 if ( empty( $_SERVER['REQUEST_URI'] ) ) {
