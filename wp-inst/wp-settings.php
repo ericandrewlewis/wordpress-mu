@@ -3,9 +3,13 @@ $HTTP_HOST = getenv('HTTP_HOST');  /* domain name */
 $REMOTE_ADDR = getenv('REMOTE_ADDR'); /* visitor's IP */
 $HTTP_USER_AGENT = getenv('HTTP_USER_AGENT'); /* visitor's browser */
 
+// Turn register globals off - Christian Schmidt
+foreach ( array_merge($_REQUEST, $_SERVER, $_ENV) as $name => $value )
+	unset($$name);
+
 // Fix for IIS, which doesn't set REQUEST_URI
-if (! isset($_SERVER['REQUEST_URI'])) {
-	$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'];
+if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+	$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME']; // Does this work under CGI?
 	
 	// Append the query string if it exists and isn't null
 	if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
@@ -144,7 +148,7 @@ if ( defined('CUSTOM_USER_TABLE') )
 	$wpdb->users = CUSTOM_USER_TABLE;
 if ( defined('CUSTOM_USER_META_TABLE') )
 	$wpdb->usermeta = CUSTOM_USER_META_TABLE;
-
+	
 // We're going to need to keep this around for a few months even though we're not using it internally
 
 $tableposts = $wpdb->posts;
@@ -156,6 +160,8 @@ $tablelinks = $wpdb->links;
 $tablelinkcategories = $wpdb->linkcategories;
 $tableoptions = $wpdb->options;
 $tablepostmeta = $wpdb->postmeta;
+
+$wp_filters = array();
 
 require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/default-filters.php');
