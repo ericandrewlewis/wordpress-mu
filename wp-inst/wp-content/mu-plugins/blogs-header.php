@@ -1,4 +1,5 @@
 <?php
+return;
 add_action('wp_footer', "blogs_header" );
 
 function blogs_header() {
