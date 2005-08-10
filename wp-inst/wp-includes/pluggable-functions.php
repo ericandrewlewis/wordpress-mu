@@ -313,4 +313,19 @@ function wp_notify_moderator($comment_id) {
 }
 endif;
 
+if ( !function_exists('x_headers') ) :
+function x_headers() {
+	global $current_site, $current_blog, $WPMU_date;
+
+	print "<meta name='X-totalblogs' content='" . get_blog_count() . "' />\n";
+	print "<meta name='X-rootblog' content='http://" . $current_site->domain . $current_site->path. "' />\n";
+	print "<meta name='X-created-on' content='" . $current_blog->registered . "' />\n";
+	if( empty( $WPMU_date ) == false ) 
+		print "<meta name='X-wpmu-date' content='" . $WPMU_date . "' />\n";
+
+
+}
+add_action('wp_head', "x_headers" );
+endif;
+
 ?>
