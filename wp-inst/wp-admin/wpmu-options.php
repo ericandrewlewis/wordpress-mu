@@ -59,6 +59,14 @@ if (isset($_GET['updated'])) {
 		<br />
 		<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?></td> 
 		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Blog upload space:') ?></th> 
+		<td><input name="blog_upload_space" type="text" id="blog_upload_space" value="<?php echo get_site_option('blog_upload_space') == false ? 10 : get_site_option('blog_upload_space') ; ?>" size="3" /> MB
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Upload File Types:') ?></th> 
+		<td><input name="upload_filetypes" type="text" id="upload_filetypes" value="<?php echo get_site_option('upload_filetypes') == false ? 'jpg jpeg png gif' : get_site_option('upload_filetypes') ; ?>" size="45" />
+		</tr> 
 		</table>
 	</fieldset>
 	<fieldset class="options">

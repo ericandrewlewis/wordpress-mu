@@ -14,6 +14,8 @@ switch( $_GET[ 'action' ] ) {
 		update_site_option( "illegal_names", split( ' ', $wpdb->escape( $_POST[ 'illegal_names' ] ) ) );
 		update_site_option( "limited_email_domains", split( ' ', $wpdb->escape( $_POST[ 'limited_email_domains' ] ) ) );
 		update_site_option( "menu_items", $_POST[ 'menu_items' ] );
+		update_site_option( "blog_upload_space", $_POST[ 'blog_upload_space' ] );
+		update_site_option( "upload_filetypes", $_POST[ 'upload_filetypes' ] );
 		header( "Location: wpmu-options.php?updated=true" );
 		exit;
 	break;

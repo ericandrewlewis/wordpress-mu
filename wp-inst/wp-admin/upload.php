@@ -11,7 +11,8 @@ if (!get_settings('use_fileupload')) //Checks if file upload is enabled in the c
 if ( ! current_user_can('upload_files') )
 	die (__("You are not allowed to upload files"));
 
-$allowed_types = explode(' ', "jpg jpeg png gif");
+$allowed_types = get_site_option( 'upload_filetypes' ) == false ? 'jpg jpeg png gif' : get_site_option( 'upload_filetypes' );
+$allowed_types = explode(' ', $allowed_types );
 
 if ($_POST['submit']) {
 	$action = 'upload';
