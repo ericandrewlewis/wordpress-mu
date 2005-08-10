@@ -1,20 +1,39 @@
 <?php
+define( "BLOGDEFINITION", true );
 require_once( "../wp-config.php" );
-if( is_file( ABSPATH . "wp-content/blogs.dir/" . $blog_id . $_SERVER[ 'REQUEST_URI' ] ) ) {
-    // get mime type
-    $ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
-    if( $ext == 'jpg' )
-	$ext = 'jpeg';
-    $mimetype = "image/$ext";
-    header("Content-type: $mimetype" );
-    readfile( ABSPATH . "wp-content/blogs.dir/" . $blog_id . $_SERVER[ 'REQUEST_URI' ] );
+$file = ABSPATH . "wp-content/blogs.dir/" . $blog_id . $_SERVER[ 'REQUEST_URI' ];
+if( is_file( $file ) ) {
+	$etag = md5( $file . filemtime( $file ) );
+	$lastModified = date( "D, j M Y H:i:s ", filemtime( $file ) ) . "GMT";
+	$headers = apache_request_headers();
+	// get mime type
+	$ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
+	if( $ext == 'jpg' )
+		$ext = 'jpeg';
+	$mimetype = "image/$ext";
+
+	// from http://blog.rd2inc.com/archives/2005/03/24/making-dynamic-php-pages-cacheable/
+	if( $lastModified == $headers['If-Modified-Since']) {
+		// They already have an up to date copy so tell them 
+		header('HTTP/1.1 304 Not Modified'); 
+		header('Cache-Control: private'); 
+		header('Content-Type: $mimetype'); 
+		header('ETag: "'.$eTag.'"'); 
+	} else {
+		header("Content-type: $mimetype" );
+		header( "Last-Modified: " . $lastModified );
+		header( 'Accept-Ranges: bytes' );
+		header( "Content-Length: " . filesize( $file ) );
+		header( 'ETag: "' . $etag . '"' );
+		readfile( $file );
+	}
 } else {
-    // 404
-    header("HTTP/1.1 404 Not Found");
-    print "<html><head><title>Error 404! File Not Found!</title></head>";
-    print "<body>";
-    print "<h1>File Not Found!</h1>";
-    print "No! No! Run Away! This file has escaped and is running wild!";
-    print "</body></html>";
+	// 404
+	header("HTTP/1.1 404 Not Found");
+	print "<html><head><title>Error 404! File Not Found!</title></head>";
+	print "<body>";
+	print "<h1>File Not Found!</h1>";
+	print "No! No! Run Away! This file has escaped and is running wild!";
+	print "</body></html>";
 }
 ?>

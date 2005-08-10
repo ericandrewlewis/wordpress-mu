@@ -171,6 +171,9 @@ $tablepostmeta = $wpdb->postmeta;
 
 $wp_filters = array();
 
+if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
+	return;
+
 require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/default-filters.php');
 require_once (ABSPATH . WPINC . '/wp-l10n.php');
