@@ -908,4 +908,14 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 	    return array_slice( $blogs, $start, $num );
     }
 }
+
+function get_blog_count( $id = 0 ) {
+	global $wpdb;
+	if( $id == 0 )
+		$id = $wpdb->siteid;
+	
+	$count = $wpdb->get_var( "SELECT count(*) as c FROM $wpdb->blogs WHERE site_id = '$id'" );
+
+	return $count;
+}
 ?>
