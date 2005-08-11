@@ -1412,25 +1412,33 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 	}
 	// end from scottandrew.com/junkyard/js/
 
-	var valBox = document.getElementById("<?php echo $search_field ?>");
-	var displayBox = document.getElementById("<?php echo $search_results_field ?>");
-	addEvent(valBox, 'keyup', doTest, false);
-	var keyPressDelay = '';
+	var valBox = false;
+	var displayBox = false;
+	var keyPressDelay = false;
+	var xmlhttp = false;
 
-	var xmlhttp=false;
-	try {
-		xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-	} catch (e) {
+	function init_ajax_searchbox() {
+		valBox = document.getElementById("<?php echo $search_field ?>");
+		displayBox = document.getElementById("<?php echo $search_results_field ?>");
+		addEvent(valBox, 'keyup', doTest, false);
+		keyPressDelay = '';
+
+		xmlhttp=false;
 		try {
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		} catch (E) {
-			xmlhttp = false;
+			xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
+		} catch (e) {
+			try {
+				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+			} catch (E) {
+				xmlhttp = false;
+			}
+		}
+
+		if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
+			xmlhttp = new XMLHttpRequest();
 		}
 	}
-
-	if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
-		xmlhttp = new XMLHttpRequest();
-	}
+	addLoadEvent( init_ajax_searchbox );
 
 	function doTest() {
 		if (keyPressDelay) {
