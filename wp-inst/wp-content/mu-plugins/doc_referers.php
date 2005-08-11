@@ -35,7 +35,7 @@ class DOC_Referers {
     function DOC_Referers() {
 	add_action('admin_menu', array(&$this, 'admin_menu'));
 	add_action('admin_footer', array(&$this, 'admin_footer'));
-	add_action('template_redirect', array(&$this, 'template_redirect'));
+	add_action('wp_footer', array(&$this, 'template_redirect'));
 	$this->settings = get_settings('doc_referers');
 	$this->wpdb_tables();
 
@@ -76,8 +76,10 @@ class DOC_Referers {
 		PRIMARY KEY  (ID),
 		KEY blogID (blogID,URL),
 		KEY URL (URL)
-		);
-		CREATE TABLE " . $wpdb->doc_referers . " (
+		);";
+	$wpdb->query( $qry );
+
+	$qry = "CREATE TABLE " . $wpdb->doc_referers . " (
 		blogID char( 32 ) default NULL ,
 		visitID int( 11 ) NOT NULL AUTO_INCREMENT ,
 		visitTime timestamp( 14 ) NOT NULL ,
@@ -93,7 +95,7 @@ class DOC_Referers {
 		KEY dayofmonth ( dayofmonth )
 		);
 	";
-	dbDelta($qry);
+	$wpdb->query( $qry );
 
 	$this->settings['table_version'] = $this->table_version;
 	update_option('doc_referers', $this->settings);
@@ -514,6 +516,7 @@ class DOC_Referers {
 
     function template_redirect() {
 	global $wpdb;
+	$wpdb->hide_errors();
 
 	// delete tomorrow's referers today
 	$tomorrow  = date( "j", mktime (0,0,0,date("m")  ,date("d")+1,date("Y")) );
@@ -672,6 +675,7 @@ class DOC_Referers {
 		}
 	    }
 	}
+	$wpdb->show_errors();
     }
 }
 
