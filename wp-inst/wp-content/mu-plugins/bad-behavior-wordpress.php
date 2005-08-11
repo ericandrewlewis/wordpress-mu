@@ -49,7 +49,7 @@ $wp_bb_logging_duration = 7;
 // be exposed to spammers! Bad Behavior will munge it automatically; you
 // should NOT munge it here!
 #$wp_bb_email = get_bloginfo('admin_email');
-$wp_bb_email = "wordpress@wordpress.com";
+$wp_bb_email = "wordpress@" . $current_site->domain;
 
 // The database table name to use.
 // You can customize the table name if necessary.
