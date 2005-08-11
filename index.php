@@ -395,6 +395,9 @@ function step3() {
     $wpdb->query( "INSERT INTO ".$wpdb->site." ( id, domain, path ) VALUES ( NULL, '$domain', '$base' )" );
     $wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (1, 'Uncategorized', 'uncategorized', '')" );
 
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'welcome_email', 'Dear User,\n\nYour new SITE_NAME blog has been successfully set up at:\nBLOG_URL\n\nYou can log in to the administrator account with the following information:\n Username: USERNAME\n Password: PASSWORD\nLogin Here: BLOG_URLwp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPress Team\nSITE_NAME\n')";
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!')";
+
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
     if( $res == 'ok' ) {
 	if( $base == '/' ) {
