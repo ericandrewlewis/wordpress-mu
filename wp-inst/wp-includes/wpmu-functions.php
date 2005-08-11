@@ -78,7 +78,7 @@ function wpmu_checkAvailableSpace($action) {
 add_filter('fileupload_init','wpmu_checkAvailableSpace');
 
 function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $site_id = 1 ) {
-    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix;
+    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site;
 
 	$domain       = addslashes( $domain );
 	$weblog_title = addslashes( $weblog_title );
@@ -89,7 +89,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 	    $path = '/';
 	
     $limited_email_domains = get_site_settings( 'limited_email_domains' );
-    if( is_array( $limited_email_domains ) ) {
+    if( is_array( $limited_email_domains ) && empty( $limited_email_domains ) == false ) {
 	    $emaildomain = substr( $admin_email, 1 + strpos( $admin_email, '@' ) );
 	    if( in_array( $emaildomain, $limited_email_domains ) == false ) {
 		    return "error: email domain not allowed";
@@ -217,18 +217,34 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     // First post
     $now = date('Y-m-d H:i:s');
     $now_gmt = gmdate('Y-m-d H:i:s');
-    $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('Welcome to <a href=\"http://www.wordpress.com/\">WordPress.com</a>. This is your first post. Edit or delete it, then start blogging!'))."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
+
+    $first_post = get_site_option( 'first_post' );
+    if( $first_post == false )
+		$first_post = stripslashes( __( 'Welcome to <a href="SITE_URL">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' ) );
+    $welcome_email = get_site_option( 'welcome_email' );
+    if( $welcome_email == false ) 
+		$welcome_email = stripslashes( __( "Dear User,\n\nYour new SITE_NAME blog has been successfully set up at:\nBLOG_URL\n\nYou can log in to the administrator account with the following information:\n Username: USERNAME\n Password: PASSWORD\nLogin Here: BLOG_URLwp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPress Team\nSITE_NAME\n" ) );
+
+
+    $welcome_email = str_replace( "SITE_NAME", $current_site->site_name, $welcome_email );
+    $welcome_email = str_replace( "BLOG_URL", $url, $welcome_email );
+    $welcome_email = str_replace( "USERNAME", $username, $welcome_email );
+    $welcome_email = str_replace( "PASSWORD", $random_password, $welcome_email );
+
+    $first_post = str_replace( "SITE_URL", "http://" . $current_site->domain . $current_site->path, $first_post );
+    $first_post = str_replace( "SITE_NAME", $current_site->site_name, $first_post );
+    $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
     $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '".addslashes(__('About'))."', '0', '".addslashes(__('about'))."', '$now', '$now_gmt', 'static')");
 
     $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
     $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
 
     // Default comment
-    $wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://www.wordpress.com', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
+    $wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://" . $current_site->domain . $current_site->path . "', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
 
     $message_headers = 'From: ' . stripslashes($weblog_title) . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-    $message = __("Dear User,\n\nYour new WordPress.com blog has been successfully set up at:\n".$url."\n\nYou can log in to the administrator account with the following information:\n Username: ".$username."\n Password: ".$random_password."\nLogin Here: ".$url."wp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPress Team\nhttp://www.wordpress.com/\n");
-    @mail($admin_email, __('New WordPress.com Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
+    $message = $welcome_email;
+    @mail($admin_email, __('New ' . $current_site->site_name . ' Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
     // remove all perms except for the login user.
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."user_level'" );
@@ -331,23 +347,33 @@ function is_site_admin( $user_id ) {
     }
 }
 
-function get_site_settings( $option ) {
+function get_site_settings( $option, $default='na' ) {
     global $wpdb;
 
     $query = "SELECT meta_value 
               FROM   $wpdb->sitemeta 
 	      WHERE  meta_key = '$option'
 	      AND    site_id = '".$wpdb->siteid."'";
-    $option = $wpdb->get_var( $query );
-    @ $kellogs = unserialize($option);
-    if ($kellogs !== FALSE)
-	$option = $kellogs;
-
-    return $option;
+    $option = $wpdb->get_row( $query );
+    if( $option == false ) {
+	    if( $default != 'na' ) {
+		    return $default;
+	    } else {
+		    return false;
+	    }
+    } else {
+	    @ $kellogs = unserialize($option->meta_value);
+	    if ($kellogs !== FALSE) {
+		    $meta_value = $kellogs;
+	    } else {
+		    $meta_value = $option->meta_value;
+	    }
+	    return $meta_value;
+    }
 }
 
-function get_site_option( $option ) {
-	return get_site_settings( $option );
+function get_site_option( $option, $default='na' ) {
+	return get_site_settings( $option, $default );
 }
 
 function add_site_settings( $key, $value ) {
