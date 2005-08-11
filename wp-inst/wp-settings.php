@@ -101,6 +101,12 @@ $current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='$site_id'");
 if( $current_site == false ) {
     is_installed();
 }
+$current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = 'site_name'" );
+if( $current_site->site_name == false ) {
+	$current_site->site_name = ucfirst( $current_site->domain );
+	include( ABSPATH . "wp-admin/wpmu-upgrade.inc.php" );
+}
+
 if( $current_site->domain == $domain && $current_site->path == $base ) {
 	$wpblog = 'main';
 }
