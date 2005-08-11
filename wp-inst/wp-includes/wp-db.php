@@ -190,7 +190,7 @@ class wpdb {
 					$this->db_connect( $query );
 				}
 				$dbh =& $this->dbhglobal;
-			} elseif ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
+			} elseif ( preg_match("/^\\s*(alter table|create|insert|delete|update|replace) /i",$query) ) {
 				if( false == isset( $this->dbhwrite ) ) {
 					$this->db_connect( $query );
 				}
