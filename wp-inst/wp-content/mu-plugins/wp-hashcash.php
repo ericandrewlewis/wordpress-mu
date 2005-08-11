@@ -18,6 +18,8 @@ Hat tips:	Cecil Coupe
 		Paul Andrew Johnston - http://pajhome.org.uk/crypt/md5/
 */ 
 
+if( strpos( $_SERVER[ 'SCRIPT_NAME' ], 'wp-inst/wp-newblog.php' ) == false ) {
+
 /* Start the session, if not started */
 session_start();
 
@@ -649,5 +651,7 @@ echo'			<p>This comment has been logged, and will not be displayed on the blog.<
 }
 
 add_filter('post_comment_text', 'hashcash_check_hidden_tag');
+
+}
 
 ?>
