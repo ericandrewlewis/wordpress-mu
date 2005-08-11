@@ -18,6 +18,53 @@ if (isset($_GET['updated'])) {
 	<h2><?php _e('Site Options') ?></h2> 
 	<form name="form1" method="post" action="wpmu-edit.php?action=siteoptions"> 
 	<fieldset class="options">
+		<legend><?php _e('Operational Settings <em>(These settings cannot be modified by blog owners)</em>') ?></legend> 
+		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Site Name:') ?></th> 
+		<td><input name="site_name" type="text" id="site_name" style="width: 95%" value="<?php echo $current_site->site_name ?>" size="45" />
+		<br />
+		<?php _e('What you would like to call this website.') ?></td> 
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Welcome Email:') ?></th> 
+		<td><textarea name="welcome_email" id="welcome_email" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('welcome_email') ) ?></textarea>
+		<br />
+		<?php _e('The welcome email sent to new blog owners.') ?></td> 
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('First Post:') ?></th> 
+		<td><textarea name="first_post" id="first_post" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('first_post') ) ?></textarea>
+		<br />
+		<?php _e('First post on a new blog.') ?></td> 
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Banned Names:') ?></th> 
+		<td><input name="illegal_names" type="text" id="illegal_names" style="width: 95%" value="<?php echo implode( " ", get_site_option('illegal_names') ); ?>" size="45" />
+		<br />
+		<?php _e('Users are not allowed to register these blogs. Separate names by spaces.') ?></td> 
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Limited Email Registrations:') ?></th> 
+		<td><input name="limited_email_domains" type="text" id="limited_email_domains" style="width: 95%" value="<?php echo get_site_option('limited_email_domains') == '' ? '' : @implode( " ", get_site_option('limited_email_domains') ); ?>" size="45" />
+		<br />
+		<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?></td> 
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Blog upload space:') ?></th> 
+		<td><input name="blog_upload_space" type="text" id="blog_upload_space" value="<?php echo get_site_option('blog_upload_space', 10) ?>" size="3" /> MB
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Upload File Types:') ?></th> 
+		<td><input name="upload_filetypes" type="text" id="upload_filetypes" value="<?php echo get_site_option('upload_filetypes', 'jpg jpeg png gif') ?>" size="45" />
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Max upload file size:') ?></th> 
+		<td><input name="fileupload_maxk" type="text" id="fileupload_maxk" value="<?php echo get_site_option('fileupload_maxk', 300) ?>" size="5" /> KB
+		</tr> 
+		</table>
+	</fieldset>
+	<fieldset class="options">
 		<legend><?php _e('Site Wide Settings <em>(These settings may be overridden by blog owners)</em>') ?></legend> 
 		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 		<?php
@@ -42,31 +89,6 @@ if (isset($_GET['updated'])) {
 				<?php
 		} // languages
 		?>
-		</table>
-	</fieldset>
-	<fieldset class="options">
-		<legend><?php _e('Operational Settings <em>(These settings cannot be modified by blog owners)</em>') ?></legend> 
-		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
-		<tr valign="top"> 
-		<th scope="row"><?php _e('Banned Names:') ?></th> 
-		<td><input name="illegal_names" type="text" id="illegal_names" style="width: 95%" value="<?php echo implode( " ", get_site_option('illegal_names') ); ?>" size="45" />
-		<br />
-		<?php _e('Users are not allowed to register these blogs. Separate names by spaces.') ?></td> 
-		</tr> 
-		<tr valign="top"> 
-		<th scope="row"><?php _e('Limited Email Registrations:') ?></th> 
-		<td><input name="limited_email_domains" type="text" id="limited_email_domains" style="width: 95%" value="<?php echo implode( " ", get_site_option('limited_email_domains') ); ?>" size="45" />
-		<br />
-		<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?></td> 
-		</tr> 
-		<tr valign="top"> 
-		<th scope="row"><?php _e('Blog upload space:') ?></th> 
-		<td><input name="blog_upload_space" type="text" id="blog_upload_space" value="<?php echo get_site_option('blog_upload_space') == false ? 10 : get_site_option('blog_upload_space') ; ?>" size="3" /> MB
-		</tr> 
-		<tr valign="top"> 
-		<th scope="row"><?php _e('Upload File Types:') ?></th> 
-		<td><input name="upload_filetypes" type="text" id="upload_filetypes" value="<?php echo get_site_option('upload_filetypes') == false ? 'jpg jpeg png gif' : get_site_option('upload_filetypes') ; ?>" size="45" />
-		</tr> 
 		</table>
 	</fieldset>
 	<fieldset class="options">

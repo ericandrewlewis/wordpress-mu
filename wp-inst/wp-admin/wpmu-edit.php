@@ -12,10 +12,18 @@ switch( $_GET[ 'action' ] ) {
 	case "siteoptions":
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
 		update_site_option( "illegal_names", split( ' ', $wpdb->escape( $_POST[ 'illegal_names' ] ) ) );
-		update_site_option( "limited_email_domains", split( ' ', $wpdb->escape( $_POST[ 'limited_email_domains' ] ) ) );
+		if( $_POST[ 'limited_email_domains' ] != '' ) {
+			update_site_option( "limited_email_domains", split( ' ', $wpdb->escape( $_POST[ 'limited_email_domains' ] ) ) );
+		} else {
+			update_site_option( "limited_email_domains", '' );
+		}
 		update_site_option( "menu_items", $_POST[ 'menu_items' ] );
 		update_site_option( "blog_upload_space", $_POST[ 'blog_upload_space' ] );
 		update_site_option( "upload_filetypes", $_POST[ 'upload_filetypes' ] );
+		update_site_option( "site_name", $_POST[ 'site_name' ] );
+		update_site_option( "first_post", $_POST[ 'first_post' ] );
+		update_site_option( "welcome_email", $_POST[ 'welcome_email' ] );
+		update_site_option( "fileupload_maxk", $_POST[ 'fileupload_maxk' ] );
 		header( "Location: wpmu-options.php?updated=true" );
 		exit;
 	break;
