@@ -22,10 +22,12 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    $subject = get_site_option( "invites_default_subject" );
 	    $from    = $cache_userdata[ $user_ID ]->user_email;
 
+	    $visitor_pass = md5( $email );
 	    $msg = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $msg );
 	    $msg = str_replace( "LASTNAME", $_POST[ 'lname' ], $msg );
 	    $msg = str_replace( "PERSONALMESSAGE", $_POST[ 'personalmessage' ], $msg );
-	    $msg = str_replace( "\\r\\n", "\n", stripslashes( str_replace( "REGURL", "http://" . $current_site->domain . "/invite/".md5( $_POST[ 'email' ] ), $msg ) ) );
+	    $msg = str_replace( "VISITORPASS", $visitor_pass, $msg );
+	    $msg = str_replace( "\\r\\n", "\n", stripslashes( str_replace( "REGURL", "http://" . $current_site->domain . "/invite/" . $visitor_pass, $msg ) ) );
 
 	    $subject = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $subject );
 	    if( $cache_userdata[ $user_ID ]->display_name != '' ) {
@@ -56,7 +58,9 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    exit;
     }
 } elseif( $_POST[ 'personalmessage' ] == '' ) {
-    $_POST[ 'personalmessage' ] = "I've been using WordPress and thought you might like to try it out.  Here's an invitation to create an account.";
+    $_POST[ 'personalmessage' ] = "I've been using WordPress and thought you might 
+like to try it out.  Here's an invitation to 
+create an account.";
 }
 
 include('admin-header.php');
