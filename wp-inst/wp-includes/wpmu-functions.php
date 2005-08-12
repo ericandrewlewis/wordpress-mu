@@ -279,6 +279,14 @@ SITE_NAME" ) );
     return "ok";
 }
 
+header( "X-totalblogs: " . get_blog_count() );
+header( "X-rootblog: http://" . $current_site->domain . $current_site->path );
+header( "X-created-on: " . $current_blog->registered );
+
+if( empty( $WPMU_date ) == false ) 
+	header( "X-wpmu-date: $WPMU_date" );
+
+
 function get_blogaddress_by_id( $blog_id ) {
     global $hostname, $domain, $base, $wpdb;
 

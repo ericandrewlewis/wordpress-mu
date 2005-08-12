@@ -313,20 +313,4 @@ function wp_notify_moderator($comment_id) {
 }
 endif;
 
-if ( !function_exists('x_headers') ) :
-function x_headers() {
-	global $current_site, $current_blog, $WPMU_date;
-
-	header( "X-totalblogs: " . get_blog_count() );
-	header( "X-rootblog: http://" . $current_site->domain . $current_site->path );
-	header( "X-created-on: " . $current_blog->registered );
-
-	if( empty( $WPMU_date ) == false ) 
-		header( "X-wpmu-date: $WPMU_date" );
-
-
-}
-add_action('wp_head', "x_headers" );
-endif;
-
 ?>
