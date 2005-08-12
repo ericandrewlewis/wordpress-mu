@@ -20,12 +20,12 @@ The WordPress Team
 
 (If clicking the URLs in this message does not work, copy and paste them
 into the address bar of your browser).";
-		update_site_settings( "invites_default_message", $msg );
+		update_site_option( "invites_default_message", $msg );
 	}
 
-	if( false == get_site_settings( "invites_default_subject" ) ) {
+	if( false == get_site_option( "invites_default_subject" ) ) {
 		$subject = "FIRSTNAME, USERNAME has invited you to use WordPress";
-		update_site_settings( "invites_default_subject", $subject );
+		update_site_option( "invites_default_subject", $subject );
 	}
 
 }
@@ -41,7 +41,7 @@ $u = $wpdb->escape( $u );
 function invites_check_user_hash() {
     global $wpdb, $u;
     if( $u == '' ) {
-	header( "Location: ".get_settings( "siteurl" ) );
+	header( "Location: ".get_option( "siteurl" ) );
 	die( );
     } else {
 	$query = "SELECT meta_value
@@ -51,7 +51,7 @@ function invites_check_user_hash() {
 		  AND    meta_value = '".$u."'";
 	$userhash = $wpdb->get_var( $query );
 	if( $userhash == false ) {
-	    header( "Location: ".get_settings( "siteurl" ) );
+	    header( "Location: ".get_option( "siteurl" ) );
 	    die();
 	}
     }
@@ -60,7 +60,7 @@ add_action('newblogheader', 'invites_check_user_hash');
 
 function invites_admin_send_email() {
     global $wpdb;
-    $msg = get_site_settings( "invites_default_message" );
+    $msg = get_site_option( "invites_default_message" );
     if( $msg == '' ) {
 	$msg = "Dear FIRSTNAME LASTNAME,
 ---------------------------------------------
@@ -77,7 +77,7 @@ The WordPress Team
 
 (If clicking the URLs in this message does not work, copy and paste them
 into the address bar of your browser).";
-	update_site_settings( "invites_default_message", $msg );
+	update_site_option( "invites_default_message", $msg );
     }
     if( $_GET[ 'action' ] == 'invite' ) {
 	if( is_email( $_POST[ 'email' ] ) ) {
@@ -88,8 +88,8 @@ into the address bar of your browser).";
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
 		      VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , 'admin')";
 	    $wpdb->query( $query );
-	    $msg = str_replace( "REGURL", get_settings( "siteurl" ) . "/invite/".md5( $email ), $msg );
-	    mail( $_POST[ 'email' ], "Your " . $current_site->site_name . " Invitation", $msg, "From: " . $current_site->site_name . " <donotreply@".get_settings( "siteurl" ).">" );
+	    $msg = str_replace( "REGURL", get_option( "siteurl" ) . "/invite/".md5( $email ), $msg );
+	    mail( $_POST[ 'email' ], "Your " . $current_site->site_name . " Invitation", $msg, "From: " . $current_site->site_name . " <donotreply@".get_option( "siteurl" ).">" );
 	    header( "Location: wpmu-admin.php?result=invitesent" );
 	    die();
 	} else {
@@ -168,7 +168,7 @@ function admin_menu() {
 	$invites_left = get_option( "invites_left" );
 	if( $invites_left == '' ) {
 	    $invites_left = 5;
-	    update_site_settings( "invites_per_user", $invites_left );
+	    update_site_option( "invites_per_user", $invites_left );
 	    update_option( "invites_left", $invites_left );
 	}
 	*/
@@ -184,19 +184,19 @@ function invites_admin_content() {
 
     switch( $_GET[ 'action' ] ) {
 	case "updateinvitedefaults":
-	update_site_settings( "invites_per_user", $wpdb->escape( $_GET[ 'invites_per_user' ] ) );
-	update_site_settings( "invites_default_message", $wpdb->escape( $_GET[ 'invites_default_message' ] ) );
-	update_site_settings( "invites_default_subject", $wpdb->escape( $_GET[ 'invites_default_subject' ] ) );
+	update_site_option( "invites_per_user", $wpdb->escape( $_GET[ 'invites_per_user' ] ) );
+	update_site_option( "invites_default_message", $wpdb->escape( $_GET[ 'invites_default_message' ] ) );
+	update_site_option( "invites_default_subject", $wpdb->escape( $_GET[ 'invites_default_subject' ] ) );
 	break;
 	case "":
 	break;
 	default:
 	break;
     }
-    $invites_per_user = get_site_settings( "invites_per_user" );
+    $invites_per_user = get_site_option( "invites_per_user" );
     if( $invites_per_user == '' ) {
 	$invites_per_user = 5;
-	update_site_settings( "invites_per_user", $invites_per_user );
+	update_site_option( "invites_per_user", $invites_per_user );
     }
     ?>
 	<div class='wrap'>
@@ -206,8 +206,8 @@ function invites_admin_content() {
 	<input type='hidden' name='action' value='updateinvitedefaults'>
 	<table>
 	<tr><td valign='top'>Invites Per User:</td><td><input type='text' size='2' maxlength='2' name='invites_per_user' value='<?php echo $invites_per_user ?>'></td></tr>
-	<tr><td valign='top'>Default Subject:</td><td><input type='text' size='70' maxlength='90' name='invites_default_subject' value='<?php echo get_site_settings( "invites_default_subject" ) ?>'></td></tr>
-	<tr><td valign='top'>Default Message:</td><td><textarea rows="9" cols="70" name="invites_default_message" tabindex="5" id="defaultmessage"><?php echo str_replace( "\\r\\n", "\n", stripslashes( get_site_settings( 'invites_default_message' ) ) ) ?></textarea></td></tr>
+	<tr><td valign='top'>Default Subject:</td><td><input type='text' size='70' maxlength='90' name='invites_default_subject' value='<?php echo get_site_option( "invites_default_subject" ) ?>'></td></tr>
+	<tr><td valign='top'>Default Message:</td><td><textarea rows="9" cols="70" name="invites_default_message" tabindex="5" id="defaultmessage"><?php echo str_replace( "\\r\\n", "\n", stripslashes( get_site_option( 'invites_default_message' ) ) ) ?></textarea></td></tr>
 	<tr><td valign='top' colspan='2'><input type='submit'></td></tr>
 	</table>
 	</form>
