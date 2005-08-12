@@ -88,7 +88,7 @@ into the address bar of your browser).";
 		      VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , 'admin')";
 	    $wpdb->query( $query );
 	    $msg = str_replace( "REGURL", get_settings( "siteurl" ) . "/invite/".md5( $email ), $msg );
-	    mail( $_POST[ 'email' ], "Your WordPress.com Invitation", $msg, "From: WordPress.com <donotreply@".get_settings( "siteurl" ).">" );
+	    mail( $_POST[ 'email' ], "Your " . $current_site->site_name . " Invitation", $msg, "From: " . $current_site->site_name . " <donotreply@".get_settings( "siteurl" ).">" );
 	    header( "Location: wpmu-admin.php?result=invitesent" );
 	    die();
 	} else {
