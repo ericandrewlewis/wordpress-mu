@@ -8,6 +8,16 @@ if( $_POST[ 'action' ] == 'send' ) {
     $invites_left = get_usermeta( $user_ID, 'invites_left' );
     if( $invites_left != false ) {
 	if( $_POST[ 'email' ] != '' && is_email( $_POST[ 'email' ] ) ) {
+	    $email = $wpdb->escape( strtolower( $_POST[ 'email' ] ) );
+	    $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
+	    $pos = strpos( $invites_list, substr( $email, 1 ) );
+	    if( $pos == true ) {
+		    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=alreadysent&to=" . urlencode(  $email ) );
+		    exit;
+	    }
+	    $invites_list .= strtolower( $email ) . " ";
+	    update_usermeta( $current_user->data->ID, "invites_list", $invites_list );
+
 	    $msg     = get_site_option( "invites_default_message" );
 	    $subject = get_site_option( "invites_default_subject" );
 	    $from    = $cache_userdata[ $user_ID ]->user_email;
@@ -29,7 +39,6 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    }
 	    $subject = str_replace( "USERNAME", ucfirst( $username ), $subject );
 
-	    $email = $wpdb->escape( $_POST[ 'email' ] );
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite' , '".md5( strtolower( $email ) )."')";
 	    $wpdb->query( $query );
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')";
@@ -55,6 +64,8 @@ if (isset($_GET['result'] ) && $_GET['result'] == 'sent' ) {
     ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 } elseif (isset($_GET['result'] ) && $_GET['result'] == 'notsent' ) {
     ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Not Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
+} elseif (isset($_GET['result'] ) && $_GET['result'] == 'alreadysent' ) {
+    ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Already Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 }
 ?>
  
