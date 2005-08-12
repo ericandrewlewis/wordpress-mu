@@ -2,7 +2,7 @@
 
 $row = $wpdb->get_row( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = 'first_post'" );
 if( $row == false )
-	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, '$wpdb->siteid', 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!')";
+	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, '$wpdb->siteid', 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!'" );
 
 $row = $wpdb->get_row( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = 'welcome_email'" );
 if( $row == false )
@@ -21,7 +21,7 @@ We hope you enjoy your new weblog.
 Thanks!
 
 --The WordPress Team
-SITE_NAME')";
+SITE_NAME'" );
 
 $row = $wpdb->get_row( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = 'site_name'" );
 if( $row == false )
