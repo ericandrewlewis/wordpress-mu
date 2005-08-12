@@ -98,5 +98,15 @@ if (isset($_GET['result'] ) && $_GET['result'] == 'sent' ) {
       <input type="submit" name="Submit" value="<?php _e('Send Invite') ?> &raquo;" />
     </p>
   </form> 
-</div> 
+</div>
+<?php
+$invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
+if( $invites_list != '' )
+{
+	print '<div class="wrap">';
+	print "<h3>Already Invited</h3>";
+	print "<p>You already invited: $invites_list</p>";
+	print '</div>';
+}
+?>
 <?php include("admin-footer.php") ?>
