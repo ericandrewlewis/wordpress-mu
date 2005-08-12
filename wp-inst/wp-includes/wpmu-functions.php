@@ -221,9 +221,23 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $first_post = get_site_option( 'first_post' );
     if( $first_post == false )
 		$first_post = stripslashes( __( 'Welcome to <a href="SITE_URL">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' ) );
-    $welcome_email = get_site_option( 'welcome_email' );
+    $welcome_email = stripslashes( get_site_option( 'welcome_email' ) );
     if( $welcome_email == false ) 
-		$welcome_email = stripslashes( __( "Dear User,\n\nYour new SITE_NAME blog has been successfully set up at:\nBLOG_URL\n\nYou can log in to the administrator account with the following information:\n Username: USERNAME\n Password: PASSWORD\nLogin Here: BLOG_URLwp-login.php\n\nWe hope you enjoy your new weblog.\n Thanks!\n\n--The WordPress Team\nSITE_NAME\n" ) );
+		$welcome_email = stripslashes( __( "Dear User,
+		
+Your new SITE_NAME blog has been successfully set up at:
+BLOG_URL
+
+You can log in to the administrator account with the following information:
+Username: USERNAME
+Password: PASSWORD
+Login Here: BLOG_URLwp-login.php
+
+We hope you enjoy your new weblog.
+Thanks!
+
+--The WordPress Team
+SITE_NAME" ) );
 
 
     $welcome_email = str_replace( "SITE_NAME", $current_site->site_name, $welcome_email );
