@@ -25,7 +25,7 @@ SITE_NAME'" );
 
 $row = $wpdb->get_row( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = 'site_name'" );
 if( $row == false )
-	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, '$wpdb->siteid', 'site_name', '" . ucfirst( $current_site->domain ) . "')";
+	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, '$wpdb->siteid', 'site_name', '" . ucfirst( $current_site->domain ) . "')" );
 
 unset( $row );
 
