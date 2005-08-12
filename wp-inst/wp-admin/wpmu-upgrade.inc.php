@@ -21,7 +21,7 @@ We hope you enjoy your new weblog.
 Thanks!
 
 --The WordPress Team
-SITE_NAME'" );
+SITE_NAME' )" );
 
 $row = $wpdb->get_row( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = 'site_name'" );
 if( $row == false )
