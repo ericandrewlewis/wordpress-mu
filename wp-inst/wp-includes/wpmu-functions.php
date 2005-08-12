@@ -279,12 +279,14 @@ SITE_NAME" ) );
     return "ok";
 }
 
-header( "X-totalblogs: " . get_blog_count() );
-header( "X-rootblog: http://" . $current_site->domain . $current_site->path );
-header( "X-created-on: " . $current_blog->registered );
+if( defined( "WP_INSTALLING" ) == false ) {
+	header( "X-totalblogs: " . get_blog_count() );
+	header( "X-rootblog: http://" . $current_site->domain . $current_site->path );
+	header( "X-created-on: " . $current_blog->registered );
 
-if( empty( $WPMU_date ) == false ) 
-	header( "X-wpmu-date: $WPMU_date" );
+	if( empty( $WPMU_date ) == false ) 
+		header( "X-wpmu-date: $WPMU_date" );
+}
 
 
 function get_blogaddress_by_id( $blog_id ) {
@@ -407,8 +409,8 @@ function add_site_settings( $key, $value ) {
                   FROM   ".$wpdb->sitemeta." 
 	          WHERE  meta_key = '$key'
 	          AND    site_id = '".$wpdb->siteid."'";
-       if( $wpdb->get_var( $query ) == false ) {
-	   $query = "INSERT INTO wp_sitemeta ( meta_id , site_id , meta_key , meta_value )
+       if( $wpdb->get_row( $query ) == false ) {
+	   $query = "INSERT INTO $wpdb->sitemeta ( meta_id , site_id , meta_key , meta_value )
 	             VALUES ( NULL, '".$wpdb->siteid."', '".$key."', '".$wpdb->escape( $value )."')";
 	   $wpdb->query( $query );
        }
