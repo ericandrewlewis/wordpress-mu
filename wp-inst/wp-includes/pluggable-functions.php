@@ -317,11 +317,12 @@ if ( !function_exists('x_headers') ) :
 function x_headers() {
 	global $current_site, $current_blog, $WPMU_date;
 
-	print "<meta name='X-totalblogs' content='" . get_blog_count() . "' />\n";
-	print "<meta name='X-rootblog' content='http://" . $current_site->domain . $current_site->path. "' />\n";
-	print "<meta name='X-created-on' content='" . $current_blog->registered . "' />\n";
+	header( "X-totalblogs: " . get_blog_count() );
+	header( "X-rootblog: http://" . $current_site->domain . $current_site->path );
+	header( "X-created-on: " . $current_blog->registered );
+
 	if( empty( $WPMU_date ) == false ) 
-		print "<meta name='X-wpmu-date' content='" . $WPMU_date . "' />\n";
+		header( "X-wpmu-date: $WPMU_date" );
 
 
 }
