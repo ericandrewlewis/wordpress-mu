@@ -1,4 +1,5 @@
 <?php
+return;
 require_once('admin.php');
 $title = __('Template &amp; File Editing');
 $parent_file = 	'edit.php';

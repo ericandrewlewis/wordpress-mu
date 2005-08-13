@@ -177,9 +177,6 @@ if (count($broken_themes)) {
 }
 ?>
 
-<h2><?php _e('Get More Themes'); ?></h2>
-<p><?php _e('You can find additional themes for your site in the <a href="http://wordpress.org/extend/themes/">WordPress theme directory</a>. To install a theme you generally just need to upload the theme folder into your <code>wp-content/themes</code> directory. Once a theme is uploaded, you may activate it on this page.'); ?></p>
-
 </div>
 
 <?php
