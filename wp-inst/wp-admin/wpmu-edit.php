@@ -7,13 +7,13 @@ if( $wpblog != 'main' || $user_level < 10) {
 
 do_action( "wpmuadminedit", "" );
 
-$id = $wpdb->escape( $_POST[ 'id' ] );
+$id = $_POST[ 'id' ];
 switch( $_GET[ 'action' ] ) {
 	case "siteoptions":
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
-		update_site_option( "illegal_names", split( ' ', $wpdb->escape( $_POST[ 'illegal_names' ] ) ) );
+		update_site_option( "illegal_names", split( ' ', $_POST[ 'illegal_names' ] ) );
 		if( $_POST[ 'limited_email_domains' ] != '' ) {
-			update_site_option( "limited_email_domains", split( ' ', $wpdb->escape( $_POST[ 'limited_email_domains' ] ) ) );
+			update_site_option( "limited_email_domains", split( ' ', $_POST[ 'limited_email_domains' ] ) );
 		} else {
 			update_site_option( "limited_email_domains", '' );
 		}
@@ -28,8 +28,8 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "searchcategories":
-		$search = $wpdb->escape( $_GET[ 'search' ] );
-		$id = $wpdb->escape( $_GET[ 'id' ] );
+		$search = $_GET[ 'search' ];
+		$id = $_GET[ 'id' ];
 		$query = "SELECT cat_name FROM " . $wpdb->sitecategories . " WHERE cat_name LIKE '%" . $search . "%' limit 0,10";
 		$cats = $wpdb->get_results( $query );
 		if( is_array( $cats ) ) {
@@ -41,8 +41,8 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "searchusers":
-		$search = $wpdb->escape( $_GET[ 'search' ] );
-		$id = $wpdb->escape( $_GET[ 'id' ] );
+		$search = $_GET[ 'search' ];
+		$id = $_GET[ 'id' ];
 		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . ", " . $wpdb->usermeta . " WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND " . $wpdb->usermeta . ".meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'";
 		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%' limit 0,10";
 		$users = $wpdb->get_results( $query );
@@ -57,12 +57,12 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "updatefeeds":
-		update_site_option( "customizefeed1", $wpdb->escape( $_POST[ 'customizefeed1' ] ) );
-		update_site_option( "customizefeed2", $wpdb->escape( $_POST[ 'customizefeed2' ] ) );
-		update_site_option( "dashboardfeed1", $wpdb->escape( $_POST[ 'dashboardfeed1' ] ) );
-		update_site_option( "dashboardfeed2", $wpdb->escape( $_POST[ 'dashboardfeed2' ] ) );
-		update_site_option( "dashboardfeed1name", $wpdb->escape( $_POST[ 'dashboardfeed1name' ] ) );
-		update_site_option( "dashboardfeed2name", $wpdb->escape( $_POST[ 'dashboardfeed2name' ] ) );
+		update_site_option( "customizefeed1", $_POST[ 'customizefeed1' ] );
+		update_site_option( "customizefeed2", $_POST[ 'customizefeed2' ] );
+		update_site_option( "dashboardfeed1", $_POST[ 'dashboardfeed1' ] );
+		update_site_option( "dashboardfeed2", $_POST[ 'dashboardfeed2' ] );
+		update_site_option( "dashboardfeed1name", $_POST[ 'dashboardfeed1name' ] );
+		update_site_option( "dashboardfeed2name", $_POST[ 'dashboardfeed2name' ] );
 		header( "Location: wpmu-feeds.php?updated=true" );
 	break;
     case "updateblog":
@@ -113,14 +113,14 @@ switch( $_GET[ 'action' ] ) {
     if( is_array( $_POST[ 'blogusers' ] ) ) {
 	    reset( $_POST[ 'blogusers' ] );
 	    while( list( $key, $val ) = each( $_POST[ 'blogusers' ] ) ) { 
-		    $wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities' AND user_id = '" . $wpdb->escape( $key ) . "'" );
+		    $wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities' AND user_id = '" . $key . "'" );
 	    }
     }
 
 
     // add user?
     if( $_POST[ 'newuser' ] != '' ) {
-	    $newuser = $wpdb->escape( $_POST[ 'newuser' ] );
+	    $newuser = $_POST[ 'newuser' ];
 	    $userid = $wpdb->get_var( "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '$newuser'" );
 	    if( $userid ) {
 		    $user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );

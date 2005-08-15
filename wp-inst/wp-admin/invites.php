@@ -8,7 +8,7 @@ if( $_POST[ 'action' ] == 'send' ) {
     $invites_left = get_usermeta( $user_ID, 'invites_left' );
     if( $invites_left != false ) {
 	if( $_POST[ 'email' ] != '' && is_email( $_POST[ 'email' ] ) ) {
-	    $email = $wpdb->escape( strtolower( $_POST[ 'email' ] ) );
+	    $email = strtolower( $_POST[ 'email' ] );
 	    $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
 	    $pos = strpos( $invites_list, substr( $email, 1 ) );
 	    if( $pos == true ) {

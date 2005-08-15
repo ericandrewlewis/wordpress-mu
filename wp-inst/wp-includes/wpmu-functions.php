@@ -374,10 +374,7 @@ function is_site_admin( $user_id ) {
 function get_site_settings( $option, $default='na' ) {
     global $wpdb;
 
-    $query = "SELECT meta_value 
-              FROM   $wpdb->sitemeta 
-	      WHERE  meta_key = '$option'
-	      AND    site_id = '".$wpdb->siteid."'";
+    $query = "SELECT meta_key, meta_value FROM $wpdb->sitemeta WHERE meta_key = '$option' AND site_id = '".$wpdb->siteid."'";
     $option = $wpdb->get_row( $query );
     if( $option == false ) {
 	    if( $default != 'na' ) {

@@ -30,13 +30,7 @@ into the address bar of your browser).";
 
 }
 
-$u = '';
-if( $_POST[ 'u' ] ) {
-    $u = $_POST[ 'u' ];
-} elseif( $_GET[ 'u' ] ) {
-    $u = $_GET[ 'u' ];
-}
-$u = $wpdb->escape( $u );
+$u = $wpdb->escape( $_REQUEST['u'] );
 
 function invites_check_user_hash() {
     global $wpdb, $u;
@@ -44,12 +38,9 @@ function invites_check_user_hash() {
 	header( "Location: ".get_option( "siteurl" ) );
 	die( );
     } else {
-	$query = "SELECT meta_value
-	          FROM   ".$wpdb->usermeta."
-		  WHERE  user_id    = '0'
-		  AND    meta_key   = '".invite."'
-		  AND    meta_value = '".$u."'";
-	$userhash = $wpdb->get_var( $query );
+	$query = "SELECT meta_value FROM ".$wpdb->usermeta." WHERE user_id = '0' AND meta_key = 'invite' AND meta_value = '".$u."'";
+	$userhash = $wpdb->get_results( $query, ARRAY_A );
+
 	if( $userhash == false ) {
 	    header( "Location: ".get_option( "siteurl" ) );
 	    die();
@@ -81,7 +72,7 @@ into the address bar of your browser).";
     }
     if( $_GET[ 'action' ] == 'invite' ) {
 	if( is_email( $_POST[ 'email' ] ) ) {
-	    $email = $wpdb->escape( $_POST[ 'email' ] );
+	    $email = $_POST[ 'email' ];
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` )
 		      VALUES ( NULL, '0', 'invite' , '".md5( $email )."')";
 	    $wpdb->query( $query );
@@ -140,10 +131,7 @@ function invites_cleanup_db( $val ) {
 	          AND         meta_value = '".$_POST[ 'u' ]."'";
 	$wpdb->query( $query );
 
-	$query = "SELECT ID
-	          FROM   ".$wpdb->users."
-		  WHERE  user_login = '".$wpdb->escape( $_POST[ 'weblog_id' ] )."'";
-	$id = $wpdb->get_var( $query );
+	$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
 
 	if( $id ) {
 	    $query = "UPDATE ".$wpdb->usermeta."
@@ -184,9 +172,9 @@ function invites_admin_content() {
 
     switch( $_GET[ 'action' ] ) {
 	case "updateinvitedefaults":
-	update_site_option( "invites_per_user", $wpdb->escape( $_GET[ 'invites_per_user' ] ) );
-	update_site_option( "invites_default_message", $wpdb->escape( $_GET[ 'invites_default_message' ] ) );
-	update_site_option( "invites_default_subject", $wpdb->escape( $_GET[ 'invites_default_subject' ] ) );
+	update_site_option( "invites_per_user", $_GET[ 'invites_per_user' ] );
+	update_site_option( "invites_default_message", $_GET[ 'invites_default_message' ] );
+	update_site_option( "invites_default_subject", $_GET[ 'invites_default_subject' ] );
 	break;
 	case "":
 	break;
