@@ -139,12 +139,15 @@ class wpdb {
 		if( $this->blogs != '' && preg_match("/(" . $this->blogs . "|" . $this->users . "|" . $this->usermeta . "|" . $this->site . "|" . $this->sitemeta . "|" . $this->sitecategories . ")/i",$query) ) {
 			$action = 'global';
 			$details = $global_db_list[ mt_rand( 0, count( $global_db_list ) -1 ) ];
+			$this->db_global = $details;
 		} elseif ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
 			$action = 'write';
 			$details = $db_list[ 'write' ][ mt_rand( 0, count( $db_list[ 'write' ] ) -1 ) ];
+			$this->db_write = $details;
 		} else {
 			$action = '';
 			$details = $db_list[ 'read' ][ mt_rand( 0, count( $db_list[ 'read' ] ) -1 ) ];
+			$this->db_read = $details;
 		}
 
 		$dbhname = "dbh" . $action;
@@ -184,22 +187,27 @@ class wpdb {
 		
 		// use $this->dbh for read ops, and $this->dbhwrite for write ops
 		// use $this->dbhglobal for gloal table ops
+		unset( $dbh );
 		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true ) {
 			if( $this->blogs != '' && preg_match("/(" . $this->blogs . "|" . $this->users . "|" . $this->usermeta . "|" . $this->site . "|" . $this->sitemeta . "|" . $this->sitecategories . ")/i",$query) ) {
 				if( false == isset( $this->dbhglobal ) ) {
 					$this->db_connect( $query );
 				}
 				$dbh =& $this->dbhglobal;
+				$this->last_db_used = "global";
 			} elseif ( preg_match("/^\\s*(alter table|create|insert|delete|update|replace) /i",$query) ) {
 				if( false == isset( $this->dbhwrite ) ) {
 					$this->db_connect( $query );
 				}
 				$dbh =& $this->dbhwrite;
+				$this->last_db_used = "write";
 			} else {
 				$dbh =& $this->dbh;
+				$this->last_db_used = "read";
 			}
 		} else {
 			$dbh =& $this->dbh;
+			$this->last_db_used = "other/read";
 		}
 
 		$this->result = @mysql_query($query, $dbh);
