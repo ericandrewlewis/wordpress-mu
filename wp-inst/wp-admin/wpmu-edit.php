@@ -132,10 +132,30 @@ switch( $_GET[ 'action' ] ) {
     header( "Location: wpmu-blogs.php?action=editblog&id=".$id."&updated=true" );
     break;
     case "deleteblog":
+	$drop_tables = array( $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_categories",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_comments",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_linkcategories",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_links",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_options",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_post2cat",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_postmeta",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_posts",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_referer_visitLog",
+			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_referer_blacklist" );
+	reset( $drop_tables );
+	while( list( $key, $val ) = each( $drop_tables  ) ) 
+	{ 
+		$wpdb->query( "DROP TABLE $val" );
+	}
+	$wpdb->query( "DELETE FROM ".$wpdb->blogs." WHERE blog_id = '".$_GET[ 'id' ]."'" );
+	header( "Location: wpmu-blogs.php?updated=true" );
+    break;
+    case "deactivateblog":
 	$query = "UPDATE ".$wpdb->blogs."
 	          SET    is_public = 'archived'
 	          WHERE  blog_id = '".$_GET[ 'id' ]."'";
         $wpdb->query( $query );
+	header( "Location: wpmu-blogs.php?updated=true" );
     break;
     case "updateuser":
     unset( $_POST[ 'option' ][ 'ID' ] );

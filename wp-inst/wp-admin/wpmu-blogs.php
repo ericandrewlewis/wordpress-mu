@@ -222,6 +222,7 @@ $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 $posts_columns['control_view']      = '';
 $posts_columns['control_edit']      = '';
 $posts_columns['control_backend']   = '';
+$posts_columns['control_deactivate']    = '';
 $posts_columns['control_delete']    = '';
 
 ?>
@@ -294,6 +295,12 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	case 'control_backend':
 		?>
 		<td valign='top'><?php echo "<a href='http://" . $blog[ 'domain' ] . $current_site->path . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
+		<?php
+		break;
+
+	case 'control_deactivate':
+		?>
+		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deactivateblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to deactivate this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Deactivate') . "</a>"; ?></td>
 		<?php
 		break;
 
