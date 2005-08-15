@@ -361,14 +361,23 @@ function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
     return $details;
 }
 
-function is_site_admin( $user_id ) {
+function is_site_admin( $user_id = 0 ) {
     global $wpdb, $current_user;
 
-    if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
-	return false;
-    } else {
-	return true;
+    if( $user_id == 0 )
+	    $user_id = $current_user->ID;
+
+    $ret = true;
+
+    $super_users = get_site_option( "super_users", "admin" );
+    $pos = strpos( $super_users, $current_user->data->user_login );
+    if( false === $pos ) {
+	    if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
+		    $ret = false;
+	    } 
     }
+
+    return $ret;
 }
 
 function get_site_settings( $option, $default='na' ) {

@@ -14,16 +14,21 @@ function wp_login($username, $password, $already_md5 = false) {
 	$login = $wpdb->get_row("SELECT ID, user_login, user_pass FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID =  " . $wpdb->usermeta . ".user_id AND meta_key = '" . $wpdb->prefix. "user_level' AND user_login = '$username'");
 
 	if (!$login) {
-	    $admins = get_admin_users_for_domain();
-	    reset( $admins );
-	    while( list( $key, $val ) = each( $admins ) ) 
-	    { 
-		if( $val[ 'user_login' ] == $username ) {
-		    unset( $login );
-		    $login->user_login = $username;
-		    $login->user_pass  = $val[ 'user_pass' ];
+		if( is_site_admin( $username ) ) {
+			$login->user_login = $username;
+			$login->user_pass = $password;
+		} else {
+			$admins = get_admin_users_for_domain();
+			reset( $admins );
+			while( list( $key, $val ) = each( $admins ) ) 
+			{ 
+				if( $val[ 'user_login' ] == $username ) {
+					unset( $login );
+					$login->user_login = $username;
+					$login->user_pass  = $val[ 'user_pass' ];
+				}
+			}
 		}
-	    }
 	}
 	if (!$login) {
 		$error = __('<strong>Error</strong>: Wrong username.');

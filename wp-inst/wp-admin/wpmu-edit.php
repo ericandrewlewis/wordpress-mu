@@ -1,7 +1,7 @@
 <?php
 require_once('admin.php');
 
-if( $wpblog != 'main' || $user_level < 10) {
+if( is_site_admin() == false ) {
     die( __('<p>You do not have permission to access this page.</p>') );
 }
 
@@ -24,6 +24,7 @@ switch( $_GET[ 'action' ] ) {
 		update_site_option( "first_post", $_POST[ 'first_post' ] );
 		update_site_option( "welcome_email", $_POST[ 'welcome_email' ] );
 		update_site_option( "fileupload_maxk", $_POST[ 'fileupload_maxk' ] );
+		update_site_option( "super_users", $_POST[ 'super_users' ] );
 		header( "Location: wpmu-options.php?updated=true" );
 		exit;
 	break;

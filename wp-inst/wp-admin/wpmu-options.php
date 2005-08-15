@@ -5,7 +5,7 @@ $parent_file = 'wpmu-admin.php';
 
 include('admin-header.php');
 
-if( $wpblog != 'main' || $user_level < 10) {
+if( is_site_admin() == false ) {
     die( __('<p>You do not have permission to access this page.</p>') );
 }
 
@@ -61,6 +61,17 @@ if (isset($_GET['updated'])) {
 		<tr valign="top"> 
 		<th scope="row"><?php _e('Max upload file size:') ?></th> 
 		<td><input name="fileupload_maxk" type="text" id="fileupload_maxk" value="<?php echo get_site_option('fileupload_maxk', 300) ?>" size="5" /> KB
+		</tr> 
+		</table>
+	</fieldset>
+	<fieldset class="options">
+		<legend><?php _e('Administration Settings') ?></legend> 
+		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Super Users:') ?></th> 
+		<td><input name="super_users" type="text" id="super_users" style="width: 95%" value="<?php echo get_site_option( 'super_users', 'admin' ) ?>" size="45" />
+		<br />
+		<?php _e('These users may login to the main blog and administer the site.') ?></td> 
 		</tr> 
 		</table>
 	</fieldset>
