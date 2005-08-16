@@ -98,6 +98,8 @@ if(count($errors) == 0) {
 	update_usermeta( $user_id, 'yim', $edituser->yim );
 	
 	$wp_user->set_role($_POST['new_role']);
+	if( is_site_admin() ) 
+		update_usermeta( $user_id, 'invites_left', intval( $_POST[ 'invites_left' ] ) );
 	
 	header("Location: user-edit.php?user_id=$user_id&updated=true");
 } else {
@@ -151,6 +153,14 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 		<th scope="row"><?php _e('Posts:') ?></th>
 		<td><?php echo get_usernumposts($edituser->ID); ?></td>
 	</tr>
+	<?php if( is_site_admin() ) {?>
+	<tr>
+		<th scope="row"><?php _e('Invites Left:') ?></th>
+		<td><input type="text" name="invites_left" id="invites_left" value="<?php echo $edituser->invites_left ?>" /></td>
+	</tr>
+	<?php
+	} // is_site_admin
+	?>
 <?php if ( isset($edituser->user_registered) && ('0000-00-00 00:00:00' != $edituser->user_registered) ) { ?>
 	<tr>
 		<th scope="row"><?php _e('Registered on:') ?></th>
