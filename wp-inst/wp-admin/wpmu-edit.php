@@ -110,6 +110,22 @@ switch( $_GET[ 'action' ] ) {
         $wpdb->query( $query );
     }
 
+    // user roles
+    if( is_array( $_POST[ 'role' ] ) == true ) {
+	    $newroles = $_POST[ 'role' ];
+	    reset( $newroles );
+	    while( list( $userid, $role ) = each( $newroles ) ) { 
+		    $role_len = strlen( $role );
+		    $existing_role = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$userid'  AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'" );
+		    if( false == $existing_role ) {
+			    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpmuBaseTablePrefix . $id . "_capabilities', 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}')" );
+		    } elseif( $existing_role != "a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}" ) {
+			    $wpdb->query( "UPDATE $wpdb->usermeta SET meta_value = 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}' WHERE user_id = '$userid'  AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'" );
+		    }
+
+	    }
+    }
+
     // remove user
     if( is_array( $_POST[ 'blogusers' ] ) ) {
 	    reset( $_POST[ 'blogusers' ] );
@@ -126,7 +142,7 @@ switch( $_GET[ 'action' ] ) {
 	    if( $userid ) {
 		    $user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );
 		    if( $user == false )
-			    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', 'wp_" . $id . "_capabilities', 'a:1:{s:8:\"inactive\";b:1;}')" );
+			    $wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpmuBaseTablePrefix . $id . "_capabilities', 'a:1:{s:" . strlen( $_POST[ 'new_role' ] ) . ":\"" . $_POST[ 'new_role' ] . "\";b:1;}')" );
 	    }
     }
     header( "Location: wpmu-blogs.php?action=editblog&id=".$id."&updated=true" );

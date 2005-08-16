@@ -150,15 +150,29 @@ switch( $_GET[ 'action' ] ) {
     print "<h3>Blog Users</h3>";
     if( is_array( $blogusers ) ) {
 	    print "<table width='100%'><caption>Current Users</caption>";
-	    print "<tr><th>User</th><th>Remove</th><th></th></tr>";
+	    print "<tr><th>User</th><th>Role</th><th>Remove</th><th></th></tr>";
 	    reset( $blogusers );
 	    while( list( $key, $val ) = each( $blogusers ) ) 
 	    { 
+		    $t = @unserialize( $val->meta_value );
+		    if( is_array( $t ) ) {
+			    reset( $t );
+			    $existing_role = key( $t );
+		    }
 		    print "<tr><td>" . $val->user_login . "</td>";
 		    if( $val->user_id != $current_user->data->ID ) {
+			    ?>
+			    <td><select name="role[<?php echo $val->user_id ?>]" id="new_role"><?php 
+				    foreach($wp_roles->role_names as $role => $name) {
+					    $selected = '';
+					    if( $role == $existing_role )
+						    $selected = 'selected="selected"';
+					    echo "<option {$selected} value=\"{$role}\">{$name}</option>";
+				    }
+			    ?></select></td> <?php
 			    print "<td><input title='Click to remove user' type='checkbox' name='blogusers[" . $val->user_id . "]'></td>";
 		    } else {
-			    print "<td><b>N/A</b></td>";
+			    print "<td><b>N/A</b></td><td><b>N/A</b></td>";
 		    }
 		    print "<td><a href='user-edit.php?user_id=" . $val->user_id . "'>Edit</td></tr>";
 	    }
@@ -168,8 +182,19 @@ switch( $_GET[ 'action' ] ) {
     ?>
 <p>As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.</p>
 <table>
-<tr><td>User&nbsp;Login: </td><td><input type="text" name="newuser" id="newuser"></td><td><a href="javascript:doSearch();">Search</a></td></tr>
+<tr><th scope="row">User&nbsp;Login: </th><td><input type="text" name="newuser" id="newuser"></td><td><a href="javascript:doSearch();">Search</a></td></tr>
 <tr><td></td><td colspan='2'><div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div></td> </tr>
+	<tr>
+		<th scope="row"><?php _e('Role:') ?></th>
+		<td><select name="new_role" id="new_role"><?php 
+		foreach($wp_roles->role_names as $role => $name) {
+			$selected = '';
+			if( $role == 'subscriber' )
+				$selected = 'selected="selected"';
+			echo "<option {$selected} value=\"{$role}\">{$name}</option>";
+		}
+		?></select></td>
+	</tr>
 </table>
 <br />
 <p class="submit">
