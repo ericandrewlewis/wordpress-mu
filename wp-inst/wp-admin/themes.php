@@ -176,7 +176,7 @@ if (count($broken_themes)) {
 <?php
 }
 ?>
-
+<br clear="all" />
 </div>
 
 <?php
