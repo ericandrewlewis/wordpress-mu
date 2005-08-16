@@ -46,7 +46,7 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')";
 	    $wpdb->query( $query );
 	    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
-	    if( $user_ID != get_site_option( "admin_user_id" ) ) {
+	    if( is_site_admin() == false ) {
 		    $invites_left = $invites_left - 1;
 		    update_usermeta( $user_ID, "invites_left", $invites_left );
 	    }
