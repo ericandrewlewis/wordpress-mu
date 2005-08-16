@@ -361,16 +361,26 @@ function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
     return $details;
 }
 
-function is_site_admin( $user_id = 0 ) {
+function get_user_details( $username ) {
+	global $wpdb;
+
+	return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login = '$username'" );
+}
+
+function is_site_admin( $user_login = '0' ) {
     global $wpdb, $current_user;
 
-    if( $user_id == 0 )
-	    $user_id = $current_user->ID;
+    if( $user_login == '0' ) {
+	    $user_id = $current_user->data->ID;
+	    $user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
+    }  else {
+	    $user_id = $wpdb->get_var(  "SELECT user_id FROM " . $wpdb->users . " WHERE user_login = '" . $user_login . "'" );
+    }
 
     $ret = true;
 
     $super_users = get_site_option( "super_users", "admin" );
-    $pos = strpos( $super_users, $current_user->data->user_login );
+    $pos = strpos( $super_users, $user_login );
     if( false === $pos ) {
 	    if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
 		    $ret = false;

@@ -15,8 +15,10 @@ function wp_login($username, $password, $already_md5 = false) {
 
 	if (!$login) {
 		if( is_site_admin( $username ) ) {
+			unset( $login );
+			$userdetails = get_user_details( $username );
 			$login->user_login = $username;
-			$login->user_pass = $password;
+			$login->user_pass = $userdetails->user_pass;
 		} else {
 			$admins = get_admin_users_for_domain();
 			reset( $admins );
@@ -70,7 +72,8 @@ function get_userdata( $user_id ) {
 		if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
 			$user->user_level = $meta->meta_value;
 	}
-	if( is_site_admin( $user_id ) == true ) {
+	$user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
+	if( is_site_admin( $user_login ) == true ) {
 	    $user->user_level = 10;
 	    $cap_key = $wpdb->prefix . 'capabilities';
 	    $user->{$cap_key} = array( 'administrator' => '1' );
