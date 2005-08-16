@@ -512,7 +512,7 @@ function restore_current_blogid() {
 
 function get_users_of_blog( $id ) {
     global $wpdb, $wpmuBaseTablePrefix;
-    $users = $wpdb->get_results( "SELECT user_id, user_login FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'" );
+    $users = $wpdb->get_results( "SELECT user_id, user_login, meta_value FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'" );
     return $users;
 }
 
