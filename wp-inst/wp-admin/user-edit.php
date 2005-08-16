@@ -24,7 +24,7 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 $errors = array();
 
 // Only allow site admins to edit every user.
-if( $user_ID != get_site_option( "admin_user_id" ) )
+if( is_site_admin() ) 
 	if( false == $wpdb->get_var("SELECT user_id FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '".$wpdb->prefix."capabilities'") ) $errors['head'] = __('You do not have permission to edit this user.');
 
 switch ($action) {

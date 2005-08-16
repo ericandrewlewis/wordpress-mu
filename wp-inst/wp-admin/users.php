@@ -174,7 +174,7 @@ default:
 	
 	include ('admin-header.php');
 	
-	if( $user_ID == get_site_option( "admin_user_id" ) ) {
+	if( is_site_admin() ) {
 	    $userids = $wpdb->get_col("SELECT ID FROM $wpdb->users");
 	} else {
 	    $userids = $wpdb->get_col("SELECT ID FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities'");
