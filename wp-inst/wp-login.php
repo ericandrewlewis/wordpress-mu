@@ -52,7 +52,7 @@ do_action('lost_password');
 </head>
 <body>
 <div id="login">
-<h1><a href="http://wordpress.org/">WordPress</a></h1>
+<h1><a href="http://<?php echo $current_site->domain . $current_site->path ?>"><?php echo $current_site->site_name ?></a></h1>
 <p><?php _e('Please enter your information here. We will send you a new password.') ?></p>
 <?php
 if ($error)
@@ -218,7 +218,7 @@ default:
 <body>
 
 <div id="login">
-<h1><a href="http://wordpress.org/">WordPress</a></h1>
+<h1><a href="http://<?php echo $current_site->domain . $current_site->path ?>"><?php echo $current_site->site_name ?></a></h1>
 <?php
 if ( $error )
 	echo "<div id='login_error'>$error</div>";
