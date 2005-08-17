@@ -56,6 +56,7 @@ $submenu['options-personal.php'][5] = array(__('Personal'), 'read', 'options-per
 $submenu['options-personal.php'][10] = array(__('General'), 'manage_options', 'options-general.php');
 $submenu['options-personal.php'][15] = array(__('Writing'), 'manage_options', 'options-writing.php');
 $submenu['options-personal.php'][20] = array(__('Reading'), 'manage_options', 'options-reading.php');
+$submenu['options-personal.php'][25] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
 
