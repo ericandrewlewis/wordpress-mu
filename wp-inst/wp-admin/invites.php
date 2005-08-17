@@ -107,10 +107,31 @@ if (isset($_GET['result'] ) && $_GET['result'] == 'sent' ) {
 $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
 if( $invites_list != '' )
 {
-	print '<div class="wrap">';
-	print "<h3>Already Invited</h3>";
-	print "<p>You already invited: $invites_list</p>";
-	print '</div>';
+	if( strlen( $invites_list ) > 3 ) {
+		?><div class="wrap">
+		<h3>Already Invited</h3>
+		<table><?php
+		$invites = explode( " ", $invites_list );
+		reset( $invites );
+		while( list( $key, $val ) = each( $invites ) ) { 
+			if( $val != "" ) {
+				$row = $wpdb->get_row( "SELECT * FROM $wpdb->usermeta WHERE meta_key = '" . md5( $val ) . "_invited_by' AND meta_value = '" . $current_user->data->ID. "'" );
+				$invited_user_id = $row->user_id;
+				if( $invited_user_id != 0 ) {
+					$invited_user_blog = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$invited_user_id' AND meta_key='source_domain'" );
+				} else {
+					$invited_user_blog = '';
+				}
+				$invited_user_login = $wpdb->get_var( "SELECT user_login FROM $wpdb->users WHERE user_id = '$invited_user_id'" );
+				if( $invited_user_blog != '' ) {
+					print "<tr><td>$val</td><td>$invited_user_login</td><td><a href='http://{$invited_user_blog}'>http://$invited_user_blog</a></td></tr>";
+				} else {
+					print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em></td></tr>";
+				}
+			}
+		}
+		?></table></div><?php
+	}
 }
 ?>
 <?php include("admin-footer.php") ?>
