@@ -5,8 +5,8 @@ Plugin URI: http://elliottback.com/wp/archives/2005/05/11/wordpress-hashcash-20/
 Description: Client-side javascript computes an md5 code, server double checks. Blocks all spam bots.  XHTML 1.1 compliant.
 Author: Elliott Back
 Author URI: http://elliottback.com
-Version: 2.2
-Hat tips:	Cecil Coupe
+Version: 2.3
+Hat tips:	Cecil Coupe - http://ccdl.dyndns.biz/werehosed/
 		C.S. - http://www.cimmanon.org/
 		Denis de Bernardy - http://www.semiologic.com/
 		Diego Sevilla - http://neuromancer.dif.um.es/blog/
@@ -21,7 +21,10 @@ Hat tips:	Cecil Coupe
 if( strpos( $_SERVER[ 'SCRIPT_NAME' ], 'wp-inst/wp-newblog.php' ) == false ) {
 
 /* Start the session, if not started */
-session_start();
+$hashcash_session_id = session_id();
+if(empty($hashcash_session_id)){
+	session_start();
+}
 
 /**
  * Type: bool
@@ -76,9 +79,14 @@ if(WP_CACHE){
  */
 
 if(get_bloginfo('version') < 1.5){
-	define('HASHCASH_PER_USER_RAND',98246);
+	define('HASHCASH_PER_USER_RAND', 98246);
 } else {
-	add_option('wp_hashcash_rand', '', 'Random key for the wp-hashcash plugin', 'no');
+	// Says Denis to save a query
+	if (!get_option('wp_hashcash_version')){
+		delete_option('wp_hashcash_rand');
+		update_option('wp_hashcash_version', 2.3);
+	}
+
 	$curr = get_option('wp_hashcash_rand');
 	if(empty($curr)){
 		srand((double) microtime() * 1000000);
@@ -300,7 +308,24 @@ function hashcash_disable_callback($matches){
  */
 function hashcash_link_callback($matches){
 	$text = $matches[0];
-	return str_replace('</form>',  '<p>Protected by <a href="http://elliottback.com/" title="Elliott Back\'s Antispam Protection">WP-Hashcash</a>.</p>' . "\n" . '</form>', $text);
+	$r = rand(0, 4);
+	switch($r){
+	case 0:
+		return str_replace('</form>',  '<p>Protected by <a href="http://elliottback.com/" title="Elliott Back\'s Antispam Protection">WP-Hashcash</a>.</p>' . "\n" . '</form>', $text);
+		break;
+	case 1:
+		return str_replace('</form>',  '<p><a href="http://elliottback.com/" title="Elliott Back">WP-Hashcash</a>: protecting you from spam.</p>' . "\n" . '</form>', $text);
+		break;
+	case 2:
+		return str_replace('</form>',  '<p>Powered by <a href="http://elliottback.com/" title="Elliott Back, Spam Protection">WP-Hashcash</a>.</p>' . "\n" . '</form>', $text);
+		break;
+	case 3:
+		return str_replace('</form>',  '<p>I\'m <a href="http://elliottback.com/" title="Elliott Back">WP-Hashcash</a>.  I eat spam.</p>' . "\n" . '</form>', $text);
+		break;
+	case 4:
+		return str_replace('</form>',  '<p>What\'s a blog without spam? <a href="http://elliottback.com/" title="Elliott Back + Spam Protection">WP-Hashcash</a>.</p>' . "\n" . '</form>', $text);
+		break;
+	}
 }
 
 /**
@@ -327,9 +352,9 @@ function hashcash_add_action_callback($matches){
  * This is the workhorse of WP-Hashcash
  */
 function hashcash_add_hidden_tag($page) {
-	global $posts, $single, $hashcash_form_action;
+	global $posts, $single, $hashcash_form_action, $post;
 
-	if ($single){
+	if ($single && $post->comment_status == 'open'){
 		$field_id = hashcash_random_string(rand(6,18));
 		$field_name = hashcash_random_string(rand(6,18));
 		$hashcash_form_action = hashcash_random_string(rand(6,18));
@@ -364,16 +389,15 @@ function hashcash_add_hidden_tag($page) {
 		// Disable form fields
 		$page = preg_replace_callback('/<form[^>]*?' . HASHCASH_FORM_ACTION .  '.*?<\/form>/si', 'hashcash_disable_callback', $page);
 		
-		// Enable form fields from javascript
-		preg_match('/<form[^>]*?' . HASHCASH_FORM_ACTION .  '(.*?)<\/form>/si', $page, $form);
-		$fields = preg_match_all('/<input.*?id="(submit|author|email|url)"/si', $form[1], $matches);
+		// Try to enable all form fields from javascript
+		$fields = array('submit', 'author', 'email', 'url');
 		$page = str_replace('<body', '<body onload="' . $fn_enable_name . '();"', $page);
-
-		// Make script
+		
 		$script = 'function ' . $fn_enable_name . '(){';
-		shuffle(&$matches[1]);
-		foreach($matches[1] as $field){
-			$script .= "document.getElementById('$field').disabled = false;";
+		shuffle($fields);
+		foreach($fields as $field){
+			$field_temp = hashcash_random_string(rand(6,18));
+			$script .= "$field_temp = document.getElementById('$field'); if(!$field_temp){} else { $field_temp.disabled = false; } ";
 		}
 
 		// Other things that happen onload()
@@ -394,7 +418,7 @@ function hashcash_add_hidden_tag($page) {
 		 * 4)  Write all the javascript bits to various lines of <head>
 		 */
 		
-		shuffle(&$hashcash_bits);
+		shuffle($hashcash_bits);
 		$js = '<script type="text/javascript">' . "\n"
 			. '<!--' . "\n"
 			. implode(" ", $hashcash_bits) . "\n"
@@ -637,9 +661,9 @@ if($hashash) {
 		being correctly generated.</p>';
 }
 
-if(WP_CACHE && !HASHCASH_PER_USER){
+if(WP_CACHE && HASHCASH_PER_USER){
 	echo '<p style="border: 2px solid red; color:red; padding:4px;">WP-Cache is detected, but for 
-	some reason, HASHCASH_PER_USER is not set to true.</p>';
+	some reason, HASHCASH_PER_USER is set to true.</p>';
 }
 
 echo'			<p>This comment has been logged, and will not be displayed on the blog.</p>
