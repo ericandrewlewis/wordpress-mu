@@ -117,7 +117,7 @@ endforeach;
 
 <fieldset id="postdiv">
     <legend><?php _e('Page Content') ?></legend>
-<?php if ( !get_option('rich_editing') ) : ?>
+<?php if ( get_user_option('rich_editing') == 'true' ) : ?>
 <?php the_quicktags(); ?>
 <script type="text/javascript">
 <!--
