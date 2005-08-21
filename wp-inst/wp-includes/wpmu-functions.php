@@ -374,7 +374,7 @@ function is_site_admin( $user_login = '0' ) {
 	    $user_id = $current_user->data->ID;
 	    $user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
     }  else {
-	    $user_id = $wpdb->get_var(  "SELECT user_id FROM " . $wpdb->users . " WHERE user_login = '" . $user_login . "'" );
+	    $user_id = $wpdb->get_var(  "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '" . $user_login . "'" );
     }
 
     $ret = true;
