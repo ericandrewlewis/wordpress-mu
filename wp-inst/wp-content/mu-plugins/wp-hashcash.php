@@ -18,6 +18,9 @@ Hat tips:	Cecil Coupe - http://ccdl.dyndns.biz/werehosed/
 		Paul Andrew Johnston - http://pajhome.org.uk/crypt/md5/
 */ 
 
+if( defined( "WP_INSTALLING" ) )
+	return;
+
 if( strpos( $_SERVER[ 'SCRIPT_NAME' ], 'wp-inst/wp-newblog.php' ) == false ) {
 
 /* Start the session, if not started */
