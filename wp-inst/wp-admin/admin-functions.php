@@ -799,7 +799,7 @@ function check_admin_referer() {
 	do_action('check_admin_referer');
 }
 
-// insert_with_markers: Owen Winkler
+// insert_with_markers: Owen Winkler, fixed by Eric Anderson
 // Inserts an array of strings into a file (.htaccess), placing it between
 // BEGIN and END markers.  Replaces existing marked info.  Retains surrounding
 // data.  Creates file if none exists.
@@ -816,24 +816,22 @@ function insert_with_markers($filename, $marker, $insertion) {
 		$foundit = false;
 		if ($markerdata) {
 			$state = true;
-			$newline = '';
 			foreach($markerdata as $markerline) {
-				if (strstr($markerline, "# BEGIN {$marker}")) $state = false;
-				if ($state) fwrite($f, "{$newline}{$markerline}");
-				if (strstr($markerline, "# END {$marker}")) {
-					fwrite($f, "{$newline}# BEGIN {$marker}");
-					if(is_array($insertion)) foreach($insertion as $insertline) fwrite($f, "{$newline}{$insertline}");
-					fwrite($f, "{$newline}# END {$marker}");
+				if (strstr($markerline, "# BEGIN {$marker}\n")) $state = false;
+				if ($state) fwrite($f, "{$markerline}\n");
+				if (strstr($markerline, "# END {$marker}\n")) {
+					fwrite($f, "# BEGIN {$marker}\n");
+					if(is_array($insertion)) foreach($insertion as $insertline) fwrite($f, "{$insertline}\n");
+					fwrite($f, "# END {$marker}\n");
 					$state = true;
 					$foundit = true;
 				}
-				$newline = "\n";
 			}
 		}
 		if (!$foundit) {
 			fwrite($f, "# BEGIN {$marker}\n");
 			foreach($insertion as $insertline) fwrite($f, "{$insertline}\n");
-			fwrite($f, "# END {$marker}");				
+			fwrite($f, "# END {$marker}\n");
 		}
 		fclose($f);
 		return true;
@@ -842,7 +840,7 @@ function insert_with_markers($filename, $marker, $insertion) {
 	}
 }
 
-// insert_with_markers: Owen Winkler
+// extract_from_markers: Owen Winkler
 // Returns an array of strings from a file (.htaccess) from between BEGIN
 // and END markers.
 function extract_from_markers($filename, $marker) {
@@ -1141,7 +1139,7 @@ function add_submenu_page($parent, $page_title, $menu_title, $access_level, $fil
 }
 
 function add_options_page($page_title, $menu_title, $access_level, $file, $function = '') {
-	return add_submenu_page('options-general.php', $page_title, $menu_title, $access_level, $file, $function);
+	return add_submenu_page('options-personal.php', $page_title, $menu_title, $access_level, $file, $function);
 }
 
 function add_management_page($page_title, $menu_title, $access_level, $file, $function = '') {
@@ -1384,6 +1382,18 @@ add_action('admin_footer', 'pimp_firefox');
 
 function documentation_link( $for ) {
 	return;
+}
+
+function register_importer($id, $name, $description, $callback) {
+	global $wp_importers;
+	
+	$wp_importers[$id] = array($name, $description, $callback);
+}
+
+function get_importers() {
+	global $wp_importers;
+
+	return $wp_importers;
 }
 
 function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_field = 'searchresults' ) {

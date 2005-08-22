@@ -1,9 +1,9 @@
 <?php
 // ** MySQL settings ** //
-define('DB_NAME', 'wordpress');     // The name of the database
+define('DB_NAME', 'wordpress');    // The name of the database
 define('DB_USER', 'username');     // Your MySQL username
 define('DB_PASSWORD', 'password'); // ...and password
-define('DB_HOST', 'localhost');     // 99% chance you won't need to change this value
+define('DB_HOST', 'localhost');    // 99% chance you won't need to change this value
 define('VHOST', 'VHOSTSETTING'); 
 
 

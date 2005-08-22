@@ -77,7 +77,7 @@ addLoadEvent(blurry);
 </script>
 <script type="text/javascript" src="fat.js"></script>
 <?php if ( isset( $editing ) ) : ?>
-<?php if ( get_user_option('rich_editing') == 'true' ) :?>
+<?php if ( 'true' == get_user_option('rich_editing') ) :?>
 <script type="text/javascript" src="tinymce/tiny_mce_src.js"></script>
 <script type="text/javascript">
 tinyMCE.init({
@@ -91,6 +91,7 @@ tinyMCE.init({
 	theme_advanced_toolbar_location : "top",
 	theme_advanced_toolbar_align : "left",
 	theme_advanced_path_location : "bottom",
+	theme_advanced_resizing : true,
 	entity_encoding : "raw",
 	extended_valid_elements : "a[id|href|title|onclick],img[class|src|alt|title|width|height|align]",
 	plugins : "emotions"

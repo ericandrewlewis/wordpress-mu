@@ -26,6 +26,29 @@ include('admin-header.php');
 </table> 
 </fieldset> 
 
+<fieldset class="options"> 
+<legend><?php _e('Syndication Feeds') ?></legend> 
+<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
+<tr valign="top"> 
+<th width="33%" scope="row"><?php _e('Show the most recent:') ?></th> 
+<td><input name="posts_per_rss" type="text" id="posts_per_rss" value="<?php form_option('posts_per_rss'); ?>" size="3" /> <?php _e('posts') ?></td> 
+</tr>
+<tr valign="top">
+<th scope="row"><?php _e('For each article, show:') ?> </th>
+<td>
+<label><input name="rss_use_excerpt"  type="radio" value="0" <?php checked(0, get_settings('rss_use_excerpt')); ?>  /> <?php _e('Full text') ?></label><br />
+<label><input name="rss_use_excerpt" type="radio" value="1" <?php checked(1, get_settings('rss_use_excerpt')); ?> /> <?php _e('Summary') ?></label>
+</td>
+</tr> 
+</table> 
+</fieldset> 
+<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
+<tr valign="top"> 
+<th width="33%" scope="row"><?php _e('Encoding for pages and feeds:') ?></th> 
+<td><input name="blog_charset" type="text" id="blog_charset" value="<?php form_option('blog_charset'); ?>" size="20" class="code" /><br />
+<?php _e('The character encoding you write your blog in (UTF-8 is <a href="http://developer.apple.com/documentation/macos8/TextIntlSvcs/TextEncodingConversionManager/TEC1.5/TEC.b0.html">recommended</a>)') ?></td> 
+</tr>
+</table> 
 <p class="submit"> 
 <input type="hidden" name="action" value="update" /> 
 <input type="hidden" name="page_options" value="'posts_per_page','what_to_show','posts_per_rss','rss_use_excerpt','blog_charset','gzipcompression' " /> 
