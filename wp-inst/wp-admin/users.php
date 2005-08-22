@@ -182,7 +182,7 @@ default:
 	
 	foreach($userids as $userid) {
 		$tmp_user = new WP_User($userid);
-		$roles = array_keys($tmp_user->roles);
+		$roles = array_values($tmp_user->roles);
 		$role = $roles[0];
 		if( $role == '' )
 		    $role = 'inactive';

@@ -144,7 +144,7 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 		<th scope="row"><?php _e('Role:') ?></th>
 		<td><select name="new_role" id="new_role"><?php 
 		foreach($wp_roles->role_names as $role => $name) {
-			$selected = (empty($wp_user->roles[$role])) ? '' : 'selected="selected"';
+			$selected = ( $role != $wp_user->roles[0] ) ? '' : 'selected="selected"';
 			echo "<option {$selected} value=\"{$role}\">{$name}</option>";
 		}
 		?></select></td>
