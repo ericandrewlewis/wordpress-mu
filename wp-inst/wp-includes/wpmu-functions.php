@@ -184,18 +184,6 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $wpdb->query("UPDATE $wpdb->options SET option_value = '".$weblog_title."' WHERE option_name = 'blogname'");
     $wpdb->query("UPDATE $wpdb->options SET option_value = '".$admin_email."' WHERE option_name = 'admin_email'");
 
-    // Now drop in some default links
-    $wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://blog.carthik.net/index.php', 'Carthik', 1, 'http://blog.carthik.net/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://blogs.linux.ie/xeer/', 'Donncha', 1, 'http://blogs.linux.ie/xeer/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://zengun.org/weblog/', 'Michel', 1, 'http://zengun.org/weblog/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://boren.nu/', 'Ryan', 1, 'http://boren.nu/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://photomatt.net/', 'Matt', 1, 'http://xml.photomatt.net/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://zed1.com/journalized/', 'Mike', 1, 'http://zed1.com/journalized/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://www.alexking.org/', 'Alex', 1, 'http://www.alexking.org/blog/wp-rss2.php');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://dougal.gunters.org/', 'Dougal', 1, 'http://dougal.gunters.org/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://www.wordpress.com/', 'WordPress', 1, 'http://www.wordpress.com/feed/');");
-
     // Default category
     $wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."')");
 
@@ -213,6 +201,18 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 	$query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '".$userID."', '".$key."' , '".$val."')";
 	$wpdb->query( $query );
     }
+
+    // Now drop in some default links
+    $wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://blogs.linux.ie/xeer/', 'Donncha', 1, '$userID', 'http://blogs.linux.ie/xeer/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://zengun.org/weblog/', 'Michel', 1, '$userID', 'http://zengun.org/weblog/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://boren.nu/', 'Ryan', 1, '$userID', 'http://boren.nu/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://photomatt.net/', 'Matt', 1, '$userID', 'http://xml.photomatt.net/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://zed1.com/journalized/', 'Mike', 1, '$userID', 'http://zed1.com/journalized/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://www.alexking.org/', 'Alex', 1, '$userID', 'http://www.alexking.org/blog/wp-rss2.php');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://dougal.gunters.org/', 'Dougal', 1, '$userID', 'http://dougal.gunters.org/feed/');");
+    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://www.wordpress.com/', 'WordPress', 1, '$userID', 'http://www.wordpress.com/feed/');");
+
 
     // First post
     $now = date('Y-m-d H:i:s');
