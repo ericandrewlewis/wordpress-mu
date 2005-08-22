@@ -66,7 +66,7 @@ function wpmu_checkAvailableSpace($action) {
 	<td bgcolor="<?php echo ((($size/$spaceAllowed)*100)<70)?"Green":"Red"; ?>">&nbsp;</td><td bgcolor="Black" width="<?php echo (($size/$spaceAllowed)*100); ?>%"></td>
 	</tr>
 	</table>
-	<?
+	<?php
 	
 	if (($spaceAllowed-$size)>0) {
 		return $action;
