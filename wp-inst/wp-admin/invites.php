@@ -39,6 +39,7 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    } else {
 		$username = __( 'Someone' );
 	    }
+	    $msg = str_replace( "USERNAME", ucfirst( $username ), $msg );
 	    $subject = str_replace( "USERNAME", ucfirst( $username ), $subject );
 
 	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite' , '".md5( strtolower( $email ) )."')";
