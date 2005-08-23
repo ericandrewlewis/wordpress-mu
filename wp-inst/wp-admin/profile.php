@@ -163,7 +163,7 @@ if (isset($updated)) { ?>
 			$output = '';
 			foreach($profileuser->roles as $role => $value) {
 				if($output != '') $output .= ', ';
-				$output .= $wp_roles->role_names[$role];
+				$output .= $wp_roles->role_names[$value];
 			}
 			echo $output;
 			?></td>
