@@ -220,16 +220,27 @@ switch( $_GET[ 'action' ] ) {
 
 		$query = "SELECT * 
 			FROM ".$wpdb->blogs." 
-			WHERE site_id = '".$wpdb->siteid."'
-			ORDER BY blog_id";
+			WHERE site_id = '".$wpdb->siteid."'";
 		if( $_GET[ 's' ] != '' ) {
 			$query = "SELECT blog_id, {$wpdb->blogs}.domain, registered, last_updated
 				FROM ".$wpdb->blogs.", ".$wpdb->site." 
 				WHERE site_id = '".$wpdb->siteid."'
 				AND   ".$wpdb->blogs.".site_id = ".$wpdb->site.".id
-				AND   {$wpdb->blogs}.domain like '%".$_GET[ 's' ]."%'
-				ORDER BY blog_id";
+				AND   {$wpdb->blogs}.domain like '%".$_GET[ 's' ]."%'";
 		}
+		if( isset( $_GET[ 'sortby' ] ) == false ) {
+			$_GET[ 'sortby' ] = 'ID';
+		}
+		if( $_GET[ 'sortby' ] == 'Registered' ) {
+			$query .= ' ORDER BY registered DESC';
+		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
+			$query .= ' ORDER BY blog_id';
+		} elseif( $_GET[ 'sortby' ] == 'Last Updated' ) {
+			$query .= ' ORDER BY last_updated DESC';
+		} elseif( $_GET[ 'sortby' ] == 'Blog Name' ) {
+			$query .= ' ORDER BY domain';
+		}
+
 		$query .= " LIMIT $start, $num";
 		$blog_list = $wpdb->get_results( $query, ARRAY_A );
 		if( count( $blog_list ) < $num ) {
@@ -295,7 +306,7 @@ $posts_columns['control_delete']    = '';
 	<tr>
 
 <?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><?php echo $column_display_name; ?></th>
+	<th scope="col"><a href="wpmu-blogs.php?sortby=<?php echo urlencode( $column_display_name ) ?>&start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
 <?php } ?>
 
 	</tr>
