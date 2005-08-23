@@ -207,26 +207,65 @@ switch( $_GET[ 'action' ] ) {
     <?php
     break;
     default:
-	$query = "SELECT * 
-	          FROM ".$wpdb->blogs." 
-		  WHERE site_id = '".$wpdb->siteid."'";
-	if( $_GET[ 's' ] != '' ) {
-	    $query = "SELECT * 
-	              FROM ".$wpdb->blogs.", ".$wpdb->site." 
-		      WHERE site_id = '".$wpdb->siteid."'
-		      AND   ".$wpdb->blogs.".site_id = ".$wpdb->site.".id
-		      AND   blogname like '%".$_GET[ 's' ]."%'";
-	}
-	$blog_list = $wpdb->get_results( $query, ARRAY_A );
+		if( isset( $_GET[ 'start' ] ) == false ) {
+			$start = 0;
+		} else {
+			$start = intval( $_GET[ 'start' ] );
+		}
+		if( isset( $_GET[ 'num' ] ) == false ) {
+			$num = 30;
+		} else {
+			$num = intval( $_GET[ 'num' ] );
+		}
+
+		$query = "SELECT * 
+			FROM ".$wpdb->blogs." 
+			WHERE site_id = '".$wpdb->siteid."'
+			ORDER BY blog_id";
+		if( $_GET[ 's' ] != '' ) {
+			$query = "SELECT blog_id, {$wpdb->blogs}.domain, registered, last_updated
+				FROM ".$wpdb->blogs.", ".$wpdb->site." 
+				WHERE site_id = '".$wpdb->siteid."'
+				AND   ".$wpdb->blogs.".site_id = ".$wpdb->site.".id
+				AND   {$wpdb->blogs}.domain like '%".$_GET[ 's' ]."%'
+				ORDER BY blog_id";
+		}
+		$query .= " LIMIT $start, $num";
+		$blog_list = $wpdb->get_results( $query, ARRAY_A );
+		if( count( $blog_list ) < $num ) {
+			$next = false;
+		} else {
+			$next = true;
+		}
 ?>
 <h2>Blogs</h2>
 <form name="searchform" action="wpmu-blogs.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
+  <table><td>
   <fieldset> 
   <legend><?php _e('Search Blogs&hellip;') ?></legend> 
   <input type='hidden' name='action' value='blogs'>
   <input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /> 
   <input type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
   </fieldset>
+  </td><td>
+  <fieldset> 
+  <legend><?php _e('Blog Navigation') ?></legend> 
+  <?php 
+  if( $start == 0 ) { 
+	  echo 'Previous&nbsp;Blogs';
+  } elseif( $start <= 30 ) { 
+	  echo '<a href="wpmu-blogs.php?start=0">Previous&nbsp;Blogs</a>';
+  } else {
+	  echo '<a href="wpmu-blogs.php?start=<?php echo $start - $num ?>">Previous&nbsp;Blogs</a>';
+  } 
+  if ( $next ) {
+	  echo '&nbsp;||&nbsp;<a href="wpmu-blogs.php?start=' . ($start + $num) . '">Next&nbsp;Blogs</a>';
+  } else {
+	  echo '&nbsp;||&nbsp;Next&nbsp;Blogs';
+  }
+  ?>
+  </fieldset>
+  </td></table>
 </form>
 
 <br style="clear:both;" />

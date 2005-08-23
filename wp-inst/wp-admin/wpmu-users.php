@@ -66,21 +66,59 @@ switch( $_GET[ 'action' ] ) {
     <?php
     break;
     default:
+		if( isset( $_GET[ 'start' ] ) == false ) {
+			$start = 0;
+		} else {
+			$start = intval( $_GET[ 'start' ] );
+		}
+		if( isset( $_GET[ 'num' ] ) == false ) {
+			$num = 30;
+		} else {
+			$num = intval( $_GET[ 'num' ] );
+		}
+
 	$query = "SELECT * 
 	          FROM ".$wpdb->users;
 	if( $_GET[ 's' ] != '' ) {
 	    $query .= " WHERE user_login LIKE '%".$_GET[ 's' ]."%'";
 	}
+	$query .= " ORDER BY ID";
+	$query .= " LIMIT $start, $num";
 	$user_list = $wpdb->get_results( $query, ARRAY_A );
+	if( count( $user_list ) < $num ) {
+		$next = false;
+	} else {
+		$next = true;
+	}
 ?>
 <h2>Users</h2>
 <form name="searchform" action="wpmu-admin.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
+  <table><td>
   <fieldset> 
   <legend><?php _e('Search Users&hellip;') ?></legend> 
   <input type='hidden' name='action' value='users'>
   <input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /> 
   <input type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
   </fieldset>
+  </td><td>
+  <fieldset> 
+  <legend><?php _e('User Navigation') ?></legend> 
+  <?php 
+  if( $start == 0 ) { 
+	  echo 'Previous&nbsp;Users';
+  } elseif( $start <= 30 ) { 
+	  echo '<a href="wpmu-users.php?start=0">Previous&nbsp;Users</a>';
+  } else {
+	  echo '<a href="wpmu-users.php?start=<?php echo $start - $num ?>">Previous&nbsp;Users</a>';
+  } 
+  if ( $next ) {
+	  echo '&nbsp;||&nbsp;<a href="wpmu-users.php?start=' . ($start + $num) . '">Next&nbsp;Users</a>';
+  } else {
+	  echo '&nbsp;||&nbsp;Next&nbsp;Users';
+  }
+  ?>
+  </fieldset>
+  </td></table>
 </form>
 
 <br style="clear:both;" />
