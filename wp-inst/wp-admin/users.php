@@ -33,6 +33,10 @@ case 'dodelete':
 
 	check_admin_referer();
 
+	if( is_site_admin() == false ) {
+		header('Location: users.php?update=del');
+		exit;
+	}
 	if (empty($_POST['users'])) {
 		header('Location: users.php');
 	}
@@ -58,6 +62,11 @@ case 'dodelete':
 break;
 
 case 'delete':
+
+	if( is_site_admin() == false ) {
+		header('Location: users.php');
+		exit;
+	}
 
 	check_admin_referer();
 
@@ -171,6 +180,23 @@ case 'adduser':
 	}
 
 default:
+	if( is_array( $_POST[ 'new_roles' ] ) ) {
+		check_admin_referer();
+
+		if ( !current_user_can('edit_users') )
+			die(__('You can&#8217;t edit users.'));
+
+		while( list( $key, $val ) = each( $_POST[ 'new_roles' ] ) ) { 
+			if( $val == 'inactive' ) {
+				$wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $wpdb->blogid . "_capabilities' AND user_id = '" . $key . "'" );
+			} else {
+				$user = new WP_User($key);
+				$user->set_role( $val );
+			}
+		}
+		header('Location: users.php?update=promote');
+		die();
+	}
 	
 	include ('admin-header.php');
 	
@@ -242,7 +268,7 @@ default:
 	<th><?php _e('Username') ?></th>
 	<th><?php _e('Name') ?></th>
 	<th><?php _e('E-mail') ?></th>
-	<th><?php _e('Website') ?></th>
+	<th><?php _e('Role') ?></th>
 	<th><?php _e('Posts') ?></th>
 	<th>&nbsp;</th>
 	</tr>
@@ -267,11 +293,19 @@ default:
 				<td><input type='checkbox' name='users[]' id='user_{$user_data->ID}' value='{$user_data->ID}' /> <label for='user_{$user_data->ID}'>{$user_data->ID}</label></td>
 				<td><label for='user_{$user_data->ID}'><strong>$user_data->user_login</strong></label></td>
 				<td><label for='user_{$user_data->ID}'>$user_data->first_name $user_data->last_name</label></td>
-				<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>
-				<td><a href='$url' title='website: $url'>$short_url</a></td>";
+				<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>";
+			    ?>
+			    <td><select name="new_roles[<?php echo $user_data->ID ?>]" id="new_role"><?php 
+				    foreach($wp_roles->role_names as $roleid => $name) {
+					    $selected = '';
+					    if( $role == $roleid)
+						    $selected = 'selected="selected"';
+					    echo "<option {$selected} value=\"{$roleid}\">{$name}</option>";
+				    }
+			    ?></select></td> <?php
 			echo "<td align='right'>$numposts</td>";
 			echo '<td>';
-			if (current_user_can('edit_users'))
+			if (is_site_admin())
 				echo "<a href='user-edit.php?user_id=$user_data->ID' class='edit'>".__('Edit')."</a>";
 			echo '</td>';
 			echo '</tr>';
@@ -293,7 +327,9 @@ foreach($wp_roles->role_names as $role => $name) {
 $role_select .= '</select>';
 ?>  
   <ul style="list-style:none;">
+	<?php if( is_site_admin() ) { ?>
   	<li><input type="radio" name="action" id="action0" value="delete" /> <label for="action0"><?php _e('Delete checked users.'); ?></label></li>
+	<?php } ?>
   	<li><input type="radio" name="action" id="action1" value="promote" /> <?php echo sprintf(__('<label for="action1">Set the Role of checked users to:</label> %s'), $role_select); ?></li>
   </ul>
 	<p class="submit"><input type="submit" value="<?php _e('Update &raquo;'); ?>" /></p>

@@ -97,13 +97,10 @@ if(count($errors) == 0) {
 	update_usermeta( $user_id, 'msn', $edituser->msn );
 	update_usermeta( $user_id, 'yim', $edituser->yim );
 	
-	$wp_user->set_role($_POST['new_role']);
 	if( is_site_admin() ) 
 		update_usermeta( $user_id, 'invites_left', intval( $_POST[ 'invites_left' ] ) );
 	
 	header("Location: user-edit.php?user_id=$user_id&updated=true");
-} else {
-	$wp_user->roles = array($_POST['new_role'] => true);
 }
 
 default:
@@ -139,15 +136,6 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 	<tr>
 		<th width="33%" scope="row"><?php _e('Username:') ?></th>
 		<td width="73%"><input type="text" name="new_user_login" id="new_user_login" value="<?php echo $edituser->user_login; ?>" /></td>
-	</tr>
-	<tr>
-		<th scope="row"><?php _e('Role:') ?></th>
-		<td><select name="new_role" id="new_role"><?php 
-		foreach($wp_roles->role_names as $role => $name) {
-			$selected = ( $role != $wp_user->roles[0] ) ? '' : 'selected="selected"';
-			echo "<option {$selected} value=\"{$role}\">{$name}</option>";
-		}
-		?></select></td>
 	</tr>
 	<tr>
 		<th scope="row"><?php _e('Posts:') ?></th>
