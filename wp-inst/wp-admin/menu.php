@@ -67,7 +67,8 @@ if( is_site_admin() ) {
 	$submenu[ 'wpmu-admin.php' ][5] = array( 'Blogs', '10', 'wpmu-blogs.php' );
 	$submenu[ 'wpmu-admin.php' ][10] = array( 'Users', '10', 'wpmu-users.php' );
 	$submenu[ 'wpmu-admin.php' ][15] = array( 'Feeds', '10', 'wpmu-feeds.php' );
-	$submenu[ 'wpmu-admin.php' ][20] = array( 'Options', '10', 'wpmu-options.php' );
+	$submenu[ 'wpmu-admin.php' ][20] = array( 'Themes', '10', 'wpmu-themes.php' );
+	$submenu[ 'wpmu-admin.php' ][25] = array( 'Options', '10', 'wpmu-options.php' );
 }
 
 // Create list of page plugin hook names.

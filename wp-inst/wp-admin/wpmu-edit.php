@@ -212,7 +212,7 @@ switch( $_GET[ 'action' ] ) {
 	}
 	update_site_option( 'allowed_themes', $allowed_themes );
     }
-    header( "Location: wpmu-blogs.php?updated=true" );
+    header( "Location: wpmu-themes.php?updated=true" );
     break;
     default:
     header( "Location: wpmu-admin.php" );
