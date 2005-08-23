@@ -117,6 +117,21 @@ case 'delete':
 
 break;
 
+case 'addexistinguser':
+	check_admin_referer();
+	$new_user_login = wp_specialchars(trim($_POST['newuser']));
+	/* checking that username has been typed */
+	if ($new_user_login == '')
+		$errors['user_login'] = __('<strong>ERROR</strong>: Please enter a username.');
+	if ( username_exists( $new_user_login ) ) {
+		$user_ID = $wpdb->get_var( "SELECT ID FROM $wpdb->users WHERE user_login = '$new_user_login'" );
+		$user = new WP_User($user_ID);
+		$user->set_role( $_POST[ 'new_role' ] );
+	}
+	header('Location: users.php?update=add');
+	die();
+break;
+
 case 'adduser':
 	check_admin_referer();
 
@@ -179,6 +194,22 @@ case 'adduser':
 		die();
 	}
 
+case "searchusers":
+		$search = $_GET[ 'search' ];
+		$id = $_GET[ 'id' ];
+		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . ", " . $wpdb->usermeta . " WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND " . $wpdb->usermeta . ".meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'";
+		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%' limit 0,10";
+		$users = $wpdb->get_results( $query );
+		if( is_array( $users ) ) {
+			while( list( $key, $val ) = each( $users ) ) 
+			{ 
+				print '<span onclick="javascript:return update_AJAX_search_box(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
+			}
+		} else {
+			print "No Users Found";
+		}
+		exit;
+break;
 default:
 	if( is_array( $_POST[ 'new_roles' ] ) ) {
 		check_admin_referer();
@@ -335,6 +366,37 @@ $role_select .= '</select>';
 	<p class="submit"><input type="submit" value="<?php _e('Update &raquo;'); ?>" /></p>
 </div>
 </form>
+
+<div class="wrap">
+<h2><?php _e('Add User From Community') ?></h2>
+<form action="" method="post" name="adduser" id="adduser">
+<input type='hidden' name='action' value='addexistinguser'>
+<p>As you type WordPress will offer you a choice of usernames.<br /> Click one to select and hit <em>Add User</em> to add the user.</p>
+<table>
+<tr><th scope="row">User&nbsp;Login: </th><td><input type="text" name="newuser" id="newuser"></td><td><a href="javascript:doSearch();">Search</a></td></tr>
+<tr><td></td><td colspan='2'><div style='display:none; height: 60px; width: 200px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div></td> </tr>
+	<tr>
+		<th scope="row"><?php _e('Role:') ?></th>
+		<td><select name="new_role" id="new_role"><?php 
+		foreach($wp_roles->role_names as $role => $name) {
+			$selected = '';
+			if( $role == 'subscriber' )
+				$selected = 'selected="selected"';
+			echo "<option {$selected} value=\"{$role}\">{$name}</option>";
+		}
+		?></select></td>
+	</tr>
+</table>
+<br />
+<?php AJAX_search_box( "users.php?action=searchusers&search=", "newuser", "searchresults" ); ?>
+
+    </td>
+    </table>
+  <p class="submit">
+    <input name="adduser" type="submit" id="adduser" value="<?php _e('Add User') ?> &raquo;" />
+  </p>
+  </form>
+</div>
 
 <div class="wrap">
 <h2><?php _e('Add New User') ?></h2>
