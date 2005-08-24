@@ -135,8 +135,6 @@ function newCatAddIn() {
 	searchResult.style.overflow = 'auto';
 	searchResult.style.border = '1px solid #ccc';
 	searchResult.style.background = '#eee';
-	searchResult.style.margin = '5px';
-	searchResult.style.padding = '5px';
 
 
 	ajaxcat.appendChild(newcat);
