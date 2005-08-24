@@ -85,7 +85,6 @@ addLoadEvent(focusit);
 <h3 class="dbx-handle"><?php _e('Categories') ?></h3> 
 <div class="dbx-content"><div id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></div></div>
 <?php if ( current_user_can('manage_categories') ) : ?>
-  <div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
 <?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
 </fieldset>

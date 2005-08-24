@@ -34,10 +34,13 @@ switch( $_GET[ 'action' ] ) {
 		$query = "SELECT cat_name FROM " . $wpdb->sitecategories . " WHERE cat_name LIKE '%" . $search . "%' limit 0,10";
 		$cats = $wpdb->get_results( $query );
 		if( is_array( $cats ) ) {
+			print "<table>";
+			print "<tr><td>ESC to cancel</td></tr>";
 			while( list( $key, $val ) = each( $cats ) ) 
 			{ 
-				print '<span onclick="javascript:return update_AJAX_search_box(\'' . $val->cat_name . '\');"><a>' . $val->cat_name . '</a></span><br>';
+				print '<tr><td><span onclick="javascript:return update_AJAX_search_box(\'' . $val->cat_name . '\');"><a>' . $val->cat_name . '</a></span></td></tr>';
 			}
+			print "</table>";
 		}
 		exit;
 	break;

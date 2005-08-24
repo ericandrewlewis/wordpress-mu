@@ -1431,6 +1431,7 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 		valBox = document.getElementById("<?php echo $search_field ?>");
 		displayBox = document.getElementById("<?php echo $search_results_field ?>");
 		addEvent(valBox, 'keyup', doTest, false);
+		addEvent(valBox, 'blur', onblurnewcat, false);
 		keyPressDelay = '';
 
 		xmlhttp=false;
@@ -1450,30 +1451,60 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 	}
 	addLoadEvent( init_ajax_searchbox );
 
-	function doTest() {
+	function onblurnewcat() {
+		setTimeout('closeSearchResults()',2000);
+	}
+	function closeSearchResults() {
+		displayBox.style.display = 'none';
+	}
+
+	function doTest(e) {
+		if (!e) {
+			if (window.event) {
+				e = window.event;
+			} else {
+				return;
+			}
+		}
+		if (e.keyCode == 8) {
+			displayBox.style.display = 'none';
+		}
+		if (e.keyCode == 27) {
+			displayBox.style.display = 'none';
+			return;
+		}
 		if (keyPressDelay) {
 			window.clearTimeout(keyPressDelay);
 		}
 
 		if(valBox.value.length > 2) {
 			keyPressDelay = window.setTimeout('doSearch()',800);
+		} else {
+			displayBox.style.display = 'none';
 		}
+
 	}
 
 	function doSearch() {
-		xmlhttp.open("GET","<?php echo $get_url ?>"+valBox.value,true);
-		xmlhttp.onreadystatechange=function() {
-			if (xmlhttp.readyState==4) {
-				if( xmlhttp.responseText != '' ) {
-					displayBox.style.display = '';
-					displayBox.innerHTML = xmlhttp.responseText;
-				} else {
-					valBox.focus();
-					displayBox.style.display = 'none';
+		if(valBox.value.length > 2 && displayBox.style.display == 'none' ) {
+			xmlhttp.open("GET","<?php echo $get_url ?>"+valBox.value,true);
+			xmlhttp.onreadystatechange=function() {
+				if (xmlhttp.readyState==4) {
+					if( xmlhttp.responseText != '' ) {
+						displayBox.style.display = 'table';
+						displayBox.innerHTML = xmlhttp.responseText;
+						if( displayBox.innerWidth )  {
+							displayBox.width=displayBox.innerWidth;
+							displayBox.height=displayBox.innerHeight;
+						}
+					} else {
+						valBox.focus();
+						displayBox.style.display = 'none';
+					}
 				}
 			}
+			xmlhttp.send(null);
 		}
-		xmlhttp.send(null);
 	}
 	</script>
 	<?php

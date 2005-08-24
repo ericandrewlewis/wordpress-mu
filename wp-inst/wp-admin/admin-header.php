@@ -127,8 +127,21 @@ function newCatAddIn() {
 	newcatSub.value = '+';
 	newcatSub.setAttribute('onclick', 'ajaxNewCat();');
 
+	var searchResult = document.createElement( 'div' );
+	searchResult.type = 'div';
+	searchResult.name = 'searchresults';
+	searchResult.id = 'searchresults';
+	searchResult.style.display = 'none';
+	searchResult.style.overflow = 'auto';
+	searchResult.style.border = '1px solid #ccc';
+	searchResult.style.background = '#eee';
+	searchResult.style.margin = '5px';
+	searchResult.style.padding = '5px';
+
+
 	ajaxcat.appendChild(newcat);
 	ajaxcat.appendChild(newcatSub);
+	ajaxcat.appendChild(searchResult);
 	document.getElementById('categorychecklist').parentNode.appendChild(ajaxcat);
 }
 
