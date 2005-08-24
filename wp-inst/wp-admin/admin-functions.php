@@ -1432,6 +1432,7 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 		displayBox = document.getElementById("<?php echo $search_results_field ?>");
 		addEvent(valBox, 'keyup', doTest, false);
 		addEvent(valBox, 'blur', onblurnewcat, false);
+		addEvent(valBox, 'focus', doTest, false);
 		keyPressDelay = '';
 
 		xmlhttp=false;
