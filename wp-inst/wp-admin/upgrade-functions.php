@@ -11,11 +11,10 @@ function upgrade_all() {
 	upgrade_160();
 }
 
-
-function upgrade_160() {
+function upgrade_160_helper( $users ) {
 	global $wpdb, $table_prefix;
-	$users = $wpdb->get_results("SELECT * FROM $wpdb->users");
-	foreach ( $users as $user ) :
+	foreach ( $users as $user_details ) :
+		$user = $wpdb->get_results("SELECT * FROM $wpdb->users WHERE ID = '" . $user_details[ 'user_id' ] . "'");
 		if ( !empty( $user->user_firstname ) )
 			update_usermeta( $user->ID, 'first_name', $wpdb->escape($user->user_firstname) );
 		if ( !empty( $user->user_lastname ) )
@@ -59,6 +58,14 @@ function upgrade_160() {
 		}
 			
 	endforeach;
+}
+
+function upgrade_160() {
+	global $wpdb, $table_prefix;
+	$users = $wpdb->get_results("SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$table_prefix}capabilities'", ARRAY_A);
+	upgrade_160_helper( $users );
+	$users = $wpdb->get_results("SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$table_prefix}user_level'", ARRAY_A);
+	upgrade_160_helper( $users );
 	$old_user_fields = array( 'user_firstname', 'user_lastname', 'user_icq', 'user_aim', 'user_msn', 'user_yim', 'user_idmode', 'user_ip', 'user_domain', 'user_browser', 'user_description', 'user_nickname', 'user_level' );
 	$wpdb->hide_errors();
 	foreach ( $old_user_fields as $old )
