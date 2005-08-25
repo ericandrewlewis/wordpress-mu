@@ -423,7 +423,7 @@ SITE_NAME')" );
 	do_htaccess( "htaccess.dist", ".htaccess", $realpath, $base, $url );
 	do_htaccess( "wp-inst/htaccess.dist", "wp-inst/.htaccess", $realpath, $base, $url );
 
-	$illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator" );
+	$illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator", "blog" );
 	add_site_settings( "illegal_names", $illegal_names );
 
 	print "<p>Well Done! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
