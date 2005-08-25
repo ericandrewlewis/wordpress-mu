@@ -297,7 +297,7 @@ function newfeedback() {
 <body>
 
 <div id='feedbackform' style='display: none; position: absolute; top: 50px; right: 10px; height:200px; width: 400px; background: #eee; border: 1px solid #333;'>
-	<div align='right'><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a>&nbsp;</div>
+	<table width='100%' cellspacing=0 cellpadding=2><td style='background: #dfe8f1'><strong>Feedback</strong></td><td style='background: #dfe8f1' align='right'><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a>&nbsp;</td></table>
 	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='POST'>
 	<input type='hidden' name='user_login' value='<?php echo $current_user->data->user_login ?>'>
 	<input type='hidden' name='host' value='<?php echo $_SERVER["HTTP_HOST"] ?>'>
