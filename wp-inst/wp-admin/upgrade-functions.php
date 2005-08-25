@@ -3,218 +3,14 @@
 require_once(ABSPATH . '/wp-admin/admin-functions.php');
 require_once(ABSPATH . '/wp-admin/upgrade-schema.php');
 // Functions to be called in install and upgrade scripts
+
+define( "RESET_CAPS", true );
+
 function upgrade_all() {
 	populate_options();
-	upgrade_100();
-	upgrade_101();
-	upgrade_110();
-	upgrade_130();
 	upgrade_160();
-	save_mod_rewrite_rules();
 }
 
-function upgrade_100() {
-	global $wpdb;
-
-	// Get the title and ID of every post, post_name to check if it already has a value
-	$posts = $wpdb->get_results("SELECT ID, post_title, post_name FROM $wpdb->posts WHERE post_name = ''");
-	if ($posts) {
-		foreach($posts as $post) {
-			if ('' == $post->post_name) { 
-				$newtitle = sanitize_title($post->post_title);
-				$wpdb->query("UPDATE $wpdb->posts SET post_name = '$newtitle' WHERE ID = '$post->ID'");
-			}
-		}
-	}
-	
-	$categories = $wpdb->get_results("SELECT cat_ID, cat_name, category_nicename FROM $wpdb->categories");
-	foreach ($categories as $category) {
-		if ('' == $category->category_nicename) { 
-			$newtitle = sanitize_title($category->cat_name);
-			$wpdb->query("UPDATE $wpdb->categories SET category_nicename = '$newtitle' WHERE cat_ID = '$category->cat_ID'");
-		}
-	}
-
-
-	$wpdb->query("UPDATE $wpdb->options SET option_value = REPLACE(option_value, 'wp-links/links-images/', 'wp-images/links/')
-	WHERE option_name LIKE 'links_rating_image%'
-	AND option_value LIKE 'wp-links/links-images/%'");
-
-	$done_ids = $wpdb->get_results("SELECT DISTINCT post_id FROM $wpdb->post2cat");
-	if ($done_ids) :
-		foreach ($done_ids as $done_id) :
-			$done_posts[] = $done_id->post_id;
-		endforeach;
-		$catwhere = ' AND ID NOT IN (' . implode(',', $done_posts) . ')';
-	else:
-		$catwhere = '';
-	endif;
-	
-	$allposts = $wpdb->get_results("SELECT ID, post_category FROM $wpdb->posts WHERE post_category != '0' $catwhere");
-	if ($allposts) :
-		foreach ($allposts as $post) {
-			// Check to see if it's already been imported
-			$cat = $wpdb->get_row("SELECT * FROM $wpdb->post2cat WHERE post_id = $post->ID AND category_id = $post->post_category");
-			if (!$cat && 0 != $post->post_category) { // If there's no result
-				$wpdb->query("
-					INSERT INTO $wpdb->post2cat
-					(post_id, category_id)
-					VALUES
-					('$post->ID', '$post->post_category')
-					");
-			}
-		}
-	endif;
-}
-
-function upgrade_101() {
-	global $wpdb;
-
-	// Clean up indices, add a few
-	add_clean_index($wpdb->posts, 'post_name');
-	add_clean_index($wpdb->posts, 'post_status');
-	add_clean_index($wpdb->categories, 'category_nicename');
-	add_clean_index($wpdb->comments, 'comment_approved');
-	add_clean_index($wpdb->comments, 'comment_post_ID');
-	add_clean_index($wpdb->links , 'link_category');
-	add_clean_index($wpdb->links , 'link_visible');
-}
-
-
-function upgrade_110() {
-  global $wpdb;
-	
-    // Set user_nicename.
-	// FIXME: user_nickname is no longer in the user table.  Need to update and
-	// move this code to where the new usermeta table is setup.
-//  $users = $wpdb->get_results("SELECT ID, user_nickname, user_nicename FROM $wpdb->users");
-// 	foreach ($users as $user) {
-// 		if ('' == $user->user_nicename) { 
-// 			$newname = sanitize_title($user->user_nickname);
-// 			$wpdb->query("UPDATE $wpdb->users SET user_nicename = '$newname' WHERE ID = '$user->ID'");
-// 		}
-// 	}
-
-	$users = $wpdb->get_results("SELECT ID, user_pass from $wpdb->users");
-	foreach ($users as $row) {
-		if (!preg_match('/^[A-Fa-f0-9]{32}$/', $row->user_pass)) {
-			   $wpdb->query('UPDATE '.$wpdb->users.' SET user_pass = MD5(\''.$row->user_pass.'\') WHERE ID = \''.$row->ID.'\'');
-		}
-	}
-
-
-	// Get the GMT offset, we'll use that later on
-	$all_options = get_alloptions_110();
-
-	$time_difference = $all_options->time_difference;
-
-	$server_time = time()+date('Z');
-	$weblogger_time = $server_time + $time_difference*3600;
-	$gmt_time = time();
-
-	$diff_gmt_server = ($gmt_time - $server_time) / 3600;
-	$diff_weblogger_server = ($weblogger_time - $server_time) / 3600;
-	$diff_gmt_weblogger = $diff_gmt_server - $diff_weblogger_server;
-	$gmt_offset = -$diff_gmt_weblogger;
-
-	// Add a gmt_offset option, with value $gmt_offset
-	add_option('gmt_offset', $gmt_offset);
-
-	// Check if we already set the GMT fields (if we did, then
-	// MAX(post_date_gmt) can't be '0000-00-00 00:00:00'
-	// <michel_v> I just slapped myself silly for not thinking about it earlier
-	$got_gmt_fields = ($wpdb->get_var("SELECT MAX(post_date_gmt) FROM $wpdb->posts") == '0000-00-00 00:00:00') ? false : true;
-
-	if (!$got_gmt_fields) {
-
-		// Add or substract time to all dates, to get GMT dates
-		$add_hours = intval($diff_gmt_weblogger);
-		$add_minutes = intval(60 * ($diff_gmt_weblogger - $add_hours));
-		$wpdb->query("UPDATE $wpdb->posts SET post_date_gmt = DATE_ADD(post_date, INTERVAL '$add_hours:$add_minutes' HOUR_MINUTE)");
-		$wpdb->query("UPDATE $wpdb->posts SET post_modified = post_date");
-		$wpdb->query("UPDATE $wpdb->posts SET post_modified_gmt = DATE_ADD(post_modified, INTERVAL '$add_hours:$add_minutes' HOUR_MINUTE) WHERE post_modified != '0000-00-00 00:00:00'");
-		$wpdb->query("UPDATE $wpdb->comments SET comment_date_gmt = DATE_ADD(comment_date, INTERVAL '$add_hours:$add_minutes' HOUR_MINUTE)");
-		$wpdb->query("UPDATE $wpdb->users SET user_registered = DATE_ADD(user_registered, INTERVAL '$add_hours:$add_minutes' HOUR_MINUTE)");
-	}
-
-}
-
-function upgrade_130() {
-    global $wpdb, $table_prefix;
-
-    // Remove extraneous backslashes.
-	$posts = $wpdb->get_results("SELECT ID, post_title, post_content, post_excerpt, guid, post_date, post_name, post_status, post_author FROM $wpdb->posts");
-	if ($posts) {
-		foreach($posts as $post) {
-            $post_content = addslashes(deslash($post->post_content));
-            $post_title = addslashes(deslash($post->post_title));
-            $post_excerpt = addslashes(deslash($post->post_excerpt));
-			if ( empty($post->guid) )
-				$guid = get_permalink($post->ID);
-			else
-				$guid = $post->guid;
-
-            $wpdb->query("UPDATE $wpdb->posts SET post_title = '$post_title', post_content = '$post_content', post_excerpt = '$post_excerpt', guid = '$guid' WHERE ID = '$post->ID'");
-		}
-	}
-
-    // Remove extraneous backslashes.
-	$comments = $wpdb->get_results("SELECT comment_ID, comment_author, comment_content FROM $wpdb->comments");
-	if ($comments) {
-		foreach($comments as $comment) {
-            $comment_content = addslashes(deslash($comment->comment_content));
-            $comment_author = addslashes(deslash($comment->comment_author));
-            $wpdb->query("UPDATE $wpdb->comments SET comment_content = '$comment_content', comment_author = '$comment_author' WHERE comment_ID = '$comment->comment_ID'");
-		}
-	}
-
-    // Remove extraneous backslashes.
-	$links = $wpdb->get_results("SELECT link_id, link_name, link_description FROM $wpdb->links");
-	if ($links) {
-		foreach($links as $link) {
-            $link_name = addslashes(deslash($link->link_name));
-            $link_description = addslashes(deslash($link->link_description));
-            $wpdb->query("UPDATE $wpdb->links SET link_name = '$link_name', link_description = '$link_description' WHERE link_id = '$link->link_id'");
-		}
-	}
-
-    // The "paged" option for what_to_show is no more.
-    if ($wpdb->get_var("SELECT option_value FROM $wpdb->options WHERE option_name = 'what_to_show'") == 'paged') {
-        $wpdb->query("UPDATE $wpdb->options SET option_value = 'posts' WHERE option_name = 'what_to_show'");
-    }
-
-		$active_plugins = __get_option('active_plugins');
-
-		// If plugins are not stored in an array, they're stored in the old
-		// newline separated format.  Convert to new format.
-		if ( !is_array( $active_plugins ) ) {
-			$active_plugins = explode("\n", trim($active_plugins));
-			update_option('active_plugins', $active_plugins);
-		}
-
-	// Obsolete tables
-	$wpdb->query('DROP TABLE IF EXISTS ' . $table_prefix . 'optionvalues');
-	$wpdb->query('DROP TABLE IF EXISTS ' . $table_prefix . 'optiontypes');
-	$wpdb->query('DROP TABLE IF EXISTS ' . $table_prefix . 'optiongroups');
-	$wpdb->query('DROP TABLE IF EXISTS ' . $table_prefix . 'optiongroup_options');
-
-	// Update comments table to use comment_type
-	$wpdb->query("UPDATE $wpdb->comments SET comment_type='trackback', comment_content = REPLACE(comment_content, '<trackback />', '') WHERE comment_content LIKE '<trackback />%'");
-	$wpdb->query("UPDATE $wpdb->comments SET comment_type='pingback', comment_content = REPLACE(comment_content, '<pingback />', '') WHERE comment_content LIKE '<pingback />%'");
-
-	// Some versions have multiple duplicate option_name rows with the same values
-	$options = $wpdb->get_results("SELECT option_name, COUNT(option_name) AS dupes FROM `$wpdb->options` GROUP BY option_name");
-	foreach ( $options as $option ) {
-		if ( 1 != $option->dupes ) { // Could this be done in the query?
-			$limit = $option->dupes - 1;
-			$dupe_ids = $wpdb->get_col("SELECT option_id FROM $wpdb->options WHERE option_name = '$option->option_name' LIMIT $limit");
-			$dupe_ids = join($dupe_ids, ',');
-			$wpdb->query("DELETE FROM $wpdb->options WHERE option_id IN ($dupe_ids)");
-		}
-	}
-
-	make_site_theme();
-}
 
 function upgrade_160() {
 	global $wpdb, $table_prefix;
@@ -256,8 +52,10 @@ function upgrade_160() {
 		$caps = get_usermeta( $user->ID, $table_prefix . 'capabilities');
 		if ( empty($caps) || defined('RESET_CAPS') ) {
 			$level = get_usermeta($user->ID, $table_prefix . 'user_level');
-			$role = translate_level_to_role($level);
-			update_usermeta( $user->ID, $table_prefix . 'capabilities', array($role => true) );
+			if( empty( $level ) == false ) {
+				$role = translate_level_to_role($level);
+				update_usermeta( $user->ID, $table_prefix . 'capabilities', array($role => true) );
+			}
 		}
 			
 	endforeach;
