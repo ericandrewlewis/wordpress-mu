@@ -41,7 +41,7 @@ case '':
 	}
 	$i = implode(', ', $type_tags);
 ?>
-<p><?php printf(__('You can upload files with the extension %1$s as long as they are no larger than %2$s <abbr title="Kilobytes">KB</abbr>. If you&#8217;re an admin you can configure these values under <a href="%3$s">options</a>.'), $i, get_site_option('fileupload_maxk', 300), 'options-misc.php') ?></p>
+<p><?php printf(__('You can upload files with the extension %1$s as long as they are no larger than %2$s <abbr title="Kilobytes">KB</abbr>.'), $i, get_site_option('fileupload_maxk', 300), 'options-misc.php') ?></p>
     <form action="upload.php" method="post" enctype="multipart/form-data">
     <p>
       <label for="img1"><?php _e('File:') ?></label>
