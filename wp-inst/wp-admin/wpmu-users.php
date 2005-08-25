@@ -92,7 +92,7 @@ switch( $_GET[ 'action' ] ) {
 	}
 ?>
 <h2>Users</h2>
-<form name="searchform" action="wpmu-admin.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
+<form name="searchform" action="wpmu-users.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
   <table><td>
   <fieldset> 
   <legend><?php _e('Search Users&hellip;') ?></legend> 
