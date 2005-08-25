@@ -297,18 +297,20 @@ function newfeedback() {
 <body>
 
 <div id='feedbackform' style='display: none; position: absolute; top: 50px; right: 10px; height:200px; width: 400px; background: #eee; border: 1px solid #333;'>
-	<table width='100%' cellspacing=0 cellpadding=2><td style='background: #dfe8f1'><strong>Feedback</strong></td><td style='background: #dfe8f1' align='right'><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a>&nbsp;</td></table>
-	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='POST'>
+	<div style='padding-left: 5px;background: #dfe8f1;'>
+	<span><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a></span><span style='padding-left: 150px; text-align: center'><strong>Feedback</strong></span>
+	</div>
+	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='post'>
 	<input type='hidden' name='user_login' value='<?php echo $current_user->data->user_login ?>'>
 	<input type='hidden' name='host' value='<?php echo $_SERVER["HTTP_HOST"] ?>'>
 	<input type='hidden' name='browser' value='<?php echo $_SERVER["HTTP_USER_AGENT"] ?>'>
 	<input type='hidden' name='page' value='<?php echo $_SERVER["REQUEST_URI"] ?>'>
 	<table>
-	<tr><td valign='top'>From:</td><td valign='top'><?php echo $current_user->data->user_login ?></td></tr>
-	<tr><td valign='top'>Host:</td><td valign='top'><?php echo $_SERVER["HTTP_HOST"] ?></td></tr>
-	<tr><td valign='top'>Browser:</td><td valign='top'><?php echo $_SERVER["HTTP_USER_AGENT"] ?></td></tr>
-	<tr><td valign='top'>Page:</td><td valign='top'><?php echo $_SERVER["REQUEST_URI"] ?></td></tr>
-	<tr><td valign='top'>Problem:</td><td valign='top'><textarea name='feedbackproblem' rows='5' cols='40'></textarea></td></tr>
+	<tr><th align='left' valign='top'>From:</td><td valign='top'><?php echo $current_user->data->user_login ?></td></tr>
+	<tr><th align='left' valign='top'>Host:</td><td valign='top'><?php echo $_SERVER["HTTP_HOST"] ?></td></tr>
+	<tr><th align='left' valign='top'>Browser:</td><td valign='top'><?php echo $_SERVER["HTTP_USER_AGENT"] ?></td></tr>
+	<tr><th align='left' valign='top'>Page:</td><td valign='top'><?php echo $_SERVER["REQUEST_URI"] ?></td></tr>
+	<tr><th align='left' valign='top'>Problem:</td><td valign='top'><textarea name='feedbackproblem' rows='5' cols='40'></textarea></td></tr>
 	<tr>
 	<td align='right'><input value='Submit' type='button' onclick='javascript: return newfeedback()'></td>
 	<td align='right' id='feedbackstatus' valign='top'></td>
