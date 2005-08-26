@@ -245,86 +245,18 @@ function ajaxNewCat() {
 <?php endif; ?>
 
 <?php endif; ?>
-<script type="text/javascript" src="tw-sack.js"></script>
-<script type="text/javascript">
-var ajaxFeedback = new sack();
-
-function show_feedback_form() {
-	var feedbackform = document.getElementById( 'feedbackform' );
-	feedbackform.style.display='';
-}
-function hide_feedback_form() {
-	var feedbackform = document.getElementById( 'feedbackform' );
-	feedbackform.style.display='none';
-}
-function toggle_feedback_form() {
-	var feedbackform = document.getElementById( 'feedbackform' );
-	if( feedbackform.style.display == 'table' ) {
-		feedbackform.style.display='none';
-	} else {
-		feedbackform.style.display='table';
-	}
-}
-function feedbackLoading() {
-	var p = document.getElementById( 'feedbackstatus' );
-	p.innerHTML = 'Sending Feedback...';
-}
-
-function feedbackLoaded() {
-	var p = document.getElementById( 'feedbackstatus' );
-	p.innerHTML = 'Feedback Sent. Thank you for your help!';
-}
-
-
-function newfeedback() {
-	var form = document.getElementById( 'wpmufeedbackform' );
-	//alert( form.feedbackproblem.value );
-	var feedback = 'user_login=' + form.user_login.value + '&host=' + form.host.value + '&browser=' + form.browser.value + '&req=' + form.page.value + '&feedback=' + form.feedbackproblem.value;
-	ajaxFeedback.requestFile = 'wpmu-feedback.php';
-	ajaxFeedback.method = 'GET';
-	ajaxFeedback.onLoading = feedbackLoading;
-	ajaxFeedback.onLoaded = feedbackLoaded;
-	//ajaxFeedback.onInteractive = newCatInteractive;
-	//ajaxFeedback.onCompletion = feedbackCompletion;
-	ajaxFeedback.runAJAX(feedback);
-	return false;
-}
-
-</script>
 
 <?php do_action('admin_head'); ?>
 </head>
 <body>
 
-<div id='feedbackform' style='display: none; position: absolute; top: 50px; right: 10px; height:200px; width: 400px; background: #eee; border: 1px solid #333;'>
-	<div style='padding-left: 5px;background: #dfe8f1;'>
-	<span><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a></span><span style='padding-left: 150px; text-align: center'><strong>Feedback</strong></span>
-	</div>
-	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='post'>
-	<input type='hidden' name='user_login' value='<?php echo $current_user->data->user_login ?>'>
-	<input type='hidden' name='host' value='<?php echo $_SERVER["HTTP_HOST"] ?>'>
-	<input type='hidden' name='browser' value='<?php echo $_SERVER["HTTP_USER_AGENT"] ?>'>
-	<input type='hidden' name='page' value='<?php echo $_SERVER["REQUEST_URI"] ?>'>
-	<table>
-	<tr><th align='left' valign='top'>From:</td><td valign='top'><?php echo $current_user->data->user_login ?></td></tr>
-	<tr><th align='left' valign='top'>Host:</td><td valign='top'><?php echo $_SERVER["HTTP_HOST"] ?></td></tr>
-	<tr><th align='left' valign='top'>Browser:</td><td valign='top'><?php echo $_SERVER["HTTP_USER_AGENT"] ?></td></tr>
-	<tr><th align='left' valign='top'>Page:</td><td valign='top'><?php echo $_SERVER["REQUEST_URI"] ?></td></tr>
-	<tr><th align='left' valign='top'>Problem:</td><td valign='top'><textarea name='feedbackproblem' rows='5' cols='40'></textarea></td></tr>
-	<tr>
-	<td align='right'><input value='Submit' type='button' onclick='javascript: return newfeedback()'></td>
-	<td align='right' id='feedbackstatus' valign='top'></td>
-	</tr>
-	</table>
-	</form>
-</div>
 
 <div id="wphead">
 <h1><?php echo wptexturize(get_settings(('blogname'))); ?> <span>(<a href="<?php echo get_settings('home') . '/'; ?>"><?php _e('View site') ?> &raquo;</a>)</span></h1>
 </div>
 
 <div id="user_info"><p><?php printf(__('Howdy, <strong>%s</strong>.'), $user_identity) ?> [<a href="<?php echo get_settings('siteurl')
-	 ?>/wp-login.php?action=logout" title="<?php _e('Log out of this account') ?>"><?php _e('Sign Out'); ?></a>, <a href="profile.php"><?php _e('My Account'); ?></a>, <a href="javascript: toggle_feedback_form()"><?php _e( "Feedback" ) ?>] </p></div>
+	 ?>/wp-login.php?action=logout" title="<?php _e('Log out of this account') ?>"><?php _e('Sign Out'); ?></a>, <a href="profile.php"><?php _e('My Account'); ?></a>]</p></div>
 
 <?php
 require(ABSPATH . '/wp-admin/menu-header.php');
