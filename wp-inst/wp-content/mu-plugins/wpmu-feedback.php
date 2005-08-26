@@ -13,6 +13,7 @@ function wpmufeedback() {
 }
 
 function feedbackform() {
+	global $current_user;
 	?>
 	<div id='feedbackform' style='display: none; position: absolute; top: 70px; right: 10px; height:200px; width: 400px; background: #fff; padding: 5px; border: 1px solid #333;'>
 	<div style='padding-left: 5px;text-align: right;'><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a>&nbsp;</div>
