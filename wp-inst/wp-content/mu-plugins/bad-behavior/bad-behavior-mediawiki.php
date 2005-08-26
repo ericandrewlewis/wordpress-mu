@@ -46,7 +46,7 @@ if (!defined('MEDIAWIKI'))
 $wp_bb_logging = TRUE;
 
 // Log all requests to the database, not just failed requests.
-$wp_bb_verbose_logging = FALSE;
+$wp_bb_verbose_logging = TRUE;
 
 // How long to keep the logs around (in days).
 $wp_bb_logging_duration = 7;
@@ -81,7 +81,12 @@ function wp_bb_date() {
 
 // run a SQL query and return # of rows affected, or FALSE if query failed
 function wp_bb_db_query($query) {
-	return wfQuery($query, DB_WRITE);
+	$res = wfQuery($query, DB_WRITE);
+	if (stristr($query, "select") !== FALSE ||
+	    stristr($query, "describe") !== FALSE)
+		return wfNumRows($res);
+	else
+		return wfAffectedRows($res);
 }
 
 // Load core functions and do initial checks

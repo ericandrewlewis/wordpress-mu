@@ -13,6 +13,7 @@ $wp_bb_spambots_str0 = array(
 	"EmailCollector",	// spam harvester
 	"Email Extractor",	// spam harvester
 	"Email Siphon",		// spam harvester
+	"EmailSiphon",		// spam harvester
 	"grub crawler",		// misc comment/email spam
 //	"Java 1.",		// Some doubt about this one
 	"libwww-perl",		// spambot scripts
@@ -26,8 +27,10 @@ $wp_bb_spambots_str0 = array(
 );
 // Occurs anywhere in the string
 $wp_bb_spambots_str = array(
+	"Bad Behavior Test",	// Add this to your user-agent to test BB
 	"compatible ; MSIE",	// misc comment/email spam
 	"DTS Agent",		// misc comment/email spam
+	"Gecko/25",		// revisit this in 500 years
 	"grub-client",		// search engine ignores robots.txt
 	"Indy Library",		// misc comment/email spam
 	".NET CLR 1)",		// free poker, etc.
@@ -45,17 +48,17 @@ $wp_bb_spambots_reg = array(
 foreach ($wp_bb_spambots_str0 as $wp_bb_spambot) {
 	$pos = stripos($wp_bb_http_user_agent, $wp_bb_spambot);
 	if ($pos !== FALSE && $pos == 0) {
-		wp_bb_spammer();	// does not return
+		wp_bb_spammer("User-Agent beginning with '" . $wp_bb_spambot . "' prohibited");	// does not return
 	}
 }
 foreach ($wp_bb_spambots_str as $wp_bb_spambot) {
 	if (stripos($wp_bb_http_user_agent, $wp_bb_spambot) !== FALSE) {
-		wp_bb_spammer();	// does not return
+		wp_bb_spammer("User-Agent containing '" . $wp_bb_spambot . "' prohibited");	// does not return
 	}
 }
 foreach ($wp_bb_spambots_reg as $wp_bb_spambot) {
 	if (preg_match($wp_bb_spambot, $wp_bb_http_user_agent)) {
-		wp_bb_spammer();	// does not return
+		wp_bb_spammer("User-Agent matching regex '" . $wp_bb_spambot . "' prohibited");	// does not return
 	}
 }
 

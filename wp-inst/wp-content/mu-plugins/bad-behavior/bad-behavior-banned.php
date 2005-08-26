@@ -1,12 +1,11 @@
 <?php
 // This function is called when there is absolutely no hope for redemption for
 // the offending spammer.
-function wp_bb_banned() {
+function wp_bb_banned($denied_reason) {
 	global $wp_bb_request_uri, $wp_bb_remote_addr, $wp_bb_server_signature;
-	global $wp_bb_email;
+	global $wp_bb_email, $wp_bb_server_protocol;
 
-	wp_bb_log(403);
-	header("HTTP/1.0 412 Precondition Failed");
+	header($wp_bb_server_protocol . " 412 Precondition Failed");
 	header("Status: 412 Precondition Failed");
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
