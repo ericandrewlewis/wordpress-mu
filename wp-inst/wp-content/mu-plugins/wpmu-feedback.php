@@ -18,10 +18,10 @@ function feedbackform() {
 	<div style='padding-left: 5px;text-align: right;'><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a>&nbsp;</div>
 	<h2>Feedback</h2>
 	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='post'>
-	<input type='hidden' name='user_login' value='<?php echo $current_user->data->user_login ?>'>
-	<input type='hidden' name='host' value='<?php echo $_SERVER["HTTP_HOST"] ?>'>
-	<input type='hidden' name='browser' value='<?php echo $_SERVER["HTTP_USER_AGENT"] ?>'>
-	<input type='hidden' name='page' value='<?php echo $_SERVER["REQUEST_URI"] ?>'>
+	<input type='hidden' name='user_login' value='<?php echo urlencode( $current_user->data->user_login ) ?>'>
+	<input type='hidden' name='host' value='<?php echo urlencode( $_SERVER["HTTP_HOST"] ) ?>'>
+	<input type='hidden' name='browser' value='<?php echo urlencode( $_SERVER["HTTP_USER_AGENT"] ) ?>'>
+	<input type='hidden' name='page' value='<?php echo urlencode( $_SERVER["REQUEST_URI"] ) ?>'>
 	<p>Please describe your problem in as much detail as possible. User feedback is a very important part of developing any software system and we want to hear your ideas, annoyances and bug reports!</p>
 	<p>Bugs can be hard to describe but here are some guidelines: <ul><li><a href="http://www.chiark.greenend.org.uk/~sgtatham/bugs.html">How to Report Bugs Effectively</a></li><li><a href="http://www.mozilla.org/quality/bug-writing-guidelines.html">Mozilla Bug Writing Guidelines</a></li></ul></p>
 	<table>
