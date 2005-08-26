@@ -710,7 +710,7 @@ LINKS;
         <td>
           <?php _e('Assign ownership to:'); ?>
 <?php
-    $results = $wpdb->get_results("SELECT ID, user_login FROM $wpdb->users ORDER BY ID");
+    $results = get_users_of_blog( $wpdb->blogid );
     echo "          <select name=\"newowner\" size=\"1\">\n";
     foreach ($results as $row) {
       echo "            <option value=\"".$row->ID."\"";
