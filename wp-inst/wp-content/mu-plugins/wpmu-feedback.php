@@ -15,24 +15,17 @@ function wpmufeedback() {
 function feedbackform() {
 	global $current_user;
 	?>
-	<div id='feedbackform' style='display: none; position: absolute; top: 70px; right: 10px; height:200px; width: 400px; background: #fff; padding: 5px; border: 1px solid #333;'>
+	<div id='feedbackform' style='display: none; position: absolute; top: 6em; right: 2em; width: 400px; background: #fff; padding: 5px; border: 1px solid #666;'>
 	<div style='padding-left: 5px;text-align: right;'><a style='text-decoration: none' href="javascript: hide_feedback_form()">X</a>&nbsp;</div>
-	<h2>Feedback</h2>
-	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='post'>
-	<input type='hidden' name='user_login' value='<?php echo urlencode( $current_user->data->user_login ) ?>'>
-	<input type='hidden' name='host' value='<?php echo urlencode( $_SERVER["HTTP_HOST"] ) ?>'>
-	<input type='hidden' name='browser' value='<?php echo urlencode( $_SERVER["HTTP_USER_AGENT"] ) ?>'>
-	<input type='hidden' name='page' value='<?php echo urlencode( $_SERVER["REQUEST_URI"] ) ?>'>
-	<p>Please describe your problem in as much detail as possible. User feedback is a very important part of developing any software system and we want to hear your ideas, annoyances and bug reports!</p>
-	<p>Bugs can be hard to describe but here are some guidelines: <ul><li><a href="http://www.chiark.greenend.org.uk/~sgtatham/bugs.html">How to Report Bugs Effectively</a></li><li><a href="http://www.mozilla.org/quality/bug-writing-guidelines.html">Mozilla Bug Writing Guidelines</a></li></ul></p>
-	<table>
-	<tr><th align='left' valign='top'>Problem:</td><td valign='top'><textarea name='feedbackproblem' rows='5' cols='40'></textarea></td></tr>
-	<tr>
-	<td align='right'><input value='Submit' type='button' onclick='javascript: return newfeedback()'></td>
-	<td align='right' id='feedbackstatus' valign='top'></td>
-	</tr>
-	</table>
+	<h2>Bugs and Hugs</h2>
+	<form id='wpmufeedbackform' action='wpmu-feedback.php' method='post' style="padding: 0 1em; ">
+	<input type='hidden' name='page' value='<?php echo urlencode( $_SERVER["REQUEST_URI"] ) ?>' />
+	<p>Your thoughts and opinions are the most single most important thing to the future of WordPress.com. Please share what you love, what you hate, or what you think is a little quirky:</p>
+	<p><textarea name='feedbackproblem' rows='6' cols='40' style="width: 95%"></textarea>
+	</p>
+	<p class="submit"><input value='Send Feedback &raquo;' type='button' id="feedbacksubmit" onclick='javascript: return newfeedback()' /></p>
 	</form>
+	<p id="feedbackstatus" style="padding: .5em 1em"></p>
 </div>
 	<?php
 }
@@ -41,21 +34,32 @@ function feedbackform_javascript() {
 	?>
 <script type="text/javascript" src="tw-sack.js"></script>
 <script type="text/javascript">
-
-function create_feedback_link() {
+function addEvent(obj, evType, fn) {
+if (obj.addEventListener) {
+	obj.addEventListener(evType, fn, false); 
+	return true;
+	} else if (obj.attachEvent) {
+	var r = obj.attachEvent('on'+evType, fn);
+	return r;
+	} else {
+	return false;
+	}
+}
+function setup_feedback() {
 	feedbacklink = document.createElement('a');
-	feedbacklink.name = 'feedbacklink';
 	feedbacklink.id = 'feedbacklink';
 	feedbacklink.innerHTML = 'Feedback';
-	feedbacklink.href = 'javascript: toggle_feedback_form()';
-	var userinfo = document.getElementById( 'user_info' );
-	userinfo.innerHTML += '[';
+	var userinfo = document.getElementById( 'footer' );
 	userinfo.appendChild(feedbacklink);
-	userinfo.innerHTML += ']';
+	addEvent(feedbacklink, 'click', function(e){toggle_feedback_form()});
+	var feedbackForm = document.getElementById('feedbackform');
+	feedbackForm.state = 'up';
+	sub = 	document.getElementById( 'feedbacksubmit' );
+	addEvent(sub, 'click', function(e){sub.style.display = 'none';});
 }
 
 // addLoadEvent from admin-header
-addLoadEvent(create_feedback_link);
+addLoadEvent( setup_feedback );
 
 var ajaxFeedback = new sack();
 
@@ -82,13 +86,16 @@ function feedbackLoading() {
 
 function feedbackLoaded() {
 	var p = document.getElementById( 'feedbackstatus' );
-	p.innerHTML = 'Feedback Sent. Thank you for your help!';
+	var form = document.getElementById( 'wpmufeedbackform' );
+	form.style.display = 'none';
+	p.innerHTML = 'Feedback Sent. Thanks for your help! Please let us know again if there is ever anything on your mind.';
+	Fat.fade_element( p.id );
 }
 
 
 function newfeedback() {
 	var form = document.getElementById( 'wpmufeedbackform' );
-	var feedback = 'user_login=' + form.user_login.value + '&host=' + form.host.value + '&browser=' + form.browser.value + '&req=' + form.page.value + '&feedback=' + form.feedbackproblem.value;
+	var feedback = 'req=' + form.page.value + '&feedback=' + form.feedbackproblem.value;
 	ajaxFeedback.requestFile = 'wpmu-feedback.php';
 	ajaxFeedback.method = 'GET';
 	ajaxFeedback.onLoading = feedbackLoading;
@@ -100,6 +107,18 @@ function newfeedback() {
 }
 
 </script>
+<style type="text/css">
+#feedbacklink {
+	position: absolute;
+	top: 2.8em;
+	right: 2em;
+	display: block;
+	padding: .3em .8em;
+	background: #6da6d1;
+	color: #fff;
+	cursor: pointer;
+}
+</style>
 	<?php
 }
 ?>
