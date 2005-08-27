@@ -123,7 +123,7 @@ if( $invites_list != '' )
 				} else {
 					$invited_user_blog = '';
 				}
-				$invited_user_login = $wpdb->get_var( "SELECT user_login FROM $wpdb->users WHERE user_id = '$invited_user_id'" );
+				$invited_user_login = $wpdb->get_var( "SELECT user_login FROM $wpdb->users WHERE ID = '$invited_user_id'" );
 				if( $invited_user_blog != '' ) {
 					print "<tr><td>$val</td><td>$invited_user_login</td><td><a href='http://{$invited_user_blog}'>http://$invited_user_blog</a></td></tr>";
 				} else {
