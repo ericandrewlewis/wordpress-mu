@@ -140,7 +140,7 @@ class wpdb {
 			$action = 'global';
 			$details = $global_db_list[ mt_rand( 0, count( $global_db_list ) -1 ) ];
 			$this->db_global = $details;
-		} elseif ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
+		} elseif ( preg_match("/^\\s*(alter table|create|insert|delete|update|replace) /i",$query) ) {
 			$action = 'write';
 			$details = $db_list[ 'write' ][ mt_rand( 0, count( $db_list[ 'write' ] ) -1 ) ];
 			$this->db_write = $details;
@@ -217,9 +217,11 @@ class wpdb {
 			$this->queries[] = array( $query, $this->timer_stop() );
 
 		// If there is an error then take note of it..
-		if ( mysql_error() ) {
-			$this->print_error();
-			return false;
+		if( $dbh ) {
+			if ( mysql_error( $dbh ) ) {
+				$this->print_error( mysql_error( $dbh ));
+				return false;
+			}
 		}
 
 		if ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
