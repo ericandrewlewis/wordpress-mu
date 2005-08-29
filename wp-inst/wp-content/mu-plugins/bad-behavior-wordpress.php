@@ -53,7 +53,7 @@ $wp_bb_email = "wordpress@" . $current_site->domain;
 
 // The database table name to use.
 // You can customize the table name if necessary.
-define('WP_BB_LOG', $table_prefix . 'bad_behavior_log');
+define('WP_BB_LOG', 'bad_behavior_log'); // this should be global
 
 ###############################################################################
 
