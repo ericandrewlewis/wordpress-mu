@@ -651,7 +651,7 @@ function checkAll(form)
             LEFT JOIN $wpdb->linkcategories ON $wpdb->links.link_category = $wpdb->linkcategories.cat_id
 	    WHERE link_owner = '".$current_user->data->ID."'";
     if (isset($cat_id) && ($cat_id != 'All')) {
-      $sql .= " WHERE link_category = $cat_id ";
+      $sql .= " AND link_category = $cat_id ";
     }
     $sql .= ' ORDER BY link_' . $sqlorderby;
 
