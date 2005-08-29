@@ -1,1 +1,0 @@
-<div style='padding: 2px; border: 1px dashed #000'> <b>blo.gs favourites!</b><br><a href="http://blo.gs/signup.php">Signup</a> on <a href="http://blo.gs/">blo.gs</a> to track your favourite blogs on this site! Fill in your blogID and a teststring in your blog template!</div>
