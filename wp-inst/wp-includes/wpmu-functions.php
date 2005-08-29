@@ -189,7 +189,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 
     // Set up admin user
     $random_password = substr(md5(uniqid(microtime())), 0, 6);
-    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '".$admin_email."', NOW(), 'Administrator' )");
+    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', NOW(), 'Administrator' )");
     $userID = $wpdb->insert_id;
     $metavalues = array( "user_nickname" 		=> addslashes(__('Administrator')), 
                          $table_prefix . "user_level" 	=> 10, 
