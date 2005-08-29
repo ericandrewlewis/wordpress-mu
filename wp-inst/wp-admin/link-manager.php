@@ -645,7 +645,8 @@ function checkAll(form)
     $wpdb->query( "UPDATE $wpdb->links SET link_owner='" . $wpdb->blogid . "' WHERE link_owner='1'" );
 
     $sql = "SELECT link_url, link_name, link_image, link_description, link_visible,
-            link_category AS cat_id, cat_name AS category, link_id, link_rating, link_rel
+            link_category AS cat_id, cat_name AS category, link_id, 
+            link_rating, link_rel
             FROM $wpdb->links
             LEFT JOIN $wpdb->linkcategories ON $wpdb->links.link_category = $wpdb->linkcategories.cat_id
 	    WHERE link_owner = '".$current_user->data->ID."'";

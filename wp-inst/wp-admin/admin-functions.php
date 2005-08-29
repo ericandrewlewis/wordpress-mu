@@ -670,7 +670,7 @@ function meta_form() {
 		ORDER BY meta_id DESC
 		LIMIT 10");
 ?>
-<h3><?php _e('Add a new custom field to this post:') ?></h3>
+<h3><?php _e('Add a new custom field:') ?></h3>
 <table cellspacing="3" cellpadding="3">
 	<tr>
 <th colspan="2"><?php _e('Key') ?></th>
@@ -885,7 +885,7 @@ function the_quicktags () {
 if ( !strstr($_SERVER['HTTP_USER_AGENT'], 'Safari') ) :
 	echo '
 	<div id="quicktags">
-	<script src="quicktags.js" type="text/javascript"></script>
+	<script src="../wp-includes/js/quicktags.js" type="text/javascript"></script>
 	<script type="text/javascript">edToolbar();</script>
 ';
 	echo '</div>';
@@ -1370,15 +1370,14 @@ function get_plugin_page_hook($plugin_page, $parent_page) {
 		return '';
 }
 
-function pimp_firefox() {
-	if ( strstr( $_SERVER['HTTP_USER_AGENT'], 'Firefox' ) )
-		return;
-	$getit = __('WordPress recommends the open-source Firefox browser');
+function browse_happy() {
+	$getit = __('WordPress recommends a better browser');
 	echo '
-	<p id="firefoxlink" style="text-align: center;"><a href="http://spreadfirefox.com/community/?q=affiliates&amp;id=2490&amp;t=1" title="' . $getit . '"><img src="../wp-images/get-firefox.png" alt="Get Firefox" /></a></p>
+	<p id="bh" style="text-align: center;"><a href="http://browsehappy.com/" title="' . $getit . '"><img src="images/browse-happy.gif" alt="Browse Happy" /></a></p>
 	';
 }
-add_action('admin_footer', 'pimp_firefox');
+if ( strstr( $_SERVER['HTTP_USER_AGENT'], 'MSIE' ) )
+	add_action('admin_footer', 'browse_happy');
 
 function documentation_link( $for ) {
 	return;

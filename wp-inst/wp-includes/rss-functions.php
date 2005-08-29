@@ -39,18 +39,13 @@ class MagpieRSS {
 		
 		# if PHP xml isn't compiled in, die
 		#
-		if (!function_exists('xml_parser_create')) {
-			die( "Failed to load PHP's XML Extension. " . 
-						  "http://www.php.net/manual/en/ref.xml.php" );
-		}
+		if ( !function_exists('xml_parser_create') )
+			die( "Failed to load PHP's XML Extension. http://www.php.net/manual/en/ref.xml.php" );
 		
 		$parser = @xml_parser_create();
 		
-		if (!is_resource($parser))
-		{
-			die( "Failed to create an instance of PHP's XML parser. " .
-						  "http://www.php.net/manual/en/ref.xml.php" );
-		}
+		if ( !is_resource($parser) )
+			die( "Failed to create an instance of PHP's XML parser. http://www.php.net/manual/en/ref.xml.php");
 
 		
 		$this->parser = $parser;
@@ -372,7 +367,7 @@ function fetch_rss ($url) {
 	init();
 	
 	if ( !isset($url) ) {
-		#error("fetch_rss called without a url");
+		// error("fetch_rss called without a url");
 		return false;
 	}
 	
@@ -384,7 +379,7 @@ function fetch_rss ($url) {
 			return _response_to_rss( $resp );
 		}
 		else {
-			#error("Failed to fetch $url and cache is off");
+			// error("Failed to fetch $url and cache is off");
 			return false;
 		}
 	} 
@@ -487,7 +482,7 @@ function fetch_rss ($url) {
 		}
 		
 		// else we totally failed
-		$cache->error( $errormsg );	
+		// error( $errormsg );	
 		
 		return false;
 		
@@ -543,7 +538,7 @@ function _response_to_rss ($resp) {
 		if ($rss) {
 			$errormsg .= " (" . $rss->ERROR . ")";
 		}
-		error($errormsg);
+		// error($errormsg);
 		
 		return false;
 	} // end if ($rss and !$rss->error)
