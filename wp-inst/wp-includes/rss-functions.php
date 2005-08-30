@@ -69,7 +69,7 @@ class MagpieRSS {
 				$error_col = xml_get_current_column_number($this->parser);
 				$errormsg = "$xml_error at line $error_line, column $error_col";
 
-				$this->error( $errormsg );
+				//$this->error( $errormsg );
 			}
 		}
 		
