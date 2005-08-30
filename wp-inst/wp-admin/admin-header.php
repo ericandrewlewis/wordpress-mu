@@ -85,7 +85,7 @@ tinyMCE.init({
 	textarea_trigger : "title",
 	width : "100%",
 	theme : "advanced",
-	theme_advanced_buttons1 : "bold,italic,strikethrough,separator,bullist,numlist,separator,justifyleft,justifycenter,justifyright,separator,link,unlink,image,emotions,separator,undo,redo,code",
+	theme_advanced_buttons1 : "bold,italic,strikethrough,separator,bullist,numlist,separator,justifyleft,justifycenter,justifyright,separator,link,unlink,image,emotions,separator,undo,redo,wordpress,code",
 	theme_advanced_buttons2 : "",
 	theme_advanced_buttons3 : "",
 	theme_advanced_toolbar_location : "top",
@@ -95,7 +95,7 @@ tinyMCE.init({
 	theme_advanced_resize_horizontal : false,
 	entity_encoding : "raw",
 	extended_valid_elements : "a[id|href|title|onclick],img[class|src|alt|title|width|height|align]",
-	plugins : "emotions"
+	plugins : "emotions,wordpress"
 	<?php do_action('mce_options'); ?>
 });
 </script>
@@ -119,13 +119,13 @@ function newCatAddIn() {
 	newcat.id = 'newcat';
 	newcat.size = '16';
 	newcat.setAttribute('autocomplete', 'off');
-	newcat.setAttribute('onkeypress', 'return ajaxNewCatKeyPress(event);');
+	newcat.onkeypress = ajaxNewCatKeyPress;
 
 	var newcatSub = document.createElement('input');
 	newcatSub.type = 'button';
 	newcatSub.name = 'Button';
 	newcatSub.value = '+';
-	newcatSub.setAttribute('onclick', 'ajaxNewCat();');
+	newcat.onkeypress = ajaxNewCatKeyPress;
 
 	var searchResult = document.createElement( 'div' );
 	searchResult.type = 'div';
@@ -172,7 +172,7 @@ function newCatInteractive() {
 
 function newCatCompletion() {
 	var p = getResponseElement();
-	var id = ajaxCat.response;
+	var id = parseInt(ajaxCat.response, 10);
 	if ( id == '-1' ) {
 		p.innerHTML = "You don't have permission to do that.";
 		return;
@@ -184,32 +184,38 @@ function newCatCompletion() {
 	p.parentNode.removeChild(p);
 	var exists = document.getElementById('category-' + id);
 	if (exists) {
+		var moveIt = exists.parentNode;
+		var container = moveIt.parentNode;
+		container.removeChild(moveIt);
+		container.insertBefore(moveIt, container.firstChild);
+		moveIt.id = 'new-category-' + id;
 		exists.checked = 'checked';
-		exists.parentNode.setAttribute('id', 'new-category-' + id);
-		var nowClass = exists.parentNode.getAttribute('class');
-		exists.parentNode.setAttribute('class', nowClass + ' fade');
+		var nowClass = moveIt.className;
+		moveIt.className = nowClass + ' fade';
 		Fat.fade_all();
-		exists.parentNode.setAttribute('class', nowClass);
+		moveIt.className = nowClass;
 	} else {
 		var catDiv = document.getElementById('categorychecklist');
 		var newLabel = document.createElement('label');
-		catDiv.insertBefore(newLabel, catDiv.firstChild);
 		newLabel.setAttribute('for', 'category-' + id);
-		newLabel.setAttribute('id', 'new-category-' + id);
-		newLabel.setAttribute('class', 'selectit fade');
+		newLabel.id = 'new-category-' + id;
+		newLabel.className = 'selectit fade';
 
 		var newCheck = document.createElement('input');
-		newLabel.appendChild(newCheck);
-		newCheck.value = id;
 		newCheck.type = 'checkbox';
-		newCheck.checked = 'checked';
+		newCheck.value = id;
 		newCheck.name = 'post_category[]';
 		newCheck.id = 'category-' + id;
+		newLabel.appendChild(newCheck);
 
 		var newLabelText = document.createTextNode(' ' + newcat.value);
 		newLabel.appendChild(newLabelText);
+
+		catDiv.insertBefore(newLabel, catDiv.firstChild);
+		newCheck.checked = 'checked';
+
 		Fat.fade_all();
-		newLabel.setAttribute('class', 'selectit');
+		newLabel.className = 'selectit';
 	}
 	newcat.value = '';
 }
@@ -232,7 +238,7 @@ function ajaxNewCatKeyPress(e) {
 
 function ajaxNewCat() {
 	var newcat = document.getElementById('newcat');
-	var catString = 'ajaxnewcat=' + newcat.value;
+	var catString = 'ajaxnewcat=' + encodeURIComponent(newcat.value);
 	ajaxCat.requestFile = 'edit-form-ajax-cat.php';
 	ajaxCat.method = 'GET';
 	ajaxCat.onLoading = newCatLoading;
