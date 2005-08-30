@@ -180,6 +180,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 
     // fix url.
     update_option('siteurl', $url);
+    update_option('home', $url);
 
     $wpdb->query("UPDATE $wpdb->options SET option_value = '".$weblog_title."' WHERE option_name = 'blogname'");
     $wpdb->query("UPDATE $wpdb->options SET option_value = '".$admin_email."' WHERE option_name = 'admin_email'");
@@ -247,6 +248,8 @@ SITE_NAME" ) );
 
     $first_post = str_replace( "SITE_URL", "http://" . $current_site->domain . $current_site->path, $first_post );
     $first_post = str_replace( "SITE_NAME", $current_site->site_name, $first_post );
+    $first_post = stripslashes( $first_post );
+
     $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
     $wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '".addslashes(__('About'))."', '0', '".addslashes(__('about'))."', '$now', '$now_gmt', 'static')");
 
@@ -365,6 +368,16 @@ function get_user_details( $username ) {
 	global $wpdb;
 
 	return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login = '$username'" );
+}
+
+function get_blog_details( $id ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	$row = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id'" );
+	$name = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" );
+	$row->blogname = $name->option_value;
+	$row->siteurl = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
+	return $row;
 }
 
 function is_site_admin( $user_login = '0' ) {
