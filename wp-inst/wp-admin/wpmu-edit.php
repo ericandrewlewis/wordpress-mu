@@ -1,15 +1,15 @@
 <?php
 require_once('admin.php');
 
-if( is_site_admin() == false ) {
-    die( __('<p>You do not have permission to access this page.</p>') );
-}
-
 do_action( "wpmuadminedit", "" );
 
 $id = $_POST[ 'id' ];
 switch( $_GET[ 'action' ] ) {
 	case "siteoptions":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
 		update_site_option( "illegal_names", split( ' ', $_POST[ 'illegal_names' ] ) );
 		if( $_POST[ 'limited_email_domains' ] != '' ) {
@@ -61,6 +61,10 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "updatefeeds":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+
 		update_site_option( "customizefeed1", $_POST[ 'customizefeed1' ] );
 		update_site_option( "customizefeed2", $_POST[ 'customizefeed2' ] );
 		update_site_option( "dashboardfeed1", $_POST[ 'dashboardfeed1' ] );
@@ -70,7 +74,10 @@ switch( $_GET[ 'action' ] ) {
 		header( "Location: wpmu-feeds.php?updated=true" );
 	break;
     case "updateblog":
-    $options_table_name = $wpmuBaseTablePrefix . $id ."_options";
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+    	$options_table_name = $wpmuBaseTablePrefix . $id ."_options";
 
     // themes
     if( is_array( $_POST[ 'theme' ] ) ) {
@@ -151,6 +158,9 @@ switch( $_GET[ 'action' ] ) {
     header( "Location: wpmu-blogs.php?action=editblog&id=".$id."&updated=true" );
     break;
     case "deleteblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
 	$drop_tables = array( $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_categories",
 			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_comments",
 			      $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_linkcategories",
@@ -170,6 +180,9 @@ switch( $_GET[ 'action' ] ) {
 	header( "Location: wpmu-blogs.php?updated=true" );
     break;
     case "deactivateblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
 	$query = "UPDATE ".$wpdb->blogs."
 	          SET    is_public = 'archived'
 	          WHERE  blog_id = '".$_GET[ 'id' ]."'";
@@ -177,6 +190,9 @@ switch( $_GET[ 'action' ] ) {
 	header( "Location: wpmu-blogs.php?updated=true" );
     break;
     case "updateuser":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
     unset( $_POST[ 'option' ][ 'ID' ] );
     if( is_array( $_POST[ 'option' ] ) ) {
         while( list( $key, $val ) = each( $_POST[ 'option' ] ) ) { 
@@ -205,6 +221,9 @@ switch( $_GET[ 'action' ] ) {
     header( "Location: wpmu-users.php?action=edit&id=".$id."&updated=true" );
     break;
     case "updatethemes":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
     if( is_array( $_POST[ 'theme' ] ) ) {
 	$themes = array_flip( array_keys( get_themes() ) );
 	reset( $themes );
