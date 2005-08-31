@@ -197,6 +197,15 @@ function checkdirs() {
         print "Refresh this page when you're done!<br></p>";
         print "</div>";
     }
+    if( file_exists( "./.htaccess" ) && is_writeable( "./.htaccess" ) == false ) {
+	    $ret = false;
+	    print "<h2>Warning! .htaccess already exists.</h2>";
+	    print "<div style='border: 1px solid #ccc'>";
+	    print "<p style='font-weight: bold; padding-left: 10px'>A file with the name '.htaccess' already exists in this directory and I cannot write to it. Please ftp to the server and delete this file from this directory!<br />";
+	    print "Offending file: " . realpath( '.htaccess' ) . "</p>";
+	    print "</div>";
+    }
+
 
     return $ret;
 }
