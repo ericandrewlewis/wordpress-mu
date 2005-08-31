@@ -61,7 +61,7 @@ text-align: center; border-top: 1px solid #ccc; padding-top: 1em; font-style: it
 </head>
 <body>
 
-<div align="center"><img src="wp-inst/wp-images/wordpress-mu.png"></div><br>
+<div align="center"><img src="wp-inst/wp-includes/images/wordpress-mu.png"></div><br>
 Welcome to WordPress MU, the Multi User Weblog System built on WordPress.<br><br>
 ';
 }
@@ -262,6 +262,7 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     <h1>Virtual Server Support</h1>
     <p>Each blog on your site will have their own hostname or 'sub domain'. Your blog addresses will appear like <span class='fakelink'>http://joesblog.example.com/</span> instead of <span class='fakelink'>http://www.example.com/joesblog/</span> but you need to do a few more things to Apache and your DNS settings before it'll work.</p>
     <p>Apache will have to have a <q>wildcard</q> alias configured in the virtual server definition of your server. You'll have to add a wildcard DNS record for your domain too. That's usually as easy as adding a <q>*</q> hostname in your online dns software.</p>
+    <p>Virtual Server Support: <input type='radio' name='vhost' value='yes'> Yes&nbsp;&nbsp;<input type='radio' name='vhost' value='no' checked>No</p>
     <p>More: <ul><li> <a href='http://codewalkers.com/archives/general_admin/234.html'>Sub-domain catch-all with Apache</a> via <a href='http://www.google.com/search?q=apache+wildcard+alias'>Google Search: apache wildcard alias</a></li><li> <a href='http://photomatt.net/2003/10/10/wildcard-dns-and-sub-domains/'>Wildcard dns and sub domains</a> via <a href='http://www.google.com/search?q=dns+wildcard+sub+domain'>Google Search: dns wildcard sub domain</a></li><li><a href='http://mu.wordpress.org/forums/topic/126#post-677'>mu forums: how to setup vhosts</a></li></ul></p>
     <br />
     <h1>Database</h1>
@@ -349,7 +350,7 @@ function step2() {
 		fwrite($handle, str_replace("localhost", $dbhost, $line));
 	    break;
 	    case "define('VHOST', ":
-		fwrite($handle, str_replace("VHOSTSETTING", 'yes', $line));
+		fwrite($handle, str_replace("VHOSTSETTING", $vhost, $line));
 	    break;
 	    case '$table_prefix  =':
 	    fwrite($handle, str_replace('wp_', $prefix, $line));
@@ -428,15 +429,18 @@ SITE_NAME')" );
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
     if( $res == 'ok' ) {
 	    $url = "http://".$_SERVER["HTTP_HOST"] . $base;
-	$realpath = dirname(__FILE__);
-	do_htaccess( "htaccess.dist", ".htaccess", $realpath, $base, $url );
-	do_htaccess( "wp-inst/htaccess.dist", "wp-inst/.htaccess", $realpath, $base, $url );
+	    update_option( "template", "home" );
+	    update_option( "stylesheet", "home" );
+	    add_site_option( "allowed_themes", 'a:2:{s:17:"WordPress Classic";b:1;s:17:"WordPress Default";b:1;}' );
+	    $realpath = dirname(__FILE__);
+	    do_htaccess( "htaccess.dist", ".htaccess", $realpath, $base, $url );
+	    do_htaccess( "wp-inst/htaccess.dist", "wp-inst/.htaccess", $realpath, $base, $url );
 
-	$illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator", "blog" );
-	add_site_settings( "illegal_names", $illegal_names );
+	    $illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator", "blog" );
+	    add_site_settings( "illegal_names", $illegal_names );
 
-	print "<p>Well Done! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
-	print "<p>You may view your new blog by visiting <a href='".$url."'>".$url."</a>!</p>";
+	    print "<p>Well Done! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
+	    print "<p>You may view your new blog by visiting <a href='".$url."'>".$url."</a>!</p>";
     } else {
 	if( $res == 'error: problem creating blog entry' ) {
 	    print "The <q>main</q> blog has already been created. Edit your blogs table and delete the entry for this domain!";

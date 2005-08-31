@@ -93,7 +93,23 @@ function is_installed() {
 	    die( "<h1>Fatal Error</h1> " . $msg );
     }
 }
-$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$base'");
+if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
+	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$base'");
+} else {
+	if( $base == '/' ) {
+		$wpblog = substr( $_SERVER[ 'REQUEST_URI' ], 1 );
+	} else {
+		$wpblog = str_replace( $base, '', $_SERVER[ 'REQUEST_URI' ] );
+	}
+	if( strpos( $wpblog, '/' ) )
+		$wpblog = substr( $wpblog, 0, strpos( $wpblog, '/' ) );
+	if( $wpblog == '' || file_exists( ABSPATH . $wpblog ) || is_dir( ABSPATH . $wpblog ) ) {
+		$searchdomain = $domain;
+	} else {
+		$searchdomain = $wpblog . "." . $domain;
+	}
+	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '{$searchdomain}' AND path = '$base'");
+}
 if( $current_blog == false ) {
     is_installed();
 }
@@ -113,9 +129,6 @@ if( $current_site->site_name == false ) {
 	include( ABSPATH . "wp-admin/wpmu-upgrade.inc.php" );
 }
 
-if( $current_site->domain == $domain && $current_site->path == $base ) {
-	$wpblog = 'main';
-}
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
     if ( defined('WP_INSTALLING') ) {

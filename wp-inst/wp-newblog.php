@@ -95,9 +95,11 @@ function determineDirPath() {
 
     $result = dirname( $_SERVER["SCRIPT_NAME"] );	
     $result = str_replace("wp-inst","",$result);
+    /*
     if( strlen( $result > 1 ) && substr($result, -1 ) == '/') {
 	$result = substr($result, 0, -1);
     }
+    */
 
     return $result;
 }

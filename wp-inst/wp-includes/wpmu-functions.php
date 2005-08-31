@@ -162,11 +162,16 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 	$url = "http://".$domain.$path;
     } else {
-	if( $blogname == 'main' ) {
-	    $url = "http://".$domain.$path;
-	} else {
-	    $url = "http://".$domain.$path.$blogname;
-	}
+	    if( $domain != $_SERVER[ 'HTTP_HOST' ] ) {
+		    $blogname = substr( $domain, 0, strpos( $domain, '.' ) );
+		    if( $blogname != 'www.' ) {
+			    $url = 'http://' . substr( $domain, strpos( $domain, '.' ) + 1 ) . $path . $blogname . '/';
+		    } else { // we're installing the main blog
+			    $url = 'http://' . substr( $domain, strpos( $domain, '.' ) + 1 ) . $path;
+		    }
+	    } else { // we're installing the main blog
+		    $url = 'http://' . $domain . $path;
+	    }
     }
 
     // Set everything up
@@ -250,6 +255,8 @@ SITE_NAME" ) );
 
     $message_headers = 'From: ' . stripslashes($weblog_title) . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
     $message = $welcome_email;
+    if( empty( $current_site->site_name ) )
+	    $current_site->site_name = "WordPress MU";
     @mail($admin_email, __('New ' . $current_site->site_name . ' Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
     // remove all perms except for the login user.
