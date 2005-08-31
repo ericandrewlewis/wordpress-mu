@@ -190,9 +190,9 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 
     // Set up admin user
     $random_password = substr(md5(uniqid(microtime())), 0, 6);
-    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', NOW(), 'Administrator' )");
+    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', NOW(), '$username' )");
     $userID = $wpdb->insert_id;
-    $metavalues = array( "user_nickname" 		=> addslashes(__('Administrator')), 
+    $metavalues = array( "user_nickname" 		=> addslashes($username), 
                          $table_prefix . "user_level" 	=> 10, 
 			 "source_domain" 		=> $domain, 
 			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)) );
@@ -203,16 +203,10 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 	$wpdb->query( $query );
     }
 
-    // Now drop in some default links
-    $wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://blogs.linux.ie/xeer/', 'Donncha', 1, '$userID', 'http://blogs.linux.ie/xeer/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://zengun.org/weblog/', 'Michel', 1, '$userID', 'http://zengun.org/weblog/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://boren.nu/', 'Ryan', 1, '$userID', 'http://boren.nu/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://photomatt.net/', 'Matt', 1, '$userID', 'http://xml.photomatt.net/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://zed1.com/journalized/', 'Mike', 1, '$userID', 'http://zed1.com/journalized/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://www.alexking.org/', 'Alex', 1, '$userID', 'http://www.alexking.org/blog/wp-rss2.php');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://dougal.gunters.org/', 'Dougal', 1, '$userID', 'http://dougal.gunters.org/feed/');");
-    $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://www.wordpress.com/', 'WordPress', 1, '$userID', 'http://www.wordpress.com/feed/');");
+	// Now drop in some default links
+	$wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
+	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', 1, '$userID', 'http://wordpress.com/feed/');");
+	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', 1, '$userID', 'http://wordpress.org/development/feed/');");
 
 
     // First post
