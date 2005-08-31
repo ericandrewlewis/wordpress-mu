@@ -229,9 +229,9 @@ function step1() {
     if( substr( $url, -1 ) == '/' )
         $url = substr( $url, 0, -1 );
     $base = dirname( $_SERVER["SCRIPT_NAME"] );
-    if( $base == "/")
+    if( $base != "/")
     {
-           $base = "";
+           $base .= "/";
     } 
     $realpath = dirname(__FILE__);
 
@@ -247,7 +247,7 @@ function step1() {
             }
             fclose( $fp );
         }
-        $configfile = str_replace( "BASE", $base."/", $configfile );
+        $configfile = str_replace( "BASE", $base, $configfile );
         $fp = fopen( "./wp-inst/wpmu-settings.php", "w" );
         fwrite( $fp, $configfile );
         fclose( $fp );
@@ -389,6 +389,10 @@ function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $e
 function step3() {
     global $wpdb;
     $base = dirname( $_SERVER["SCRIPT_NAME"] );
+    if( $base != "/")
+    {
+           $base .= "/";
+    } 
     $domain = $_SERVER[ 'HTTP_HOST' ];
     if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
@@ -423,11 +427,7 @@ SITE_NAME')" );
 
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
     if( $res == 'ok' ) {
-	if( $base == '/' ) {
-		$url = "http://".$_SERVER["HTTP_HOST"] . '/';
-	} else {
-		$url = "http://".$_SERVER["HTTP_HOST"] . $base . '/';
-	}
+	    $url = "http://".$_SERVER["HTTP_HOST"] . $base;
 	$realpath = dirname(__FILE__);
 	do_htaccess( "htaccess.dist", ".htaccess", $realpath, $base, $url );
 	do_htaccess( "wp-inst/htaccess.dist", "wp-inst/.htaccess", $realpath, $base, $url );

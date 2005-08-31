@@ -159,18 +159,13 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     if ($installed) die(__('<h1>Already Installed</h1><p>You appear to have already installed WordPress. To reinstall please clear your old database tables first.</p>') . '</body></html>');
     flush();
 
-    if( $path == '/' ) {
-	    $slash = '';
-    } else {
-	    $slash = $path;
-    }
     if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
-	$url = "http://".$domain.$path.$slash;
+	$url = "http://".$domain.$path;
     } else {
 	if( $blogname == 'main' ) {
-	    $url = "http://".$domain.$path.$slash;
+	    $url = "http://".$domain.$path;
 	} else {
-	    $url = "http://".$domain.$path.$blogname.$slash;
+	    $url = "http://".$domain.$path.$blogname;
 	}
     }
 
