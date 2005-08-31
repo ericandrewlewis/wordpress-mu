@@ -6,6 +6,7 @@ $parent_file = 'wpmu-admin.php';
 require_once('admin-header.php');
 if( is_site_admin() == false ) {
     die( __('<p>You do not have permission to access this page.</p>') );
+}
 if (isset($_GET['updated'])) {
 	?><div id="message" class="updated fade"><p><?php _e('Options saved.') ?></p></div><?php
 }
