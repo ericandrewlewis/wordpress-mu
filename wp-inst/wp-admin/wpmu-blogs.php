@@ -396,7 +396,6 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	</tr> 
 <?php
 }
-print "</table>";
 } else {
 ?>
   <tr style='background-color: <?php echo $bgcolor; ?>'> 
@@ -404,6 +403,7 @@ print "</table>";
   </tr> 
 <?php
 } // end if ($blogs)
+print "</table>";
 
 break;
 } // end switch( $action )
