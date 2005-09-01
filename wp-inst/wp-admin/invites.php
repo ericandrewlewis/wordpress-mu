@@ -95,7 +95,7 @@ if (isset($_GET['result'] ) && $_GET['result'] == 'sent' ) {
       </tr> 
       <tr valign="top"> 
         <th width="33%" scope="row"><?php _e('Personal Message:') ?></th> 
-        <td><textarea rows="5" cols="40" name="personalmessage" tabindex="5" id="defaultmessage"><?php echo stripslashes( $_POST[ 'personalmessage' ] ) ?></textarea></td> 
+        <td><textarea rows="5" cols="60" name="personalmessage" tabindex="5" id="defaultmessage"><?php echo stripslashes( $_POST[ 'personalmessage' ] ) ?></textarea></td> 
       </tr> 
     </table> 
     </fieldset> 
