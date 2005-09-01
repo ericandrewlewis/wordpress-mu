@@ -101,6 +101,33 @@ function determineDirPath() {
     return $result;
 }
 
+function get_invited_details( $u ) {
+	global $wpdb;
+	$email = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$u}_to_email' AND user_id = '0'" );
+	$name = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$u}_to_name' AND user_id = '0'" );
+	$invitee_id = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$u}_invited_by' AND user_id = '0'" );
+	if( $invitee_id ) {
+		$invitee_user_login = $wpdb->get_row( "SELECT user_login, user_email FROM {$wpdb->users} WHERE ID = '$invitee_id'" );
+	} else {
+		$invitee_user_login = false;
+	}
+	$user_login = '';
+	if( $name != false ) {
+		$user_login = strtolower( $name );
+		if( $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE user_login = '{$user_login}'" ) != false ) {
+			$count = 1;
+			while( $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE user_login = '{$user_login}{$count}'" ) != false ) {
+				$count ++;
+			}
+			$user_login = $user_login . $count;
+		}
+		$weblog_title = $name."'s Blog";
+	} else {
+		$weblog_title = '';
+	}
+	return array( "email" => $email, "name" => $name, "user_login" => $user_login, "weblog_title" => $weblog_title, "invitee_id" => $invitee_id, "invitee_user_login" => $invitee_user_login );
+}
+
 switch( $_POST[ 'stage' ] )
 {
     case "1":
@@ -163,15 +190,22 @@ switch( $_POST[ 'stage' ] )
 		}
 		$err = createBlog( $newBlogID.".".$domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email );
 		if( $err == 'ok' ) {
-		    displaySecondForm();
-		    $email = get_site_option( "admin_email" );
-		    $msg = "A new blog has been created on " . $current_site->domain . $current_site->path . "\n";
-		    $msg .= "Address: http://" . $newBlogID . "." . $domain . $scriptBaseName . "\n";
-		    $msg .= "Title: $weblog_title\n";
-		    $msg .= "Email: $admin_email\n";
-		    $msg .= "Backend: http://" . $newBlogID . "." . $domain . $scriptBaseName . "wp-login.php (You can login with your admin u/p)\n";
-		    $subject = "New Blog on: http://" . $current_site->domain . $current_site->path;
-		    mail( $email, $subject, $msg, "From: WordPress <" . $admin_email . ">" );
+			if( $_POST[ 'u' ] ) {
+				$details = get_invited_details( $_POST[ 'u' ] );
+			}
+			displaySecondForm();
+			$email = get_site_option( "admin_email" );
+			$msg = "A new blog has been created on " . $current_site->domain . $current_site->path . "\n";
+			$msg .= "Address: http://" . $newBlogID . "." . $domain . $scriptBaseName . "\n";
+			$msg .= "Title: $weblog_title\n";
+			$msg .= "Email: $admin_email\n";
+			if( is_object( $details[ 'invitee_user_login' ] ) ) {
+				$logindetails = $details[ 'invitee_user_login' ];
+				$msg .= "User invited by {$logindetails->user_login} ({$logindetails->user_email})\n";
+			}
+			$msg .= "Backend: http://" . $newBlogID . "." . $domain . $scriptBaseName . "wp-login.php (You can login with your admin u/p)\n";
+			$subject = "New Blog on: http://" . $current_site->domain . $current_site->path;
+			mail( $email, $subject, $msg, "From: WordPress <" . $admin_email . ">" );
 		} else {
 		    if( $err == 'error: username used' ) {
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
@@ -190,26 +224,12 @@ switch( $_POST[ 'stage' ] )
         break;
     default:
 	if( $_GET[ 'u' ] ) {
-		$email = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_GET[ 'u' ]}_to_email' AND user_id = '0'" );
-		$name = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_GET[ 'u' ]}_to_name' AND user_id = '0'" );
-		$user_login = '';
-		if( $name != false ) {
-			$user_login = strtolower( $name );
-			if( $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE user_login = '{$user_login}'" ) != false ) {
-				$count = 1;
-				while( $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE user_login = '{$user_login}{$count}'" ) != false ) {
-					$count ++;
-				}
-				$user_login = $user_login . $count;
-			}
-			$weblog_title = $name."'s Blog";
-		} else {
-			$weblog_title = '';
-		}
+		$details = get_invited_details( $_GET[ 'u' ] );
 	}
-	displayInitialForm( $user_login, $weblog_title, $email );
+	displayInitialForm( $details[ 'user_login' ], $details[ 'weblog_title' ], $details[ 'email' ] );
 	break;
 }
+
 ?>
 </div>
 <?php get_footer(); ?>
