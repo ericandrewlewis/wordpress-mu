@@ -78,4 +78,3 @@ case 'delete-link-category' :
 	break;
 endswitch;		
 ?>
-

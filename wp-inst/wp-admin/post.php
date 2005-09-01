@@ -317,6 +317,9 @@ default:
 <?php if ( isset($_GET['posted']) ) : ?>
 <div id="message" class="updated fade"><p><?php printf(__('Post saved. <a href="%s">View site &raquo;</a>'), get_bloginfo('home')); ?></p></div>
 <?php endif; ?>
+<?php if ( strstr( $_SERVER['HTTP_USER_AGENT'], 'Safari' ) ) : ?>
+<div class="updated">Safari support is still experimental. Many things will not work right due to limitations in the browser.</div>
+<?php endif; ?>
 <?php
 	if ( current_user_can('edit_posts') ) {
 		$action = 'post';
