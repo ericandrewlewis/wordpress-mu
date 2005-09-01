@@ -139,8 +139,7 @@ case 'upload':
     ?>
     <p><strong><?php __('Duplicate File?') ?></strong></p>
     <p><b><em><?php printf(__("The filename '%s' already exists!"), $img1_name); ?></em></b></p>
-    <p> <?php printf(__("Filename '%1\$s' moved to '%2\$s'"), $img1, "$pathtofile2 - $img2_name") ?></p>
-    <p><?php _e('Confirm or rename:') ?></p>
+    <p><?php _e('Overwrite or rename:') ?></p>
     <form action="upload.php" method="post" enctype="multipart/form-data">
     <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo  get_settings('fileupload_maxk') *1024 ?>" />
     <input type="hidden" name="img1_type" value="<?php echo $img1_type;?>" />
@@ -154,6 +153,20 @@ case 'upload':
     <?php _e('Description:') ?><br /><input type="text" name="imgdesc" size="30" class="uploadform" value="<?php echo $imgdesc;?>" />
     <br />
     <input type="submit" name="submit" value="<?php _e('Rename') ?>" class="search" />
+    </form>
+
+    <p><?php _e( 'Overwrite the original file:' ) ?></p>
+    <form action="upload.php" method="post" enctype="multipart/form-data">
+    <input type="hidden" name="MAX_FILE_SIZE" value="<?php echo  get_settings('fileupload_maxk') *1024 ?>" />
+    <input type="hidden" name="img1_type" value="<?php echo $img1_type;?>" />
+    <input type="hidden" name="img1_name" value="<?php echo $img2_name;?>" />
+    <input type="hidden" name="img1_size" value="<?php echo $img1_size;?>" />
+    <input type="hidden" name="img1" value="<?php echo $pathtofile2;?>" />
+    <input type="hidden" name="thumbsize" value="<?php echo $_REQUEST['thumbsize'];?>" />
+    <input type="hidden" name="imgthumbsizecustom" value="<?php echo $_REQUEST['imgthumbsizecustom'];?>" />
+    <input type="hidden" name="imgalt" value="<?php echo $img1_name;?>" />
+    <input type="hidden" name="imgdesc" value="<?php echo $imgdesc;?>" />
+    <input type="submit" name="submit" value="<?php _e('Overwrite') ?>" class="search" />
     </form>
 </div>
 <?php 
