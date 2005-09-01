@@ -42,10 +42,10 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    $msg = str_replace( "USERNAME", ucfirst( $username ), $msg );
 	    $subject = str_replace( "USERNAME", ucfirst( $username ), $subject );
 
-	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite' , '".md5( strtolower( $email ) )."')";
-	    $wpdb->query( $query );
-	    $query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')";
-	    $wpdb->query( $query );
+	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite' , '".md5( strtolower( $email ) )."')" );
+	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')" );
+	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_email' , '{$_POST[ 'email' ]}')" );
+	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_name' , '{$_POST[ 'fname' ]}')" );
 	    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
 	    if( is_site_admin() == false ) {
 		    $invites_left = $invites_left - 1;

@@ -35,7 +35,9 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     }
     print '
 	<th valign="top">Username:</th>
-	<td><input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" /><br />(This will also be your blog address. Letters and numbers only, please. Some names are also not allowed.)</td>
+	<td><input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" 
+/><br />(Your address will be username.wordpress.com. Letters and numbers only, 
+please!)</td>
 	</tr>';
     if( $errormsg[ 'weblog_title' ] != '' ) {
 	print '<tr class="error">';
@@ -43,7 +45,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
 	print '<tr>';
     }
     print '
-	<th valign="top">Blog Name:</th>
+	<th valign="top">Blog Title:</th>
 	<td><input name="weblog_title" type="text" id="weblog_title" value="'.wp_specialchars( $weblog_title, 1 ).'" /><br /> (Don\'t worry, you can change it later.)</td>
 	</tr>';
     if( $errormsg[ 'admin_email' ] != '' ) {
@@ -95,11 +97,6 @@ function determineDirPath() {
 
     $result = dirname( $_SERVER["SCRIPT_NAME"] );	
     $result = str_replace("wp-inst","",$result);
-    /*
-    if( strlen( $result > 1 ) && substr($result, -1 ) == '/') {
-	$result = substr($result, 0, -1);
-    }
-    */
 
     return $result;
 }
@@ -192,7 +189,25 @@ switch( $_POST[ 'stage' ] )
 	}
         break;
     default:
-	displayInitialForm();
+	if( $_GET[ 'u' ] ) {
+		$email = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_GET[ 'u' ]}_to_email' AND user_id = '0'" );
+		$name = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_GET[ 'u' ]}_to_name' AND user_id = '0'" );
+		$user_login = '';
+		if( $name != false ) {
+			$user_login = strtolower( $name );
+			if( $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE user_login = '{$user_login}'" ) != false ) {
+				$count = 1;
+				while( $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE user_login = '{$user_login}{$count}'" ) != false ) {
+					$count ++;
+				}
+				$user_login = $user_login . $count;
+			}
+			$weblog_title = $name."'s Blog";
+		} else {
+			$weblog_title = '';
+		}
+	}
+	displayInitialForm( $user_login, $weblog_title, $email );
 	break;
 }
 ?>
