@@ -37,7 +37,8 @@ if( $allowed_themes == false ) {
 }
 $blog_allowed_themes = get_option( "allowed_themes" );
 
-$allowed_themes = array_merge( $allowed_themes, $blog_allowed_themes );
+if( is_array( $blog_allowed_themes ) )
+	$allowed_themes = array_merge( $allowed_themes, $blog_allowed_themes );
 
 $current_theme = get_current_theme();
 
