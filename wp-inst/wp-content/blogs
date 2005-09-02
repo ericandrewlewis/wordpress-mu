@@ -1,7 +1,10 @@
 <?php
 define( "BLOGDEFINITION", true );
 require_once( "../wp-config.php" );
-$file = ABSPATH . "wp-content/blogs.dir/" . $blog_id . $_SERVER[ 'REQUEST_URI' ];
+$file = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '/' ) );
+
+$file = ABSPATH . "wp-content/blogs.dir/" . $blog_id . '/files/' . $file;
+
 if( is_file( $file ) ) {
 	$etag = md5( $file . filemtime( $file ) );
 	$lastModified = date( "D, j M Y H:i:s ", filemtime( $file ) ) . "GMT";

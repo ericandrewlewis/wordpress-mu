@@ -168,11 +168,11 @@ case 'upload':
     <input type="hidden" name="imgdesc" value="<?php echo $imgdesc;?>" />
     <input type="submit" name="submit" value="<?php _e('Overwrite') ?>" class="search" />
     </form>
-</div>
-<?php 
+    </div>
+    <?php 
 
-require('admin-footer.php');
-die();
+	require('admin-footer.php');
+	die();
 
     }
 

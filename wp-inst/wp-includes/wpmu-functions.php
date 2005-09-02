@@ -181,6 +181,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     // fix url.
     update_option('siteurl', $url);
     update_option('home', $url);
+    update_option('fileupload_url', $url . "files" );
 
     $wpdb->query("UPDATE $wpdb->options SET option_value = '".$weblog_title."' WHERE option_name = 'blogname'");
     $wpdb->query("UPDATE $wpdb->options SET option_value = '".$admin_email."' WHERE option_name = 'admin_email'");
