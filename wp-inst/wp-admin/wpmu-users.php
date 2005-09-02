@@ -65,6 +65,22 @@ switch( $_GET[ 'action' ] ) {
     </p>
     <?php
     break;
+    case "allusers":
+	if( is_site_admin() == false ) {
+		die( __('<p>You do not have permission to access this page.</p>') );
+	}
+    	if( $_POST[ 'userfunction' ] == 'delete' ) {
+		if( is_array( $_POST[ 'allusers' ] ) ) {
+			while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
+				if( $val != '' && $val != '0' && $val != '1' ) {
+					$wpdb->query( "DELETE FROM {$wpdb->users} WHERE ID = '$val'" );
+					$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '$val'" );
+				}
+			}
+		}
+	}
+    header( "Location: wpmu-users.php?updated=true" );
+    break;
     default:
 		if( isset( $_GET[ 'start' ] ) == false ) {
 			$start = 0;
@@ -77,12 +93,26 @@ switch( $_GET[ 'action' ] ) {
 			$num = intval( $_GET[ 'num' ] );
 		}
 
-	$query = "SELECT * 
-	          FROM ".$wpdb->users;
-	if( $_GET[ 's' ] != '' ) {
-	    $query .= " WHERE user_login LIKE '%".$_GET[ 's' ]."%'";
-	}
-	$query .= " ORDER BY ID";
+		$query = "SELECT * 
+			FROM ".$wpdb->users;
+		if( $_GET[ 's' ] != '' ) {
+			$query .= " WHERE user_login LIKE '%".$_GET[ 's' ]."%'";
+		}
+		if( isset( $_GET[ 'sortby' ] ) == false ) {
+			$_GET[ 'sortby' ] = 'ID';
+		}
+		if( $_GET[ 'sortby' ] == 'Email' ) {
+			$query .= ' ORDER BY user_email ';
+		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
+			$query .= ' ORDER BY ID ';
+		} elseif( $_GET[ 'sortby' ] == 'Login' ) {
+			$query .= ' ORDER BY user_login ';
+		} elseif( $_GET[ 'sortby' ] == 'Name' ) {
+			$query .= ' ORDER BY display_name ';
+		} elseif( $_GET[ 'sortby' ] == 'Registered' ) {
+			$query .= ' ORDER BY registered ';
+		}
+		$query .= $_GET[ 'order' ];
 	$query .= " LIMIT $start, $num";
 	$user_list = $wpdb->get_results( $query, ARRAY_A );
 	if( count( $user_list ) < $num ) {
@@ -142,11 +172,12 @@ $posts_columns['control_delete'] = '';
 
 ?>
 
+<form action='wpmu-users.php?action=allusers' method='POST'>
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
 <?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><?php echo $column_display_name; ?></th>
+	<th scope="col"><?php if( $column_display_name == 'Blogs' ) { echo "Blogs"; } else { ?><a href="wpmu-users.php?sortby=<?php echo urlencode( $column_display_name ) ?>&<?php if( $_GET[ 'sortby' ] == $column_display_name ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th><?php } ?>
 <?php } ?>
 
 	</tr>
@@ -166,13 +197,13 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	
 	case 'ID':
 		?>
-		<th scope="row"><?php echo $user[ 'ID' ] ?></th>
+		<th scope="row"><input type='checkbox' id='<?php echo $user[ 'ID' ] ?>' name='allusers[]' value='<?php echo $user[ 'ID' ] ?>'> <label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'ID' ] ?></label></th>
 		<?php
 		break;
 
 	case 'user_login':
 		?>
-		<td><?php echo $user[ 'user_login' ] ?>
+		<td><label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'user_login' ] ?></label>
 		</td>
 		<?php
 		break;
@@ -233,11 +264,10 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 } // end if ($users)
 ?> 
 </table> 
+<p>Selected Users:<ul><li><input type='checkbox' name='userfunction' value='delete'> Delete</li></ul>
+<input type='submit' value='Apply Changes'></p>
+</form>
 
-<div class="navigation">
-<div class="alignleft"><?php //next_posts_link(__('&laquo; Previous Entries')) ?></div>
-<div class="alignright"><?php //previous_posts_link(__('Next Entries &raquo;')) ?></div>
-</div>
 <?php
 }
 

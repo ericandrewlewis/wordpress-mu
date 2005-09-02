@@ -232,14 +232,15 @@ switch( $_GET[ 'action' ] ) {
 			$_GET[ 'sortby' ] = 'ID';
 		}
 		if( $_GET[ 'sortby' ] == 'Registered' ) {
-			$query .= ' ORDER BY registered DESC';
+			$query .= ' ORDER BY registered ';
 		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
-			$query .= ' ORDER BY blog_id';
+			$query .= ' ORDER BY blog_id ';
 		} elseif( $_GET[ 'sortby' ] == 'Last Updated' ) {
-			$query .= ' ORDER BY last_updated DESC';
+			$query .= ' ORDER BY last_updated ';
 		} elseif( $_GET[ 'sortby' ] == 'Blog Name' ) {
-			$query .= ' ORDER BY domain';
+			$query .= ' ORDER BY domain ';
 		}
+		$query .= $_GET[ 'order' ];
 
 		$query .= " LIMIT $start, $num";
 		$blog_list = $wpdb->get_results( $query, ARRAY_A );
@@ -302,11 +303,12 @@ $posts_columns['control_delete']    = '';
 
 ?>
 
+<form action='wpmu-edit.php?action=allblogs' method='POST'>
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
 <?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><a href="wpmu-blogs.php?sortby=<?php echo urlencode( $column_display_name ) ?>&start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
+	<th scope="col"><a href="wpmu-blogs.php?sortby=<?php echo urlencode( $column_display_name ) ?>&<?php if( $_GET[ 'sortby' ] == $column_display_name ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
 <?php } ?>
 
 	</tr>
@@ -326,13 +328,13 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	
 	case 'id':
 		?>
-		<th scope="row"><?php echo $blog[ 'blog_id' ] ?></th>
+		<th scope="row"><input type='checkbox' id='<?php echo $blog[ 'blog_id' ] ?>' name='allblogs[]' value='<?php echo $blog[ 'blog_id' ] ?>'> <label for='<?php echo $blog[ 'blog_id' ] ?>'><?php echo $blog[ 'blog_id' ] ?></label></th>
 		<?php
 		break;
 
 	case 'blogname':
 		?>
-		<td valign='top'><?php echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ) ?>
+		<td valign='top'><label for='<?php echo $blog[ 'blog_id' ] ?>'><?php echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ) ?></label>
 		</td>
 		<?php
 		break;
@@ -393,7 +395,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	}
 }
 ?>
-	</tr> 
+	</tr>
 <?php
 }
 } else {
@@ -403,16 +405,16 @@ foreach($posts_columns as $column_name=>$column_display_name) {
   </tr> 
 <?php
 } // end if ($blogs)
-print "</table>";
+?>
+</table>
+<p>Selected Blogs:<ul><li><input type='checkbox' name='blogfunction' value='delete'> Delete</li></ul>
+<input type='submit' value='Apply Changes'></p>
+</form>
+<?php
 
 break;
 } // end switch( $action )
 ?> 
-
-<div class="navigation">
-<div class="alignleft"><?php //next_posts_link(__('&laquo; Previous Entries')) ?></div>
-<div class="alignright"><?php //previous_posts_link(__('Next Entries &raquo;')) ?></div>
-</div>
 
 </div>
 <?php include('admin-footer.php'); ?>

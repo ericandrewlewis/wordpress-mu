@@ -3,6 +3,26 @@ require_once('admin.php');
 
 do_action( "wpmuadminedit", "" );
 
+function wpmu_delete_blog( $id ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+	$drop_tables = array( $wpmuBaseTablePrefix . $id . "_categories",
+			$wpmuBaseTablePrefix . $id . "_comments",
+			$wpmuBaseTablePrefix . $id . "_linkcategories",
+			$wpmuBaseTablePrefix . $id . "_links",
+			$wpmuBaseTablePrefix . $id . "_options",
+			$wpmuBaseTablePrefix . $id . "_post2cat",
+			$wpmuBaseTablePrefix . $id . "_postmeta",
+			$wpmuBaseTablePrefix . $id . "_posts",
+			$wpmuBaseTablePrefix . $id . "_referer_visitLog",
+			$wpmuBaseTablePrefix . $id . "_referer_blacklist" );
+	reset( $drop_tables );
+	while( list( $key, $val ) = each( $drop_tables  ) ) 
+	{ 
+		$wpdb->query( "DROP TABLE $val" );
+	}
+	$wpdb->query( "DELETE FROM ".$wpdb->blogs." WHERE blog_id = '".$id."'" );
+}
+
 $id = $_POST[ 'id' ];
 switch( $_GET[ 'action' ] ) {
 	case "siteoptions":
@@ -156,22 +176,22 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		$drop_tables = array( $wpmuBaseTablePrefix . $_GET[ 'id' ] . "_categories",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_comments",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_linkcategories",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_links",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_options",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_post2cat",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_postmeta",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_posts",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_referer_visitLog",
-			      	$wpmuBaseTablePrefix . $_GET[ 'id' ] . "_referer_blacklist" );
-		reset( $drop_tables );
-		while( list( $key, $val ) = each( $drop_tables  ) ) 
-		{ 
-			$wpdb->query( "DROP TABLE $val" );
+		if( $id != '0' && $id != '1' )
+			wpmu_delete_blog( $id );
+		header( "Location: wpmu-blogs.php?updated=true" );
+	break;
+	case "allblogs":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		$wpdb->query( "DELETE FROM ".$wpdb->blogs." WHERE blog_id = '".$_GET[ 'id' ]."'" );
+		if( $_POST[ 'blogfunction' ] == 'delete' ) {
+			if( is_array( $_POST[ 'allblogs' ] ) ) {
+				while( list( $key, $val ) = each( $_POST[ 'allblogs' ] ) )
+					if( $val != '0' && $val != '1' )
+						wpmu_delete_blog( $val );
+			}
+		}
+
 		header( "Location: wpmu-blogs.php?updated=true" );
 	break;
 	case "deactivateblog":
