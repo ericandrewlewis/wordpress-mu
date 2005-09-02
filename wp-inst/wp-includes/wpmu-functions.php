@@ -209,6 +209,16 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
 	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', 1, '$userID', 'http://wordpress.com/feed/');");
 	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', 1, '$userID', 'http://wordpress.org/development/feed/');");
 
+	$invitee_id = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_POST[ 'u' ]}_invited_by' AND user_id = '0'" );
+	if( $invitee_id ) {
+		$invitee_user_login = $wpdb->get_row( "SELECT user_login, user_email FROM {$wpdb->users} WHERE ID = '$invitee_id'" );
+		$invitee_blog = $wpdb->get_row( "SELECT blog_id, meta_value from {$wpdb->blogs}, {$wpdb->usermeta} WHERE user_id = '$invitee_id' AND meta_key = 'source_domain' AND {$wpdb->usermeta}.meta_value = {$wpdb->blogs}.domain" );
+		if( $invitee_blog )
+			$invitee_siteurl = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$invitee_blog->blog_id}_options WHERE option_name = 'siteurl'" );
+	}
+
+	if( $invitee_siteurl && $invitee_user_login )
+		$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('{$invitee_siteurl}', '" . ucfirst( $invitee_user_login->user_login ) . "', 1, '$userID', '');");
 
     // First post
     $now = date('Y-m-d H:i:s');
