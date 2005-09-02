@@ -241,6 +241,35 @@ if ( $show_password_fields ) :
 </div>
 
 <?php
+$invites_list = get_usermeta( $edituser->ID, "invites_list" );
+if( $invites_list != '' )
+{
+	if( strlen( $invites_list ) > 3 ) {
+		?><div class="wrap">
+		<h3>Invited Users</h3>
+		<table><?php
+		$invites = explode( " ", $invites_list );
+		reset( $invites );
+		while( list( $key, $val ) = each( $invites ) ) { 
+			if( $val != "" ) {
+				$row = $wpdb->get_row( "SELECT * FROM $wpdb->usermeta WHERE meta_key = '" . md5( $val ) . "_invited_by' AND meta_value = '" . $edituser->ID. "'" );
+				$invited_user_id = $row->user_id;
+				if( $invited_user_id != 0 ) {
+					$invited_user_blog = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$invited_user_id' AND meta_key='source_domain'" );
+				} else {
+					$invited_user_blog = '';
+				}
+				$invited_user_login = $wpdb->get_var( "SELECT user_login FROM $wpdb->users WHERE ID = '$invited_user_id'" );
+				if( $invited_user_blog != '' ) {
+					print "<tr><td>$val</td><td>$invited_user_login</td><td><a href='http://{$invited_user_blog}'>http://$invited_user_blog</a></td></tr>";
+				} else {
+					print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em></td></tr>";
+				}
+			}
+		}
+		?></table></div><?php
+	}
+}
 break;
 }
 
