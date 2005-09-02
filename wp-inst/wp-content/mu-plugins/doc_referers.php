@@ -117,8 +117,8 @@ class DOC_Referers {
 		$sep = '&';
 	    }
 
-	    if( $$field != '' )
-		$vals .= "<input type='hidden' name='".$field."' value='".$$field."'>\n";
+	    if( $_GET[ $field ] != '' )
+		$vals .= "<input type='hidden' name='".$field."' value='".$_GET[ $field ]."'>\n";
 	}
 	return $vals;
     }
@@ -139,9 +139,8 @@ class DOC_Referers {
 	    }
 	    if( $field != $var )
 	    {
-		global $$field;
-		if( $$field != '' )
-		    $url .= $sep.$field."=".$$field;
+		if( $_GET[ $field ] != '' )
+		    $url .= $sep.$field."=".$_GET[ $field ];
 	    }
 	    else
 	    {
@@ -431,6 +430,11 @@ class DOC_Referers {
 			    parse_str( $args[ 'query' ] );
 			    $url = "<a href='".$row1[ 'referingURL' ]."' title='".$row1[ 'referingURL' ]."'>Blueyonder: ".stripslashes( htmlspecialchars( $q ) )."</a>";
 			}
+			elseif( strstr( $row1[ 'referingURL' ], 'bloglines.com' ) )
+			{
+			    $args = parse_url( $row1[ 'referingURL' ] );
+			    $url = "<a href='".$row1[ 'referingURL' ]."' title='".$row1[ 'referingURL' ]."'>Bloglines</a>";
+			}
 			else
 			{
 			    $url = "<a href='".$row1[ 'referingURL' ]."' title='".$row1[ 'referingURL' ]."'>".substr( $row1[ 'referingURL' ], 0, 40 )."</a>";
@@ -660,6 +664,9 @@ class DOC_Referers {
 		    $anchor = preg_replace("/\/.*/i", "", $anchor);
 		}
 		$today = date( "d" );
+
+		if( strstr( $ref, 'bloglines.com' ) )
+			$ref = "http://www.bloglines.com/";
 
 		$sql = "UPDATE " . $wpdb->doc_referers . "
 		        SET    visitTimes = visitTimes + 1 
