@@ -1,4 +1,4 @@
-<?php
+?php
 return; // disable by default.
 if( substr( $_SERVER[ 'PHP_SELF' ], -14 ) == 'wpmu-admin.php' || substr( $_SERVER[ 'PHP_SELF' ], -11 ) == 'invites.php' ) {
 	if( false == get_site_option( "invites_default_message" ) ) {
@@ -130,6 +130,8 @@ function invites_cleanup_db( $val ) {
                   WHERE       meta_key = 'invite'
 	          AND         meta_value = '".$_POST[ 'u' ]."'";
 	$wpdb->query( $query );
+	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_email'" );
+	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_name'" );
 
 	$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
 
@@ -147,8 +149,10 @@ add_action('newblogfinished', 'invites_cleanup_db');
    Configure invites: sig, number per user, default message
  */
 
-add_action('admin_menu', 'admin_menu');
-add_action('admin_footer', 'admin_footer');
+if( is_site_admin() ) {
+	add_action('admin_menu', 'admin_menu');
+	add_action('admin_footer', 'admin_footer');
+}
 
 function admin_menu() {
 	$pfile = basename(dirname(__FILE__)) . '/' . basename(__FILE__);
@@ -169,6 +173,10 @@ function admin_footer() {
 
 function invites_admin_content() {
     global $wpdb;
+
+    if( is_site_admin() == false ) {
+	    return;
+    }
 
     switch( $_GET[ 'action' ] ) {
 	case "updateinvitedefaults":
