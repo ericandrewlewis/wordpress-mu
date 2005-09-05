@@ -253,8 +253,8 @@ if( $is_archived == 'yes' ) {
 
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies
-    $cookiehash = md5(get_settings('siteurl')); // Remove in 1.4
-	define('COOKIEHASH', $cookiehash); 
+    $cookiehash = ''; // Remove in 1.4
+	define('COOKIEHASH', ''); 
 endif;
 
 if ( !defined('USER_COOKIE') )
