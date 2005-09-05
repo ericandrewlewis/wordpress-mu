@@ -1497,7 +1497,7 @@ function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_
 			xmlhttp.onreadystatechange=function() {
 				if (xmlhttp.readyState==4) {
 					if( xmlhttp.responseText != '' ) {
-						displayBox.style.display = 'table';
+						displayBox.style.display = 'block';
 						displayBox.innerHTML = xmlhttp.responseText;
 						if( displayBox.innerWidth )  {
 							displayBox.width=displayBox.innerWidth;
