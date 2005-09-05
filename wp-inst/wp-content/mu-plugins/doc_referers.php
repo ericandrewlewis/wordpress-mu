@@ -125,29 +125,22 @@ class DOC_Referers {
 
     function makeURL( $var, $val )
     {
-	$fields = array( "action", "day", "order", "num", "more", "ignoreDIRECT", "visitID", "internal" );
-	reset( $fields );
-	while( list( $key, $field ) = each( $fields ) ) 
-	{ 
-	    if( $field == 'action' )
-	    {
-		$sep = '?';
+	    $fields = array( "action", "day", "order", "num", "more", "ignoreDIRECT", "visitID", "internal" );
+	    reset( $fields );
+	    while( list( $key, $field ) = each( $fields ) ) 
+	    { 
+		    $sep = '&';
+		    if( $field != $var )
+		    {
+			    if( $_GET[ $field ] != '' )
+				    $url .= $sep.$field."=".$_GET[ $field ];
+		    }
+		    else
+		    {
+			    $url .= $sep.$var."=".$val;
+		    }
 	    }
-	    else
-	    {
-		$sep = '&';
-	    }
-	    if( $field != $var )
-	    {
-		if( $_GET[ $field ] != '' )
-		    $url .= $sep.$field."=".$_GET[ $field ];
-	    }
-	    else
-	    {
-		$url .= $sep.$var."=".$val;
-	    }
-	}
-	return $url;
+	    return $url;
     }
 
     function plugin_content()
@@ -234,7 +227,7 @@ class DOC_Referers {
 	    $result = $wpdb->get_results($query, ARRAY_A );
 	    if( $result )
 	    {   
-		print "<div class='wrap'><h2>Referer Blacklist</h2>";
+		print "<h2>Referer Blacklist</h2>";
 		print "<form method='get'>";
 		print '<input type="hidden" name="page" value="' . $_GET['page'] .'"/>';
 		print "<input type='hidden' name='action' value='deleteblacklist'>";
@@ -264,7 +257,6 @@ class DOC_Referers {
 		}
 		print "</table>";
 		print "</form>";
-		print "</div>";
 	    }
 	    else
 	    {
@@ -366,7 +358,7 @@ class DOC_Referers {
 		$nav .= " | <a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "more", ($more + 10) )."'>More Hits</a>";
 		$nav .= " | <a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "more", ($more - 10) )."'>Less Hits</a>";
 		$nav .= "<br />";
-		print "<div class='wrap'><h2>Referers</h2>";
+		print "<h2>Referers</h2>";
 		print $nav;
 		$today = date( 'd' );
 		if( $day > $today )
@@ -459,7 +451,6 @@ class DOC_Referers {
 		print "</table>";
 		print $nav;
 		print "</form>";
-		print "</div>";
 	    }
 	    break;
 	    default:
@@ -470,7 +461,7 @@ class DOC_Referers {
 	    {
 		$c = 0;
 		$col = 'ccc';
-		print "<div class='wrap'><h2>Referers</h2>";
+		print "<h2>Referers</h2>";
 		print "<table><td valign='top'>";
 		print "<table border=1 cellspacing=0 cellpadding=2>";
 		print "<tr><th>Day</th><th>Hits</th>";
@@ -507,7 +498,6 @@ class DOC_Referers {
 		print "</table>";
 		print "</td></table>";
 		print "<br><a href='edit.php?page=" . $_GET[ 'page' ] . "&action=blacklist'>View Blacklist</a>";
-		print "</div>";
 	    }
 	    else
 	    {
