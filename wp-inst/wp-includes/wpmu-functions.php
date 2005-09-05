@@ -388,26 +388,31 @@ function get_blog_details( $id ) {
 }
 
 function is_site_admin( $user_login = '0' ) {
-    global $wpdb, $current_user;
+	global $wpdb, $current_user;
 
-    if( $user_login == '0' ) {
-	    $user_id = $current_user->data->ID;
-	    $user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
-    }  else {
-	    $user_id = $wpdb->get_var(  "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '" . $user_login . "'" );
-    }
+	if( is_object( $current_user ) == false && $user_login == 0 ) {
+		$cookie_user_login  = $_COOKIE[USER_COOKIE];
+		$user_login = sanitize_user( $cookie_user_login );
+	} elseif( $user_login == '0' ) {
+		$user_id = $current_user->data->ID;
+		$user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
+	}  else {
+		$user_id = $wpdb->get_var(  "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '" . $user_login . "'" );
+	}
 
-    $ret = true;
+	$ret = true;
 
-    $super_users = get_site_option( "super_users", "admin" );
-    $pos = strpos( $super_users, $user_login );
-    if( false === $pos ) {
-	    if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
-		    $ret = false;
-	    } 
-    }
+	$super_users = get_site_option( "super_users", "admin" );
+	$t = split( " ", $super_users );
+	if( is_array( $t ) ) {
+		if( in_array( $user_login, $t ) == false ) {
+			if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
+				$ret = false;
+			} 
+		}
+	}
 
-    return $ret;
+	return $ret;
 }
 
 function get_site_settings( $option, $default='na' ) {
