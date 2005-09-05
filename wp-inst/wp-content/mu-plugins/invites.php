@@ -1,4 +1,4 @@
-?php
+<?php
 return; // disable by default.
 if( substr( $_SERVER[ 'PHP_SELF' ], -14 ) == 'wpmu-admin.php' || substr( $_SERVER[ 'PHP_SELF' ], -11 ) == 'invites.php' ) {
 	if( false == get_site_option( "invites_default_message" ) ) {
