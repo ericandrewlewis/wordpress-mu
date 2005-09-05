@@ -240,9 +240,13 @@ switch( $_GET[ 'action' ] ) {
 		} elseif( $_GET[ 'sortby' ] == 'Blog Name' ) {
 			$query .= ' ORDER BY domain ';
 		}
-		$query .= $_GET[ 'order' ];
+		if( $_GET[ 'order' ] == 'DESC' ) {
+			$query .= "DESC";
+		} else {
+			$query .= "ASC";
+		}
 
-		$query .= " LIMIT $start, $num";
+		$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
 		$blog_list = $wpdb->get_results( $query, ARRAY_A );
 		if( count( $blog_list ) < $num ) {
 			$next = false;
@@ -263,15 +267,18 @@ switch( $_GET[ 'action' ] ) {
   <fieldset> 
   <legend><?php _e('Blog Navigation') ?></legend> 
   <?php 
+
+  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
+
   if( $start == 0 ) { 
 	  echo 'Previous&nbsp;Blogs';
   } elseif( $start <= 30 ) { 
-	  echo '<a href="wpmu-blogs.php?start=0">Previous&nbsp;Blogs</a>';
+	  echo '<a href="wpmu-blogs.php?start=0&' . $url2 . ' ">Previous&nbsp;Blogs</a>';
   } else {
-	  echo '<a href="wpmu-blogs.php?start=<?php echo $start - $num ?>">Previous&nbsp;Blogs</a>';
+	  echo '<a href="wpmu-blogs.php?start=' . ( $start - $num ) . '&' . $url2 . '">Previous&nbsp;Blogs</a>';
   } 
   if ( $next ) {
-	  echo '&nbsp;||&nbsp;<a href="wpmu-blogs.php?start=' . ($start + $num) . '">Next&nbsp;Blogs</a>';
+	  echo '&nbsp;||&nbsp;<a href="wpmu-blogs.php?start=' . ( $start + $num ) . '&' . $url2 . '">Next&nbsp;Blogs</a>';
   } else {
 	  echo '&nbsp;||&nbsp;Next&nbsp;Blogs';
   }

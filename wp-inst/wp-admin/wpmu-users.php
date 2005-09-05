@@ -112,14 +112,18 @@ switch( $_GET[ 'action' ] ) {
 		} elseif( $_GET[ 'sortby' ] == 'Registered' ) {
 			$query .= ' ORDER BY registered ';
 		}
-		$query .= $_GET[ 'order' ];
-	$query .= " LIMIT $start, $num";
-	$user_list = $wpdb->get_results( $query, ARRAY_A );
-	if( count( $user_list ) < $num ) {
-		$next = false;
-	} else {
-		$next = true;
-	}
+		if( $_GET[ 'order' ] == 'DESC' ) {
+			$query .= "DESC";
+		} else {
+			$query .= "ASC";
+		}
+		$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+		$user_list = $wpdb->get_results( $query, ARRAY_A );
+		if( count( $user_list ) < $num ) {
+			$next = false;
+		} else {
+			$next = true;
+		}
 ?>
 <h2>Users</h2>
 <form name="searchform" action="wpmu-users.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
@@ -134,15 +138,18 @@ switch( $_GET[ 'action' ] ) {
   <fieldset> 
   <legend><?php _e('User Navigation') ?></legend> 
   <?php 
+
+  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
+
   if( $start == 0 ) { 
 	  echo 'Previous&nbsp;Users';
   } elseif( $start <= 30 ) { 
-	  echo '<a href="wpmu-users.php?start=0">Previous&nbsp;Users</a>';
+	  echo '<a href="wpmu-users.php?start=0' . $url2 . '">Previous&nbsp;Users</a>';
   } else {
-	  echo '<a href="wpmu-users.php?start=<?php echo $start - $num ?>">Previous&nbsp;Users</a>';
+	  echo '<a href="wpmu-users.php?start=' . ( $start - $num ) . '&' . $url2 . '">Previous&nbsp;Users</a>';
   } 
   if ( $next ) {
-	  echo '&nbsp;||&nbsp;<a href="wpmu-users.php?start=' . ($start + $num) . '">Next&nbsp;Users</a>';
+	  echo '&nbsp;||&nbsp;<a href="wpmu-users.php?start=' . ( $start + $num ) . '&' . $url2 . '">Next&nbsp;Users</a>';
   } else {
 	  echo '&nbsp;||&nbsp;Next&nbsp;Users';
   }
