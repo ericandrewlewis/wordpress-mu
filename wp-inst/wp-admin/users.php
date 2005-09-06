@@ -133,6 +133,7 @@ case 'addexistinguser':
 break;
 
 case 'adduser':
+	exit;
 	check_admin_referer();
 
 	$new_user_login     = wp_specialchars(trim($_POST['user_login']));
@@ -401,6 +402,7 @@ $role_select .= '</select>';
   </form>
 </div>
 
+<?php /*
 <div class="wrap">
 <h2><?php _e('Add New User') ?></h2>
 <?php printf(__('<p>Users can <a href="%s/wp-register.php">register themselves</a> or you can manually create users here.</p>'), get_settings('siteurl')); ?>
@@ -444,6 +446,7 @@ if ( $show_password_fields ) :
   </p>
   </form>
 </div>
+*/ ?>
 	<?php
 
 break;
