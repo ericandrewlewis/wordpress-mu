@@ -1,6 +1,18 @@
 <?php
 require_once('admin.php');
 
+switch( $_GET[ 'action' ] ) {
+	case "delete":
+		$id = intval( $_GET[ 'id' ] );
+		if( $id != '0' && $id != '1' ) {
+			$wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE user_id = '" . $id . "'" );
+			$wpdb->query( "DELETE FROM " . $wpdb->users . " WHERE ID = '" . $id . "'" );
+		}
+		header( "Location: wpmu-users.php?updated=true" );
+		exit;
+	break;
+}
+
 $title = __('WPMU Admin');
 $parent_file = 'wpmu-admin.php';
 require_once('admin-header.php');
