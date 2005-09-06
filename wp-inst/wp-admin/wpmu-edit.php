@@ -176,6 +176,7 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
+		$id = $_GET[ 'id' ];
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id );
 		header( "Location: wpmu-blogs.php?updated=true" );
