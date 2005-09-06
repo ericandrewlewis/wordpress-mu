@@ -136,9 +136,7 @@ function invites_cleanup_db( $val ) {
 	$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
 
 	if( $id ) {
-	    $query = "UPDATE ".$wpdb->usermeta."
-	              SET    user_id = '".$id."'
-		      WHERE  meta_key = '".$_POST[ 'u' ]."_invited_by'";
+	    $query = "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'";
 	    $wpdb->query( $query );
 	}
     }
