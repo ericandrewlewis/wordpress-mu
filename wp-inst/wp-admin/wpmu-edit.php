@@ -23,7 +23,10 @@ function wpmu_delete_blog( $id ) {
 	$wpdb->query( "DELETE FROM ".$wpdb->blogs." WHERE blog_id = '".$id."'" );
 }
 
+$_POST[ 'id' ] = intval( $_POST[ 'id' ] );
+$_GET[ 'id' ] = intval( $_GET[ 'id' ] );
 $id = $_POST[ 'id' ];
+
 switch( $_GET[ 'action' ] ) {
 	case "siteoptions":
 		if( is_site_admin() == false ) {
