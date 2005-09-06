@@ -77,7 +77,7 @@ function wpmu_checkAvailableSpace($action) {
 }
 add_filter('fileupload_init','wpmu_checkAvailableSpace');
 
-function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $site_id = 1 ) {
+function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $source = 'regpage', $site_id = 1 ) {
     global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site;
 
 	$domain       = addslashes( $domain );
@@ -196,7 +196,9 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $si
     $metavalues = array( "user_nickname" 		=> addslashes($username), 
                          $table_prefix . "user_level" 	=> 10, 
 			 "source_domain" 		=> $domain, 
-			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)) );
+			 "primary_blog"			=> $blog_id,
+			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)),
+			 "source"                       => $source );
     reset( $metavalues );
     while( list( $key, $val ) = each ( $metavalues ) )
     {

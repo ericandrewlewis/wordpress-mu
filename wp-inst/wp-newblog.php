@@ -188,7 +188,11 @@ switch( $_POST[ 'stage' ] )
 		} else {
 		    $url = 'http://'.$serverName.$scriptBaseName.$newBlogID."/";
 		}
-		$err = createBlog( $newBlogID.".".$domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email );
+		$source = 'regpage';
+		if( $_POST[ 'u' ] ) {
+			$source = apply_filters( "get_wpmu_reg_source", $source );
+		}
+		$err = createBlog( $newBlogID.".".$domain, $scriptBaseName, $newBlogID, $weblog_title, $admin_email, $source );
 		if( $err == 'ok' ) {
 			if( $_POST[ 'u' ] ) {
 				$details = get_invited_details( $_POST[ 'u' ] );
