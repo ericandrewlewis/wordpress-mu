@@ -488,6 +488,60 @@ function update_site_option( $key, $value ) {
 	return update_site_settings( $key, $value );
 }
 
+function get_blog_option( $blog_id, $key, $default='na' ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	$option = $wpdb->get_row( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'" );
+	if( $option == false ) {
+		if( $default != 'na' ) {
+			return $default;
+		} else {
+			return false;
+		}
+	} else {
+		@ $kellogs = unserialize($option->option_value);
+		if ($kellogs !== FALSE) {
+			$option_value = $kellogs;
+		} else {
+			$option_value = $option->option_value;
+		}
+		return $option_value;
+	}
+}
+
+function add_blog_option( $blog_id, $key, $value ) {
+    global $wpdbi, $wpmuBaseTablePrefix;
+
+    if( $value != get_blog_option( $blog_id, $key ) ) {
+	if ( is_array($value) || is_object($value) )
+	    $value = serialize($value);
+	$query = "SELECT option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'";
+       if( $wpdb->get_row( $query ) == false ) {
+	       $wpdb->query( "INSERT INTO {$wpmuBaseTablePrefix}{$blog_id}_options ( `option_id` , `blog_id` , `option_name` , `option_can_override` , `option_type` , `option_value` , `option_width` , `option_height` , `option_description` , `option_admin_level` , `autoload` ) VALUES ( NULL, '0', '{$key}', 'Y', '1', '{$value}', '20', '8', '', '10', 'yes')" );
+       } else {
+	       update_blog_option( $blog_id, $key, $value );
+       }
+    }
+}
+
+
+function update_blog_option( $blog_id, $key, $value ) {
+    global $wpdb, $wpmuBaseTablePrefix;
+
+    if( $value != get_blog_option( $blog_id, $key ) ) {
+	if ( is_array($value) || is_object($value) )
+	    $value = serialize($value);
+
+	$value = trim($value); // I can't think of any situation we wouldn't want to trim
+	$query = "SELECT option_name, option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'";
+       if( $wpdb->get_row( $query ) == false ) {
+	   add_blog_option( $blog_id, $key, $value );
+       } else {
+	   $wpdb->query( "UPDATE {$wpmuBaseTablePrefix}{$blog_id}_options SET option_value = '".$wpdb->escape( $value )."' WHERE option_name = '".$key."'" );
+       }
+    }
+}
+
 function switch_to_blogid( $blog_id ) {
     global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings;
 
