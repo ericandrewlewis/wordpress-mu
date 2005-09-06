@@ -161,19 +161,27 @@ textarea, input, select {
 }
 
 .available-theme {
-	width: 250px;
-	margin-right: 2.5em;
+	width: 30%;
+	margin: 0 1em;
 	float: left;
 	text-align: center;
+	height: 28em;
+	overflow: hidden;
 }
 
-.available-theme span {
+.available-theme a.screenshot {
 	width: 250px;
-	height: 187px;
+	height: 200px;
 	display: block;
 	margin: auto;
 	background: #f1f1f1;
 	border: 1px solid #ccc;
+	margin-bottom: 10px;
+	overflow: hidden;
+}
+
+.available-theme a.screenshot:hover {
+	border: 1px solid #666;
 }
 
 .available-theme img {
@@ -301,7 +309,7 @@ table .vers, table .name {
 	padding: .2em .2em .2em 2em;
 }
 
-#adminmenu .current, #adminmenu2 .current {
+#adminmenu .current, #submenu .current {
 	font-weight: bold;
 }
 
@@ -319,40 +327,40 @@ table .vers, table .name {
 	color: #333;
 }
 
-#adminmenu li, #adminmenu2 li {
+#adminmenu li, #submenu li {
 	display: inline;
 	line-height: 200%;
 	list-style: none;
 	text-align: center;
 }
 
-#adminmenu2 {
+#submenu {
 	background: #0d324f;;
 	border-bottom: none;
 	margin: 0;
 	padding: 3px 2em 0 3em;
 }
 
-#adminmenu2 .current {
+#submenu .current {
 	background: #ddeaf4;
 	border-top: 1px solid #045290;
 	border-right: 2px solid #045290;
 	color: #000;
 }
 
-#adminmenu2 a {
+#submenu a {
 	border: none;
 	color: #fff;
 	font-size: 12px;
 	padding: .3em .4em .33em;
 }
 
-#adminmenu2 a:hover {
+#submenu a:hover {
 	background: #ddeaf4;
 	color: #393939;
 }
 
-#adminmenu2 li {
+#submenu li {
 	line-height: 170%;
 }
 
@@ -405,7 +413,7 @@ table .vers, table .name {
 }
 
 #excerpt {
-	height: 1.8em;
+	height: 4em;
 	width: 98%;
 }
 
@@ -475,28 +483,6 @@ table .vers, table .name {
 
 #poststuff {
 	margin-right: 16em;
-}
-
-#profile {
-	margin: 10px;
-}
-
-#profile .left {
-	border-right: 1px dashed #ccc;
-	float: left;
-	margin-right: 5px;
-	padding-right: 5px;
-}
-
-#profile label {
-	float: left;
-	padding-right: 3px;
-	text-align: right;
-	width: 85px;
-}
-
-#profile p {
-	margin: 0 0 4px 0;
 }
 
 #save {
@@ -685,6 +671,30 @@ table .vers, table .name {
 
 #ajaxcat input {
 	border: 1px solid #ccc;
+}
+
+#your-profile fieldset {
+	border: 1px solid #ccc;
+	float: left;
+	width: 40%;
+	padding: .5em 2em;
+	margin: 1em; 
+}
+
+#your-profile fieldset input  {
+	width: 100%;
+	font-size: 20px;
+	padding: 2px;
+}
+
+#your-profile fieldset textarea {
+	width: 100%;
+	padding: 2px;
+}
+
+#your-profile legend {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 22px;
 }
 
 /* default box styles */
