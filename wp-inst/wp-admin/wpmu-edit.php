@@ -195,12 +195,29 @@ switch( $_GET[ 'action' ] ) {
 
 		header( "Location: wpmu-blogs.php?updated=true" );
 	break;
+	case "activateblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		$is_archived = $wpdb->get_row( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$_GET[ 'id' ]}_options WHERE option_name = 'is_archived'" );
+		$is_archived = get_blog_option( $_GET[ 'id' ], "is_archived" );
+		if( $is_archived ) {
+			update_blog_option( $_GET[ 'id' ], "is_archived", "no" );
+		} else {
+			add_blog_option( $_GET[ 'id' ], "is_archived", "no" );
+		}
+		header( "Location: wpmu-blogs.php?updated=true" );
+	break;
 	case "deactivateblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		$query = "UPDATE ".$wpdb->blogs." SET is_public = 'archived' WHERE  blog_id = '".$_GET[ 'id' ]."'";
-		$wpdb->query( $query );
+		$is_archived = get_blog_option( $_GET[ 'id' ], "is_archived" );
+		if( $is_archived ) {
+			update_blog_option( $_GET[ 'id' ], "is_archived", "yes" );
+		} else {
+			add_blog_option( $_GET[ 'id' ], "is_archived", "yes" );
+		}
 		header( "Location: wpmu-blogs.php?updated=true" );
 	break;
     	case "updateuser":

@@ -323,11 +323,16 @@ $posts_columns['control_delete']    = '';
 if ($blog_list) {
 $bgcolor = '';
 foreach ($blog_list as $blog) { 
-$class = ('alternate' == $class) ? '' : 'alternate';
-?> 
-	<tr class='<?php echo $class; ?>'>
-
-<?php
+	$class = ('alternate' == $class) ? '' : 'alternate';
+	if( get_blog_option( $blog[ 'blog_id' ], "is_archived" ) == 'yes' ) {
+		?> 
+		<tr style='background: #fee' class='<?php echo $class; ?>'>
+		<?php
+	} else {
+		?> 
+		<tr class='<?php echo $class; ?>'>
+		<?php
+	}
 
 foreach($posts_columns as $column_name=>$column_display_name) {
 
@@ -383,9 +388,15 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		break;
 
 	case 'control_deactivate':
-		?>
-		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deactivateblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to deactivate this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Deactivate') . "</a>"; ?></td>
-		<?php
+		if( get_blog_option( $blog[ 'blog_id' ], "is_archived" ) == 'yes' ) {
+			?>
+				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=activateblog&amp;id=".$blog[ 'blog_id' ]."' class='edit' onclick=\"return confirm('" . sprintf(__("You are about to activate this blog?\\n  \'OK\' to activate, \'Cancel\' to stop.") ) . "')\">" . __('Activate') . "</a>"; ?></td>
+			<?php
+		} else {
+			?>
+				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deactivateblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to deactivate this blog?\\n  \'OK\' to deactivate, \'Cancel\' to stop.") ) . "')\">" . __('Deactivate') . "</a>"; ?></td>
+			<?php
+		}
 		break;
 
 	case 'control_delete':
