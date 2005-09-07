@@ -46,6 +46,11 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')" );
 	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_email' , '{$_POST[ 'email' ]}')" );
 	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_name' , '{$_POST[ 'fname' ]}')" );
+	    if( $_POST[ 'add_blog_to_blogroll' ] == '1' ) {
+		    $t = array( "blogid" => $wpdb->blogid, "userid" => get_current_user_id() );
+		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_add_to_blogroll' , '" . serialize( $t ) . "')" );
+	    }
+
 	    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
 	    if( is_site_admin() == false ) {
 		    $invites_left = $invites_left - 1;
@@ -100,6 +105,10 @@ $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
       <tr valign="top"> 
         <th width="33%" scope="row"><?php _e('Personal Message:') ?></th> 
         <td><textarea rows="5" cols="60" name="personalmessage" tabindex="5" id="defaultmessage"><?php echo stripslashes( $_POST[ 'personalmessage' ] ) ?></textarea></td> 
+      </tr> 
+      <tr valign="top"> 
+        <th width="33%" scope="row"><?php _e('Add blog to my blogroll when created:') ?></th> 
+        <td><input type='checkbox' name='add_blog_to_blogroll' value='1'></td> 
       </tr> 
     </table> 
     </fieldset> 

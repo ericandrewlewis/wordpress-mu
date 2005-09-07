@@ -124,7 +124,7 @@ function invites_add_field() {
 add_action('newblogform', 'invites_add_field');
 
 function invites_cleanup_db( $val ) {
-    global $wpdb;
+    global $wpdb, $wpmuBaseTablePrefix, $url, $weblog_title;
     if( isset( $_POST[ 'u' ] ) ) {
 	$query = "DELETE FROM ".$wpdb->usermeta."
                   WHERE       meta_key = 'invite'
@@ -132,6 +132,16 @@ function invites_cleanup_db( $val ) {
 	$wpdb->query( $query );
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_email'" );
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_name'" );
+
+	$add_to_blogroll = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
+	if( $add_to_blogroll ) {
+		$userdetails = @unserialize( $add_to_blogroll );
+		if( is_array( $userdetails ) ) {
+			$wpdb->query("INSERT INTO {$wpmuBaseTablePrefix}{$userdetails[ 'blogid' ]}_links (link_url, link_name, link_category, link_owner) VALUES('" . addslashes( $url ) . "','" . addslashes( $weblog_title ) . "', '1', '" . intval( $userdetails[ 'userid' ] ) . "' )" );
+		}
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
+	}
+
 
 	$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
 
