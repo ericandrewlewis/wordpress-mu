@@ -380,18 +380,19 @@ class DOC_Referers {
 		//print "<input type='hidden' name='action' value='delete'>";
 		print "<table border=0 cellspacing=0 cellpadding=2>";
 		print "<caption> Referers For $day $month</caption>";
-		print "<tr><th>#</th><th>Refering URL</th>
-		    <th><a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "order", "hits" )."' title='order by hits'>Hits</a></th>
-		    <th><a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "order", "url" )."' title='order by entry page'>Entry Page</a></th>
-		    <th><a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "order", "time" )."' title='order by time'>Last</a></th>
-		    <th>Selected</th>
-		    </tr>
+		print "
 		    <tr><td colspan='6' align='right'><INPUT TYPE=button VALUE='Select All' ONCLICK='selectAll(this.form,true)'>
 		    <INPUT class='edit' TYPE=button VALUE='Clear All' ONCLICK='selectAll(this.form,false)'>
 		    <INPUT class='edit' TYPE=button VALUE='Reverse' ONCLICK='reverseAll(this.form)'>
 		    &nbsp;|&nbsp;<input class='edit' type='submit' name='action' value='Delete' onclick='javascript:document.referers.submit()'>
 		    &nbsp;|&nbsp;<input class='edit' type='submit' name='action' value='Add To Blacklist'>
 		    &nbsp;|&nbsp;<input class='edit' type='button' name='action' value='Delete Direct Referers' onclick='javascript:document.deletedirect.submit()'></td></tr>\n";
+		print "<tr><th>#</th><th>Refering URL</th>
+		    <th><a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "order", "hits" )."' title='order by hits'>Hits</a></th>
+		    <th><a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "order", "url" )."' title='order by entry page'>Entry Page</a></th>
+		    <th><a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "order", "time" )."' title='order by time'>Last</a></th>
+		    <th>Selected</th>
+		    </tr>";
 		while( list( $key, $row1 ) = each( $result ) ) 
 		{
 		    if( $col == 'f5f5f5' )
