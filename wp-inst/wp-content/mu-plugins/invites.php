@@ -206,6 +206,21 @@ function invites_admin_content() {
 	</table>
 	</form>
 	</div>
+	<div class='wrap'>
+	<h2>Invite Stats</h2>
+	<ul>
+	<li> Free Invites: <?php echo $wpdb->get_var( "SELECT sum( meta_value ) FROM $wpdb->usermeta WHERE meta_key = 'invites_left'" ); ?></li>
+	<li> <?php echo $wpdb->get_var( "SELECT count(*) FROM $wpdb->usermeta WHERE meta_key LIKE '%invited_by'" ) ?> Invites sent, of which <?php echo $wpdb->get_var( "SELECT count(*) FROM $wpdb->usermeta WHERE meta_key='invite'" ); ?> are pending and have not been used yet.</li>
+	<li> Invites Per User:<ul>
+	<?php $invite_groups = $wpdb->get_results( "SELECT count(*) as c, meta_value  FROM `wp_usermeta` WHERE `meta_key` = 'invites_left' group by meta_value", ARRAY_A );
+	while( list( $key, $val ) = each( $invite_groups ) ) 
+	{ 
+		print "<li> {$val[ 'c' ]} users have {$val[ 'meta_value' ]} invites.</li>";
+	} 
+	?>
+	</ul></li>
+	</ul>
+	</div>
 	<?php
 }
 if( get_usermeta( get_current_user_id(), 'invites_left' ) )
