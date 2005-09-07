@@ -208,4 +208,39 @@ function invites_admin_content() {
 	</div>
 	<?php
 }
+if( get_usermeta( get_current_user_id(), 'invites_left' ) )
+	add_action('admin_head', 'invites_link' );
+
+function invites_link() {
+	?>
+<script type="text/javascript">
+function invites_link() {
+	inviteslink = document.createElement('a');
+	inviteslink.id = 'inviteslink';
+	inviteslink.innerHTML = 'Invites';
+	inviteslink.href = 'invites.php';
+	var userinfo = document.getElementById( 'footer' );
+	userinfo.appendChild(inviteslink);
+	var inviteslinkForm = document.getElementById('inviteslinkform');
+}
+
+// addLoadEvent from admin-header
+addLoadEvent( invites_link );
+
+</script>
+<style type="text/css">
+#inviteslink {
+	position: absolute;
+	top: 2.8em;
+	right: 10em;
+	display: block;
+	padding: .3em .8em;
+	background: #6da6d1;
+	color: #fff;
+	cursor: pointer;
+}
+</style>
+
+<?php
+}
 ?>

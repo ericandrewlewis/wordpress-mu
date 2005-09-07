@@ -389,6 +389,14 @@ function get_blog_details( $id ) {
 	return $row;
 }
 
+function get_current_user_id() {
+	global $wpdb;
+
+	$cookie_user_login  = $_COOKIE[USER_COOKIE];
+	$user_login = sanitize_user( $cookie_user_login );
+	return $wpdb->get_var( "SELECT ID FROM $wpdb->users WHERE user_login = '$user_login'" );
+}
+
 function is_site_admin( $user_login = '0' ) {
 	global $wpdb, $current_user;
 

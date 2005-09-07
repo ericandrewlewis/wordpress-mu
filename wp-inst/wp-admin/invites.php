@@ -66,11 +66,15 @@ create an account.";
 
 include('admin-header.php');
 if (isset($_GET['result'] ) && $_GET['result'] == 'sent' ) {
-    ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
+    ?><div id="sent" class="updated fade"><p><strong><?php echo sprintf( __("Invite Sent to %s."), 
+$wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 } elseif (isset($_GET['result'] ) && $_GET['result'] == 'notsent' ) {
-    ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Not Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
+    ?><div id="sent" class="updated fade"><p><strong><?php echo sprintf( __("Invite Not Sent to %s."), 
+$wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 } elseif (isset($_GET['result'] ) && $_GET['result'] == 'alreadysent' ) {
-    ?><div class="updated"><p><strong><?php echo sprintf( __("Invite Already Sent to %s."), $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
+    ?><div id="sent" class="updated fade"><p><strong><?php echo sprintf( __("Invite Already Sent to 
+%s."), 
+$wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 }
 ?>
  
