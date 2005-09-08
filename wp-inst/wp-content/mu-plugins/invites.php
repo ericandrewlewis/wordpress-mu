@@ -1,5 +1,4 @@
 <?php
-return; // disable by default.
 if( substr( $_SERVER[ 'PHP_SELF' ], -14 ) == 'wpmu-admin.php' || substr( $_SERVER[ 'PHP_SELF' ], -11 ) == 'invites.php' ) {
 	if( false == get_site_option( "invites_default_message" ) ) {
 		$msg = 
@@ -47,7 +46,9 @@ function invites_check_user_hash() {
 	}
     }
 }
-add_action('newblogheader', 'invites_check_user_hash');
+if( get_site_option( "check_reg_for_invite" ) == 'yes' ) {
+	add_action('newblogheader', 'invites_check_user_hash');
+}
 
 function invites_admin_send_email() {
     global $wpdb;
