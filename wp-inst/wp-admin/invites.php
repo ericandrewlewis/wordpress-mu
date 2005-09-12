@@ -46,6 +46,7 @@ if( $_POST[ 'action' ] == 'send' ) {
 		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')" );
 		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_email' , '{$_POST[ 'email' ]}')" );
 		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_name' , '{$_POST[ 'fname' ]}')" );
+		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invite_timestamp' , UNIX_TIMESTAMP())" );
 		    if( $_POST[ 'add_blog_to_blogroll' ] == '1' ) {
 			    $t = array( "blogid" => $wpdb->blogid, "userid" => get_current_user_id() );
 			    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_add_to_blogroll' , '" . serialize( $t ) . "')" );
@@ -66,7 +67,13 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=completeform" );
 	    exit;
     }
-} elseif( $_POST[ 'personalmessage' ] == '' ) {
+} elseif( $_GET[ 'action' ] == 'deleteinvite' ) {
+	delete_invite( md5( $_GET[ 'inviteemail' ] ) );
+	header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=deletedinvite" );
+	exit;
+}
+
+if( $_POST[ 'personalmessage' ] == '' ) {
     if( $current_site->site_name != '' ) {
 	    $site_name = $current_site;
     } else {
@@ -90,6 +97,8 @@ $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 } elseif (isset($_GET['result'] ) && $_GET['result'] == 'completeform' ) {
     ?><div id="sent" class="updated fade"><p><strong><?php _e("Please complete the form.") ?></strong></p></div><?php
+} elseif (isset($_GET['result'] ) && $_GET['result'] == 'deletedinvite' ) {
+    ?><div id="sent" class="updated fade"><p><strong><?php _e("Invite Deleted.") ?></strong></p></div><?php
 }
 if( $invites_left != false || is_site_admin() == true ) {
 ?>
@@ -164,7 +173,19 @@ if( $invites_list != '' )
 				if( $invited_user_blog != '' ) {
 					print "<tr><td>$val</td><td>$invited_user_login</td><td><a href='http://{$invited_user_blog}'>http://$invited_user_blog</a></td></tr>";
 				} else {
-					print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em></td></tr>";
+					$invited_time = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = '" . md5( $val ) . "_invite_timestamp'" );
+					if( $invited_time ) {
+						$days_left = 7 - intval( ( time() - $invited_time ) / 86400 );
+						print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em> ($days_left days left)";
+						if ( function_exists('delete_invite') )
+							print " (<a href='?action=deleteinvite&inviteemail=" . urlencode( $val ) . "'>Delete</a>)";
+						print "</td></tr>";
+					} else {
+						print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em>";
+						if ( function_exists('delete_invite') )
+							print " (<a href='?action=deleteinvite&inviteemail=" . urlencode( $val ) . "'>Delete</a>)";
+						print "</td></tr>";
+					}
 				}
 			}
 		}
