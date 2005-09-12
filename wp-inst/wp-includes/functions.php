@@ -373,8 +373,10 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 	global $wpdb, $cache_settings;
 
 	// Make sure the option doesn't already exist
-	if ( isset($cache_settings->$name) )
-		return;
+	if( defined( "WP_INSTALLING" ) == false ) {
+		if ( isset($cache_settings->$name) )
+			return;
+	}
 
 	$original = $value;
 	if ( is_array($value) || is_object($value) )
