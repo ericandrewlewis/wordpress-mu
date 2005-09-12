@@ -130,6 +130,8 @@ function edit_post() {
 	endif;
 
 	add_meta($post_ID);
+	
+	return $post_ID;
 }
 
 function edit_comment() {
@@ -260,17 +262,15 @@ function wp_insert_category($catarr) {
 	$result = $wpdb->query($query);
 
 	if ( $update ) {
-		$rval = $wpdb->rows_affected;
 		do_action('edit_category', $cat_ID);
 	} else {
-		$rval = $wpdb->insert_id;
 		do_action('create_category', $rval);
 		do_action('add_category', $rval);
 	}
 
 	list( $update, $cat_ID, $category_nicename, $cat_name, $rval ) = apply_filters( "new_category", $update, $cat_ID, $category_nicename, $cat_name, $rval );
 
-	return $rval;
+	return $cat_ID;
 }
 
 function wp_update_category($catarr) {
@@ -317,6 +317,35 @@ function wp_delete_category($cat_ID) {
 	return 1;
 }
 
+function wp_create_category($cat_name) {
+	$cat_array = compact('cat_name');
+	return wp_insert_category($cat_array);
+}
+
+
+function wp_create_categories($categories, $post_id = '') {
+	$cat_ids = array();
+	foreach ($categories as $category) {
+		if ( $id = category_exists($category) )
+			$cat_ids[] = $id;
+		else if ( $id = wp_create_category($category) )
+			$cat_ids[] = $id;				
+	}
+	
+	if ( $post_id )
+		wp_set_post_cats('', $post_id, $cat_ids);
+		
+	return $cat_ids;
+}
+
+function category_exists($cat_name) {
+	global $wpdb;
+	if ( !$category_nicename = sanitize_title($cat_name) )
+		return 0;
+		
+	return $wpdb->get_var("SELECT cat_ID FROM $wpdb->categories WHERE category_nicename = '$category_nicename'");
+}
+
 function wp_delete_user($id, $reassign = 'novalue') {
 	global $wpdb;
 
@@ -352,6 +381,21 @@ function wp_delete_user($id, $reassign = 'novalue') {
 	do_action('delete_user', $id);
 
 	return true;
+}
+
+
+function post_exists($title, $content = '', $post_date = '') {
+	global $wpdb;
+	
+	if ( !empty($post_date) )
+		$post_date = "AND post_date = '$post_date'";
+
+	if ( ! empty($title) )
+		return $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_title = '$title' $post_date");
+	else if ( ! empty($content) )
+		return $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_content = '$content' $post_date");
+
+	return 0;
 }
 
 function url_shorten ($url) {

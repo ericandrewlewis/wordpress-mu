@@ -179,7 +179,7 @@ function edit_post_link($link = 'Edit This', $before = '', $after = '') {
     }
 
     $location = get_settings('siteurl') . "/wp-admin/post.php?action=edit&amp;post=$post->ID";
-    echo "$before <a href=\"$location\">$link</a> $after";
+    echo $before . "<a href=\"$location\">$link</a>" . $after;
 }
 
 function edit_comment_link($link = 'Edit This', $before = '', $after = '') {
@@ -192,7 +192,7 @@ function edit_comment_link($link = 'Edit This', $before = '', $after = '') {
     }
 
     $location = get_settings('siteurl') . "/wp-admin/post.php?action=editcomment&amp;comment=$comment->comment_ID";
-    echo "$before <a href='$location'>$link</a> $after";
+    echo $before . "<a href='$location'>$link</a>" . $after;
 }
 
 // Navigation links
@@ -437,9 +437,9 @@ function next_posts_link($label='Next Page &raquo;', $max_page=0) {
 			if ( isset($max_num_pages) ) {
 				$max_page = $max_num_pages;
 			} else {
-        preg_match('#FROM (.*) GROUP BY#', $request, $matches);
+        preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
         $fromwhere = $matches[1];
-        $numposts = $wpdb->get_var("SELECT COUNT(ID) FROM $fromwhere");
+        $numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
         $max_page = $max_num_pages = ceil($numposts / $posts_per_page);
 			}
     }
@@ -479,9 +479,9 @@ function posts_nav_link($sep=' &#8212; ', $prelabel='&laquo; Previous Page', $nx
 
 		if (get_query_var('what_to_show') == 'posts') {
 			if ( ! isset($max_num_pages) ) {
-				preg_match('#FROM (.*) GROUP BY#', $request, $matches);
+				preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
 				$fromwhere = $matches[1];
-				$numposts = $wpdb->get_var("SELECT COUNT(ID) FROM $fromwhere");
+				$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
 				$max_num_pages = ceil($numposts / $posts_per_page);
 			}
 		} else {
