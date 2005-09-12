@@ -75,7 +75,7 @@ if( $_POST[ 'action' ] == 'send' ) {
 
 if( $_POST[ 'personalmessage' ] == '' ) {
     if( $current_site->site_name != '' ) {
-	    $site_name = $current_site;
+	    $site_name = $current_site->site_name;
     } else {
 	    $site_name = get_settings( 'blogname' );
     }
