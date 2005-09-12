@@ -6,7 +6,7 @@ $parent_file = 'edit.php';
 
 if( $_POST[ 'action' ] == 'send' ) {
     $invites_left = get_usermeta( $user_ID, 'invites_left' );
-    if( $invites_left != false ) {
+    if( $invites_left != false || is_site_admin() == true ) {
 	if( $_POST[ 'email' ] != '' && is_email( $_POST[ 'email' ] ) ) {
 	    $email = strtolower( $_POST[ 'email' ] );
 	    $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
@@ -81,6 +81,7 @@ $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 %s."), 
 $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
 }
+if( $invites_left != false || is_site_admin() == true ) {
 ?>
  
 <div class="wrap"> 
@@ -118,6 +119,14 @@ $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
   </form> 
 </div>
 <?php
+} else { // check for invites/is_site_admin()
+	?>
+	<div class="wrap"> 
+	<p>Sorry, you have used all your invites!</p>
+	</div>
+	<?php
+}
+
 $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
 if( $invites_list != '' )
 {
