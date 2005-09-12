@@ -6,61 +6,64 @@ $parent_file = 'edit.php';
 
 if( $_POST[ 'action' ] == 'send' ) {
     $invites_left = get_usermeta( $user_ID, 'invites_left' );
-    if( $invites_left != false || is_site_admin() == true ) {
-	if( $_POST[ 'email' ] != '' && is_email( $_POST[ 'email' ] ) ) {
+    if( $_POST[ 'email' ] != '' && is_email( $_POST[ 'email' ] ) ) {
 	    $email = strtolower( $_POST[ 'email' ] );
-	    $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
-	    $pos = strpos( $invites_list, substr( $email, 1 ) );
-	    if( $pos == true ) {
-		    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=alreadysent&to=" . urlencode(  $email ) );
+	    if( $invites_left != false || is_site_admin() == true ) {
+		    $invites_list = get_usermeta( $current_user->data->ID, "invites_list" );
+		    $pos = strpos( $invites_list, substr( $email, 1 ) );
+		    if( $pos == true ) {
+			    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=alreadysent&to=" . urlencode(  $email ) );
+			    exit;
+		    }
+		    $invites_list .= strtolower( $email ) . " ";
+		    update_usermeta( $current_user->data->ID, "invites_list", $invites_list );
+
+		    $msg     = get_site_option( "invites_default_message" );
+		    $subject = get_site_option( "invites_default_subject" );
+		    $from    = $cache_userdata[ $user_ID ]->user_email;
+
+		    $visitor_pass = md5( $email );
+		    $msg = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $msg );
+		    $msg = str_replace( "LASTNAME", $_POST[ 'lname' ], $msg );
+		    $msg = str_replace( "PERSONALMESSAGE", $_POST[ 'personalmessage' ], $msg );
+		    $msg = str_replace( "VISITORPASS", $visitor_pass, $msg );
+		    $msg = str_replace( "\\r\\n", "\n", stripslashes( str_replace( "REGURL", "http://" . $current_site->domain . "/invite/" . $visitor_pass, $msg ) ) );
+
+		    $subject = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $subject );
+		    if( $cache_userdata[ $user_ID ]->display_name != '' ) {
+			    $username = $cache_userdata[ $user_ID ]->display_name;
+		    } elseif( $cache_userdata[ $user_ID ]->first_name != '' ) {
+			    $username = $cache_userdata[ $user_ID ]->first_name;
+		    } elseif( $cache_userdata[ $user_ID ]->nickname != '' ) {
+			    $username = $cache_userdata[ $user_ID ]->nickname;
+		    } else {
+			    $username = __( 'Someone' );
+		    }
+		    $msg = str_replace( "USERNAME", ucfirst( $username ), $msg );
+		    $subject = str_replace( "USERNAME", ucfirst( $username ), $subject );
+
+		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite' , '".md5( strtolower( $email ) )."')" );
+		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')" );
+		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_email' , '{$_POST[ 'email' ]}')" );
+		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_name' , '{$_POST[ 'fname' ]}')" );
+		    if( $_POST[ 'add_blog_to_blogroll' ] == '1' ) {
+			    $t = array( "blogid" => $wpdb->blogid, "userid" => get_current_user_id() );
+			    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_add_to_blogroll' , '" . serialize( $t ) . "')" );
+		    }
+
+		    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
+		    if( is_site_admin() == false ) {
+			    $invites_left = $invites_left - 1;
+			    update_usermeta( $user_ID, "invites_left", $invites_left );
+		    }
+		    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=sent&to=" . urlencode(  $email ) );
+		    exit;
+	    } else {
+		    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=notsent&to=" . urlencode(  $email ) );
 		    exit;
 	    }
-	    $invites_list .= strtolower( $email ) . " ";
-	    update_usermeta( $current_user->data->ID, "invites_list", $invites_list );
-
-	    $msg     = get_site_option( "invites_default_message" );
-	    $subject = get_site_option( "invites_default_subject" );
-	    $from    = $cache_userdata[ $user_ID ]->user_email;
-
-	    $visitor_pass = md5( $email );
-	    $msg = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $msg );
-	    $msg = str_replace( "LASTNAME", $_POST[ 'lname' ], $msg );
-	    $msg = str_replace( "PERSONALMESSAGE", $_POST[ 'personalmessage' ], $msg );
-	    $msg = str_replace( "VISITORPASS", $visitor_pass, $msg );
-	    $msg = str_replace( "\\r\\n", "\n", stripslashes( str_replace( "REGURL", "http://" . $current_site->domain . "/invite/" . $visitor_pass, $msg ) ) );
-
-	    $subject = str_replace( "FIRSTNAME", $_POST[ 'fname' ], $subject );
-	    if( $cache_userdata[ $user_ID ]->display_name != '' ) {
-		$username = $cache_userdata[ $user_ID ]->display_name;
-	    } elseif( $cache_userdata[ $user_ID ]->first_name != '' ) {
-		$username = $cache_userdata[ $user_ID ]->first_name;
-	    } elseif( $cache_userdata[ $user_ID ]->nickname != '' ) {
-		$username = $cache_userdata[ $user_ID ]->nickname;
-	    } else {
-		$username = __( 'Someone' );
-	    }
-	    $msg = str_replace( "USERNAME", ucfirst( $username ), $msg );
-	    $subject = str_replace( "USERNAME", ucfirst( $username ), $subject );
-
-	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite' , '".md5( strtolower( $email ) )."')" );
-	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_invited_by' , '$user_ID')" );
-	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_email' , '{$_POST[ 'email' ]}')" );
-	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_to_name' , '{$_POST[ 'fname' ]}')" );
-	    if( $_POST[ 'add_blog_to_blogroll' ] == '1' ) {
-		    $t = array( "blogid" => $wpdb->blogid, "userid" => get_current_user_id() );
-		    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', '".md5( strtolower( $email ) )."_add_to_blogroll' , '" . serialize( $t ) . "')" );
-	    }
-
-	    mail( $_POST[ 'email' ], $subject, $msg, "From: $from" );
-	    if( is_site_admin() == false ) {
-		    $invites_left = $invites_left - 1;
-		    update_usermeta( $user_ID, "invites_left", $invites_left );
-	    }
-	    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=sent&to=" . urlencode(  $email ) );
-	    exit;
-	}
     } else {
-	    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=notsent&to=" . urlencode(  $email ) );
+	    header( "Location: ".get_settings( "siteurl" )."/wp-admin/invites.php?result=completeform" );
 	    exit;
     }
 } elseif( $_POST[ 'personalmessage' ] == '' ) {
@@ -80,6 +83,8 @@ $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
     ?><div id="sent" class="updated fade"><p><strong><?php echo sprintf( __("Invite Already Sent to 
 %s."), 
 $wpdb->escape( $_GET[ 'to' ] ) ) ?></strong></p></div><?php
+} elseif (isset($_GET['result'] ) && $_GET['result'] == 'completeform' ) {
+    ?><div id="sent" class="updated fade"><p><strong><?php _e("Please complete the form.") ?></strong></p></div><?php
 }
 if( $invites_left != false || is_site_admin() == true ) {
 ?>
@@ -108,8 +113,8 @@ if( $invites_left != false || is_site_admin() == true ) {
         <td><textarea rows="5" cols="60" name="personalmessage" tabindex="5" id="defaultmessage"><?php echo stripslashes( $_POST[ 'personalmessage' ] ) ?></textarea></td> 
       </tr> 
       <tr valign="top"> 
-        <th width="33%" scope="row"><?php _e('Add blog to my blogroll when created:') ?></th> 
-        <td><input type='checkbox' name='add_blog_to_blogroll' value='1'></td> 
+        <th width="33%" scope="row"></th> 
+        <td><label><input type='checkbox' name='add_blog_to_blogroll' value='1' /> <?php _e('Add to my blogroll after signup') ?></label></td> 
       </tr> 
     </table> 
     </fieldset> 
