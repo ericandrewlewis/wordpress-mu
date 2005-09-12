@@ -18,7 +18,7 @@ function wpmu_delete_blog( $id ) {
 	reset( $drop_tables );
 	while( list( $key, $val ) = each( $drop_tables  ) ) 
 	{ 
-		$wpdb->query( "DROP TABLE $val" );
+		$wpdb->query( "DROP TABLE IF EXISTS $val" );
 	}
 	$wpdb->query( "DELETE FROM ".$wpdb->blogs." WHERE blog_id = '".$id."'" );
 }
