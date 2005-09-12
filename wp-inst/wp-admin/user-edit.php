@@ -252,8 +252,13 @@ if( $invites_list != '' )
 		reset( $invites );
 		while( list( $key, $val ) = each( $invites ) ) { 
 			if( $val != "" ) {
-				$row = $wpdb->get_row( "SELECT * FROM $wpdb->usermeta WHERE meta_key = '" . md5( $val ) . "_invited_by' AND meta_value = '" . $edituser->ID. "'" );
-				$invited_user_id = $row->user_id;
+				$id = $wpdb->get_row( "SELECT ID FROM {$wpdb->users} WHERE user_email = '$val'" );
+				if( $id ) {
+					$invited_user_id = $id->ID;
+				} else {
+					$invited_user_id = 0;
+				}
+
 				if( $invited_user_id != 0 ) {
 					$invited_user_blog = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$invited_user_id' AND meta_key='source_domain'" );
 				} else {
