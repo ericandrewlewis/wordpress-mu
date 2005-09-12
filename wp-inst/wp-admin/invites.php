@@ -67,9 +67,14 @@ if( $_POST[ 'action' ] == 'send' ) {
 	    exit;
     }
 } elseif( $_POST[ 'personalmessage' ] == '' ) {
-    $_POST[ 'personalmessage' ] = "I've been using WordPress and thought you might 
+    if( $current_site->site_name != '' ) {
+	    $site_name = $current_site;
+    } else {
+	    $site_name = get_settings( 'blogname' );
+    }
+    $_POST[ 'personalmessage' ] = sprintf( __( "I've been using %s and thought you might 
 like to try it out.  Here's an invitation to 
-create an account.";
+create an account." ), $site_name ) ;
 }
 
 include('admin-header.php');
