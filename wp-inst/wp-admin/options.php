@@ -88,6 +88,9 @@ case 'update':
     break;
 
 default:
+if (!is_site_admin())
+	die('Not admin');
+
 	include('admin-header.php'); ?>
 
 <div class="wrap">
