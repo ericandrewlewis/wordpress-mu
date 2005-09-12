@@ -191,6 +191,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 
     // Set up admin user
     $random_password = substr(md5(uniqid(microtime())), 0, 6);
+	$GLOBALS['random_password'] = $random_password;
     $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', NOW(), '$username' )");
     $userID = $wpdb->insert_id;
     $metavalues = array( "user_nickname" 		=> addslashes($username), 

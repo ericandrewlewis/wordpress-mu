@@ -203,6 +203,7 @@ switch( $_POST[ 'stage' ] )
 			$msg .= "Address: http://" . $newBlogID . "." . $domain . $scriptBaseName . "\n";
 			$msg .= "Title: $weblog_title\n";
 			$msg .= "Email: $admin_email\n";
+			$msg .= 'IP: ' . $_SERVER['REMOTE_ADDR'] . "\n";
 			if( is_object( $details[ 'invitee_user_login' ] ) ) {
 				$logindetails = $details[ 'invitee_user_login' ];
 				$msg .= "User invited by {$logindetails->user_login} ({$logindetails->user_email})\n";
