@@ -6,46 +6,360 @@
 #
 # E-mail:      metaur at users dot sourceforge dot net
 # Web page:    http://sourceforge.net/projects/kses
-# Paper mail:  (not at the moment)
+# Paper mail:  Ulf Harnhammar
+#              Ymergatan 17 C
+#              753 25  Uppsala
+#              SWEDEN
 #
 # [kses strips evil scripts!]
 if (!defined('CUSTOM_TAGS'))
 	define('CUSTOM_TAGS', false);
-	
+
 // You can override this in your my-hacks.php file
 if (!CUSTOM_TAGS) {
 $allowedtags = array(
-	'a' => array(
-		'href' => array(),
-		'title' => array()
-		),
-	'abbr' => array('title' => array()),
-	'acronym' => array('title' => array()),
-	'b' => array(),
-	'blockquote' => array('cite' => array()),
-//	'br' => array(),
-	'code' => array(),
-//	'del' => array('datetime' => array()),
-//	'dd' => array(),
-//	'dl' => array(),
-//	'dt' => array(),
-	'em' => array(),
-	'i' => array(),
-//	'ins' => array('datetime' => array(), 'cite' => array()),
-//	'li' => array(),
-//	'ol' => array(),
-//	'p' => array(),
-//	'q' => array(),
-	'strike' => array(),
-	'strong' => array(),
-//	'sub' => array(),
-//	'sup' => array(),
-//	'u' => array(),
-//	'ul' => array(),
-	);
+				'address' => array(),
+				'applet' => array(
+					'codebase' => array(),
+					'code' => array(),
+					'name' => array(),
+					'alt' => array()),
+				'area' => array(
+					'shape' => array(),
+					'coords' => array(),
+					'href' => array(),
+					'alt' => array()),
+				'a' => array(
+					'href' => array(),
+					'title' => array(),
+					'rel' => array(),
+					'rev' => array(),
+					'name' => array()),
+				'abbr' => array('title' => array()),
+				'acronym' => array('title' => array()),
+				'b' => array(),
+				'base' => array('href' => array()),
+				'basefont' => array('size' => array()),
+				'bdo' => array('dir' => array()),
+				'big' => array(),
+				'blockquote' => array('cite' => array()),
+				'body' => array(
+					'alink' => array(),
+					'background' => array(),
+					'bgcolor' => array(),
+					'link' => array(),
+					'text' => array(),
+					'vlink' => array()),
+				'br' => array(),
+				'button' => array(
+					'disabled' => array(),
+					'name' => array(),
+					'type' => array(),
+					'value' => array()),
+				'caption' => array('align' => array()),
+				'code' => array(),
+				'col' => array(
+					'align' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'span' => array(),
+					'valign' => array(),
+					'width' => array()),
+				'del' => array('datetime' => array()),
+				'dd' => array(),
+				'div' => array('align' => array()),
+				'dl' => array(),
+				'dt' => array(),
+				'em' => array(),
+				'fieldset' => array(),
+				'font' => array(
+					'color' => array(),
+					'face' => array(),
+					'size' => array()),
+				'form' => array(
+					'action' => array(),
+					'accept' => array(),
+					'accept-charset' => array(),
+					'enctype' => array(),
+					'method' => array(),
+					'name' => array(),
+					'target' => array()),
+				'frame' => array(
+					'frameborder' => array(),
+					'longsesc' => array(),
+					'marginheight' => array(),
+					'marginwidth' => array(),
+					'name' => array(),
+					'noresize' => array(),
+					'scrolling' => array(),
+					'src' => array()),
+				'frameset' => array(
+					'cols' => array(),
+					'rows' => array()),
+				'head' => array('profile' => array()),
+				'h1' => array('align' => array()),
+				'h2' => array('align' => array()),
+				'h3' => array('align' => array()),
+				'h4' => array('align' => array()),
+				'h5' => array('align' => array()),
+				'h6' => array('align' => array()),
+				'hr' => array(
+					'align' => array(),
+					'noshade' => array(),
+					'size' => array(),
+					'width' => array()),
+				'html' => array('xmlns' => array()),
+				'i' => array(),
+				'iframe' => array(
+					'align' => array(),
+					'frameborder' => array(),
+					'height' => array(),
+					'londesc' => array(),
+					'marginheight' => array(),
+					'marginwidth' => array(),
+					'name' => array(),
+					'scrolling' => array(),
+					'src' => array(),
+					'width' => array()),
+				'img' => array(
+					'alt' => array(),
+					'align' => array(),
+					'border' => array(),
+					'height' => array(),
+					'hspace' => array(),
+					'ismap' => array(),
+					'longdesc' => array(),
+					'usemap' => array(),
+					'vspace' => array(),
+					'width' => array()),
+				'input' => array(
+					'accept' => array(),
+					'align' => array(),
+					'alt' => array(),
+					'checked' => array(),
+					'disabled' => array(),
+					'maxlength' => array(),
+					'name' => array(),
+					'readonly' => array(),
+					'size' => array(),
+					'src' => array(),
+					'type' => array(),
+					'value' => array()),
+				'ins' => array('datetime' => array(), 'cite' => array()),
+				'kbd' => array(),
+				'label' => array('for' => array()),
+				'legend' => array('align' => array()),
+				'li' => array(),
+				'link' => array(
+					'charset' => array(),
+					'href' => array(),
+					'hreflang' => array(),
+					'media' => array(),
+					'rel' => array(),
+					'rev' => array(),
+					'target' => array(),
+					'type' => array()),
+				'map' => array(
+					'id' => array(),
+					'name' => array()),
+				'menu' => array(),
+				'meta' => array(
+					'content' => array(),
+					'http-equiv' => array(),
+					'name' => array(),
+					'scheme' => array()),
+				'noframes' => array(),
+				'noscript' => array(),
+				'object' => array(
+					'align' => array(),
+					'archive' => array(),
+					'border' => array(),
+					'classid' => array(),
+					'codebase' => array(),
+					'codetype' => array(),
+					'data' => array(),
+					'declare' => array(),
+					'height' => array(),
+					'hspace' => array(),
+					'name' => array(),
+					'standby' => array(),
+					'type' => array(),
+					'usemap' => array(),
+					'vspace' => array(),
+					'width' => array()),
+				'ol' => array(
+					'compact' => array(),
+					'start' => array(),
+					'type' => array()),
+				'optgroup' => array(
+					'label' => array(),
+					'disabled' => array()),
+				'option' => array(
+					'disabled' => array(),
+					'label' => array(),
+					'selected' => array(),
+					'value' => array()),
+				'p' => array('align' => array()),
+				'param' => array(
+					'name' => array(),
+					'type' => array(),
+					'value' => array(),
+					'valuetype' => array()),
+				'pre' => array('width' => array()),
+				'q' => array('cite' => array()),
+				's' => array(),
+				'strike' => array(),
+				'strong' => array(),
+				'style' => array(
+					'type' => array(),
+					'media' => array()),
+				'sub' => array(),
+				'sup' => array(),
+				'table' => array(
+					'align' => array(),
+					'bgcolor' => array(),
+					'border' => array(),
+					'cellpadding' => array(),
+					'cellspacing' => array(),
+					'frame' => array(),
+					'rules' => array(),
+					'summary' => array(),
+					'width' => array()),
+				'tbody' => array(
+					'align' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'valign' => array()),
+				'td' => array(
+					'abbr' => array(),
+					'align' => array(),
+					'axis' => array(),
+					'bgcolor' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'colspan' => array(),
+					'headers' => array(),
+					'height' => array(),
+					'nowrap' => array(),
+					'rowspan' => array(),
+					'scope' => array(),
+					'valign' => array(),
+					'width' => array()),
+				'textarea' => array(
+					'cols' => array(),
+					'rows' => array(),
+					'disabled' => array(),
+					'name' => array(),
+					'readonly' => array()),
+				'tfoot' => array(
+					'align' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'valign' => array()),
+				'th' => array(
+					'abbr' => array(),
+					'align' => array(),
+					'axis' => array(),
+					'bgcolor' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'colspan' => array(),
+					'headers' => array(),
+					'height' => array(),
+					'nowrap' => array(),
+					'rowspan' => array(),
+					'scope' => array(),
+					'valign' => array(),
+					'width' => array()),
+				'thead' => array(
+					'align' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'valign' => array()),
+				'title' => array(),
+				'tr' => array(
+					'align' => array(),
+					'bgcolor' => array(),
+					'char' => array(),
+					'charoff' => array(),
+					'valign' => array()),
+				'tt' => array(),
+				'u' => array(),
+				'ul' => array(),
+				'var' => array()
+);
 }
+/*
+    * ADDRESS - Address information
+    * APPLET - Java applet
+    * AREA - Hotzone in imagemap
+    * A - Anchor
+    * BASE - Document location
+    * BASEFONT - Default font size
+    * BIG - Larger text
+    * BLOCKQUOTE - Large quotation
+    * BODY - Document body
+    * BR - Line break
+    * B - Bold
+    * CAPTION - Table caption
+    * CENTER - Centered division
+    * CITE - Short citation
+    * CODE - Code fragment
+    * DD - Definition
+    * DFN - Definition of a term
+    * DIR - Directory list
+    * DIV - Logical division
+    * DL - Definition list
+    * DT - Definition term
+    * EM - Emphasized text
+    * FONT - Font modification
+    * FORM - Input form
+    * H1 - Level 1 header
+    * H2 - Level 2 header
+    * H3 - Level 3 header
+    * H4 - Level 4 header
+    * H5 - Level 5 header
+    * H6 - Level 6 header
+    * HEAD - Document head
+    * HR - Horizontal rule
+    * HTML - HTML Document
+    * IMG - Images
+    * INPUT - Input field, button, etc.
+    * ISINDEX - Primitive search
+    * I - Italics
+    * KBD - Keyboard input
+    * LINK - Site structure
+    * LI - List item
+    * MAP - Client-side imagemap
+    * MENU - Menu item list
+    * META - Meta-information
+    * OL - Ordered list
+    * OPTION - Selection list option
+    * PARAM - Parameter for Java applet
+    * PRE - Preformatted text
+    * P - Paragraph
+    * SAMP - Sample text
+    * SCRIPT - Inline script
+    * SELECT - Selection list
+    * SMALL - Smaller text
+    * STRIKE - Strikeout
+    * STRONG - Strongly emphasized
+    * STYLE - Style information
+    * SUB - Subscript
+    * SUP - Superscript
+    * TABLE - Tables
+    * TD - Table cell
+    * TEXTAREA - Input area
+    * TH - Header cell
+    * TITLE - Document title
+    * TR - Table row
+    * TT - Teletype
+    * UL - Unordered list
+    * U - Underline
+    * VAR - Variable
+    */
 function wp_kses($string, $allowed_html, $allowed_protocols =
-               array('http', 'https', 'ftp', 'news', 'nntp', 'feed', 'gopher', 'mailto'))
+               array('http', 'https', 'ftp', 'news', 'nntp', 'telnet', 'feed', 'gopher', 'mailto'))
 ###############################################################################
 # This function makes sure that only the allowed HTML element names, attribute
 # names and attribute values plus only sane HTML entities will occur in
@@ -76,7 +390,7 @@ function wp_kses_version()
 # This function returns kses' version number.
 ###############################################################################
 {
-  return '0.2.1';
+  return '0.2.2';
 } # function wp_kses_version
 
 
@@ -118,9 +432,13 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
   $elem = $matches[2];
   $attrlist = $matches[3];
 
-  if (!is_array($allowed_html[strtolower($elem)]))
+  if (!@isset($allowed_html[strtolower($elem)]))
     return '';
     # They are using a not allowed HTML element
+
+  if ($slash != '')
+    return "<$slash$elem>";
+  # No attributes are allowed for closing elements
 
   return wp_kses_attr("$slash$elem", $attrlist, $allowed_html,
                    $allowed_protocols);
@@ -145,7 +463,7 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 
 # Are any attributes allowed at all for this element?
 
-  if (count($allowed_html[strtolower($element)]) == 0)
+  if (@count($allowed_html[strtolower($element)]) == 0)
     return "<$element$xhtml_slash>";
 
 # Split it
@@ -159,6 +477,9 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 
   foreach ($attrarr as $arreach)
   {
+    if (!@isset($allowed_html[strtolower($element)] [strtolower($arreach['name'])]))
+      continue; # the attribute is not allowed
+
     $current = $allowed_html[strtolower($element)]
                             [strtolower($arreach['name'])];
     if ($current == '')
@@ -410,6 +731,8 @@ function wp_kses_no_null($string)
   $string = preg_replace('/\0+/', '', $string);
   $string = preg_replace('/(\\\\0)+/', '', $string);
 
+  $string = preg_replace('/\xad+/', '', $string); # deals with Opera "feature"
+
   return $string;
 } # function wp_kses_no_null
 
@@ -555,9 +878,13 @@ function wp_kses_decode_entities($string)
   return $string;
 } # function wp_kses_decode_entities
 
-function wp_filter_kses( $string ) {
+function wp_filter_kses($data) {
 	global $allowedtags;
-	return wp_kses($string, $allowedtags);
+	return wp_kses($data, $allowedtags);
 }
+
+// Filter untrusted content
+add_filter('comment_author', 'wp_filter_kses');
+add_filter('comment_text', 'wp_filter_kses');
 
 ?>
