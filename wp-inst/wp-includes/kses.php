@@ -131,6 +131,7 @@ $allowedtags = array(
 					'longdesc' => array(),
 					'usemap' => array(),
 					'vspace' => array(),
+					'src' => array(),
 					'width' => array()),
 				'input' => array(
 					'accept' => array(),
@@ -432,7 +433,7 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
   $elem = $matches[2];
   $attrlist = $matches[3];
 
-  if (!@isset($allowed_html[strtolower($elem)]))
+  if (!@is_array($allowed_html[strtolower($elem)]))
     return '';
     # They are using a not allowed HTML element
 
@@ -883,8 +884,19 @@ function wp_filter_kses($data) {
 	return wp_kses($data, $allowedtags);
 }
 
-// Filter untrusted content
-add_filter('comment_author', 'wp_filter_kses');
-add_filter('comment_text', 'wp_filter_kses');
 
+function kses_init() {
+	global $current_user;
+
+	get_currentuserinfo(); // set $current_user
+	//if( current_user_can( 'administrator' ) == false ) {
+		// Filter untrusted content
+		add_filter('comment_author', 'wp_filter_kses');
+		add_filter('comment_text', 'wp_filter_kses');
+		add_filter('comment_post', 'wp_filter_kses');
+		//add_filter('format_to_edit', 'wp_filter_kses');
+		add_filter('the_content', 'wp_filter_kses');
+	//}
+}
+add_action( 'init', 'kses_init' );
 ?>
