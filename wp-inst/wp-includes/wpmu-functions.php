@@ -726,4 +726,10 @@ function get_blog_count( $id = 0 ) {
 
 	return $count;
 }
+
+function get_blog_post( $blog_id, $post_id ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	return $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
+}
 ?>

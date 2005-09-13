@@ -440,6 +440,8 @@ function next_posts_link($label='Next Page &raquo;', $max_page=0) {
         preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
         $fromwhere = $matches[1];
         $numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
+	if( $posts_per_page == 0 )
+		$posts_per_page = 1;
         $max_page = $max_num_pages = ceil($numposts / $posts_per_page);
 			}
     }
