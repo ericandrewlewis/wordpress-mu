@@ -160,6 +160,8 @@ class DOC_Referers {
 	    $action = 'listday';
 	    $day = date( 'j' );
 	}
+	if( $day == '' )
+		$day = date( 'j' );
 
 	print '<div class="wrap">';
 
