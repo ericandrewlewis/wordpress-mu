@@ -220,7 +220,7 @@ switch( $_GET[ 'action' ] ) {
 
 		$query = "SELECT * 
 			FROM ".$wpdb->blogs." 
-			WHERE site_id = '".$wpdb->siteid."'";
+			WHERE site_id = '".$wpdb->siteid."' ";
 		if( $_GET[ 's' ] != '' ) {
 			$query = "SELECT blog_id, {$wpdb->blogs}.domain, registered, last_updated
 				FROM ".$wpdb->blogs.", ".$wpdb->site." 
