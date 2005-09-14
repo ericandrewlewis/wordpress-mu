@@ -135,65 +135,10 @@ break;
 case 'adduser':
 	exit;
 	check_admin_referer();
-
-	$new_user_login     = wp_specialchars(trim($_POST['user_login']));
-	$new_pass1          = $_POST['pass1'];
-	$new_pass2          = $_POST['pass2'];
-	$new_user_email     = wp_specialchars(trim($_POST['email']));
-	$new_user_firstname = wp_specialchars(trim($_POST['firstname']));
-	$new_user_lastname  = wp_specialchars(trim($_POST['lastname']));
-	$new_user_uri       = wp_specialchars(trim($_POST['uri']));
 	
-	$errors = array();
-		
-	/* checking that username has been typed */
-	if ($new_user_login == '')
-		$errors['user_login'] = __('<strong>ERROR</strong>: Please enter a username.');
-
-	/* checking the password has been typed twice */
-	do_action('check_passwords', array($new_user_login, &$new_pass1, &$new_pass2));
-	if ($new_pass1 == '' || $new_pass2 == '')
-		$errors['pass'] = __('<strong>ERROR</strong>: Please enter your password twice.');
-
-	/* checking the password has been typed twice the same */
-	if ($new_pass1 != $new_pass2)
-		$errors['pass'] = __('<strong>ERROR</strong>: Please type the same password in the two password fields.');
-
-	$new_user_nickname = $new_user_login;
-
-  if ( username_exists( $new_user_login ) )
-		$errors['pass'] = __('<strong>ERROR</strong>: This username is already registered, please choose another one.');
-
-	/* checking e-mail address */
-	if (empty($new_user_email)) {
-		$errors['user_email'] = __("<strong>ERROR</strong>: please type an e-mail address");
-	} else if (!is_email($new_user_email)) {
-		$errors['user_email'] = __("<strong>ERROR</strong>: the email address isn't correct");
-	}
-
-	if(count($errors) == 0) {	
-		$user_ID = create_user( $new_user_login, $new_pass1, $new_user_email, 0 );
-
-		update_usermeta( $user_ID, 'first_name', $new_user_firstname);
-		update_usermeta( $user_ID, 'last_name', $new_user_lastname);
-		update_usermeta( $user_ID, 'first_name', $new_user_firstname);
-		
-		$user = new WP_User($user_ID);
-		$user->set_role(get_settings('default_role'));
-		
-		$stars = '';
-		for ($i = 0; $i < strlen($pass1); $i = $i + 1)
-			$stars .= '*';
+	$errors = add_user();
 	
-		$user_login = stripslashes($new_user_login);
-		$message  = sprintf(__('New user registration on your blog %s:'), get_settings('blogname')) . "\r\n\r\n";
-		$message .= sprintf(__('Username: %s'), $new_user_login) . "\r\n\r\n";
-		$message .= sprintf(__('E-mail: %s'), $new_user_email) . "\r\n";
-	
-		@wp_mail(get_settings('admin_email'), sprintf(__('[%s] New User Registration'), get_settings('blogname')), $message);
-
-		do_action('user_register', $user_id);
-
+	if(count($errors) == 0) {
 		header('Location: users.php?update=add');
 		die();
 	}
@@ -245,8 +190,6 @@ default:
 		$tmp_user = new WP_User($userid);
 		$roles = $tmp_user->roles;
 		$role = $roles[0];
-		if( $role == '' )
-		    $role = 'inactive';
 		$roleclasses[$role][$tmp_user->data->user_login] = $tmp_user;
 	}	
 	

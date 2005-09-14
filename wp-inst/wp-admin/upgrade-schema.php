@@ -303,6 +303,7 @@ function populate_roles() {
 												'edit_plugins' => true,
 												'edit_users' => true,
 												'edit_files' => true,
+												'unfiltered_html' => true,
 												'import' => true,
 												'read' => true,
 												'level_10' => true,
@@ -330,6 +331,7 @@ function populate_roles() {
 												'manage_categories' => true,
 												'manage_links' => true,
 												'upload_files' => true,
+												'unfiltered_html' => true,
 												'read' => true,
 												'level_7' => true,
 												'level_6' => true,
@@ -367,11 +369,7 @@ function populate_roles() {
 											'capabilities' => array(
 												'read' => true,
 												'level_0' => true
-												)),
-
-									'inactive' =>
-									array('name' => __('Inactive'),
-												'capabilities' => array())
+												))
 									);
 	// FIXME: Temporary code to reset roles and caps if flag is set.
 	if ( defined('RESET_CAPS') )
