@@ -18,6 +18,11 @@ RewriteRule ^wp-content/themes/(.*)		BASE/wp-inst/wp-content/themes/$1 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/category/(.*)/page/(.*)/			BASE/wp-inst/index.php?wpblog=$1&category_name=$2&paged=$3 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/category/(.*)/(feed|rdf|rss|rss2|atom)/?$ BASE/wp-inst/wp-feed.php?wpblog=$1&category_name=$2&feed=$3 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/category/?(.*)				BASE/wp-inst/index.php?wpblog=$1&category_name=$2 [L]
+
+RewriteRule ^([_0-9a-zA-Z-]+)/tag/(.*)/page/(.*)/			BASE/wp-inst/index.php?wpblog=$1&category_name=$2&paged=$3 [L]
+RewriteRule ^([_0-9a-zA-Z-]+)/tag/(.*)/(feed|rdf|rss|rss2|atom)/?$ 	BASE/wp-inst/wp-feed.php?wpblog=$1&category_name=$2&feed=$3 [L]
+RewriteRule ^([_0-9a-zA-Z-]+)/tag/?(.*)					BASE/wp-inst/index.php?wpblog=$1&category_name=$2 [L]
+
 RewriteRule ^([_0-9a-zA-Z-]+)/author/(.*)/(feed|rdf|rss|rss2|atom)/?$	BASE/wp-inst/wp-feed.php?wpblog=$1&author_name=$2&feed=$3 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/author/?(.*)				BASE/wp-inst/index.php?wpblog=$1&author_name=$2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/([0-9]{4})/?([0-9]{1,2})?/?([0-9]{1,2})?/?([_0-9a-zA-Z-]+)?/?([0-9]+)?/?$	  		BASE/wp-inst/index.php?wpblog=$1&year=$2&monthnum=$3&day=$4&name=$5&page=$6 [L]
