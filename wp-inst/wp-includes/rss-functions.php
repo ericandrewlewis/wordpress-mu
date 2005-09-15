@@ -695,7 +695,7 @@ class RSSCache {
 		$cache_option = $this->file_name( $url );
 		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 
-		if ( $mtime = get_option($cache_timestamp) ) {
+		if ( $mtime = get_site_option($cache_timestamp) ) {
 			// find how long ago the file was added to the cache
 			// and whether that is longer then MAX_AGE
 			$age = time() - $mtime;
