@@ -141,6 +141,9 @@ switch( $_POST[ 'stage' ] )
 	if( in_array( $newBlogID, $illegal_names ) == true ) {
 	    $errormsg[ 'weblog_id' ] = true;
 	}
+	if( strlen( $newBlogID ) < 4 ) {
+	    $errormsg[ 'weblog_id' ] = true;
+	}
 	$weblog_title = stripslashes(  $_POST[ 'weblog_title' ] );
 	$admin_email = $_POST[ 'admin_email' ];
 
