@@ -521,7 +521,7 @@ function get_blog_option( $blog_id, $key, $default='na' ) {
 }
 
 function add_blog_option( $blog_id, $key, $value ) {
-    global $wpdbi, $wpmuBaseTablePrefix;
+    global $wpdb, $wpmuBaseTablePrefix;
 
     if( $value != get_blog_option( $blog_id, $key ) ) {
 	if ( is_array($value) || is_object($value) )
