@@ -11,12 +11,15 @@ if( is_file( $file ) ) {
 	$headers = apache_request_headers();
 	// get mime type
 	$ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
-	if( $ext == 'jpg' )
-		$ext = 'jpeg';
-	$mimetype = "image/$ext";
+	$ext_list = array( "jpg" => "image/jpeg", "mp3" => "audio/mpeg", "mov" => "video/quicktime" );
+	if( $ext_list[ $ext ] ) {
+		$mimetype = $ext_list[ $ext ];
+	} else {
+		$mimetype = "image/$ext";
+	}
 
 	// from http://blog.rd2inc.com/archives/2005/03/24/making-dynamic-php-pages-cacheable/
-	if( $lastModified == $headers['If-Modified-Since']) {
+	if( $headers[ 'If-Range' ] == '"' . $etag . '"' || $lastModified == $headers['If-Modified-Since']) {
 		// They already have an up to date copy so tell them 
 		header('HTTP/1.1 304 Not Modified'); 
 		header('Cache-Control: private'); 
