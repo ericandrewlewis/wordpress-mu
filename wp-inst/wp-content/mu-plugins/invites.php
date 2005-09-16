@@ -162,15 +162,6 @@ if( is_site_admin() ) {
 
 function invites_admin_menu() {
 	$pfile = basename(dirname(__FILE__)) . '/' . basename(__FILE__);
-	/*
-	$invites_left = get_option( "invites_left" );
-	if( $invites_left == '' ) {
-	    $invites_left = 5;
-	    update_site_option( "invites_per_user", $invites_left );
-	    update_option( "invites_left", $invites_left );
-	}
-	*/
-
 	add_submenu_page('wpmu-admin.php', 'Invites', 'Invites', 0, $pfile, 'invites_admin_content');
 }
 
