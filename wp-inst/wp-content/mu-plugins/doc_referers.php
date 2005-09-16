@@ -152,6 +152,7 @@ class DOC_Referers {
 	$del    = $_GET[ 'del' ];
 	$num    = $_GET[ 'num' ];
 	$more   = $_GET[ 'more' ];
+	$order  = $_GET[ 'order' ];
 	$ignoreDIRECT = $_GET[ 'ignoreDIRECT' ];
 	$internal = $_GET[ 'internal' ];
 	
