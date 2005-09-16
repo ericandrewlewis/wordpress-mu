@@ -430,6 +430,12 @@ class DOC_Referers {
 			    $args = parse_url( $row1[ 'referingURL' ] );
 			    $url = "<a href='".$row1[ 'referingURL' ]."' title='".$row1[ 'referingURL' ]."'>Bloglines</a>";
 			}
+			elseif( strpos( $row1[ 'referingURL' ], 'wp-admin/' ) )
+			{
+				$args = parse_url( $row1[ 'referingURL' ] );
+				$u = substr( $row1[ 'referingURL' ], 0, strpos( $row1[ 'referingURL' ], "wp-admin" ) );
+				$url = "<a href='".$u."' title='".$row1[ 'referingURL' ]."'>wp-admin: $u</a>";
+			}
 			else
 			{
 			    $url = "<a href='".$row1[ 'referingURL' ]."' title='".$row1[ 'referingURL' ]."'>".substr( $row1[ 'referingURL' ], 0, 40 )."</a>";
