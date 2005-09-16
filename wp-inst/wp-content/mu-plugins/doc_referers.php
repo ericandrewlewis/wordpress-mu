@@ -155,6 +155,25 @@ class DOC_Referers {
 	$ignoreDIRECT = $_GET[ 'ignoreDIRECT' ];
 	$internal = $_GET[ 'internal' ];
 	
+	if( $ignoreDIRECT == '' ) {
+		$ignoreDIRECT = get_option( 'ignoreDIRECT' );
+	} else {
+		if( get_option( 'ignoreDIRECT' ) == false ) {
+			add_option( 'ignoreDIRECT', $ignoreDIRECT );
+		} else {
+			update_option( 'ignoreDIRECT', $ignoreDIRECT );
+		}
+	}
+	if( $internal == '' ) {
+		$internal = get_option( 'doc_referers_internal' );
+	} else {
+		if( get_option( 'doc_referers_internal' ) == false ) {
+			add_option( 'doc_referers_internal', $internal );
+		} else {
+			update_option( 'doc_referers_internal', $internal );
+		}
+	}
+	
 	if( $action == '' )
 	{
 	    $action = 'listday';
