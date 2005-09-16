@@ -480,7 +480,6 @@ function wp_delete_user($id, $reassign = 'novalue') {
 	return true;
 }
 
-
 function post_exists($title, $content = '', $post_date = '') {
 	global $wpdb;
 	
@@ -493,6 +492,13 @@ function post_exists($title, $content = '', $post_date = '') {
 		return $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_content = '$content' $post_date");
 
 	return 0;
+}
+
+function comment_exists($comment_author, $comment_date) {
+	global $wpdb;
+
+	return $wpdb->get_var("SELECT comment_post_ID FROM $wpdb->comments
+		WHERE comment_author = '$comment_author' AND comment_date = '$comment_date'");
 }
 
 function url_shorten ($url) {
@@ -959,9 +965,9 @@ function insert_with_markers($filename, $marker, $insertion) {
 		if ($markerdata) {
 			$state = true;
 			foreach($markerdata as $markerline) {
-				if (strstr($markerline, "# BEGIN {$marker}\n")) $state = false;
+				if (strstr($markerline, "# BEGIN {$marker}")) $state = false;
 				if ($state) fwrite($f, "{$markerline}\n");
-				if (strstr($markerline, "# END {$marker}\n")) {
+				if (strstr($markerline, "# END {$marker}")) {
 					fwrite($f, "# BEGIN {$marker}\n");
 					if(is_array($insertion)) foreach($insertion as $insertline) fwrite($f, "{$insertline}\n");
 					fwrite($f, "# END {$marker}\n");
