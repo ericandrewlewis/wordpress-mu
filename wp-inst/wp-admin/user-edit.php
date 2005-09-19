@@ -200,7 +200,7 @@ if ( $show_password_fields ) :
 </form>
 </div>
 <?php
-$invites_list = get_usermeta( $edituser->ID, "invites_list" );
+$invites_list = get_usermeta( intval( $_GET[ 'user_id' ] ), "invites_list" );
 if( $invites_list != '' )
 {
 	if( strlen( $invites_list ) > 3 ) {
