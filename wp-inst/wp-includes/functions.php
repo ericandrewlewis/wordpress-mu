@@ -2052,7 +2052,7 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 		$meta_value = serialize($meta_value);
 
 	$cur = $wpdb->get_row("SELECT * FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
-	if ( !$cur ) {
+	if ( !$cur && !empty( $meta_value ) ) {
 		$wpdb->query("INSERT INTO $wpdb->usermeta ( user_id, meta_key, meta_value )
 		VALUES
 		( '$user_id', '$meta_key', '$meta_value' )");
@@ -2060,6 +2060,8 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 	}
 	if ( $cur->meta_value != $meta_value )
 		$wpdb->query("UPDATE $wpdb->usermeta SET meta_value = '$meta_value' WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
+	if ( empty( $meta_value ) )
+		$wpdb->query("DELETE FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
 }
 
 function register_activation_hook($file, $function) {

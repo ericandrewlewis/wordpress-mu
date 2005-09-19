@@ -43,7 +43,7 @@ $errors = array();
 if (!current_user_can('edit_users'))
 	$errors['head'] = __('You do not have permission to edit this user.');
 else
-	$errors = update_user($user_id);
+	$errors = edit_user($user_id);
 
 if(count($errors) == 0) {
 	if( is_site_admin() ) 
