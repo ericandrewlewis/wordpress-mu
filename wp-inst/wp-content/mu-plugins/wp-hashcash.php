@@ -394,7 +394,7 @@ function hashcash_add_hidden_tag($page) {
 		
 		// Try to enable all form fields from javascript
 		$fields = array('submit', 'author', 'email', 'url');
-		$page = str_replace('<body', '<body onload="' . $fn_enable_name . '();"', $page);
+		$page = str_replace('<body', '<script language="Javascript">addLoadEvent( ' . $fn_enable_name . ' );</script><body', $page);
 		
 		$script = 'function ' . $fn_enable_name . '(){';
 		shuffle($fields);

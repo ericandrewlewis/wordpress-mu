@@ -1,11 +1,23 @@
 <?php
-/*
-add_action('wp_footer', "blogs_header" );
+add_action('wp_head', "header_js" );
 
-function blogs_header() {
-	global $current_site;
-	print "<div style='position: absolute; top: 0px; width: 100%; background: #eee; border-bottom: 1px solid #333;'><table width='100%' border=0 cellspacing=0 cellpadding=0><td align='left'><a href='http://" . $current_site->domain . $current_site->path . "'>" . $current_site->site_name . "</a></td><td align='right'><a href='http://" . $current_site->domain . $current_site->path . "wp-newblog.php'>Get Your Own Blog</a></td></table></div>";
+function header_js() {
+	?>
+<script type="text/javascript">
+
+function addLoadEvent(func) {
+  var oldonload = window.onload;
+  if (typeof window.onload != 'function') {
+    window.onload = func;
+  } else {
+    window.onload = function() {
+      oldonload();
+      func();
+    }
+  }
 }
-*/
+</script>
+	<?php
+}
 
 ?>
