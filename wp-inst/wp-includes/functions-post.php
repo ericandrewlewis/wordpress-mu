@@ -310,6 +310,8 @@ function wp_delete_post($postid = 0) {
 	if ( !$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = $postid") )
 		return $post;
 
+	do_action('delete_post', $postid);
+
 	if ( 'static' == $post->post_status )
 		$wpdb->query("UPDATE $wpdb->posts SET post_parent = $post->post_parent WHERE post_parent = $postid AND post_status = 'static'");
 
@@ -324,7 +326,6 @@ function wp_delete_post($postid = 0) {
 	if ( 'static' == $post->post_status )
 		generate_page_rewrite_rules();
 
-	do_action('delete_post', $postid);
 	
 	return $post;
 }
