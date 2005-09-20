@@ -46,7 +46,7 @@ else
 	$errors = edit_user($user_id);
 
 if(count($errors) == 0) {
-	if( is_site_admin() ) 
+	if( is_site_admin() )
 		update_usermeta( $user_id, 'invites_left', intval( $_POST[ 'invites_left' ] ) );
 	header("Location: user-edit.php?user_id=$user_id&updated=true");
 	exit;
@@ -92,7 +92,7 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 </label></p>
 <?php if( is_site_admin() ) {?>
 	<p><label><?php _e('Invites Left:') ?><br />
-	<input type="text" name="invites_left" id="invites_left" value="<?php echo $edituser->invites_left ?>" /></label></p>
+	<input type="text" name="invites_left" id="invites_left" value="<?php echo get_usermeta( $user_id, 'invites_left' ) ?>" /></label></p>
 	<?php
 } // is_site_admin
 ?>
