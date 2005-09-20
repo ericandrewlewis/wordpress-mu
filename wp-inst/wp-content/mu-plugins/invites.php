@@ -146,6 +146,7 @@ function invites_cleanup_db( $val ) {
 	if( $id ) {
 	    $query = "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'";
 	    $wpdb->query( $query );
+	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invites_left' , '" . get_site_option( "invites_per_user" ) . "' )" );
 	}
     }
 }
@@ -225,6 +226,8 @@ function delete_invite( $uid ) {
 				$invites_list = str_replace( $email . " ", "", $invites_list );
 				update_usermeta( $invited_by, "invites_list", $invites_list );
 			}
+			$invites_left = get_usermeta( $invited_by, "invites_left" );
+			update_usermeta( $invited_by, "invites_left", $invites_left + 1 );
 		}
 	}
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite' AND meta_value = '$uid'" );
