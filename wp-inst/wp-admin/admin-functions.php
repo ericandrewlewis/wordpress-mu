@@ -567,7 +567,7 @@ function edit_link($link_id = '') {
 }
 
 function wp_insert_link($linkdata) {
-	global $wpdb;
+	global $wpdb, $current_user;
 	
 	extract($linkdata);
 
@@ -584,6 +584,7 @@ function wp_insert_link($linkdata) {
 	if ( empty($link_visible) )
 		$link_visible = 'Y';	
 	
+	$link_owner = $current_user->id;
 	if ( $update ) {
 		$wpdb->query("UPDATE $wpdb->links SET link_url='$link_url',
 			link_name='$link_name', link_image='$link_image',
