@@ -518,12 +518,9 @@ function wp_filter_post_kses($data) {
 function kses_init() {
 	global $current_user;
 
-	get_currentuserinfo(); // set $current_user
-	if (current_user_can('unfiltered_html') == false) {
-		add_filter('pre_comment_author', 'wp_filter_kses');
-		add_filter('pre_comment_content', 'wp_filter_kses');
-		add_filter('content_save_pre', 'wp_filter_post_kses');
-	}
+	add_filter('pre_comment_author', 'wp_filter_kses');
+	add_filter('pre_comment_content', 'wp_filter_kses');
+	add_filter('content_save_pre', 'wp_filter_post_kses');
 }
 add_action('init', 'kses_init');
 ?>
