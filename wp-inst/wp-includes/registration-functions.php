@@ -95,7 +95,7 @@ function wp_update_user($userdata) {
 	$user_id = wp_insert_user($userdata);
 
 	// Update the cookies if the password changed.	
-	if( $current_user->data->ID == $ID ) {
+	if( $current_user->id == $ID ) {
 		if ( isset($plaintext_pass) ) {
 			wp_clearcookie();
 			wp_setcookie($userdata['user_login'], $plaintext_pass);
