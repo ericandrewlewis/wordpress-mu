@@ -123,11 +123,11 @@ function newCatAddIn() {
 	newcat.setAttribute('autocomplete', 'off');
 	newcat.onkeypress = ajaxNewCatKeyPress;
 
-	var newcatSub = document.createElement('input');
-	newcatSub.type = 'button';
-	newcatSub.name = 'Button';
-	newcatSub.value = '+';
-	newcat.onkeypress = ajaxNewCatKeyPress;
+	//var newcatSub = document.createElement('input');
+	//newcatSub.type = 'button';
+	//newcatSub.name = 'Button';
+	//newcatSub.value = '+';
+	//newcat.onkeypress = ajaxNewCatKeyPress;
 
 	var searchResult = document.createElement( 'div' );
 	searchResult.type = 'div';
@@ -140,7 +140,7 @@ function newCatAddIn() {
 
 
 	ajaxcat.appendChild(newcat);
-	ajaxcat.appendChild(newcatSub);
+	//ajaxcat.appendChild(newcatSub);
 	ajaxcat.appendChild(searchResult);
 	document.getElementById('categorychecklist').parentNode.appendChild(ajaxcat);
 }
