@@ -325,7 +325,6 @@ function wp_delete_post($postid = 0) {
 
 	if ( 'static' == $post->post_status )
 		generate_page_rewrite_rules();
-
 	
 	return $post;
 }
