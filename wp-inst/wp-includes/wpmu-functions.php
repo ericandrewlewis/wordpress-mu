@@ -78,7 +78,7 @@ function wpmu_checkAvailableSpace($action) {
 add_filter('fileupload_init','wpmu_checkAvailableSpace');
 
 function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $source = 'regpage', $site_id = 1 ) {
-    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site;
+    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site, $wp_roles;
 
 	$domain       = addslashes( $domain );
 	$weblog_title = addslashes( $weblog_title );
@@ -136,6 +136,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     $tmp[ 'option' ]         = $wpdb->option;
     $tmp[ 'postmeta' ]       = $wpdb->postmeta;
     $tmptable_prefix         = $table_prefix;
+    $tmprolekey              = $wp_roles->role_key;
 
     // fix the new prefix.
     $table_prefix = $wpmuBaseTablePrefix . $blog_id . "_";
@@ -149,11 +150,12 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     $wpdb->linkcategories   = $table_prefix . 'linkcategories';
     $wpdb->options          = $table_prefix . 'options';
     $wpdb->postmeta         = $table_prefix . 'postmeta';
+    $wp_roles->role_key     = $table_prefix . 'user_roles';
 
     @mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id, 0777 );
     @mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id."/files", 0777 );
 
-    require_once( ABSPATH . 'wp-admin/upgrade-functions.php');
+    include_once( ABSPATH . 'wp-admin/upgrade-functions.php');
     $wpdb->hide_errors();
     $installed = $wpdb->get_results("SELECT * FROM $wpdb->posts");
     if ($installed) die(__('<h1>Already Installed</h1><p>You appear to have already installed WordPress. To reinstall please clear your old database tables first.</p>') . '</body></html>');
@@ -286,6 +288,7 @@ SITE_NAME" ) );
 	$wpdb->$key = $val;
     }
     $table_prefix = $tmptable_prefix;
+    $wp_roles->role_key = $tmprolekey;
 
     $wpdb->show_errors();
 
@@ -732,4 +735,12 @@ function get_blog_post( $blog_id, $post_id ) {
 
 	return $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
 }
+
+function add_user_to_blog( $blog_id, $user_id, $role ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$user_id', '" . $wpmuBaseTablePrefix . $blog_id . "_capabilities', 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}')" );
+
+}
+
 ?>
