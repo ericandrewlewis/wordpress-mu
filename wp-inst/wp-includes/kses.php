@@ -515,6 +515,11 @@ function wp_filter_post_kses($data) {
 	return addslashes ( wp_kses(stripslashes( $data ), $allowedposttags) );
 }
 
+function wp_filter_post_display_kses($data) {
+	global $allowedposttags;
+	return wp_kses( $data, $allowedposttags);
+}
+
 function kses_init() {
 
 	add_filter('pre_comment_author', 'wp_filter_kses');
@@ -522,4 +527,5 @@ function kses_init() {
 	add_filter('content_save_pre', 'wp_filter_post_kses');
 }
 add_action('init', 'kses_init');
+add_filter('the_content', 'wp_filter_post_display_kses');
 ?>
