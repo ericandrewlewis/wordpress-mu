@@ -512,11 +512,10 @@ function wp_filter_kses($data) {
 
 function wp_filter_post_kses($data) {
 	global $allowedposttags;
-	return addslashes( wp_kses(stripslashes( $data ), $allowedposttags) );
+	return addslashes ( wp_kses(stripslashes( $data ), $allowedposttags) );
 }
 
 function kses_init() {
-	global $current_user;
 
 	add_filter('pre_comment_author', 'wp_filter_kses');
 	add_filter('pre_comment_content', 'wp_filter_kses');

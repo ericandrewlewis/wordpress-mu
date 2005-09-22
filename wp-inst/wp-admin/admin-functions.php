@@ -582,9 +582,11 @@ function wp_insert_link($linkdata) {
 		$link_target = '';	
 
 	if ( empty($link_visible) )
-		$link_visible = 'Y';	
+		$link_visible = 'Y';
+		
+	if ( empty($link_owner) )
+		$link_owner = $current_user->id;
 	
-	$link_owner = $current_user->id;
 	if ( $update ) {
 		$wpdb->query("UPDATE $wpdb->links SET link_url='$link_url',
 			link_name='$link_name', link_image='$link_image',
