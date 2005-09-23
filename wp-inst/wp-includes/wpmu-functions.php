@@ -133,7 +133,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     $tmp[ 'comments' ]       = $wpdb->comments;
     $tmp[ 'links' ]          = $wpdb->links;
     $tmp[ 'linkcategories' ] = $wpdb->linkcategories;
-    $tmp[ 'option' ]         = $wpdb->option;
+    $tmp[ 'options' ]         = $wpdb->options;
     $tmp[ 'postmeta' ]       = $wpdb->postmeta;
     $tmptable_prefix         = $table_prefix;
     $tmprolekey              = $wp_roles->role_key;
@@ -556,8 +556,8 @@ function update_blog_option( $blog_id, $key, $value ) {
     }
 }
 
-function switch_to_blogid( $blog_id ) {
-    global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings;
+function switch_to_blog( $blog_id ) {
+    global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache;
 
     // FIXME
 
@@ -569,9 +569,14 @@ function switch_to_blogid( $blog_id ) {
     $tmpoldblogdetails[ 'comments' ]       = $wpdb->comments;
     $tmpoldblogdetails[ 'links' ]          = $wpdb->links;
     $tmpoldblogdetails[ 'linkcategories' ] = $wpdb->linkcategories;
-    $tmpoldblogdetails[ 'option' ]         = $wpdb->option;
+    $tmpoldblogdetails[ 'options' ]         = $wpdb->options;
     $tmpoldblogdetails[ 'postmeta' ]       = $wpdb->postmeta;
     $tmpoldblogdetails[ 'prefix' ]         = $wpdb->prefix;
+    $tmpoldblogdetails[ 'cache_settings' ] = $cache_settings;
+    $tmpoldblogdetails[ 'category_cache' ] = $category_cache;
+    $tmpoldblogdetails[ 'cache_categories' ] = $cache_categories;
+    $tmpoldblogdetails[ 'table_prefix' ] = $table_prefix;
+    $tmpoldblogdetails[ 'post_cache' ]     = $post_cache;
 
     // fix the new prefix.
     $table_prefix = $wpmuBaseTablePrefix . $blog_id . "_";
@@ -585,11 +590,15 @@ function switch_to_blogid( $blog_id ) {
     $wpdb->options          = $table_prefix . 'options';
     $wpdb->postmeta         = $table_prefix . 'postmeta';
 
+    $cache_settings = array();
     unset( $cache_settings );
+    unset( $category_cache );
+    unset( $cache_categories );
+    unset( $post_cache );
 }
 
-function restore_current_blogid() {
-    global $tmpoldblogdetails, $wpdb;
+function restore_current_blog() {
+    global $table_prefix, $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache;
     // backup
     $wpdb->blogid = $tmpoldblogdetails[ 'blogid' ];
     $wpdb->posts = $tmpoldblogdetails[ 'posts' ];
@@ -598,9 +607,14 @@ function restore_current_blogid() {
     $wpdb->comments = $tmpoldblogdetails[ 'comments' ];
     $wpdb->links = $tmpoldblogdetails[ 'links' ];
     $wpdb->linkcategories = $tmpoldblogdetails[ 'linkcategories' ];
-    $wpdb->option = $tmpoldblogdetails[ 'option' ];
+    $wpdb->options = $tmpoldblogdetails[ 'options' ];
     $wpdb->postmeta = $tmpoldblogdetails[ 'postmeta' ];
     $wpdb->prefix = $tmpoldblogdetails[ 'prefix' ];
+    $cache_settings = $tmpoldblogdetails[ 'cache_settings' ];
+    $category_cache = $tmpoldblogdetails[ 'category_cache' ];
+    $cache_categories = $tmpoldblogdetails[ 'cache_categories' ];
+    $table_prefix = $tmpoldblogdetails[ 'table_prefix' ];
+    $post_cache = $tmpoldblogdetails[ 'post_cache' ];
 }
 
 function get_users_of_blog( $id ) {
@@ -743,4 +757,12 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 
 }
 
+
+function get_blog_permalink( $blog_id, $post_id ) {
+	global $wpdb, $cache_settings;
+	switch_to_blog( $blog_id );
+	$link = get_permalink( $post_id );
+	restore_current_blog();
+	return $link;
+}
 ?>
