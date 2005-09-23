@@ -28,7 +28,7 @@ $bookmarklet_height= 440;
 <fieldset>
 <legend><?php _e('Name'); ?></legend>
 <p><label><?php _e('Username: (no editing)'); ?><br />
-<input type="text" name="username" value="<?php echo $profiledata->user_login; ?>" disabled="disabled" />
+<input type="text" name="user_login" value="<?php echo $profiledata->user_login; ?>" disabled="disabled" />
 </label></p>
 <p><label><?php _e('First name:') ?><br />
 <input type="text" name="first_name" value="<?php echo $profiledata->first_name ?>" /></label></p>
