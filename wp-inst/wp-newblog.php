@@ -37,7 +37,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
 	<th valign="top">Username:</th>
 	<td><input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" 
 /><br />(Your address will be username.wordpress.com. Letters and numbers only, 
-please!)</td>
+at least 4 letters please!)</td>
 	</tr>';
     if( $errormsg[ 'weblog_title' ] != '' ) {
 	print '<tr class="error">';
