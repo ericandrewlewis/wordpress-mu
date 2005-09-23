@@ -55,6 +55,9 @@ case 'edit':
 
     require_once ('admin-header.php');
     $cat_ID = (int) $_GET['cat_ID'];
+    if( $cat_ID == 1 ) {
+	    header( "Location: categories.php" );
+    }
     $category = get_category_to_edit($cat_ID);
     ?>
 
@@ -95,6 +98,10 @@ break;
 case 'editedcat':
 	if ( !current_user_can('manage_categories') )
 		die (__('Cheatin&#8217; uh?'));
+
+	if( $_POST[ 'cat_ID' ] == 1 ) {
+		header( "Location: categories.php" );
+	}
 	
 	wp_update_category($_POST);
 
