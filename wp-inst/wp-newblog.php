@@ -213,7 +213,7 @@ switch( $_POST[ 'stage' ] )
 			}
 			$msg .= "Backend: http://" . $newBlogID . "." . $domain . $scriptBaseName . "wp-login.php (You can login with your admin u/p)\n";
 			$subject = "New Blog on: http://" . $current_site->domain . $current_site->path;
-			mail( $email, $subject, $msg, "From: WordPress <" . $admin_email . ">" );
+			mail( $email, $subject, $msg, "From: WordPress <" . $email . ">" );
 		} else {
 		    if( $err == 'error: username used' ) {
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
