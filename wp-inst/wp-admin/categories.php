@@ -42,8 +42,13 @@ case 'delete':
 	$cat_ID = (int) $_GET['cat_ID'];
 	$cat_name = get_catname($cat_ID);
 
-	if ( 1 == $cat_ID )
+	$default_category = get_option( "default_category" );
+	if ( $default_category == $cat_ID )
 		die(sprintf(__("Can't delete the <strong>%s</strong> category: this is the default one"), $cat_name));
+
+	$categories = $wpdb->get_results("SELECT * FROM $wpdb->categories");
+	if( count( $categories ) == 1 )
+		die(sprintf(__("Can't delete the <strong>%s</strong> category: this is the only one"), $cat_name));
 
 	wp_delete_category($cat_ID);
 
@@ -55,9 +60,6 @@ case 'edit':
 
     require_once ('admin-header.php');
     $cat_ID = (int) $_GET['cat_ID'];
-    if( $cat_ID == 1 ) {
-	    header( "Location: categories.php" );
-    }
     $category = get_category_to_edit($cat_ID);
     ?>
 
@@ -67,7 +69,9 @@ case 'edit':
 	  <table class="editform" width="100%" cellspacing="2" cellpadding="5">
 		<tr>
 		  <th width="33%" scope="row"><?php _e('Category name:') ?></th>
-		  <td width="67%"><input name="cat_name" type="text" value="<?php echo wp_specialchars($category->cat_name); ?>" size="40" /> <input type="hidden" name="action" value="editedcat" />
+		  <td width="67%"><input name="cat_name" type="text" id='cat_name' value="<?php echo wp_specialchars($category->cat_name); ?>" size="40" /> <input type="hidden" name="action" value="editedcat" />
+		  <div style='display:none; height: 100px; width: 200px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
+		  <?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
 <input type="hidden" name="cat_ID" value="<?php echo $category->cat_ID ?>" /></td>
 		</tr>
 		<tr>
@@ -99,7 +103,7 @@ case 'editedcat':
 	if ( !current_user_can('manage_categories') )
 		die (__('Cheatin&#8217; uh?'));
 
-	if( $_POST[ 'cat_ID' ] == 1 ) {
+	if( $_POST[ 'cat_ID' ] == get_option( 'default_category' ) ) {
 		header( "Location: categories.php" );
 	}
 	
@@ -146,7 +150,8 @@ cat_rows();
 
 <?php if ( current_user_can('manage_categories') ) : ?>
 <div class="wrap">
-    <p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete posts from that category, it will just set them back to the default category <strong>%s</strong>.'), get_catname(1)) ?>
+    <p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete posts from that category, it will just set them back to the default category <strong>%s</strong>.'), get_catname( get_option( 'default_category' ) )) ?>
+    <br /><?php printf(__('You cannot delete the default category, <strong>%s</strong>, as a result. You must set another category as the default one by visiting the <a href="options-writing.php">Writing Options</a> page and changing it there.'), get_catname( get_option( 'default_category' ) )) ?>
   </p>
 </div>
 
@@ -156,7 +161,7 @@ cat_rows();
         
         <p><?php _e('Name:') ?><br />
         <input type="text" name="cat_name" id='cat_name' value="" /></p>
-	<div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
+	<div style='display:none; height: 100px; width: 200px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
 	<?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
         <p><?php _e('Category parent:') ?><br />
         <select name='category_parent' class='postform'>

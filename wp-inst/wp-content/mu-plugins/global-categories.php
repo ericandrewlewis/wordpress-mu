@@ -10,9 +10,13 @@ function global_categories_filter( $update, $cat_ID, $category_nicename, $cat_na
 	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$newcat_ID' WHERE cat_ID = '$cat_ID'" );
 	$wpdb->query( "UPDATE $wpdb->post2cat   SET category_id = '$newcat_ID' WHERE category_id = '$cat_ID'" );
 	$cat_ID = $newcat_ID;
+	if( get_option( "default_category" ) == $cat_ID )
+		update_option( "default_category", $newcat_ID );
     } elseif( $details->cat_ID != $cat_ID ) {
 	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$details->cat_ID' WHERE cat_ID = '$cat_ID'" );
 	$wpdb->query( "UPDATE $wpdb->post2cat   SET category_id = '$details->cat_ID' WHERE category_id = '$cat_ID'" );
+	if( get_option( "default_category" ) == $cat_ID )
+		update_option( "default_category", $details->cat_ID );
 	$cat_ID = $details->cat_ID;
     }
 
