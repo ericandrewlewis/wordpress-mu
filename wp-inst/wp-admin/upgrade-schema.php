@@ -317,7 +317,7 @@ function populate_roles() {
 	$role->add_cap('level_8');
 	$role->add_cap('level_7');
 	$role->add_cap('level_6');
-	$role->add_cap('level_6');
+	$role->add_cap('level_5');
 	$role->add_cap('level_4');
 	$role->add_cap('level_3');
 	$role->add_cap('level_2');
@@ -339,7 +339,7 @@ function populate_roles() {
 	$role->add_cap('read');
 	$role->add_cap('level_7');
 	$role->add_cap('level_6');
-	$role->add_cap('level_6');
+	$role->add_cap('level_5');
 	$role->add_cap('level_4');
 	$role->add_cap('level_3');
 	$role->add_cap('level_2');

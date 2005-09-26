@@ -358,11 +358,11 @@ $role_select .= '</select>';
     </tr>
     <tr>
       <th scope="row"><?php _e('First Name') ?> </th>
-      <td><input name="firstname" type="text" id="firstname" value="<?php echo $new_user_firstname; ?>" /></td>
+      <td><input name="first_name" type="text" id="first_name" value="<?php echo $new_user_firstname; ?>" /></td>
     </tr>
     <tr>
       <th scope="row"><?php _e('Last Name') ?> </th>
-      <td><input name="lastname" type="text" id="lastname" value="<?php echo $new_user_lastname; ?>" /></td>
+      <td><input name="last_name" type="text" id="last_name" value="<?php echo $new_user_lastname; ?>" /></td>
     </tr>
     <tr>
       <th scope="row"><?php _e('E-mail') ?></th>
@@ -370,7 +370,7 @@ $role_select .= '</select>';
     </tr>
     <tr>
       <th scope="row"><?php _e('Website') ?></th>
-      <td><input name="uri" type="text" id="uri" value="<?php echo $new_user_uri; ?>" /></td>
+      <td><input name="url" type="text" id="url" value="<?php echo $new_user_uri; ?>" /></td>
     </tr>
 <?php
 $show_password_fields = apply_filters('show_password_fields', true);

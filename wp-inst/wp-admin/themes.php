@@ -61,11 +61,6 @@ reset( $themes );
 <?php endif; ?>
 <h3><?php printf(__('%1$s %2$s by %3$s'), $ct->title, $ct->version, $ct->author) ; ?></h3>
 <p><?php echo $ct->description; ?></p>
-<?php if ($ct->parent_theme) { ?>
-	<!--<p><?php printf(__('The template files are located in <code>%2$s</code>.  The stylesheet files are located in <code>%3$s</code>.  <strong>%4$s</strong> uses templates from <strong>%5$s</strong>.  Changes made to the templates will affect both themes.'), $ct->title, $ct->template_dir, $ct->stylesheet_dir, $ct->title, $ct->parent_theme); ?></p>-->
-<?php } else { ?>
-	<!--<p><?php printf(__('All of this theme&#8217;s files are located in <code>%2$s</code>.'), $ct->title, $ct->template_dir, $ct->stylesheet_dir); ?></p>-->
-<?php } ?>
 </div>
 
 <h2><?php _e('Available Themes'); ?></h2>
