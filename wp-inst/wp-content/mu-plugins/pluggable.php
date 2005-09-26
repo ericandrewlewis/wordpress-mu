@@ -11,7 +11,7 @@ function wp_login($username, $password, $already_md5 = false) {
 		return false;
 	}
 
-	$login = $wpdb->get_row("SELECT ID, user_login, user_pass FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID =  " . $wpdb->usermeta . ".user_id AND meta_key = '" . $wpdb->prefix. "user_level' AND user_login = '$username'");
+	$login = $wpdb->get_row("SELECT ID, user_login, user_pass FROM $wpdb->users WHERE user_login = '$username'");
 
 	if (!$login) {
 		if( is_site_admin( $username ) ) {
