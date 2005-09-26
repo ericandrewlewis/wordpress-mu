@@ -77,6 +77,12 @@ do_action('admin_menu', '');
 ksort($menu); // make it all pretty
 
 if (! user_can_access_admin_page()) {
+	// find the blog of this user first
+	$primary_blog = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '$user_ID' AND meta_key = 'primary_blog'" );
+	if( $primary_blog ) {
+		header( "Location: " . get_blog_option( $primary_blog, "siteurl" ) . "wp-admin/" );
+		exit;
+	}
 	die( __('You do not have sufficient permissions to access this page.') );
 }
 
