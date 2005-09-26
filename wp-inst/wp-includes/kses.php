@@ -377,7 +377,8 @@ function wp_kses_no_null($string)
 	$string = preg_replace('/\0+/', '', $string);
 	$string = preg_replace('/(\\\\0)+/', '', $string);
 
-	$string = preg_replace('/\xad+/', '', $string); # deals with Opera "feature"
+	// From http://project.geeklog.net/tracker/index.php?func=detail&aid=94&group_id=6&atid=105
+	//$string = preg_replace('/\xad+/', '', $string); # deals with Opera "feature"
 
 	return $string;
 } # function wp_kses_no_null
