@@ -19,9 +19,6 @@ include('admin-header.php');
 <tr valign="top">
 <th scope="row"><?php _e('Formatting:') ?></th>
 <td>
-<label for="rich_editing">
-<input name="rich_editing" type="checkbox" id="rich_editing" value="true" <?php checked('true', get_settings('rich_editing')); ?> />
-<?php _e('Use the visual rich editor when writing') ?></label><br />
 <label for="use_smilies">
 <input name="use_smilies" type="checkbox" id="use_smilies" value="1" <?php checked('1', get_settings('use_smilies')); ?> />
 <?php _e('Convert emoticons like <code>:-)</code> and <code>:-P</code> to graphics on display') ?></label>
@@ -42,6 +39,9 @@ endforeach;
 </tr>
 </table>
 
+<?php
+
+/*
 <fieldset class="options">
 <legend><?php _e('Writing by e-mail') ?></legend>
 <p><?php printf(__('To post to WordPress by e-mail you must set up a secret e-mail account with POP3 access. Any mail received at this address will be posted, so it&#8217;s a good idea to keep this address very secret. Here are three random strings you could use: <code>%s</code>, <code>%s</code>, <code>%s</code>.'), substr(md5(uniqid(microtime())),0,5), substr(md5(uniqid(microtime())),0,5), substr(md5(uniqid(microtime())),0,5)) ?></p>
@@ -79,11 +79,13 @@ endforeach;
 </tr>
 </table>
 </fieldset>
+*/
+?>
 
 
 <p class="submit">
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="'default_post_edit_rows','use_smilies','rich_editing','ping_sites','mailserver_url', 'mailserver_port','mailserver_login','mailserver_pass','default_category','default_email_category'" /> 
+<input type="hidden" name="page_options" value="'default_post_edit_rows','use_smilies','ping_sites','mailserver_url', 'mailserver_port','mailserver_login','mailserver_pass','default_category','default_email_category'" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" /> 
 </p>
 </form> 

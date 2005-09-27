@@ -1791,7 +1791,7 @@ function wp_upload_dir() {
 		@ chmod( $pathym, 0774 );
 	}
 
-        $uploads = array('path' => $pathym, 'url' => get_bloginfo('home') . "/$dir/$y/$m", 'error' => false);
+        $uploads = array('path' => $pathym, 'url' => get_bloginfo('home') . "/files/$y/$m", 'error' => false);
 	return apply_filters('upload_dir', $uploads);
 }
 function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_field = 'searchresults' ) {

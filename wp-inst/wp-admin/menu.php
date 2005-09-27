@@ -23,8 +23,10 @@ else
 $menu[40] = array(__('Options'), 'read', 'options-personal.php');
 $menu[45] = array(__('Import'), 'import', 'import.php');
 
+/*
 if ( get_option('use_fileupload') )
 	$menu[50] = array(__('Upload'), 'upload_files', 'upload.php');
+*/
 
 $submenu['post.php'][5] = array(__('Write Post'), 'edit_posts', 'post.php');
 $submenu['post.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');

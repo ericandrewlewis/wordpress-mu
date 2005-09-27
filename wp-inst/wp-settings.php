@@ -199,6 +199,8 @@ $wp_filters = array();
 if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
 	return;
 
+define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files" );
+
 require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/default-filters.php');
 require_once (ABSPATH . WPINC . '/wp-l10n.php');
