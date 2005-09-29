@@ -69,7 +69,7 @@ case 'edit':
 	  <table class="editform" width="100%" cellspacing="2" cellpadding="5">
 		<tr>
 		  <th width="33%" scope="row"><?php _e('Category name:') ?></th>
-		  <td width="67%"><input name="cat_name" type="text" id='cat_name' value="<?php echo wp_specialchars(stripslashes( $category->cat_name ) ); ?>" size="40" /> <input type="hidden" name="action" value="editedcat" />
+		  <td width="67%"><input name="cat_name" type="text" id='cat_name' value="<?php echo wp_specialchars($category->cat_name ); ?>" size="40" /> <input type="hidden" name="action" value="editedcat" />
 		  <div style='display:none; height: 100px; width: 200px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
 		  <?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
 <input type="hidden" name="cat_ID" value="<?php echo $category->cat_ID ?>" /></td>

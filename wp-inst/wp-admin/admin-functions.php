@@ -749,7 +749,7 @@ function cat_rows($parent = 0, $level = 0, $categories = 0) {
 	if ($categories) {
 		foreach ($categories as $category) {
 			if ($category->category_parent == $parent) {
-				$category->cat_name = wp_specialchars(stripslashes( $category->cat_name ) );
+				$category->cat_name = wp_specialchars($category->cat_name );
 				$count = $wpdb->get_var("SELECT COUNT(post_id) FROM $wpdb->post2cat WHERE category_id = $category->cat_ID");
 				$pad = str_repeat('&#8212; ', $level);
 				if (current_user_can('manage_categories'))
