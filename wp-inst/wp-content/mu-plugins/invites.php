@@ -144,9 +144,9 @@ function invites_cleanup_db( $val ) {
 	$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
 
 	if( $id ) {
-	    $query = "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'";
-	    $wpdb->query( $query );
+	    $wpdb->query( "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'" );
 	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invites_left' , '" . get_site_option( "invites_per_user" ) . "' )" );
+	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invite_hash' , '{$_POST[ 'u' ]}' )" );
 	}
     }
 }

@@ -161,7 +161,7 @@ if( $invites_list != '' )
 				if( $id ) {
 					$invited_user_id = $id->ID;
 				} else {
-					$invited_user_id = 0;
+					$invited_user_id = $wpdb->get_var( "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = 'invite_hash' AND meta_value = '" . md5( $val ) . "'" );
 				}
 
 				if( $invited_user_id != 0 ) {
