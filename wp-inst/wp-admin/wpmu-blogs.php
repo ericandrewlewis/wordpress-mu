@@ -297,7 +297,8 @@ $posts_columns = array(
   'blogname'     => __('Blog Name'),
   'last_updated' => __('Last Updated'),
   'registered'   => __('Registered'),
-  'users'        => __('Users')
+  'users'        => __('Users'),
+  'plugins'      => __('Actions')
 );
 $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 
@@ -402,6 +403,12 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	case 'control_delete':
 		?>
 		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deleteblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
+		<?php
+		break;
+
+	case 'plugins':
+		?>
+		<td valign='top'><?php do_action( "wpmublogsaction", $blog[ 'blog_id' ] ); ?></td>
 		<?php
 		break;
 
