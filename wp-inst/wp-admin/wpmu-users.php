@@ -108,7 +108,8 @@ switch( $_GET[ 'action' ] ) {
 		$query = "SELECT * 
 			FROM ".$wpdb->users;
 		if( $_GET[ 's' ] != '' ) {
-			$query .= " WHERE user_login LIKE '%".$_GET[ 's' ]."%'";
+			$search = '%' . addslashes( $_GET['s'] ) . '%';
+			$query .= " WHERE user_login LIKE '$search' OR user_email LIKE '$search'";
 		}
 		if( isset( $_GET[ 'sortby' ] ) == false ) {
 			$_GET[ 'sortby' ] = 'ID';
