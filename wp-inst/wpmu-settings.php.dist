@@ -50,7 +50,6 @@ if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 }
 
 $wpmuBaseTablePrefix = $table_prefix;
-define ('WPLANG', '');
 $server = DB_HOST;
 $loginsql = DB_USER;
 $passsql = DB_PASSWORD;
