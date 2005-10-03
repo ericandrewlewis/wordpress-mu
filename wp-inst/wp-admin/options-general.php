@@ -31,10 +31,7 @@ include('admin-header.php');
 </tr>
 <tr valign="top"> 
 <th scope="row"><?php _e('Membership:') ?></th> 
-<td> <label for="users_can_register"> 
-<input name="users_can_register" type="checkbox" id="users_can_register" value="1" <?php checked('1', get_settings('users_can_register')); ?> /> 
-<?php _e('Anyone can register') ?></label><br />
-<label for="comment_registration">
+<td> <label for="comment_registration">
 <input name="comment_registration" type="checkbox" id="comment_registration" value="1" <?php checked('1', get_settings('comment_registration')); ?> /> 
 <?php _e('Users must be registered and logged in to comment') ?>
 </label>
