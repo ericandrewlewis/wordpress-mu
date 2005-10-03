@@ -15,7 +15,7 @@ function write_post() {
 	$_POST['to_ping'] = $_POST['trackback_url'];
 
 	if (!empty ($_POST['post_author_override'])) {
-		$_POST['$post_author'] = (int) $_POST['post_author_override'];
+		$_POST['post_author'] = (int) $_POST['post_author_override'];
 	} else
 		if (!empty ($_POST['post_author'])) {
 			$_POST['post_author'] = (int) $_POST['post_author'];
@@ -749,7 +749,7 @@ function cat_rows($parent = 0, $level = 0, $categories = 0) {
 	if ($categories) {
 		foreach ($categories as $category) {
 			if ($category->category_parent == $parent) {
-				$category->cat_name = wp_specialchars($category->cat_name );
+				$category->cat_name = wp_specialchars($category->cat_name);
 				$count = $wpdb->get_var("SELECT COUNT(post_id) FROM $wpdb->post2cat WHERE category_id = $category->cat_ID");
 				$pad = str_repeat('&#8212; ', $level);
 				if (current_user_can('manage_categories'))
@@ -1791,7 +1791,7 @@ function wp_upload_dir() {
 		@ chmod( $pathym, 0774 );
 	}
 
-        $uploads = array('path' => $pathym, 'url' => get_bloginfo('home') . "/$dir/$y/$m", 'error' => false);
+    $uploads = array('path' => $pathym, 'url' => get_option('siteurl') . "/$dir/$y/$m", 'error' => false);
 	return apply_filters('upload_dir', $uploads);
 }
 function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_field = 'searchresults' ) {
