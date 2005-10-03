@@ -18,6 +18,7 @@ do_action( "wpmuadminresult", "" );
 
 switch( $_GET[ 'action' ] ) {
     default:
+    /*
     // print some global stats.
     $stats = get_sitestats();
     print "<h2>Site Stats</h2>
@@ -42,6 +43,7 @@ switch( $_GET[ 'action' ] ) {
     print "</table>";
 
     do_action( "wpmuadmindefaultpage", "" );
+    */
     break;
 }
 
