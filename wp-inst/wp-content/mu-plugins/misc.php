@@ -41,7 +41,7 @@ add_filter( "pre_upload_error", "upload_is_user_over_quota" );
 add_filter( "check_uploaded_file", "upload_is_user_over_quota" );
 
 function upload_is_file_too_big( $ret ) {
-	if( $_FILES[ 'image' ][ 'size' ] > get_site_option( 'fileupload_maxk', 1500 ) )
+	if( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
 		$ret = "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.";
 
 	return $ret;
