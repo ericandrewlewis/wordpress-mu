@@ -695,8 +695,8 @@ class DOC_Referers {
 		$result = $wpdb->query( $sql );
 		if( $result == false )
 		{
-		    $sql ="insert delayed into " . $wpdb->doc_referers . " (referingURL,visitURL,refpost, visitTimes, dayofmonth)
-			   values ('$ref','$currentURL','$p','1', '$today')";
+		    $sql ="INSERT INTO " . $wpdb->doc_referers . " (referingURL,visitURL,refpost, visitTimes, dayofmonth)
+			   VALUES ('$ref','$currentURL','$p','1', '$today')";
 		    $result = $wpdb->query( $sql );
 		}
 	    }
