@@ -96,6 +96,9 @@ elseif ( ! ( ( $imagesize = getimagesize($_FILES['image']['tmp_name']) ) && $ima
 elseif ( ! ( ( $uploads = wp_upload_dir() ) && false === $uploads['error'] ) )
 	$error = $uploads['error'];
 
+if( isset( $error ) == false )
+	$error = apply_filters( "check_uploaded_file", $error );
+
 if ( $error )
 	// Something wasn't right. Abort and never touch the temp file again.
 	die("$error <a href='".basename(__FILE__)."?action=upload&post=$post'>Back to Image Uploading</a>");
@@ -424,7 +427,11 @@ color: #000;
 <?php echo $images_html; ?>
 </div>
 </div>
-<?php elseif ( $action = 'upload' ) : ?>
+<?php elseif ( $action = 'upload' ) : 
+	if( apply_filters( "pre_upload_error", false ) == true ) {
+		?><div class="center tip">Sorry, you have used your space allocation. Please delete some files to upload more files.</div><?php
+	} else {
+?>
 <div class="center tip">Duplicated filenames will be numbered (photo.jpg, photo1.jpg, etc.)</div>
 <form enctype="multipart/form-data" id="uploadForm" method="POST" action="image-uploading.php" onsubmit="return validateImageName()">
 <label for="upload">Image:</label><input type="file" id="upload" name="image" onchange="validateImageName()" />
@@ -438,6 +445,7 @@ color: #000;
 <input type="button" value="Cancel" onclick="cancelUpload()" />
 </div>
 </form>
+<?php } ?>
 <?php endif; ?>
 </body>
 </html>
