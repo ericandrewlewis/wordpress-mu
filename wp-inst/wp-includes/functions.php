@@ -373,8 +373,10 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 	global $wpdb, $cache_settings;
 
 	// Make sure the option doesn't already exist
-	if ( isset($cache_settings->$name) )
-		return;
+	if( defined( "WP_INSTALLING" ) == false ) {
+		if ( isset($cache_settings->$name) )
+			return;
+	}
 
 	$original = $value;
 	if ( is_array($value) || is_object($value) )
@@ -1951,7 +1953,9 @@ function load_template($file) {
 	global $posts, $post, $wp_did_header, $wp_did_template_redirect, $wp_query,
 		$wp_rewrite, $wpdb;
 
-	extract($wp_query->query_vars);
+	if( is_array( $wp_query->query_vars ) ) {
+		extract($wp_query->query_vars);
+	}
 
 	require_once($file);
 }
