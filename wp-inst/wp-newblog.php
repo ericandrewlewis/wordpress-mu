@@ -33,29 +33,33 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     } else {
 	print '<tr>';
     }
-    print '
-	<th valign="top">Username:</th>
-	<td><input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" 
-/><br />(Your address will be username.wordpress.com. Letters and numbers only, 
-at least 4 letters please!)</td>
-	</tr>';
+    ?><th valign="top">Username:</th><td><?php
+    if( strlen( $errormsg[ 'weblog_id' ] ) > 3 ) {
+	    ?><p><strong>Warning! <?php echo $errormsg[ 'weblog_id' ] ?></strong></p><?php
+    }
+    print '<input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" /><br />(<strong>Your address will be username.wordpress.com.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
     if( $errormsg[ 'weblog_title' ] != '' ) {
 	print '<tr class="error">';
     } else {
 	print '<tr>';
     }
-    print '
-	<th valign="top">Blog Title:</th>
-	<td><input name="weblog_title" type="text" id="weblog_title" value="'.wp_specialchars( $weblog_title, 1 ).'" /><br /> (Don\'t worry, you can change it later.)</td>
+    ?><th valign="top">Blog Title:</th><td><?php
+    if( strlen( $errormsg[ 'weblog_title' ] ) > 3 ) {
+	    ?><p><strong>Warning! <?php echo $errormsg[ 'weblog_title' ] ?></strong></p><?php
+    }
+    print '<input name="weblog_title" type="text" id="weblog_title" value="'.wp_specialchars( $weblog_title, 1 ).'" /><br /> (Don\'t worry, you can change it later.)</td>
 	</tr>';
     if( $errormsg[ 'admin_email' ] != '' ) {
 	print '<tr class="error">';
     } else {
 	print '<tr>';
     }
+    ?><th valign="top">Email&nbsp;Address:</th><td><?php
+    if( strlen( $errormsg[ 'admin_email' ] ) > 3 ) {
+	    ?><p><strong>Warning! <?php echo $errormsg[ 'admin_email' ] ?></strong></p><?php
+    }
     print '
-	<th valign="top">Email&nbsp;Address:</th>
-	<td><input name="admin_email" type="text" id="admin_email" value="'.wp_specialchars( $admin_email, 1 ).'" maxlength="200" /><br /> (We\'ll send a password to this address, so double-check it.)</td>
+	<input name="admin_email" type="text" id="admin_email" value="'.wp_specialchars( $admin_email, 1 ).'" maxlength="200" /><br /> (We\'ll send a password to this address, so double-check it.)</td>
 	</tr>';
     if( $form == 'adminform' ) {
 	print '
@@ -139,22 +143,22 @@ switch( $_POST[ 'stage' ] )
 
 	$newBlogID = sanitize_title($_POST['weblog_id']);
 	if( in_array( $newBlogID, $illegal_names ) == true ) {
-	    $errormsg[ 'weblog_id' ] = true;
+	    $errormsg[ 'weblog_id' ] = "That name is not allowed";
 	}
 	if( strlen( $newBlogID ) < 4 ) {
-	    $errormsg[ 'weblog_id' ] = true;
+	    $errormsg[ 'weblog_id' ] = "Username must be at least 4 characters";
 	}
 	$weblog_title = stripslashes(  $_POST[ 'weblog_title' ] );
 	$admin_email = $_POST[ 'admin_email' ];
 
 	if( is_email( $admin_email ) == false )
-	    $errormsg[ 'admin_email' ] = true;
+	    $errormsg[ 'admin_email' ] = "Please enter a correct email address";
 
 	if( empty( $newBlogID ) )
-	    $errormsg[ 'weblog_id' ] = true;
+	    $errormsg[ 'weblog_id' ] = "Please enter a username";
 
 	if( empty( $weblog_title ) )
-	    $errormsg[ 'weblog_title' ] = true;
+	    $errormsg[ 'weblog_title' ] = "Please enter a blog title";
 
 	$newBlogID = apply_filters( "newblog_id", $newBlogID );
 
