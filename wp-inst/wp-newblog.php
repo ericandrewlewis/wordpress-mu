@@ -142,6 +142,10 @@ switch( $_POST[ 'stage' ] )
 	}
 
 	$newBlogID = sanitize_title($_POST['weblog_id']);
+	preg_match( "/[a-zA-Z0-9]+/", $newBlogID, $maybe );
+	if( $newBlogID != $maybe[0] ) {
+	    $errormsg[ 'weblog_id' ] = "Only letters and numbers allowed";
+	}
 	if( in_array( $newBlogID, $illegal_names ) == true ) {
 	    $errormsg[ 'weblog_id' ] = "That name is not allowed";
 	}
