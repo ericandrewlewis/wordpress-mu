@@ -124,6 +124,7 @@ function wp_insert_category($catarr) {
 		do_action('create_category', $cat_ID);
 		do_action('add_category', $cat_ID);
 	}
+	$cat_ID = apply_filters( "cat_id_filter", $cat_ID );
 
 	return $cat_ID;
 }
