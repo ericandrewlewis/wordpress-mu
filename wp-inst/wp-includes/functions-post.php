@@ -217,11 +217,10 @@ function wp_attach_object($object, $post_parent = 0) {
 		$post_ID = $ID;
 
 	// Create a valid post name.
-	if ( empty($post_name) ) {
+	if ( empty($post_name) )
 		$post_name = sanitize_title($post_title);
-	} else {
+	else
 		$post_name = sanitize_title($post_name);
-	}
 	
 	if (empty($post_date))
 		$post_date = current_time('mysql');
