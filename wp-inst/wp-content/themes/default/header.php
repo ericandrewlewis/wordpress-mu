@@ -48,7 +48,6 @@
 <?php wp_head(); ?>
 </head>
 <body>
-
 <div id="page">
 
 
