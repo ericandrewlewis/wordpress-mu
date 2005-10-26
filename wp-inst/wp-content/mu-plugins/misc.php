@@ -47,4 +47,6 @@ function upload_is_file_too_big( $ret ) {
 	return $ret;
 }
 add_filter( "check_uploaded_file", "upload_is_file_too_big" );
+
+add_filter('the_title', 'wp_filter_kses');
 ?>
