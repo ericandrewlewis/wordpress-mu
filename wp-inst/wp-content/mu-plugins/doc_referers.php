@@ -318,8 +318,8 @@ class DOC_Referers {
 
 	    $result = $wpdb->get_results($query, ARRAY_A );
 	    $rows = $wpdb->num_rows;
-	    if( $result )
-	    {
+	    print "<h2>Referers</h2>";
+	    if( $result ) {
 		// javascript from http://www.experts-exchange.com/Web/Web_Languages/JavaScript/Q_10105441.html and
 		// http://members.aol.com/grassblad/html/chkAllBut.html
 		print "<script langage='javascript'>
@@ -380,7 +380,6 @@ class DOC_Referers {
 		$nav .= " | <a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "more", ($more + 10) )."'>More Hits</a>";
 		$nav .= " | <a href='edit.php?page=" . $_GET[ 'page' ] . "".$this->makeURL( "more", ($more - 10) )."'>Less Hits</a>";
 		$nav .= "<br />";
-		print "<h2>Referers</h2>";
 		print $nav;
 		$today = date( 'd' );
 		if( $day > $today )
@@ -480,6 +479,14 @@ class DOC_Referers {
 		print "</table>";
 		print $nav;
 		print "</form>";
+	    } else {
+		    print "<p>No Referers found today!</p>";
+		    print "<ul><li><a href='edit.php?page=mu-plugins/doc_referers.php&action=month'>Month View</a> displays the last month of stats.</li>";
+		    if( $ignoreDIRECT == 'yes' )
+			    print "<li><a href='".$this->makeURL( "ignoreDIRECT", 'no' )."'>Display DIRECT hits</a> - some browsers don't report what page they come from. You're hiding this information right now.</li>";
+		    if( $internal == 'yes' )
+			    print "<li><a href='".$this->makeURL( "internal", 'no' )."'>Display internal hits</a> - it's not always very interesting where people wander around your blog. You're hiding this information right now.</li>";
+		    print "</ul>";
 	    }
 	    break;
 	    default:
