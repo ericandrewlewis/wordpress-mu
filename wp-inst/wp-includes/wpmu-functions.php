@@ -58,14 +58,7 @@ function wpmu_checkAvailableSpace($action) {
 	$size = $size / 1024 / 1024;
 	
 	?>	
-	<table align="center" width="20%" cellpadding="0" cellspacing="0">
-	<tr>
-	<td>Space Available (<?php printf( "%2.2f", ( ($spaceAllowed-$size) ) ) ?><i>MB)</i></td>
-	</tr>
-	<tr>
-	<td bgcolor="<?php echo ((($size/$spaceAllowed)*100)<70)?"Green":"Red"; ?>">&nbsp;</td><td bgcolor="Black" width="<?php echo (($size/$spaceAllowed)*100); ?>%"></td>
-	</tr>
-	</table>
+	Space Available (<?php printf( "%2.2f", ( ($spaceAllowed-$size) ) ) ?><i>MB)</i>
 	<?php
 	
 	if (($spaceAllowed-$size)>0) {
@@ -100,12 +93,17 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 	return 'error: Blog URL already taken.';
 
     // Check if the username has been used already. We should return an error message.
-    if( $wpdb->get_var( "SELECT ID FROM   ".$wpdb->users." WHERE  user_login = '".$username."'" ) == true )
+    if( $wpdb->get_var( "SELECT ID FROM   ".$wpdb->users." WHERE user_login = '".$username."'" ) == true )
 	return "error: username used";
 
-    // Need to backup wpdb table names, and create a new wp_blogs entry for new blog.
-    // Need to get blog_id from wp_blogs, and create new table names.
-    // Must restore table names at the end of function.
+    // Check if the username has been used already. We should return an error message.
+    if( $wpdb->get_var( "SELECT ID FROM   ".$wpdb->users." WHERE user_email = '".$admin_email."'" ) == true )
+	return "error: email used";
+
+    $errmsg = false ;
+    $errmsg = apply_filters( "createBlog_check", $errmsg );
+    if( $errmsg != false ) 
+	    return "error: $errmsg";
 
     $wpdb->hide_errors();
 
@@ -191,23 +189,29 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     // Default category
     $wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."')");
 
+    // First post
+    $now = date('Y-m-d H:i:s');
+    $now_gmt = gmdate('Y-m-d H:i:s');
+
     // Set up admin user
     $random_password = substr(md5(uniqid(microtime())), 0, 6);
 	$GLOBALS['random_password'] = $random_password;
-    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', NOW(), '$username' )");
+    $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', '$now_gmt', '$username' )");
     $userID = $wpdb->insert_id;
-    $metavalues = array( "user_nickname" 		=> addslashes($username), 
-                         $table_prefix . "user_level" 	=> 10, 
-			 "source_domain" 		=> $domain, 
-			 "primary_blog"			=> $blog_id,
-			 "{$table_prefix}capabilities" 	=> serialize(array('administrator' => true)),
-			 "source"                       => $source );
-    reset( $metavalues );
-    while( list( $key, $val ) = each ( $metavalues ) )
-    {
-	$query = "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '".$userID."', '".$key."' , '".$val."')";
-	$wpdb->query( $query );
-    }
+    $metavalues = array( 
+		'user_nickname' => addslashes($username), 
+		$table_prefix . 'user_level' => 10, 
+		'source_domain' => $domain, 
+		'primary_blog' => $blog_id,
+		$table_prefix . 'capabilities' => serialize(array('administrator' => true)),
+		'source' => $source 
+	);
+	$metavalues = apply_filters('newblog_metavalues', $metavalues);
+	foreach ( $metavalues as $key => $val ) {
+		if ( empty( $val ) ) // No more annoying empty values bloating the usermeta table
+			continue;
+		$wpdb->query( "INSERT INTO $wpdb->usermeta ( `user_id` , `meta_key` , `meta_value` ) VALUES ( '$userID', '$key' , '$val')" );
+	}
 
 	// Now drop in some default links
 	$wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
@@ -224,10 +228,6 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 
 	if( $invitee_siteurl && $invitee_user_login )
 		$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('{$invitee_siteurl}', '" . ucfirst( $invitee_user_login->user_login ) . "', 1, '$userID', '');");
-
-    // First post
-    $now = date('Y-m-d H:i:s');
-    $now_gmt = gmdate('Y-m-d H:i:s');
 
     $first_post = get_site_option( 'first_post' );
     if( $first_post == false )
@@ -280,6 +280,8 @@ SITE_NAME" ) );
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."capabilities'" );
     if( $userID != 1 )
 	    $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$userID."' AND meta_key = '" . $wpmuBaseTablePrefix . "1_capabilities'" );
+
+    do_action( "wpmu_new_blog", $blog_id, $userID );
 
     // restore wpdb variables
     reset( $tmp );
@@ -739,7 +741,14 @@ function get_blog_count( $id = 0 ) {
 	if( $id == 0 )
 		$id = $wpdb->siteid;
 	
-	$count = $wpdb->get_var( "SELECT count(*) as c FROM $wpdb->blogs WHERE site_id = '$id'" );
+	$count_ts = get_site_option( "get_blog_count_ts" );
+	if( time() - $count_ts > 86400 ) {
+		$count = $wpdb->get_var( "SELECT count(*) as c FROM $wpdb->blogs WHERE site_id = '$id'" );
+		update_site_option( "get_blog_count", $count );
+		update_site_option( "get_blog_count_ts", time() );
+	} else {
+		$count = get_site_option( "get_blog_count" );
+	}
 
 	return $count;
 }
