@@ -510,7 +510,8 @@ function wp_filter_kses($data) {
 
 function wp_filter_post_kses($data) {
 	global $allowedposttags;
-	return addslashes ( wp_kses(stripslashes( $data ), $allowedposttags) );
+	$data = str_replace( "<!--more-->", "!!!!MORE!!!!", $data );
+	return str_replace( "!!!!MORE!!!!", "<!--more-->", wp_kses( $data, $allowedposttags) );
 }
 
 function kses_init_filters() {
@@ -521,7 +522,8 @@ function kses_init_filters() {
 }
 function wp_filter_post_display_kses($data) {
 	global $allowedposttags;
-	return wp_kses( $data, $allowedposttags);
+	$data = str_replace( "<!--more-->", "!!!!MORE!!!!", $data );
+	return str_replace( "!!!!MORE!!!!", "<!--more-->", wp_kses( $data, $allowedposttags) );
 }
 
 function kses_init() {
