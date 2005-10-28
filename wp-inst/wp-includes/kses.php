@@ -511,7 +511,7 @@ function wp_filter_kses($data) {
 function wp_filter_post_kses($data) {
 	global $allowedposttags;
 	$data = str_replace( "<!--more-->", "!!!!MORE!!!!", $data );
-	return str_replace( "!!!!MORE!!!!", "<!--more-->", wp_kses( $data, $allowedposttags) );
+	return str_replace( "!!!!MORE!!!!", "<!--more-->", addslashes ( wp_kses(stripslashes( $data ), $allowedposttags) ) );
 }
 
 function kses_init_filters() {
