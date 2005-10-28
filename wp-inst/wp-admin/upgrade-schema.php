@@ -283,6 +283,10 @@ function populate_options() {
 }
 
 function populate_roles() {
+	populate_roles_160();	
+}
+
+function populate_roles_160() {
 	global $wp_roles;
 
 	// Add roles
