@@ -24,7 +24,7 @@ function get_category_link($category_id) {
 	$catlink = $wp_rewrite->get_category_permastruct();
 
 	if ( empty($catlink) ) {
-		$file = get_settings('home') . '/' . get_settings('blogfilename');
+		$file = get_settings('home') . '/';
 		$catlink = $file . '?cat=' . $category_id;
 	} else {
 		$category = &get_category($category_id);
@@ -415,15 +415,12 @@ function list_cats($optionall = 1, $all = 'All', $sort_column = 'ID', $sort_orde
 }
 
 function in_category($category) { // Check if the current post is in the given category
-	global $post, $category_cache;
-	$cats = '';
-	foreach ( $category_cache[$post->ID] as $cat ) {
-		$cats[] = $cat->cat_ID;
-	}
+	global $category_cache, $post;
 
-	if ( in_array($category, $cats) )
+	if ( isset( $category_cache[$post->ID][$category] ) )
 		return true;
 	else
 		return false;
 }
+
 ?>
