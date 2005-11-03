@@ -99,6 +99,8 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     // Check if the username has been used already. We should return an error message.
     if( $wpdb->get_var( "SELECT ID FROM   ".$wpdb->users." WHERE user_email = '".$admin_email."'" ) == true )
 	return "error: email used";
+    if( strpos( " " . $username, "_" ) != false )
+	    return "error: username must not contain _";
 
     $errmsg = false ;
     $errmsg = apply_filters( "createBlog_check", $errmsg );

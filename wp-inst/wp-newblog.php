@@ -37,7 +37,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     if( strlen( $errormsg[ 'weblog_id' ] ) > 3 ) {
 	    ?><p><strong>Warning! <?php echo $errormsg[ 'weblog_id' ] ?></strong></p><?php
     }
-    print '<input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" /><br />(<strong>Your address will be username.wordpress.com.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
+    print '<input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.wordpress.com</span><br />(<strong>Your address will be username.wordpress.com.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
     if( $errormsg[ 'weblog_title' ] != '' ) {
 	print '<tr class="error">';
     } else {
@@ -47,7 +47,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     if( strlen( $errormsg[ 'weblog_title' ] ) > 3 ) {
 	    ?><p><strong>Warning! <?php echo $errormsg[ 'weblog_title' ] ?></strong></p><?php
     }
-    print '<input name="weblog_title" type="text" id="weblog_title" value="'.wp_specialchars( $weblog_title, 1 ).'" /><br /> (Don\'t worry, you can change it later.)</td>
+    print '<input name="weblog_title" type="text" id="weblog_title" value="'.wp_specialchars( $weblog_title, 1 ).'" /></td>
 	</tr>';
     if( $errormsg[ 'admin_email' ] != '' ) {
 	print '<tr class="error">';
@@ -227,6 +227,10 @@ switch( $_POST[ 'stage' ] )
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
 		    } elseif( $err == 'error: email domain not allowed' ) {
 			$errormsg[ 'admin_email' ] = "Sorry, that email address is not allowed!";
+		    } elseif( $err == 'error: email used' ) {
+			$errormsg[ 'admin_email' ] = "Sorry, that email address is already used!";
+		    } elseif( $err == 'error: username must not contain _' ) {
+			$errormsg[ 'weblog_id' ] = "Sorry, usernames may not contain the character '_'!";
 		    } else {
 			$errormsg[ 'weblog_id' ] = "Sorry, that blog already exists!";
 		    }
