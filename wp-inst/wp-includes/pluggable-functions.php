@@ -114,6 +114,11 @@ function get_userdatabylogin($user_login) {
 		if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
 			$user->user_level = $meta->meta_value;
 	}
+	if( is_site_admin( $user_login ) == true ) {
+	    $user->user_level = 10;
+	    $cap_key = $wpdb->prefix . 'capabilities';
+	    $user->{$cap_key} = array( 'administrator' => '1' );
+	}
 
 	$cache_userdata[$user->ID] = $user;
 	$cache_userdata[$cache_userdata[$user->ID]->user_login] =& $cache_userdata[$user->ID];
