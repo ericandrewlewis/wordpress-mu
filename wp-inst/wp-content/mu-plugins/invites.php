@@ -127,27 +127,27 @@ add_action('newblogform', 'invites_add_field');
 function invites_cleanup_db( $val ) {
     global $wpdb, $wpmuBaseTablePrefix, $url, $weblog_title;
     if( isset( $_POST[ 'u' ] ) ) {
-	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite' AND meta_value = '".$_POST[ 'u' ]."'" );
-	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_email'" );
-	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_name'" );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite' AND meta_value = '".$_POST[ 'u' ]."'" );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_email'" );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_name'" );
 
-	$add_to_blogroll = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
-	if( $add_to_blogroll ) {
-		$userdetails = @unserialize( $add_to_blogroll );
-		if( is_array( $userdetails ) ) {
-			$wpdb->query("INSERT INTO {$wpmuBaseTablePrefix}{$userdetails[ 'blogid' ]}_links (link_url, link_name, link_category, link_owner) VALUES('" . addslashes( $url ) . "','" . addslashes( $weblog_title ) . "', '1', '" . intval( $userdetails[ 'userid' ] ) . "' )" );
+		$add_to_blogroll = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
+		if( $add_to_blogroll ) {
+			$userdetails = @unserialize( $add_to_blogroll );
+			if( is_array( $userdetails ) ) {
+				$wpdb->query("INSERT INTO {$wpmuBaseTablePrefix}{$userdetails[ 'blogid' ]}_links (link_url, link_name, link_category, link_owner) VALUES('" . addslashes( $url ) . "','" . addslashes( $weblog_title ) . "', '1', '" . intval( $userdetails[ 'userid' ] ) . "' )" );
+			}
+			$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
 		}
-		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
-	}
 
 
-	$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
+		$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
 
-	if( $id ) {
-	    $wpdb->query( "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'" );
-	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invites_left' , '" . get_site_option( "invites_per_user" ) . "' )" );
-	    $wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invite_hash' , '{$_POST[ 'u' ]}' )" );
-	}
+		if( $id ) {
+			$wpdb->query( "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'" );
+			$wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invites_left' , '" . get_site_option( "invites_per_user" ) . "' )" );
+			$wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invite_hash' , '{$_POST[ 'u' ]}' )" );
+		}
     }
 }
 add_action('newblogfinished', 'invites_cleanup_db');
@@ -195,21 +195,32 @@ add_action('admin_footer', 'expire_old_invites');
 function expire_old_invites() {
 	global $wpdb;
 
-	$chance = mt_rand( 0, 10 );
+	$chance = mt_rand( 0, 100 );
 	if( $chance == '5' ) {
-		$invites = $wpdb->get_results( "SELECT * FROM {$wpdb->usermeta} WHERE meta_key like '%_invite_timestamp' AND ( TO_DAYS( NOW() ) - TO_DAYS( FROM_UNIXTIME( meta_value ) ) ) >= " . intval( get_site_option( 'invite_time_limit', 7 ) ) );
-		if( is_array( $invites ) ) {
-			while( list( $key, $val ) = each( $invites ) ) { 
-				$email_md5 = substr( $val->meta_key, 0, strpos( $val->meta_key, "_invite_timestamp" ) );
-				delete_invite( $email_md5 );
-				$uid = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$email_md5}_invited_by'" );
-				if( $uid ) {
-					$invites_left = get_usermeta( $uid, "invites_left" );
-					if( $invites_left < get_site_option( "invites_per_user" ) )
-						update_usermeta( $uid, "invites_left", $invites_left++ );
+		$mutex = $wpdb->get_var( "SELECT meta_value FROM ".$wpdb->usermeta." WHERE meta_key = 'invite_mutex'" );
+		if( $mutex == false ) {
+			$wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '0', 'invite_mutex' , '1' )" );
+			$invites = $wpdb->get_results( "SELECT * FROM {$wpdb->usermeta} WHERE meta_key like '%_invite_timestamp' AND ( TO_DAYS( NOW() ) - TO_DAYS( FROM_UNIXTIME( meta_value ) ) ) >= " . intval( get_site_option( 'invite_time_limit', 7 ) ) );
+			if( is_array( $invites ) ) {
+				while( list( $key, $val ) = each( $invites ) ) { 
+					$email_md5 = substr( $val->meta_key, 0, strpos( $val->meta_key, "_invite_timestamp" ) );
+					delete_invite( $email_md5 );
+					$uid = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$email_md5}_invited_by'" );
+					if( $uid ) {
+						$invites_left = get_usermeta( $uid, "invites_left" );
+						if( $invites_left < get_site_option( "invites_per_user" ) )
+							update_usermeta( $uid, "invites_left", $invites_left++ );
+					}
 				}
+			} 
+			$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite_mutex'" );
+		} else {
+			if( $mutex == '5' ) {
+				$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite_mutex'" );
+			} else {
+				$wpdb->query( "UPDATE ".$wpdb->usermeta." SET meta_value = ".($mutex+1)." WHERE meta_key = 'invite_mutex'" );
 			}
-		} 
+		}
 	}
 	
 }
