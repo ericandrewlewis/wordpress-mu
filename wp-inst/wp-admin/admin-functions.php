@@ -256,6 +256,7 @@ function add_user() {
 }
 
 function edit_user($user_id = 0) {
+	global $current_user, $wp_roles;
 
 	if ($user_id != 0) {
 		$update = true;
@@ -276,6 +277,14 @@ function edit_user($user_id = 0) {
 	if (isset ($_POST['pass2']))
 		$pass2 = $_POST['pass2'];
 
+	if (isset ($_POST['role'])) {
+		if($user_id != $current_user->id || $wp_roles->role_objects[$_POST['role']]->has_cap('edit_users'))
+			$user->role = $_POST['role'];
+	}
+
+	if (isset ($_POST['role'])) {
+		$user->role = $_POST['role'];
+	}
 	if (isset ($_POST['email']))
 		$user->user_email = wp_specialchars(trim($_POST['email']));
 	if (isset ($_POST['url'])) {
@@ -430,7 +439,11 @@ function checked($checked, $current) {
 
 function return_categories_list($parent = 0) {
 	global $wpdb;
-	return $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories WHERE category_parent = $parent ORDER BY category_count DESC");
+	return $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories WHERE category_parent = $parent");
+}
+
+function sort_cats($cat1, $cat2) {
+	return strcasecmp($cat1['cat_name'], $cat2['cat_name']);
 }
 
 function get_nested_categories($default = 0, $parent = 0) {
@@ -463,6 +476,8 @@ function get_nested_categories($default = 0, $parent = 0) {
 			$result[$cat]['cat_name'] = get_the_category_by_ID($cat);
 		}
 	}
+	
+	usort($result, 'sort_cats');
 
 	return $result;
 }
@@ -856,11 +871,11 @@ function touch_time($edit = 1, $for_post = 1) {
 	}
 ?>
 </select>
-<input type="text" name="jj" value="<?php echo $jj; ?>" size="2" maxlength="2" />
-<input type="text" name="aa" value="<?php echo $aa ?>" size="4" maxlength="5" /> @ 
-<input type="text" name="hh" value="<?php echo $hh ?>" size="2" maxlength="2" /> : 
-<input type="text" name="mn" value="<?php echo $mn ?>" size="2" maxlength="2" /> 
-<input type="hidden" name="ss" value="<?php echo $ss ?>" size="2" maxlength="2" /> 
+<input type="text" id="jj" name="jj" value="<?php echo $jj; ?>" size="2" maxlength="2" />
+<input type="text" id="aa" name="aa" value="<?php echo $aa ?>" size="4" maxlength="5" /> @ 
+<input type="text" id="hh" name="hh" value="<?php echo $hh ?>" size="2" maxlength="2" /> : 
+<input type="text" id="mn" name="mn" value="<?php echo $mn ?>" size="2" maxlength="2" /> 
+<input type="hidden" id="ss" name="ss" value="<?php echo $ss ?>" size="2" maxlength="2" /> 
 <?php _e('Existing timestamp'); ?>: 
 	<?php
 
