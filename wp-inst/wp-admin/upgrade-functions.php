@@ -311,7 +311,6 @@ function upgrade_160() {
 			$wpdb->query("UPDATE $wpdb->categories SET category_count = '$count' WHERE cat_ID = '$cat_id'");
 		}
 	}
-	add_option( "gmt_offset", 0 );
 }
 
 // The functions we use to actually do stuff
