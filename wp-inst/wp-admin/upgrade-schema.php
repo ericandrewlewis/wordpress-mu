@@ -153,7 +153,9 @@ CREATE TABLE $wpdb->blogs (
   path varchar(100) NOT NULL default '',
   registered datetime NOT NULL default '0000-00-00 00:00:00',
   last_updated datetime NOT NULL default '0000-00-00 00:00:00',
-  is_public enum('yes','no') NOT NULL default 'yes',
+  public enum('1','0') NOT NULL default '1',
+  archived enum('0','1') NOT NULL default '0',
+  mature enum('0','1') NOT NULL default '0',
   PRIMARY KEY  (blog_id),
   KEY site_id (site_id),
   KEY domain (domain,path)
