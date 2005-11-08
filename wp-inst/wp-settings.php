@@ -117,7 +117,7 @@ if( $current_blog == false ) {
     is_installed();
 }
 $blog_id   = $current_blog->blog_id;
-$is_public = $current_blog->is_public;
+$public = $current_blog->public;
 $site_id   = $current_blog->site_id;
 if( $site_id == 0 )
 	$site_id = 1;
@@ -157,7 +157,7 @@ if( $blog_id == false ) {
     }
 }
 
-if( $is_public == 'no' ) {
+if( $public == '0' ) {
     // need to put checks in here?
     // A hook?
     die( "This blog is private." );
@@ -265,6 +265,11 @@ $wpdb->show_errors();
 
 $is_archived = get_settings( "is_archived" );
 if( $is_archived == 'yes' ) {
+	update_archived( $wpdb->blogid, 1 );
+	die( "This blog has been archived or suspended temporarily. Please check back later." );
+}
+
+if( $current_blog->archived == '1' ) {
     die( "This blog has been archived or suspended temporarily. Please check back later." );
 }
 

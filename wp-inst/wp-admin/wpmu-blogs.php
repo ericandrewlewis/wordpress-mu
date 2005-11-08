@@ -23,9 +23,6 @@ switch( $_GET[ 'action' ] ) {
 	      FROM ".$wpdb->blogs." 
               WHERE blog_id = '".$_GET[ 'id' ]."'";
     $details = $wpdb->get_row( $query, ARRAY_A );
-    $is_archived = get_settings( "is_archived" );
-    if( $is_archived == '' )
-	$is_archived = 'no';
 
     print "<h2>Edit Blog</h2>";
     ?>
@@ -51,14 +48,14 @@ switch( $_GET[ 'action' ] ) {
 	</tr> 
 	<tr valign="top"> 
 	<th scope="row">Public</th> 
-	<td><input type='radio' name='blog[is_public]' value='yes'<?php if( $details[ 'is_public' ] == 'yes' ) echo " checked"?>> Yes&nbsp;&nbsp;
-	    <input type='radio' name='blog[is_public]' value='no'<?php if( $details[ 'is_public' ] == 'no' ) echo " checked"?>> No &nbsp;&nbsp;
+	<td><input type='radio' name='blog[public]' value='yes'<?php if( $details[ 'public' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='blog[public]' value='no'<?php if( $details[ 'public' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
 	    </td> 
 	</tr> 
 	<tr valign="top"> 
 	<th scope="row">Archived</th> 
-	<td><input type='radio' name='option[is_archived]' value='yes'<?php if( $is_archived == 'yes' ) echo " checked"?>> Yes&nbsp;&nbsp;
-	    <input type='radio' name='option[is_archived]' value='no'<?php if( $is_archived == 'no' ) echo " checked"?>> No &nbsp;&nbsp;
+	<td><input type='radio' name='option[archived]' value='yes'<?php if( $archived == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='option[archived]' value='no'<?php if( $archived == '0' ) echo " checked"?>> No &nbsp;&nbsp;
 	    </td> 
 	</tr> 
     <tr><td colspan='2'>
@@ -325,7 +322,7 @@ if ($blog_list) {
 $bgcolor = '';
 foreach ($blog_list as $blog) { 
 	$class = ('alternate' == $class) ? '' : 'alternate';
-	if( get_blog_option( $blog[ 'blog_id' ], "is_archived" ) == 'yes' ) {
+	if( is_archived( $blog[ 'blog_id' ] ) == '1' ) {
 		?> 
 		<tr style='background: #fee' class='<?php echo $class; ?>'>
 		<?php
@@ -389,7 +386,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		break;
 
 	case 'control_deactivate':
-		if( get_blog_option( $blog[ 'blog_id' ], "is_archived" ) == 'yes' ) {
+		if( is_archived( $blog[ 'blog_id' ] ) == '1' ) {
 			?>
 				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=activateblog&amp;id=".$blog[ 'blog_id' ]."' class='edit' onclick=\"return confirm('" . sprintf(__("You are about to activate this blog?\\n  \'OK\' to activate, \'Cancel\' to stop.") ) . "')\">" . __('Activate') . "</a>"; ?></td>
 			<?php

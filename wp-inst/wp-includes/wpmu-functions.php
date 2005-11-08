@@ -337,21 +337,21 @@ function get_blogaddress_by_name( $blogname ) {
 }
 
 function get_sitestats() {
-    global $wpdb, $basedomain, $base;
+	global $wpdb, $basedomain, $base;
 
-    $query = "SELECT count(*) as c
-              FROM ".$wpdb->blogs." 
-	      WHERE site_id = '".$wpdb->siteid."'";
-    $blogs = $wpdb->get_var( $query );
-    $stats[ 'blogs' ] = $blogs;
+	$stats[ 'blogs' ] = get_blog_count();
 
-    $query = "SELECT count(*) as c
-              FROM ".$wpdb->users;
-    $users = $wpdb->get_var( $query );
-    $stats[ 'users' ] = $users;
+	$count_ts = get_site_option( "get_user_count_ts" );
+	if( time() - $count_ts > 3600 ) {
+		$count = $wpdb->get_var( "SELECT count(*) as c FROM {$wpdb->users}" );
+		update_site_option( "user_count", $count );
+		update_site_option( "user_count_ts", time() );
+	} else {
+		$count = get_site_option( "user_count" );
+	}
+	$stats[ 'users' ] = $count;
 
-    return $stats;
-
+	return $stats;
 }
 
 function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
@@ -635,12 +635,17 @@ function get_blogs_of_user( $id ) {
 }
 
 function is_archived( $id ) {
-    global $wpdb, $wpmuBaseTablePrefix;
-    $is_archived = $wpdb->get_var( "SELECT option_value FROM " . $wpmuBaseTablePrefix . $id . "_options WHERE option_name = 'is_archived'" );
-    if( $is_archived == false )
-	$is_archived = 'no';
+    global $wpdb;
+    $archived = $wpdb->get_var( "SELECT archived FROM {$wpdb->blogs} WHERE blog_id = '$id'" );
 
-    return $is_archived;
+    return $archived;
+}
+
+function update_archived( $id, $archived ) {
+    global $wpdb;
+    $wpdb->query( "UPDATE {$wpdb->blogs} SET archived = '{$archived}' WHERE blog_id = '$id'" );
+
+    return $archived;
 }
 
 function get_last_updated( $display = false ) {
@@ -719,7 +724,7 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 	$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered DESC", ARRAY_A );
 	if( is_array( $blogs ) ) {
 	    while( list( $key, $details ) = each( $blogs ) ) { 
-		if( is_archived( $details[ 'blog_id' ] ) == 'yes' )
+		if( is_archived( $details[ 'blog_id' ] ) == '1' )
 		    unset( $blogs[ $key ] );
 
 		$blog_list[ $details[ 'blog_id' ] ] = $details;
@@ -743,13 +748,13 @@ function get_blog_count( $id = 0 ) {
 	if( $id == 0 )
 		$id = $wpdb->siteid;
 	
-	$count_ts = get_site_option( "get_blog_count_ts" );
+	$count_ts = get_site_option( "blog_count_ts" );
 	if( time() - $count_ts > 86400 ) {
 		$count = $wpdb->get_var( "SELECT count(*) as c FROM $wpdb->blogs WHERE site_id = '$id'" );
-		update_site_option( "get_blog_count", $count );
-		update_site_option( "get_blog_count_ts", time() );
+		update_site_option( "blog_count", $count );
+		update_site_option( "blog_count_ts", time() );
 	} else {
-		$count = get_site_option( "get_blog_count" );
+		$count = get_site_option( "blog_count" );
 	}
 
 	return $count;
