@@ -120,6 +120,7 @@ CREATE TABLE $wpdb->posts (
   guid varchar(255) NOT NULL default '',
   menu_order int(11) NOT NULL default '0',
   post_type varchar(100) NOT NULL,
+  comment_count bigint(20) NOT NULL default '0',
   PRIMARY KEY  (ID),
   KEY post_name (post_name)
 );
