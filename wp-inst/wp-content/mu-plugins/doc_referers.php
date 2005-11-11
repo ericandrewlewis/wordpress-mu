@@ -201,9 +201,7 @@ class DOC_Referers {
 	}
 	elseif( $action == 'deletedirect' )
 	{
-	    $query = "DELETE FROM " . $wpdb->doc_referers . "
-		WHERE        dayofmonth='".$day."'
-		AND          referingURL = 'DIRECT'";
+	    $query = "DELETE FROM " . $wpdb->doc_referers . " WHERE dayofmonth='".$day."' AND referingURL = 'DIRECT'";
 	    $result = $wpdb->query($query);
 	    printf ("Records deleted: %d\n", $wpdb->rows_affected);
 	    $action = "listday";
@@ -215,9 +213,7 @@ class DOC_Referers {
 		reset( $del );
 		while( list( $key, $val ) = each( $del ) ) 
 		{ 
-		    $query = "SELECT referingURL
-			FROM   " . $wpdb->doc_referers . "
-			WHERE  visitID = '".$val."'";
+		    $query = "SELECT referingURL FROM " . $wpdb->doc_referers . " WHERE visitID = '".$val."'";
 		    $result=$wpdb->get_var( $query );
 		    if( $result )
 		    {
@@ -483,9 +479,9 @@ class DOC_Referers {
 		    print "<p>No Referers found today!</p>";
 		    print "<ul><li><a href='edit.php?page=mu-plugins/doc_referers.php&action=month'>Month View</a> displays the last month of stats.</li>";
 		    if( $ignoreDIRECT == 'yes' )
-			    print "<li><a href='".$this->makeURL( "ignoreDIRECT", 'no' )."'>Display DIRECT hits</a> - some browsers don't report what page they come from. You're hiding this information right now.</li>";
+			    print "<li><a href='edit.php?page=mu-plugins/doc_referers.php".$this->makeURL( "ignoreDIRECT", 'no' )."'>Display DIRECT hits</a> - some browsers don't report what page they come from. You're hiding this information right now.</li>";
 		    if( $internal == 'yes' )
-			    print "<li><a href='".$this->makeURL( "internal", 'no' )."'>Display internal hits</a> - it's not always very interesting where people wander around your blog. You're hiding this information right now.</li>";
+			    print "<li><a href='edit.php?page=mu-plugins/doc_referers.php".$this->makeURL( "internal", 'no' )."'>Display internal hits</a> - it's not always very interesting where people wander around your blog. You're hiding this information right now.</li>";
 		    print "</ul>";
 	    }
 	    break;
