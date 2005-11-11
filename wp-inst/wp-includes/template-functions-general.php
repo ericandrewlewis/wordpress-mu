@@ -144,6 +144,8 @@ function wp_title($sep = '&raquo;', $display = true) {
 	$p = get_query_var('p');
 	$name = get_query_var('name');
 	$category_name = get_query_var('category_name');
+	$author = get_query_var('author');
+	$author_name = get_query_var('author_name');
 
 	// If there's a category
 	if ( !empty($cat) ) {
@@ -160,6 +162,16 @@ function wp_title($sep = '&raquo;', $display = true) {
 					$category_name = $category_name[count($category_name)-2]; // there was a trailling slash
 		}
 		$title = $wpdb->get_var("SELECT cat_name FROM $wpdb->categories WHERE category_nicename = '$category_name'");
+	}
+
+	// If there's an author
+	if ( !empty($author) ) {
+		$title = get_userdata($author);
+		$title = $title->display_name;
+	}
+	if ( !empty($author_name) ) {
+		// We do a direct query here because we don't cache by nicename.
+		$title = $wpdb->get_var("SELECT display_name FROM $wpdb->users WHERE user_nicename = '$author_name'");
 	}
 
 	// If there's a month
@@ -629,6 +641,33 @@ function get_post_time( $d = 'U', $gmt = false ) { // returns timestamp
 
 	$time = mysql2date($d, $time);
 	return apply_filters('get_the_time', $time, $d, $gmt);
+}
+
+
+function the_modified_time($d = '') {
+	echo apply_filters('the_modified_time', get_the_modified_time($d), $d);
+}
+
+
+function get_the_modified_time($d = '') {
+	if ( '' == $d )
+		$the_time = get_post_modified_time(get_settings('time_format'));
+	else
+		$the_time = get_post_modified_time($d);
+	return apply_filters('get_the_modified_time', $the_time, $d);
+}
+
+
+function get_post_modified_time( $d = 'U', $gmt = false ) { // returns timestamp
+	global $post;
+
+	if ( $gmt )
+		$time = $post->post_modified_gmt;
+	else
+		$time = $post->post_modified;
+	$time = mysql2date($d, $time);
+
+	return apply_filters('get_the_modified_time', $time, $d, $gmt);
 }
 
 

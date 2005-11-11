@@ -271,6 +271,8 @@ function get_settings($setting) {
 		if( is_object( $value ) ) {
 			$value = $value->option_value;
 			wp_cache_set($setting, $value, 'options');
+		} else {
+			return false;
 		}
 	}
 
@@ -338,15 +340,17 @@ function update_option($option_name, $newvalue) {
 		$newvalue = trim($newvalue);
 
 	// If the new and old values are the same, no need to update.
-	if ( $newvalue == get_option($option_name) )
+	$oldvalue = get_option($option_name);
+	if ( $newvalue == $oldvalue )
 		return true;
+
+        if ( false === $oldvalue ) {
+                add_option($option_name, $newvalue);
+                return true;
+	}
 
 	if ( is_array($newvalue) || is_object($newvalue) )
 		$newvalue = serialize($newvalue);
-
-	// If it's not there add it
-	if ( !$wpdb->get_var("SELECT option_name FROM $wpdb->options WHERE option_name = '$option_name'") )
-		add_option($option_name, $newvalue);
 
 	wp_cache_set($option_name, $newvalue, 'options');
 
@@ -371,7 +375,6 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 	if ( false !== get_option($name) )
 		return;
 
-	$original = $value;
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
 
@@ -821,7 +824,7 @@ function make_url_footnote($content) {
 		$link_url = $matches[2][$i];
 		$link_text = $matches[4][$i];
 		$content = str_replace($link_match, $link_text.' '.$link_number, $content);
-		$link_url = (strtolower(substr($link_url,0,7)) != 'http://') ? get_settings('home') . $link_url : $link_url;
+		$link_url = ((strtolower(substr($link_url,0,7)) != 'http://')||(strtolower(substr($link_url,0,7)) != 'https://')) ? get_settings('home') . $link_url : $link_url;
 		$links_summary .= "\n".$link_number.' '.$link_url;
 	}
 	$content = strip_tags($content);

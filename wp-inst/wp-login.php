@@ -11,9 +11,10 @@ header('Content-Type: '.get_bloginfo('html_type').'; charset='.get_bloginfo('cha
 if ( defined('RELOCATE') ) { // Move flag is set
 	if ( isset( $_SERVER['PATH_INFO'] ) && ($_SERVER['PATH_INFO'] != $_SERVER['PHP_SELF']) )
 		$_SERVER['PHP_SELF'] = str_replace( $_SERVER['PATH_INFO'], '', $_SERVER['PHP_SELF'] );
-	
-	if ( dirname('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']) != get_settings('siteurl') )
-		update_option('siteurl', dirname('http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']) );
+
+	$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
+	if ( dirname($schema . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']) != get_settings('siteurl') )
+		update_option('siteurl', dirname($schema . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']) );
 }
 
 switch($action) {
@@ -23,7 +24,12 @@ case 'logout':
 	wp_clearcookie();
 	do_action('wp_logout');
 	nocache_headers();
-	wp_redirect('wp-login.php');
+
+	$redirect_to = 'wp-login.php';
+	if ( isset($_REQUEST['redirect_to']) )
+		$redirect_to = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $_REQUEST['redirect_to']);
+			
+	wp_redirect($redirect_to);
 	exit();
 
 break;

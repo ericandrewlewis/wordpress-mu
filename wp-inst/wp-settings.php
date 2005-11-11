@@ -34,6 +34,14 @@ if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 	}
 }
 
+// Fix for PHP as CGI hosts that set SCRIPT_FILENAME to something ending in php.cgi for all requests
+if ( strpos($_SERVER['SCRIPT_FILENAME'], 'php.cgi') == strlen($_SERVER['SCRIPT_FILENAME']) - 7 )
+	$_SERVER['SCRIPT_FILENAME'] = $_SERVER['PATH_TRANSLATED'];
+
+// Fix for PHP as CGI hosts that set PATH_INFO to PHP_SELF value
+if ( isset($_SERVER['PATH_INFO']) && $_SERVER['PATH_INFO'] == $_SERVER['PHP_SELF'] )
+	unset($_SERVER['PATH_INFO']);
+
 if ( !(phpversion() >= '4.1') )
 	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.1' );
 
@@ -204,7 +212,7 @@ else
 
 // For now, disable persistent caching by default.  To enable, comment out
 // the following line.
-define('DISABLE_CACHE', true);
+//define('DISABLE_CACHE', true);
 
 wp_cache_init();
 
@@ -331,10 +339,10 @@ $_POST   = add_magic_quotes($_POST  );
 $_COOKIE = add_magic_quotes($_COOKIE);
 $_SERVER = add_magic_quotes($_SERVER);
 
-$wp_query = new WP_Query();
+$wp_query   = new WP_Query();
 $wp_rewrite = new WP_Rewrite();
-$wp = new WP();
-$wp_roles = new WP_Roles();
+$wp         = new WP();
+$wp_roles   = new WP_Roles();
 
 define('TEMPLATEPATH', get_template_directory());
 
@@ -356,4 +364,5 @@ register_shutdown_function('shutdown_action_hook');
 
 // Everything is loaded and initialized.
 do_action('init');
+
 ?>

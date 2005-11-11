@@ -42,16 +42,18 @@ function get_userdata( $user_id ) {
 
 	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id'");
 
-	foreach ( $metavalues as $meta ) {
-		@ $value = unserialize($meta->meta_value);
-		if ($value === FALSE)
-			$value = $meta->meta_value;
-		$user->{$meta->meta_key} = $value;
+	if ($metavalues) {
+		foreach ( $metavalues as $meta ) {
+			@ $value = unserialize($meta->meta_value);
+			if ($value === FALSE)
+				$value = $meta->meta_value;
+			$user->{$meta->meta_key} = $value;
 
-		// We need to set user_level from meta, not row
-		if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-			$user->user_level = $meta->meta_value;
-	}
+			// We need to set user_level from meta, not row
+			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
+				$user->user_level = $meta->meta_value;
+		} // end foreach
+	} //end if
 
 	wp_cache_add($user_id, $user, 'users');
 	wp_cache_add($user->user_login, $user, 'users');
@@ -287,15 +289,24 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 	$notify_message .= get_permalink($comment->comment_post_ID) . "#comments\r\n\r\n";
 	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_settings('siteurl').'/wp-admin/post.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
 
-	if ('' == $comment->comment_author_email || '' == $comment->comment_author) {
-		$from = "From: \"$blogname\" <wordpress@" . $_SERVER['SERVER_NAME'] . '>';
-	} else {
-		$from = 'From: "' . $comment->comment_author . "\" <$comment->comment_author_email>";
-	}
+	$admin_email = get_settings('admin_email');
+
+	if ( '' == $comment->comment_author ) {
+		$from = "From: \"$blogname\" <$admin_email>";
+		if ( '' != $comment->comment_author_email )
+			$reply_to = "Reply-To: $comment->comment_author_email";
+ 	} else {
+		$from = "From: \"$comment->comment_author\" <$admin_email>";
+		if ( '' != $comment->comment_author_email )
+			$reply_to = "Reply-To: \"$comment->comment_author_email\" <$comment->comment_author_email>";
+ 	}
 
 	$message_headers = "MIME-Version: 1.0\n"
 		. "$from\n"
 		. "Content-Type: text/plain; charset=\"" . get_settings('blog_charset') . "\"\n";
+
+	if ( isset($reply_to) )
+		$message_headers .= $reply_to . "\n";
 
 	$notify_message = apply_filters('comment_notification_text', $notify_message);
 	$subject = apply_filters('comment_notification_subject', $subject);
