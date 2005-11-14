@@ -69,7 +69,7 @@ class MagpieRSS {
 				$error_col = xml_get_current_column_number($this->parser);
 				$errormsg = "$xml_error at line $error_line, column $error_col";
 
-				//$this->error( $errormsg );
+				$this->error( $errormsg );
 			}
 		}
 		
@@ -356,9 +356,22 @@ class MagpieRSS {
 		}
 	}
 
-function map_attrs($k, $v) {
-	return "$k=\"$v\"";
+	function map_attrs($k, $v) {
+		return "$k=\"$v\"";
 	}
+
+	function error( $errormsg, $lvl = E_USER_WARNING ) {
+		// append PHP's error message if track_errors enabled
+		if ( isset($php_errormsg) ) {
+			$errormsg .= " ($php_errormsg)";
+		}
+		if ( MAGPIE_DEBUG ) {
+			trigger_error( $errormsg, $lvl);
+		} else {
+			error_log( $errormsg, 0);
+		}
+	}
+
 }
 require_once( dirname(__FILE__) . '/class-snoopy.php');
 

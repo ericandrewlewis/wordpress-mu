@@ -261,15 +261,18 @@ function url_to_postid($url) {
 
 function get_settings($setting) {
 	global $wpdb;
-	if ( strstr($_SERVER['REQUEST_URI'], 'wp-admin/install.php') || defined('WP_INSTALLING') )
-		return false;
 
 	$value = wp_cache_get($setting, 'options');
 
 	if ( false === $value ) {
-		$value = $wpdb->get_row("SELECT option_value FROM $wpdb->options WHERE option_name = '$setting'");
-		if( is_object( $value ) ) {
-			$value = $value->option_value;
+		if ( defined('WP_INSTALLING') )
+			$wpdb->hide_errors();
+		$row = $wpdb->get_row("SELECT option_value FROM $wpdb->options WHERE option_name = '$setting' LIMIT 1");
+		if ( defined('WP_INSTALLING') )
+			$wpdb->show_errors();
+
+		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
+			$value = $row->option_value;
 			wp_cache_set($setting, $value, 'options');
 		} else {
 			return false;
@@ -342,7 +345,7 @@ function update_option($option_name, $newvalue) {
 	// If the new and old values are the same, no need to update.
 	$oldvalue = get_option($option_name);
 	if ( $newvalue == $oldvalue )
-		return true;
+		return false;
 
         if ( false === $oldvalue ) {
                 add_option($option_name, $newvalue);

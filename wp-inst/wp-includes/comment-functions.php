@@ -281,7 +281,7 @@ function comments_popup_link($zero='No Comments', $one='1 Comment', $more='% Com
 		if (!empty($CSSclass)) {
 			echo ' class="'.$CSSclass.'"';
 		}
-		echo '>';
+		echo 'title="' . __( sprintf('Comment on %s', $post->post_title) ) .'">';
 		comments_number($zero, $one, $more, $number);
 		echo '</a>';
 	}
@@ -325,7 +325,7 @@ function get_comment_author_link() {
 	$url    = get_comment_author_url();
 	$author = get_comment_author();
 
-	if ( empty( $url ) )
+	if ( empty( $url ) || 'http://' == $url )
 		$return = $author;
 	else
 		$return = "<a href='$url' rel='external nofollow'>$author</a>";

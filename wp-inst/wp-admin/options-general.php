@@ -11,7 +11,7 @@ include('admin-header.php');
 <h2><?php _e('General Options') ?></h2> 
 <form name="form1" method="post" action="options.php"> 
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="'blogname','blogdescription','users_can_register','gmt_offset','date_format','time_format','start_of_week','comment_registration', 'WPLANG'" /> 
+<input type="hidden" name="page_options" value="blogname,blogdescription,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration, WPLANG" /> 
 <table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 <tr valign="top"> 
 <th width="33%" scope="row"><?php _e('Weblog title:') ?></th> 

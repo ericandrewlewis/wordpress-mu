@@ -150,9 +150,7 @@ cat_rows();
 
 <?php if ( current_user_can('manage_categories') ) : ?>
 <div class="wrap">
-    <p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete posts from that category, it will just set them back to the default category <strong>%s</strong>.'), get_catname( get_option( 'default_category' ) )) ?>
-    <br /><?php printf(__('You cannot delete the default category, <strong>%s</strong>, as a result. You must set another category as the default one by visiting the <a href="options-writing.php">Writing Options</a> page and changing it there.'), get_catname( get_option( 'default_category' ) )) ?>
-  </p>
+<p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete posts from that category, it will just set them back to the default category <strong>%s</strong>.'), get_catname(get_option('default_category'))) ?></p>
 </div>
 
 <div class="wrap">
