@@ -326,6 +326,10 @@ function edit_user($user_id = 0) {
 			$errors['pass'] = __("<strong>ERROR</strong>: you typed your new password only once.");
 	}
 
+	/* Check for "\" in password */
+	if( strpos( " ".$pass1, "\\" ) )
+		$errors['pass'] = __('<strong>ERROR</strong>: Passwords may not contain the character "\\".');
+
 	/* checking the password has been typed twice the same */
 	if ($pass1 != $pass2)
 		$errors['pass'] = __('<strong>ERROR</strong>: Please type the same password in the two password fields.');
@@ -508,8 +512,15 @@ function cat_rows($parent = 0, $level = 0, $categories = 0) {
 				$category->cat_name = wp_specialchars($category->cat_name);
 				$count = $wpdb->get_var("SELECT COUNT(post_id) FROM $wpdb->post2cat WHERE category_id = $category->cat_ID");
 				$pad = str_repeat('&#8212; ', $level);
-				if (current_user_can('manage_categories'))
-					$edit = "<a href='categories.php?action=edit&amp;cat_ID=$category->cat_ID' class='edit'>".__('Edit')."</a></td><td><a href='categories.php?action=delete&amp;cat_ID=$category->cat_ID' onclick=\"return deleteSomething( 'cat', $category->cat_ID, '".sprintf(__("You are about to delete the category &quot;%s&quot;.  All of its posts will go to the default category.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), wp_specialchars($category->cat_name, 1))."' );\" class='delete'>".__('Delete')."</a>";
+				if ( current_user_can('manage_categories') ) {
+					$edit = "<a href='categories.php?action=edit&amp;cat_ID=$category->cat_ID' class='edit'>".__('Edit')."</a></td>";
+					$default_cat_id = get_option('default_category');
+					
+					if ($category->cat_ID != $default_cat_id)
+						$edit .= "<td><a href='categories.php?action=delete&amp;cat_ID=$category->cat_ID' onclick=\"return deleteSomething( 'cat', $category->cat_ID, '".sprintf(__("You are about to delete the category &quot;%s&quot;.  All of its posts will go to the default category.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), wp_specialchars($category->cat_name, 1))."' );\" class='delete'>".__('Delete')."</a>";
+					else
+						$edit .= "<td style='text-align:center'>".__("Default");
+				}
 				else
 					$edit = '';
 
@@ -836,14 +847,11 @@ function update_meta($mid, $mkey, $mvalue) {
 
 function touch_time($edit = 1, $for_post = 1) {
 	global $month, $post, $comment;
-	if ($for_post && ('draft' == $post->post_status)) {
-		$checked = 'checked="checked" ';
-		$edit = false;
-	} else {
-		$checked = ' ';
-	}
 
-	echo '<fieldset><legend><input type="checkbox" class="checkbox" name="edit_date" value="1" id="timestamp" '.$checked.'/> <label for="timestamp">'.__('Edit timestamp').'</label></legend>';
+	if ( $for_post )
+		$edit = ( ('draft' == $post->post_status) && (!$post->post_date || '0000-00-00 00:00:00' == $post->post_date) ) ? false : true;
+ 
+	echo '<fieldset><legend><input type="checkbox" class="checkbox" name="edit_date" value="1" id="timestamp" /> <label for="timestamp">'.__('Edit timestamp').'</label></legend>';
 
 	$time_adj = time() + (get_settings('gmt_offset') * 3600);
 	$post_date = ($for_post) ? $post->post_date : $comment->comment_date;
@@ -873,19 +881,11 @@ function touch_time($edit = 1, $for_post = 1) {
 <input type="text" id="hh" name="hh" value="<?php echo $hh ?>" size="2" maxlength="2" /> : 
 <input type="text" id="mn" name="mn" value="<?php echo $mn ?>" size="2" maxlength="2" /> 
 <input type="hidden" id="ss" name="ss" value="<?php echo $ss ?>" size="2" maxlength="2" /> 
-<?php _e('Existing timestamp'); ?>: 
-	<?php
-
-	// We might need to readjust to display proper existing timestamp
-	if ($for_post && ('draft' == $post->post_status)) {
-		$jj = mysql2date('d', $post_date);
-		$mm = mysql2date('m', $post_date);
-		$aa = mysql2date('Y', $post_date);
-		$hh = mysql2date('H', $post_date);
-		$mn = mysql2date('i', $post_date);
-		$ss = mysql2date('s', $post_date);
+<?php
+	if ( $edit ) {
+		_e('Existing timestamp');
+		echo ": {$month[$mm]} $jj, $aa @ $hh:$mn";
 	}
-	echo "{$month[$mm]} $jj, $aa @ $hh:$mn";
 ?>
 </fieldset>
 	<?php
