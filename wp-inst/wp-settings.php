@@ -282,6 +282,10 @@ if( $current_blog->archived == '1' ) {
     die( "This blog has been archived or suspended temporarily. Please check back later." );
 }
 
+if( $current_blog->spam == '1' ) {
+    die( "This blog has been archived or suspended temporarily. Please check back later." );
+}
+
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies
     $cookiehash = ''; // Remove in 1.4
