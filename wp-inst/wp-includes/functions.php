@@ -299,10 +299,10 @@ function get_option($option) {
 
 function get_user_option( $option ) {
 	global $wpdb, $current_user;
-	if ( isset( $current_user->data->{$wpdb->prefix . $option} ) ) // Blog specific
-		return $current_user->data->{$wpdb->prefix . $option};
-	elseif ( isset( $current_user->data->{$option} ) ) // User specific and cross-blog
-		return $current_user->data->{$option};
+	if ( isset( $current_user->{$wpdb->prefix . $option} ) ) // Blog specific
+		return $current_user->{$wpdb->prefix . $option};
+	elseif ( isset( $current_user->{$option} ) ) // User specific and cross-blog
+		return $current_user->{$option};
 	else // Blog global
 		return get_option( $option );
 }
@@ -1306,11 +1306,7 @@ function update_post_caches(&$posts) {
 	update_post_category_cache($post_id_list);
 
 	// Do the same for comment numbers
-	$comment_counts = $wpdb->get_results("SELECT comment_post_ID, COUNT( comment_ID ) AS ccount
-	FROM $wpdb->comments
-	WHERE comment_post_ID IN ($post_id_list)
-	AND comment_approved = '1'
-	GROUP BY comment_post_ID");
+	$comment_counts = $wpdb->get_results( "SELECT ID as comment_post_ID, comment_count as ccount FROM $wpdb->posts WHERE ID in ($post_id_list)" );
 
 	if ( $comment_counts ) {
 		foreach ($comment_counts as $comment_count) {
@@ -1397,10 +1393,10 @@ function is_page ($page = '') {
 	return false;
 }
 
-function is_subpost () {
+function is_attachment () {
 	global $wp_query;
 
-	return $wp_query->is_subpost;
+	return $wp_query->is_attachment;
 }
 
 function is_preview() {
@@ -1686,6 +1682,11 @@ function get_themes() {
 	sort($theme_files);
 
 	foreach($theme_files as $theme_file) {
+		if ( ! is_readable("$theme_root/$theme_file") ) {
+			$wp_broken_themes[$theme_file] = array('Name' => $theme_file, 'Title' => $theme_file, 'Description' => __('File not readable.'));
+			continue;
+		}
+
 		$theme_data = get_theme_data("$theme_root/$theme_file");
 
 		$name = $theme_data['Name'];
@@ -1894,9 +1895,9 @@ function get_single_template() {
 	return get_query_template('single');
 }
 
-function get_subpost_template() {
+function get_attachment_template() {
 	global $posts;
-	$type = explode('/', $posts[0]->post_type);
+	$type = explode('/', $posts[0]->post_mime_type);
 	if ( $template = get_query_template($type[0]) )
 		return $template;
 	elseif ( $template = get_query_template($type[1]) )
@@ -1904,7 +1905,7 @@ function get_subpost_template() {
 	elseif ( $template = get_query_template("$type[0]_$type[1]") )
 		return $template;
 	else
-		return get_query_template('subpost');
+		return get_query_template('attachment');
 }
 
 function get_comments_popup_template() {

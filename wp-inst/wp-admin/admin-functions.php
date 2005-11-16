@@ -59,7 +59,7 @@ function write_post() {
 	$post_ID = wp_insert_post($_POST);
 	add_meta($post_ID);
 
-	// Reunite any orphaned subposts with their parent
+	// Reunite any orphaned attachments with their parent
 	if ( $_POST['temp_ID'] )
 		relocate_children($_POST['temp_ID'], $post_ID);
 
@@ -91,7 +91,7 @@ function edit_post() {
 	$_POST['to_ping'] = $_POST['trackback_url'];
 
 	if (!empty ($_POST['post_author_override'])) {
-		$_POST['$post_author'] = (int) $_POST['post_author_override'];
+		$_POST['post_author'] = (int) $_POST['post_author_override'];
 	} else
 		if (!empty ($_POST['post_author'])) {
 			$_POST['post_author'] = (int) $_POST['post_author'];
@@ -1449,6 +1449,9 @@ function get_plugins() {
 	sort($plugin_files);
 
 	foreach ($plugin_files as $plugin_file) {
+		if ( !is_readable("$plugin_root/$plugin_file"))
+			continue;
+
 		$plugin_data = get_plugin_data("$plugin_root/$plugin_file");
 
 		if (empty ($plugin_data['Name'])) {
@@ -1730,6 +1733,55 @@ function wp_shrink_dimensions($width, $height, $wmax = 128, $hmax = 96) {
 		return array((int) ($width / $height * $hmax), $hmax);
 }
 
+function wp_import_cleanup($id) {
+	wp_delete_attachment($id);
+}
+
+function wp_import_upload_form($action) {
+?>
+<script type="text/javascript">
+function cancelUpload() {
+o = document.getElementById('uploadForm');
+o.method = 'GET';
+o.action.value = 'view';
+o.submit();
+}
+</script>
+<form enctype="multipart/form-data" id="uploadForm" method="POST" action="<?php echo $action ?>">
+<label for="upload"><?php _e('File:'); ?></label><input type="file" id="upload" name="import" />
+<input type="hidden" name="action" value="save" />
+<div id="buttons">
+<input type="submit" value="<?php _e('Import'); ?>" />
+<input type="button" value="<?php _e('Cancel'); ?>" onclick="cancelUpload()" />
+</div>
+</form>
+<?php	
+}
+
+function wp_import_handle_upload() {
+	$overrides = array('test_form' => false, 'test_type' => false);
+	$file = wp_handle_upload($_FILES['import'], $overrides);
+
+	if ( isset($file['error']) )
+		return $file;
+
+	$url = $file['url'];
+	$file = $file['file'];
+	$filename = basename($file);
+
+	// Construct the object array
+	$object = array(
+		'post_title' => $filename,
+		'post_content' => $url,
+		'post_mime_type' => 'import',
+		'guid' => $url
+	);
+
+	// Save the data
+	$id = wp_insert_attachment($object, $file);
+
+	return array('file' => $file, 'id' => $id);
+}
 function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_field = 'searchresults' ) {
 	?>
 	<script language="JavaScript">
