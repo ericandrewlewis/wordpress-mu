@@ -442,7 +442,7 @@ function get_pagenum_link($pagenum = 1) {
 		$qstr = str_replace('page/1/', '', $qstr); // for mod_rewrite style
 		$qstr = remove_query_arg('paged', $qstr); // for query style
 	}
-	return $qstr;
+	return str_replace( "wp-inst/", "", $qstr );
 }
 
 function next_posts($max_page = 0) { // original by cfactor at cooltux.org
@@ -466,6 +466,8 @@ function next_posts_link($label='Next Page &raquo;', $max_page=0) {
 				preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
 				$fromwhere = $matches[1];
 				$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
+				if( $posts_per_page == 0 )
+					$posts_per_page = 10;
 				$max_page = $max_num_pages = ceil($numposts / $posts_per_page);
 			}
 	}
