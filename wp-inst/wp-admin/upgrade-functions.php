@@ -311,6 +311,7 @@ function upgrade_160() {
 			$wpdb->query("UPDATE $wpdb->categories SET category_count = '$count' WHERE cat_ID = '$cat_id'");
 		}
 	}
+	add_option( "gmt_offset", 0 );
 
 	// populate comment_count field of posts table
 	$comments = $wpdb->get_results( "SELECT comment_post_ID, COUNT(*) as c FROM $wpdb->comments GROUP BY comment_post_ID" );
