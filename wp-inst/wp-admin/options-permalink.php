@@ -37,6 +37,9 @@ structure.value = inputs;
 function blurry() {
 if (!document.getElementById) return;
 
+var structure = document.getElementById('permalink_structure');
+structure.onfocus = function () { document.getElementById('custom_selection').checked = 'checked'; }
+
 var aInputs = document.getElementsByTagName('input');
 
 for (var i = 0; i < aInputs.length; i++) {		
@@ -136,7 +139,7 @@ $structures = array(
 </p>
 <p>
 <label>
-<input name="selection" type="radio" value="custom" class="tog"
+<input name="selection" id="custom_selection" type="radio" value="custom" class="tog"
 <?php if ( !in_array($permalink_structure, $structures) ) { ?>
 checked="checked"
 <?php } ?>

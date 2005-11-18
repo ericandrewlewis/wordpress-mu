@@ -64,37 +64,13 @@ endif;
 
 if ( !function_exists('update_user_cache') ) :
 function update_user_cache() {
-	global $cache_userdata, $wpdb;
-	$level_key = $wpdb->prefix . 'user_level';
-	$user_ids = $wpdb->get_col("SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '$level_key'");
-	$user_ids = join(',', $user_ids);
-	$query = apply_filters('user_cache_query', "SELECT * FROM $wpdb->users WHERE ID IN ($user_ids)");
-	if ( $users = $wpdb->get_results( $query ) ) :
-		foreach ($users as $user) :
-			$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user->ID'");
-			foreach ( $metavalues as $meta ) {
-				@ $value = unserialize($meta->meta_value);
-				if ($value === FALSE)
-					$value = $meta->meta_value;
-				$user->{$meta->meta_key} = $value;
-				// We need to set user_level from meta, not row
-				if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-					$user->user_level = $meta->meta_value;
-			}
-
-			$cache_userdata[$user->ID] = $user;
-			$cache_userdata[$user->user_login] =& $cache_userdata[$user->ID];
-		endforeach;
-		return true;
-	else : 
-		return false;
-	endif;
+	return true;
 }
 endif;
 
 if ( !function_exists('get_userdatabylogin') ) :
 function get_userdatabylogin($user_login) {
-	global $cache_userdata, $wpdb;
+	global $wpdb;
 	$user_login = sanitize_user( $user_login );
 
 	if ( empty( $user_login ) )
@@ -105,19 +81,21 @@ function get_userdatabylogin($user_login) {
 		return $userdata;
 
 	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE user_login = '$user_login'") )
-		return $cache_userdata[$user_login] = false;
+		return false;
 
 	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user->ID'");
 
-	foreach ( $metavalues as $meta ) {
-		@ $value = unserialize($meta->meta_value);
-		if ($value === FALSE)
-			$value = $meta->meta_value;
-		$user->{$meta->meta_key} = $value;
+	if ($metavalues) {
+		foreach ( $metavalues as $meta ) {
+			@ $value = unserialize($meta->meta_value);
+			if ($value === FALSE)
+				$value = $meta->meta_value;
+			$user->{$meta->meta_key} = $value;
 
-		// We need to set user_level from meta, not row
-		if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-			$user->user_level = $meta->meta_value;
+			// We need to set user_level from meta, not row
+			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
+				$user->user_level = $meta->meta_value;
+		}
 	}
 	if( is_site_admin( $user_login ) == true ) {
 	    $user->user_level = 10;
@@ -125,10 +103,10 @@ function get_userdatabylogin($user_login) {
 	    $user->{$cap_key} = array( 'administrator' => '1' );
 	}
 
-	$cache_userdata[$user->ID] = $user;
-	$cache_userdata[$cache_userdata[$user->ID]->user_login] =& $cache_userdata[$user->ID];
+	wp_cache_add($user->ID, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'users');
 
-	return $cache_userdata[$user->ID];
+	return $user;
 
 }
 endif;
@@ -365,10 +343,6 @@ endif;
 if ( !function_exists('wp_new_user_notification') ) :
 function wp_new_user_notification($user_id, $plaintext_pass = '') {
 	$user = new WP_User($user_id);
-	
-	$stars = '';
-	for ($i = 0; $i < strlen($pass1); $i = $i + 1)
-		$stars .= '*';
 	
 	$user_login = stripslashes($user->user_login);
 	$user_email = stripslashes($user->user_email);
