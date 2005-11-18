@@ -307,7 +307,7 @@ function comments_popup_link($zero='No Comments', $one='1 Comment', $more='% Com
 		if (!empty($CSSclass)) {
 			echo ' class="'.$CSSclass.'"';
 		}
-		echo 'title="' . __( sprintf('Comment on %s', $post->post_title) ) .'">';
+		echo ' title="' . sprintf( __('Comment on %s'), $post->post_title ) .'">';
 		comments_number($zero, $one, $more, $number);
 		echo '</a>';
 	}
@@ -861,6 +861,11 @@ function check_comment($author, $email, $url, $comment, $user_ip, $user_agent, $
 	}
 
 	return true;
+}
+
+function get_approved_comments($post_id) {
+	global $wpdb;
+	return $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_post_ID = $post_id AND comment_approved = '1' ORDER BY comment_date");
 }
 
 ?>

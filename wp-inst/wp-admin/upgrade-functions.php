@@ -293,7 +293,7 @@ function upgrade_160_helper( $users ) {
 }
 
 function upgrade_160() {
-	global $wpdb, $table_prefix;
+	global $wpdb, $table_prefix, $wp_current_db_version;
 	$users = $wpdb->get_results("SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$table_prefix}capabilities'", ARRAY_A);
 	upgrade_160_helper( $users );
 	$users = $wpdb->get_results("SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '{$table_prefix}user_level'", ARRAY_A);
@@ -328,11 +328,10 @@ function upgrade_160() {
 		foreach ($objects as $object) {
 			$wpdb->query("UPDATE $wpdb->posts SET post_status = 'attachment',
 			post_mime_type = '$object->post_type',
-			post_type = '',
-			guid = '$guid'
+			post_type = ''
 			WHERE ID = $object->ID");
 			
-			$meta = get_post_meta($postid, 'imagedata', true);
+			$meta = get_post_meta($object->ID, 'imagedata', true);
 			if ( ! empty($meta['file']) )
 				add_post_meta($object->ID, '_wp_attached_file', $meta['file']);
 		}
@@ -426,6 +425,12 @@ function __get_option($setting) {
 	global $wpdb;
 
 	$option = $wpdb->get_var("SELECT option_value FROM $wpdb->options WHERE option_name = '$setting'");
+
+	if ( 'home' == $setting && '' == $value )
+		return __get_option('siteurl');
+
+	if ( 'siteurl' == $setting || 'home' == $setting || 'category_base' == $setting )
+		$option = preg_replace('|/+$|', '', $option);
 
 	@ $kellogs = unserialize($option);
 	if ($kellogs !== FALSE)

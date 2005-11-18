@@ -156,7 +156,7 @@ textarea, input, select {
 	border-style: none;
 	padding: 0px;
 	margin-bottom: 16px;
-	height: 180px;
+	height: 15em;
 	width: 100%;
 	overflow-y: hidden;
 }
@@ -189,7 +189,7 @@ textarea, input, select {
 .available-theme a.screenshot {
 	width: 250px;
 	height: 200px;
-	display: inline-block;
+	display: block;
 	margin: auto;
 	background: #f1f1f1;
 	border: 1px solid #ccc;
@@ -471,7 +471,7 @@ table .vers, table .name {
 
 #login {
 	background: #fff;
-	border: 2px solid #a2a2a2;
+	border: 1px solid #a2a2a2;
 	margin: 5em auto;
 	padding: 1.5em;
 	width: 25em;
@@ -488,13 +488,15 @@ table .vers, table .name {
 }
 
 #login h1 {
-	background: url(../wp-includes/images/wp-small.png) no-repeat;
+	background: url(images/wordpress-logo.png) no-repeat top left;
 	margin-top: 0;
 }
 
 #login h1 a {
 	display: block;
 	text-indent: -1000px;
+	height: 66px;
+	border-bottom: none;
 }
 
 #login input {
@@ -513,6 +515,14 @@ table .vers, table .name {
 	text-align: center;
 }
 
+#login #log, #pwd {
+	font-size: 1.7em;
+	width: 80%;
+}
+
+#login #submit {
+	font-size: 1.7em;
+}
 
 #postcustom .updatemeta, #postcustom .deletemeta {
 	margin: auto;
@@ -807,7 +817,7 @@ a.dbx-toggle, a.dbx-toggle:visited {
 	position: absolute;
 	top: 10px;
 	right: 14px;
-	background-repeat: none;
+	background-repeat: no-repeat;
 	border-bottom: 0;
 	background-position: 0 9px;
 }

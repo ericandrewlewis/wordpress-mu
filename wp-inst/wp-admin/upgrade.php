@@ -62,7 +62,7 @@ text-align: center; border-top: 1px solid #ccc; padding-top: 1em; font-style: it
 	</style>
 </head>
 <body>
-<h1 id="logo"><img alt="WordPress" src="http://static.wordpress.org/logo.png" /></h1>
+<h1 id="logo"><img alt="WordPress" src="images/wordpress-logo.png" /></h1>
 <?php
 switch($step) {
 
@@ -74,8 +74,10 @@ switch($step) {
 	break;
 	
 	case 1:
+	wp_cache_flush();
 	make_db_current_silent();
 	upgrade_all();
+	wp_cache_flush();
 ?> 
 <h2><?php _e('Step 1'); ?></h2> 
 	<p><?php printf(__("There's actually only one step. So if you see this, you're done. <a href='%s'>Have fun</a>!"), __get_option('home')); ?></p>

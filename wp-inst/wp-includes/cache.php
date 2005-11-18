@@ -54,14 +54,11 @@ class WP_Object_Cache {
 	var $cache_dir;
 	var $cache_enabled = false;
 	var $expiration_time = 86400;
-	var $use_flock = false;
 	var $flock_filename = 'wp_object_cache.lock';
-	var $sem_id = 5454;
-	var $mutex;
 	var $cache = array ();
 	var $dirty_objects = array ();
 	var $non_existant_objects = array ();
-	var $global_groups = array ('users', 'usermeta');
+	var $global_groups = array ('users', 'usermeta', 'site-options');
 	var $blog_id;
 	var $cold_cache_hits = 0;
 	var $warm_cache_hits = 0;
@@ -91,6 +88,9 @@ class WP_Object_Cache {
 	}
 
 	function flush() {
+		if ( !$this->cache_enabled )
+			return;
+		
 		$this->rm($this->cache_dir.'*');
 		$this->cache = array ();
 		$this->dirty_objects = array ();
@@ -196,13 +196,13 @@ class WP_Object_Cache {
 		foreach (split('/', $group_dir) as $subdir) {
 			$make_dir .= "$subdir/";
 			if (!file_exists($this->cache_dir.$make_dir)) {
-				if (!mkdir($this->cache_dir.$make_dir))
+				if (! @ mkdir($this->cache_dir.$make_dir))
 					break;
 				@ chmod($this->cache_dir.$make_dir, $perms);
 			}
 
 			if (!file_exists($this->cache_dir.$make_dir."index.php")) {
-				touch($this->cache_dir.$make_dir."index.php");
+				@ touch($this->cache_dir.$make_dir."index.php");
 			}
 		}
 
@@ -275,19 +275,12 @@ class WP_Object_Cache {
 		}
 
 		if (!file_exists($this->cache_dir."index.php")) {
-			touch($this->cache_dir."index.php");
+			@ touch($this->cache_dir."index.php");
 		}
 
-		// Acquire a write lock.  Semaphore preferred.  Fallback to flock.
-		if (function_exists('sem_get')) {
-			$this->use_flock = false;
-			$mutex = sem_get($this->sem_id, 1, 0644 | IPC_CREAT, 1);
-			sem_acquire($mutex);
-		} else {
-			$this->use_flock = true;
-			$mutex = fopen($this->cache_dir.$this->flock_filename, 'w');
-			flock($mutex, LOCK_EX);
-		}
+		// Acquire a write lock. 
+		$mutex = fopen($this->cache_dir.$this->flock_filename, 'w');
+		flock($mutex, LOCK_EX);
 
 		// Loop over dirty objects and save them.
 		foreach ($this->dirty_objects as $group => $ids) {
@@ -310,18 +303,16 @@ class WP_Object_Cache {
 				fputs($fd, $serial);
 				fclose($fd);
 				if (!@ rename($temp_file, $cache_file)) {
-					if (copy($temp_file, $cache_file)) {
-						unlink($temp_file);
+					if (@ copy($temp_file, $cache_file)) {
+						@ unlink($temp_file);
 					}
 				}
 			}
 		}
 
 		// Release write lock.
-		if ($this->use_flock)
-			flock($mutex, LOCK_UN);
-		else
-			sem_release($mutex);
+		flock($mutex, LOCK_UN);
+		fclose($mutex);
 	}
 
 	function stats() {
@@ -359,8 +350,7 @@ class WP_Object_Cache {
 		else
 			$this->cache_dir = ABSPATH.'wp-content/cache/';
 
-		if (is_dir($this->cache_dir)) {
-			if (is_writable($this->cache_dir))
+		if (is_writable($this->cache_dir) && is_dir($this->cache_dir)) {
 				$this->cache_enabled = true;
 		} else
 			if (is_writable(ABSPATH.'wp-content')) {

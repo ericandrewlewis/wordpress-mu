@@ -2,7 +2,7 @@
 require_once('admin.php');
 
 $title = __('Writing Options');
-$parent_file = 'options-personal.php';
+$parent_file = 'options-general.php';
 
 include('admin-header.php');
 ?>
@@ -88,7 +88,7 @@ endforeach;
 
 <p class="submit">
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="default_post_edit_rows,use_smilies,ping_sites,mailserver_url, mailserver_port,mailserver_login,mailserver_pass,default_category,default_email_category" /> 
+<input type="hidden" name="page_options" value="default_post_edit_rows,use_smilies,rich_editing,ping_sites,mailserver_url,mailserver_port,mailserver_login,mailserver_pass,default_category,default_email_category" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" /> 
 </p>
 </form> 

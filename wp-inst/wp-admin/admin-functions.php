@@ -212,17 +212,37 @@ function get_post_to_edit($id) {
 
 // Default post information to use when populating the "Write Post" form.
 function get_default_post_to_edit() {
-	global $content, $excerpt, $edited_post_title;
+	if ( !empty($_REQUEST['post_title']) )
+		$post_title = wp_specialchars(stripslashes($_REQUEST['post_title']));
+	else if ( !empty($_REQUEST['popuptitle']) ) {
+		$post_title = wp_specialchars(stripslashes($_REQUEST['popuptitle']));
+		$post_title = funky_javascript_fix($post_title);
+	} else {
+		$post_title = '';
+	}
+
+	if ( !empty($_REQUEST['content']) )
+		$post_content = wp_specialchars(stripslashes($_REQUEST['content']));
+	else if ( !empty($post_title) ) {
+		$text       = wp_specialchars(stripslashes(urldecode($_REQUEST['text'])));
+		$text       = funky_javascript_fix($text);
+		$popupurl   = wp_specialchars($_REQUEST['popupurl']);
+        $post_content = '<a href="'.$popupurl.'">'.$post_title.'</a>'."\n$text";
+    }
+
+	if ( !empty($_REQUEST['excerpt']) )
+		$post_excerpt = wp_specialchars(stripslashes($_REQUEST['excerpt']));
+	else
+		$post_excerpt = '';
 
 	$post->post_status = 'draft';
 	$post->comment_status = get_settings('default_comment_status');
 	$post->ping_status = get_settings('default_ping_status');
 	$post->post_pingback = get_settings('default_pingback_flag');
 	$post->post_category = get_settings('default_category');
-	$content = wp_specialchars($content);
-	$post->post_content = apply_filters('default_content', $content);
-	$post->post_title = apply_filters('default_title', $edited_post_title);
-	$post->post_excerpt = apply_filters('default_excerpt', $excerpt);
+	$post->post_content = apply_filters('default_content', $post_content);
+	$post->post_title = apply_filters('default_title', $post_title);
+	$post->post_excerpt = apply_filters('default_excerpt', $post_excerpt);
 	$post->page_template = 'default';
 	$post->post_parent = 0;
 	$post->menu_order = 0;
@@ -984,14 +1004,6 @@ function got_mod_rewrite() {
 			return false;
 	}
 
-	if ( function_exists('ob_get_clean') ) {
-	  ob_start();
-	  phpinfo(INFO_MODULES);
-	  $php_modules = ob_get_clean();
-	  if ( strpos($php_modules, 'mod_rewrite') === false)
-	    return false;
-	}
-
 	return true;
 }
 
@@ -1276,7 +1288,7 @@ function add_submenu_page($parent, $page_title, $menu_title, $access_level, $fil
 }
 
 function add_options_page($page_title, $menu_title, $access_level, $file, $function = '') {
-	return add_submenu_page('options-personal.php', $page_title, $menu_title, $access_level, $file, $function);
+	return add_submenu_page('options-general.php', $page_title, $menu_title, $access_level, $file, $function);
 }
 
 function add_management_page($page_title, $menu_title, $access_level, $file, $function = '') {

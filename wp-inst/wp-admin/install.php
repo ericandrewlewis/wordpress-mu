@@ -74,7 +74,7 @@ header( 'Content-Type: text/html; charset=utf-8' );
 	</style>
 </head>
 <body>
-<h1 id="logo"><img alt="WordPress" src="http://static.wordpress.org/logo.png" /></h1>
+<h1 id="logo"><img alt="WordPress" src="images/wordpress-logo.png" /></h1>
 <?php
 // Let's check to make sure WP isn't already installed.
 $wpdb->hide_errors();
@@ -156,7 +156,7 @@ $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link
 $wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_rss) VALUES ('http://dougal.gunters.org/', 'Dougal', 1, 'http://dougal.gunters.org/feed/');");
 
 // Default category
-$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename) VALUES ('0', '".$wpdb->escape(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."')");
+$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename, category_count) VALUES ('0', '".$wpdb->escape(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."', '1')");
 
 // First post
 $now = date('Y-m-d H:i:s');

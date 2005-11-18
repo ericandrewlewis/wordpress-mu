@@ -30,6 +30,11 @@ case 'register':
   if ( username_exists( $user_login ) )
 		$errors['user_login'] = __('<strong>ERROR</strong>: This username is already registered, please choose another one.');
 
+	/* checking the email isn't already used by another user */
+	$email_exists = $wpdb->get_row("SELECT user_email FROM $wpdb->users WHERE user_email = '$user_email'");
+	if ( $email_exists)
+		die (__('<strong>ERROR</strong>: This email address is already registered, please supply another.'));
+
 	if ( 0 == count($errors) ) {
 		$password = substr( md5( uniqid( microtime() ) ), 0, 7);
 
@@ -108,7 +113,7 @@ default:
 	<p class="submit"><input type="submit" value="<?php _e('Register') ?> &raquo;" id="submit" name="submit" /></p>
 </form>
 <ul>
-	<li><a href="<?php bloginfo('home'); ?>" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Login') ?></a></li>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a></li>
 </ul>
@@ -136,7 +141,7 @@ case 'disabled':
 <div id="login">
 	<h2><?php _e('Registration Disabled') ?></h2>
 	<p><?php _e('User registration is currently not allowed.') ?><br />
-	<a href="<?php echo get_settings('home') . '/'; ?>" title="<?php _e('Go back to the blog') ?>"><?php _e('Home') ?></a>
+	<a href="<?php echo get_settings('home'); ?>/" title="<?php _e('Go back to the blog') ?>"><?php _e('Home') ?></a>
 	</p>
 </div>
 

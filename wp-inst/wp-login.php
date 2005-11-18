@@ -76,7 +76,7 @@ if ($error)
 <p class="submit"><input type="submit" name="submit" id="submit" value="<?php _e('Retrieve Password'); ?> &raquo;" tabindex="3" /></p>
 </form>
 <ul>
-	<li><a href="<?php bloginfo('home'); ?>" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
 <?php if (get_settings('users_can_register')) : ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-register.php"><?php _e('Register') ?></a></li>
 <?php endif; ?>
@@ -170,8 +170,9 @@ default:
 		$redirect_to = $_REQUEST['redirect_to'];
 	$redirect_to = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $redirect_to);
 
-	if( !empty($_POST) ) {
+	if( $_POST ) {
 		$user_login = $_POST['log'];
+		$user_login = sanitize_user( $user_login );
 		$user_pass  = $_POST['pwd'];
 		$rememberme = $_POST['rememberme'];
 	} elseif ( !empty($_COOKIE) ) {
@@ -185,13 +186,13 @@ default:
 
 	do_action('wp_authenticate', array(&$user_login, &$user_pass));
 
-	if ($user_login && $user_pass) {
+	if ( $_POST ) {
 		$user = new WP_User($user_login);
-
+	
 		// If the user can't edit posts, send them to their profile.
 		if ( !$user->has_cap('edit_posts') && ( empty( $redirect_to ) || $redirect_to == 'wp-admin/' ) )
- 			$redirect_to = get_settings('siteurl') . '/wp-admin/profile.php';
-
+			$redirect_to = get_settings('siteurl') . '/wp-admin/profile.php';
+	
 		if ( wp_login($user_login, $user_pass, $using_cookie) ) {
 			if ( !$using_cookie )
 				wp_setcookie($user_login, $user_pass, false, '', '', $rememberme);
@@ -216,11 +217,6 @@ default:
 	}
 	window.onload = focusit;
 	</script>
-	<style type="text/css">
-	#log, #pwd, #submit {
-		font-size: 1.7em;
-	}
-	</style>
 </head>
 <body>
 
@@ -232,7 +228,7 @@ if ( $error )
 ?>
 
 <form name="loginform" id="loginform" action="wp-login.php" method="post">
-<p><label><?php _e('Username:') ?><br /><input type="text" name="log" id="log" value="" size="20" tabindex="1" /></label></p>
+<p><label><?php _e('Username:') ?><br /><input type="text" name="log" id="log" value="<?php echo wp_specialchars(stripslashes($user_login), 1); ?>" size="20" tabindex="1" /></label></p>
 <p><label><?php _e('Password:') ?><br /> <input type="password" name="pwd" id="pwd" value="" size="20" tabindex="2" /></label></p>
 <p>
   <label><input name="rememberme" type="checkbox" id="rememberme" value="forever" tabindex="3" /> 
@@ -243,7 +239,7 @@ if ( $error )
 </p>
 </form>
 <ul>
-	<li><a href="<?php bloginfo('home'); ?>" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
 <?php if (get_settings('users_can_register')) : ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-register.php"><?php _e('Register') ?></a></li>
 <?php endif; ?>

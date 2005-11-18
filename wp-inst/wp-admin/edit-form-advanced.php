@@ -8,6 +8,10 @@ $messages[3] = __('Custom field deleted.');
 <?php endif; ?>
 
 <form name="post" action="post.php" method="post" id="post">
+<?php if ( (isset($mode) && 'bookmarklet' == $mode) ||
+			isset($_GET['popupurl']) ): ?>
+<input type="hidden" name="mode" value="bookmarklet" />
+<?php endif; ?>
 
 <div class="wrap">
 <h2 id="write-post"><?php _e('Write Post'); ?><?php if ( 0 != $post_ID ) : ?>
@@ -85,8 +89,10 @@ addLoadEvent(focusit);
 </fieldset>
 
 <fieldset id="categorydiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Categories') ?></h3> 
-<div class="dbx-content"><div id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></div></div>
+<h3 class="dbx-handle"><?php _e('Categories') ?></h3>
+<div class="dbx-content">
+<p id="jaxcat"></p>
+<div id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></div></div>
 <?php if ( current_user_can('manage_categories') ) : ?>
 <?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
@@ -207,7 +213,9 @@ if ('publish' != $post->post_status || 0 == $post_ID) {
 }
 ?>
 <input name="referredby" type="hidden" id="referredby" value="<?php 
-if ( url_to_postid($_SERVER['HTTP_REFERER']) == $post_ID )
+if ( !empty($_REQUEST['popupurl']) )
+	echo wp_specialchars($_REQUEST['popupurl']);
+else if ( url_to_postid($_SERVER['HTTP_REFERER']) == $post_ID )
 	echo 'redo';
 else
 	echo wp_specialchars($_SERVER['HTTP_REFERER']);
@@ -218,6 +226,8 @@ else
 <?php
 $uploading_iframe_ID = (0 == $post_ID ? $temp_ID : $post_ID);
 $uploading_iframe_src = "inline-uploading.php?action=view&amp;post=$uploading_iframe_ID";
+if ( !$attachments = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE post_parent = '$uploading_iframe_ID'") )
+	$uploading_iframe_src = "inline-uploading.php?action=upload&amp;post=$uploading_iframe_ID";
 $uploading_iframe_src = apply_filters('uploading_iframe_src', $uploading_iframe_src);
 if ( false != $uploading_iframe_src )
 	echo '<iframe id="uploading" border="0" src="' . $uploading_iframe_src . '">' . __('This feature requires iframe support.') . '</iframe>';
