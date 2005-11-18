@@ -262,7 +262,11 @@ function url_to_postid($url) {
 function get_settings($setting) {
 	global $wpdb;
 
-	$value = wp_cache_get($setting, 'options');
+	if ( defined('WP_INSTALLING') == false ) {
+		$value = wp_cache_get($setting, 'options');
+	} else {
+		$value = false;
+	}
 
 	if ( false === $value ) {
 		if ( defined('WP_INSTALLING') )
