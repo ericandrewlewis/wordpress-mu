@@ -31,7 +31,7 @@ function upgrade_all() {
 		upgrade_130();
 	}
 	
-	if ( $wp_current_db_version < 3104 )
+	if ( $wp_current_db_version < 3183 )
 		upgrade_160();
 
 	save_mod_rewrite_rules();
@@ -317,7 +317,7 @@ function upgrade_160() {
 	$comments = $wpdb->get_results( "SELECT comment_post_ID, COUNT(*) as c FROM $wpdb->comments GROUP BY comment_post_ID" );
 	if( is_array( $comments ) ) {
 		foreach ($comments as $comment) {
-			$wpdb->query( "UPDATE $wpdb->posts SET comment_count = $comment->c WHERE ID = '$comment->comment_post_ID}'" );
+			$wpdb->query( "UPDATE $wpdb->posts SET comment_count = $comment->c WHERE ID = '$comment->comment_post_ID'" );
 		}
 	}
 
@@ -426,7 +426,7 @@ function __get_option($setting) {
 
 	$option = $wpdb->get_var("SELECT option_value FROM $wpdb->options WHERE option_name = '$setting'");
 
-	if ( 'home' == $setting && '' == $value )
+	if ( 'home' == $setting && '' == $option )
 		return __get_option('siteurl');
 
 	if ( 'siteurl' == $setting || 'home' == $setting || 'category_base' == $setting )

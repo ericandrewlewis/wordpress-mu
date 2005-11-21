@@ -119,8 +119,8 @@ switch($step) {
 	case 2:
 
 // Fill in the data we gathered
-$weblog_title = $_POST['weblog_title'];
-$admin_email = $_POST['admin_email'];
+$weblog_title = stripslashes($_POST['weblog_title']);
+$admin_email = stripslashes($_POST['admin_email']);
 // check e-mail address
 if (empty($admin_email)) {
 	die (__("<strong>ERROR</strong>: please type your e-mail address"));
@@ -161,7 +161,7 @@ $wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename
 // First post
 $now = date('Y-m-d H:i:s');
 $now_gmt = gmdate('Y-m-d H:i:s');
-$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('1', '$now', '$now_gmt', '".$wpdb->escape(__('Welcome to WordPress. This is your first post. Edit or delete it, then start blogging!'))."', '".$wpdb->escape(__('Hello world!'))."', '0', '".$wpdb->escape(__('hello-world'))."', '$now', '$now_gmt')");
+$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, comment_count) VALUES ('1', '$now', '$now_gmt', '".$wpdb->escape(__('Welcome to WordPress. This is your first post. Edit or delete it, then start blogging!'))."', '".$wpdb->escape(__('Hello world!'))."', '0', '".$wpdb->escape(__('hello-world'))."', '$now', '$now_gmt', '1')");
 
 $wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
 
@@ -181,7 +181,7 @@ $wpdb->query("INSERT INTO $wpdb->usermeta (user_id, meta_key, meta_value) VALUES
 $admin_caps = serialize(array('administrator' => true));
 $wpdb->query("INSERT INTO $wpdb->usermeta (user_id, meta_key, meta_value) VALUES ({$wpdb->insert_id}, '{$table_prefix}capabilities', '{$admin_caps}');");
 
-$message_headers = 'From: ' . stripslashes($_POST['weblog_title']) . ' <wordpress@' . $_SERVER['SERVER_NAME'] . '>';
+$message_headers = 'From: ' . $weblog_title . ' <wordpress@' . $_SERVER['SERVER_NAME'] . '>';
 $message = sprintf(__("Your new WordPress blog has been successfully set up at:
 
 %1\$s

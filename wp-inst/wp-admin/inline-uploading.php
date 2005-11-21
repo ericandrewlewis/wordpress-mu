@@ -380,7 +380,6 @@ form {
 }
 #descr {
 	height: 35px;
-	v-align: top;
 }
 #buttons {
 	width: 98%;
@@ -418,7 +417,9 @@ form {
 <?php if ( $attachments = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE post_parent = '$post'") ) { ?>
 <li<?php echo $current_2; ?>><a href="<?php echo basename(__FILE__); ?>?action=view&amp;post=<?php echo $post; ?>"><?php _e('Attached Images'); ?></a></li>
 <?php } ?>
+<?php if ($wpdb->get_var("SELECT count(ID) FROM $wpdb->posts WHERE post_status = 'attachment' AND left(post_mime_type, 5) = 'image'")) { ?>
 <li<?php echo $current_3; ?>><a href="<?php echo basename(__FILE__); ?>?action=view&amp;post=<?php echo $post; ?>&amp;all=true"><?php _e('All Images'); ?></a></li>
+<?php } ?>
 <li> </li>
 <?php if ( $action != 'upload' ) { ?>
 <?php if ( false !== $back ) : ?>
@@ -461,7 +462,7 @@ form {
 <td><input type="text" id="title" name="imgtitle" /></td>
 </tr>
 <tr>
-<th scope="row" style="text-align: right;"><label for="descr"><?php _e('Description:'); ?></th>
+<th scope="row" style="text-align: right;"><label for="descr"><?php _e('Description:'); ?></label></th>
 <td><input type="textarea" name="descr" id="descr" value="" /></td>
 </tr>
 </table>
@@ -471,12 +472,10 @@ form {
 <input type="hidden" name="all" value="<?php echo $all; ?>" />
 <input type="submit" value="<?php _e('Upload'); ?>" />
 <input type="button" value="<?php _e('Cancel'); ?>" onclick="cancelUpload()" />
+</p>
 </div>
 </form>
 <?php } ?>
 <?php endif; ?>
 </body>
 </html>
-
-
-
