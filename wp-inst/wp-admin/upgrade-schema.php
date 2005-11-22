@@ -189,7 +189,7 @@ CREATE TABLE $wpdb->sitecategories (
 ";
 
 function populate_options() {
-	global $wpdb, $wpblog, $current_site;
+	global $wpdb, $wp_db_version, $wpblog, $current_site;
 
 	$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
 	$guessurl = preg_replace('|/wp-admin/.*|i', '', $schema . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
@@ -264,6 +264,7 @@ function populate_options() {
 	// 1.6
 	add_option('default_role', 'subscriber');
 	add_option('rich_editing', 'true');
+	add_option('db_version', $wp_db_version);
 
 	add_site_option( 'customizefeed1', '0' );
 	add_site_option( 'customizefeed2', '0' );

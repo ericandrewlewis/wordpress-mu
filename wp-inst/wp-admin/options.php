@@ -53,6 +53,9 @@ case 'update':
             if( in_array($option, $nonbools) && ( $value == '0' || $value == '') )
 	      $value = 'closed';
 
+	    if( $option == 'blogdescription' || $option == 'blogname' )
+		    $value = wp_filter_post_kses( $value );
+
 	    if ( update_option($option, $value) )
 	      $any_changed++;
 	  }
