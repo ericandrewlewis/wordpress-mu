@@ -9,8 +9,8 @@ RewriteRule ^(.*)       http://%1/$1 [R,L]
 #### blogs
 ###
 RewriteRule ^([_0-9a-zA-Z-]+)/templates/(.*)			BASE/wp-inst/wp-content/blogs/$1/templates/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/files/(.*)			BASE/wp-inst/wp-content/blogs/$1/files/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-content/blogs/(.*)/files/(.*)	BASE/wp-inst/wp-content/blogs/$1/files/$3 [L]
+RewriteRule ^([_0-9a-zA-Z-]+)/files/(.*)                  	BASE/wp-inst/wp-content/blogs.php?file=$1 [L]
+RewriteRule ^([_0-9a-zA-Z-]+)/wp-content/blogs/(.*)/files/(.*)	BASE/wp-inst/wp-content/blogs.php?file=$3 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-content/themes/(.*)		BASE/wp-inst/wp-content/themes/$2 [L]
 RewriteRule ^wp-content/themes/(.*)		BASE/wp-inst/wp-content/themes/$1 [L]
 

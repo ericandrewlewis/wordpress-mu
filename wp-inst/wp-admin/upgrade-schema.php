@@ -207,12 +207,6 @@ function populate_options() {
 	add_option('posts_per_rss', 10);
 	add_option('rss_excerpt_length', 50);
 	add_option('rss_use_excerpt', 0);
-	add_option('use_fileupload', 1);
-	add_option('fileupload_realpath', ABSPATH . 'wp-content/blogs.dir/'.$wpdb->blogid.'/files');
-	add_option('fileupload_url', get_option('siteurl') . '/files');
-	add_option('fileupload_allowedtypes', 'jpg jpeg gif png');
-	add_option('fileupload_maxk', 300);
-	add_option('fileupload_minlevel', 6);
 	add_option('mailserver_url', 'mail.example.com');
 	add_option('mailserver_login', 'login@example.com');
 	add_option('mailserver_pass', 'password');
