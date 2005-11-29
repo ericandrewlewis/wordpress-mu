@@ -257,12 +257,19 @@ function url_to_postid($url) {
 }
 
 
+function maybe_unserialize($original) {
+	if ( $gm = @ unserialize($original) )
+		return $gm;
+	else
+		return $original;
+}
+
 /* Options functions */
 
 function get_settings($setting) {
-	global $wpdb;
+	global $wpdb, $switched;
 
-	if ( defined('WP_INSTALLING') == false ) {
+	if ( $switched == false && defined('WP_INSTALLING') == false ) {
 		$value = wp_cache_get($setting, 'options');
 	} else {
 		$value = false;
@@ -290,11 +297,8 @@ function get_settings($setting) {
 	if ( 'siteurl' == $setting || 'home' == $setting || 'category_base' == $setting )
 		$value = preg_replace('|/+$|', '', $value);
 
-	@ $kellogs = unserialize($value);
-	if ( $kellogs !== FALSE )
-		return apply_filters('option_' . $setting, $kellogs);
-	else
-		return apply_filters('option_' . $setting, $value);
+	$value = stripslashes( $value );
+	return apply_filters( 'option_' . $setting, maybe_unserialize($value) );
 }
 
 function get_option($option) {
@@ -332,9 +336,7 @@ function get_alloptions() {
 			$option->option_value = preg_replace('|/+$|', '', $option->option_value);
 		if ( 'category_base' == $option->option_name )
 			$option->option_value = preg_replace('|/+$|', '', $option->option_value);
-		@ $value = unserialize($option->option_value);
-		if ( $value === FALSE )
-			$value = $option->option_value;
+		$value = maybe_unserialize($option->option_value);
 		$all_options->{$option->option_name} = apply_filters('pre_option_' . $option->option_name, $value);
 	}
 	return apply_filters('all_options', $all_options);
@@ -463,9 +465,9 @@ function get_post_meta($post_id, $key, $single = false) {
 
 	if ( isset($post_meta_cache[$post_id][$key]) ) {
 		if ( $single ) {
-			return $post_meta_cache[$post_id][$key][0];
+			return maybe_unserialize( $post_meta_cache[$post_id][$key][0] );
 		} else {
-			return $post_meta_cache[$post_id][$key];
+			return maybe_unserialize( $post_meta_cache[$post_id][$key][0] );
 		}
 	}
 
@@ -480,7 +482,7 @@ function get_post_meta($post_id, $key, $single = false) {
 
 	if ( $single ) {
 		if ( count($values) ) {
-			$return = $values[0];
+			$return = maybe_unserialize( $values[0] );
 		} else {
 			return '';
 		}
@@ -488,10 +490,7 @@ function get_post_meta($post_id, $key, $single = false) {
 		$return = $values;
 	}
 
-	@ $kellogs = unserialize($return);
-	if ( $kellogs !== FALSE )
-		return $kellogs;
-	else return $return;
+	return maybe_unserialize($return);
 }
 
 function update_post_meta($post_id, $key, $value, $prev_value = '') {
@@ -589,6 +588,20 @@ function &get_post(&$post, $output = OBJECT) {
 	}
 }
 
+function set_page_path($page) {
+	$page->fullpath = '/' . $page->post_name;
+	$path = $page->fullpath;
+	$curpage = $page;
+	while ($curpage->post_parent != 0) {
+		$curpage = get_page($curpage->post_parent);
+		$path = '/' . $curpage->post_name . $path;
+	}
+	
+	$page->fullpath = $path;
+
+	return $page;
+}
+
 // Retrieves page data given a page ID or page object.
 // Handles page caching.
 function &get_page(&$page, $output = OBJECT) {
@@ -615,6 +628,11 @@ function &get_page(&$page, $output = OBJECT) {
 			$_page = & $wpdb->get_row($query);
 			wp_cache_add($_page->ID, $_page, 'pages');
 		}
+	}
+	
+	if (!isset($_page->fullpath)) {
+		$_page = set_page_path($_page);
+		wp_cache_replace($_page->cat_ID, $_page, 'pages');
 	}
 
 	if ( $output == OBJECT ) {
@@ -722,6 +740,17 @@ function get_all_category_ids() {
 	}
 	
 	return $cat_ids;
+}
+
+function get_all_page_ids() {
+	global $wpdb;
+	
+	if ( ! $page_ids = wp_cache_get('all_page_ids', 'posts') ) {
+		$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_status='static'");
+		wp_cache_add('all_page_ids', $page_ids, 'pages');
+	}
+	
+	return $page_ids;
 }
 
 function gzip_compression() {
@@ -1281,15 +1310,13 @@ function update_post_category_cache($post_ids) {
 	if ( is_array($post_ids) )
 		$post_ids = implode(',', $post_ids);
 
-	$dogs = $wpdb->get_results("SELECT DISTINCT
-	post_id, cat_ID FROM $wpdb->categories, $wpdb->post2cat
-	WHERE category_id = cat_ID AND post_id IN ($post_ids)");
+	$dogs = $wpdb->get_results("SELECT post_id, category_id FROM $wpdb->post2cat WHERE post_id IN ($post_ids)");
 
 	if ( empty($dogs) )
 		return;
 		
 	foreach ($dogs as $catt)
-		$category_cache[$catt->post_id][$catt->cat_ID] = &get_category($catt->cat_ID);
+		$category_cache[$catt->post_id][$catt->category_id] = &get_category($catt->category_id);
 }
 
 function update_post_caches(&$posts) {
@@ -1304,24 +1331,12 @@ function update_post_caches(&$posts) {
 	for ($i = 0; $i < count($posts); $i++) {
 		$post_id_array[] = $posts[$i]->ID;
 		$post_cache[$posts[$i]->ID] = &$posts[$i];
+		$comment_count_cache[$posts[$i]->ID] = $posts[$i]->comment_count;
 	}
 
 	$post_id_list = implode(',', $post_id_array);
 
 	update_post_category_cache($post_id_list);
-
-	// Do the same for comment numbers
-	$comment_counts = $wpdb->get_results( "SELECT ID as comment_post_ID, comment_count as ccount FROM $wpdb->posts WHERE ID in ($post_id_list)" );
-
-	if ( $comment_counts ) {
-		foreach ($comment_counts as $comment_count) {
-			$comment_count_cache["$comment_count->comment_post_ID"] = $comment_count->ccount;
-			$has_comments[] = $comment_count->comment_post_ID;
-		}
-		$no_comments = array_diff( $post_id_array, $has_comments );
-		foreach ( $no_comments as $id )
-			$comment_count_cache["$id"] = 0;
-	}
 
 	// Get post-meta info
 	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta WHERE post_id IN($post_id_list) ORDER BY post_id, meta_key", ARRAY_A) ) {
@@ -2120,6 +2135,10 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 
 	if ( is_array($meta_value) || is_object($meta_value) )
 		$meta_value = serialize($meta_value);
+	$meta_value = trim( $meta_value );
+
+	if ( '' == $meta_value )
+		return false;
 
 	$cur = $wpdb->get_row("SELECT * FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
 	if ( !$cur ) {

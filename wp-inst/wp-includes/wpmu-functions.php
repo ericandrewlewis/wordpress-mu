@@ -71,7 +71,7 @@ function wpmu_checkAvailableSpace($action) {
 add_filter('fileupload_init','wpmu_checkAvailableSpace');
 
 function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $source = 'regpage', $site_id = 1 ) {
-    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site, $wp_roles;
+    global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site, $wp_roles, $new_user_id, $new_blog_id;
 
 	$domain       = addslashes( $domain );
 	$weblog_title = addslashes( $weblog_title );
@@ -81,7 +81,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     if( empty($path) )
 	    $path = '/';
 	
-    $limited_email_domains = get_site_settings( 'limited_email_domains' );
+    $limited_email_domains = get_site_option( 'limited_email_domains' );
     if( is_array( $limited_email_domains ) && empty( $limited_email_domains ) == false ) {
 	    $emaildomain = substr( $admin_email, 1 + strpos( $admin_email, '@' ) );
 	    if( in_array( $emaildomain, $limited_email_domains ) == false ) {
@@ -151,6 +151,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     $wpdb->options          = $table_prefix . 'options';
     $wpdb->postmeta         = $table_prefix . 'postmeta';
     $wp_roles->role_key     = $table_prefix . 'user_roles';
+    wp_cache_flush();
 
     @mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id, 0777 );
     @mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id."/files", 0777 );
@@ -200,6 +201,8 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 	$GLOBALS['random_password'] = $random_password;
     $wpdb->query("INSERT INTO $wpdb->users (ID, user_login, user_pass, user_email, user_url, user_registered, display_name) VALUES ( NULL, '".$username."', MD5('$random_password'), '$admin_email', '$url', '$now_gmt', '$username' )");
     $userID = $wpdb->insert_id;
+    $new_user_id = $userID;
+    $new_blog_id = $blog_id;
     $metavalues = array( 
 		'user_nickname' => addslashes($username), 
 		$table_prefix . 'user_level' => 10, 
@@ -271,11 +274,6 @@ SITE_NAME" ) );
     // Default comment
     $wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://" . $current_site->domain . $current_site->path . "', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
 
-    $message_headers = 'From: ' . stripslashes($weblog_title) . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-    $message = $welcome_email;
-    if( empty( $current_site->site_name ) )
-	    $current_site->site_name = "WordPress MU";
-    @mail($admin_email, __('New ' . $current_site->site_name . ' Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
     // remove all perms except for the login user.
     $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$userID."' AND meta_key = '".$table_prefix."user_level'" );
@@ -284,6 +282,13 @@ SITE_NAME" ) );
 	    $wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$userID."' AND meta_key = '" . $wpmuBaseTablePrefix . "1_capabilities'" );
 
     do_action( "wpmu_new_blog", $blog_id, $userID );
+
+    $welcome_email = apply_filters( "update_welcome_email", $welcome_email );
+    $message_headers = 'From: ' . stripslashes($weblog_title) . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+    $message = $welcome_email;
+    if( empty( $current_site->site_name ) )
+	    $current_site->site_name = "WordPress MU";
+    @mail($admin_email, __('New ' . $current_site->site_name . ' Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
     // restore wpdb variables
     reset( $tmp );
@@ -295,6 +300,7 @@ SITE_NAME" ) );
     $wp_roles->role_key = $tmprolekey;
 
     $wpdb->show_errors();
+    wp_cache_flush();
 
     return "ok";
 }
@@ -389,142 +395,129 @@ function get_user_details( $username ) {
 
 function get_blog_details( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
+	$cache = wpmu_get_cache( $id, "blog-details" );
+	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 300 ) { // cache for 300 seconds
+		$row = $cache[ 'value' ];
+	} else {
+		$row = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id'" );
+		$name = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" );
+		$row->blogname = $name->option_value;
+		$row->siteurl = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
+		wpmu_update_cache( $id, $row, "blog-details" );
+	}
 
-	$row = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id'" );
-	$name = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" );
-	$row->blogname = $name->option_value;
-	$row->siteurl = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
 	return $row;
 }
 
 function get_current_user_id() {
-	global $wpdb;
-
-	$cookie_user_login  = $_COOKIE[USER_COOKIE];
-	$user_login = sanitize_user( $cookie_user_login );
-	return $wpdb->get_var( "SELECT ID FROM $wpdb->users WHERE user_login = '$user_login'" );
+	global $current_user;
+	return $current_user->data->ID;
 }
 
-function is_site_admin( $user_login = '0' ) {
+function is_site_admin( $user_login = false ) {
 	global $wpdb, $current_user;
 
-	if( is_object( $current_user ) == false && $user_login == 0 ) {
-		$cookie_user_login  = $_COOKIE[USER_COOKIE];
-		$user_login = sanitize_user( $cookie_user_login );
-	} elseif( $user_login == '0' ) {
-		$user_id = $current_user->data->ID;
-		$user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
-	}  else {
-		$user_id = $wpdb->get_var(  "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '" . $user_login . "'" );
-	}
+	if ( !$current_user && !$user_login )
+		return false;
 
-	$ret = true;
+	if ( $user_login )
+		$user_login = sanitize_user( $user_login );
+	else 
+		$user_login = $current_user->data->user_login;
 
-	$super_users = get_site_option( "super_users", "admin" );
-	$t = split( " ", $super_users );
-	if( is_array( $t ) ) {
-		if( in_array( $user_login, $t ) == false ) {
-			if( $wpdb->get_var( "SELECT site_id FROM $wpdb->sitemeta WHERE site_id = '$wpdb->siteid' AND meta_key = 'admin_user_id' AND meta_value = '$user_id'" ) == false ) {
-				$ret = false;
-			} 
+	$site_admins = get_site_option( 'site_admins', array('admin') );
+	if( in_array( $user_login, $site_admins ) )
+		return true;
+
+	return false;
+}
+
+function get_site_option( $option, $default = false ) {
+	global $wpdb;
+
+	$value = wp_cache_get($option, 'site-options');
+
+	if ( false === $value ) {
+		$cache = wpmu_get_cache( $option, "site_options" );
+		if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 300 ) { // cache for 300 seconds
+			$value = $cache[ 'value' ];
+		} else {
+			$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$option' AND site_id = '$wpdb->siteid'");
+		}
+		if ( $value ) {
+			wpmu_update_cache( $option, $value, "site_options" );
+			wp_cache_set($option, $value, 'site-options');
+		} else {
+			if ( $default )
+				return $default;
+			return false;
 		}
 	}
 
-	return $ret;
-}
-
-function get_site_settings( $option, $default='na' ) {
-    global $wpdb;
-
-    $query = "SELECT meta_key, meta_value FROM $wpdb->sitemeta WHERE meta_key = '$option' AND site_id = '".$wpdb->siteid."'";
-    $option = $wpdb->get_row( $query );
-    if( $option == false ) {
-	    if( $default != 'na' ) {
-		    return $default;
-	    } else {
-		    return false;
-	    }
-    } else {
-	    @ $kellogs = unserialize($option->meta_value);
-	    if ($kellogs !== FALSE) {
-		    $meta_value = $kellogs;
-	    } else {
-		    $meta_value = $option->meta_value;
-	    }
-	    return $meta_value;
-    }
-}
-
-function get_site_option( $option, $default='na' ) {
-	return get_site_settings( $option, $default );
-}
-
-function add_site_settings( $key, $value ) {
-    global $wpdb;
-    if( $value != get_site_settings( $key ) ) {
-	if ( is_array($value) || is_object($value) )
-	    $value = serialize($value);
-	$query = "SELECT meta_value 
-                  FROM   ".$wpdb->sitemeta." 
-	          WHERE  meta_key = '$key'
-	          AND    site_id = '".$wpdb->siteid."'";
-       if( $wpdb->get_row( $query ) == false ) {
-	   $query = "INSERT INTO $wpdb->sitemeta ( meta_id , site_id , meta_key , meta_value )
-	             VALUES ( NULL, '".$wpdb->siteid."', '".$key."', '".$wpdb->escape( $value )."')";
-	   $wpdb->query( $query );
-       }
-    }
+	$value = stripslashes( $value );
+	@ $kellogs = unserialize($value);
+	if ( $kellogs !== FALSE )
+		return $kellogs;
+	else
+		return $value;
 }
 
 function add_site_option( $key, $value ) {
-	return add_site_settings( $key, $value );
-}
+	global $wpdb;
 
-function update_site_settings( $key, $value ) {
-    global $wpdb;
-    if( $value != get_site_settings( $key ) ) {
+	if ( get_site_option( $key ) ) // If we already have it
+		return false;
+
 	if ( is_array($value) || is_object($value) )
-	    $value = serialize($value);
-
-	$value = trim($value); // I can't think of any situation we wouldn't want to trim
-	$query = "SELECT meta_key, meta_value 
-                  FROM   ".$wpdb->sitemeta." 
-	          WHERE  meta_key = '$key'
-	          AND    site_id = '".$wpdb->siteid."'";
-       if( $wpdb->get_row( $query ) == false ) {
-	   add_site_option( $key, $value );
-       } else {
-	   $query = "UPDATE ".$wpdb->sitemeta."
-	             SET    meta_value = '".$wpdb->escape( $value )."'
-		     WHERE  meta_key   = '".$key."'";
-	   $wpdb->query( $query );
-       }
-    }
+		$value = serialize($value);
+	$value = $wpdb->escape( $value );
+	$wpdb->query( "INSERT INTO $wpdb->sitemeta ( site_id , meta_key , meta_value ) VALUES ( '$wpdb->siteid', '$key', '$value')" );
+	return $wpdb->insert_id;
 }
 
 function update_site_option( $key, $value ) {
-	return update_site_settings( $key, $value );
+	global $wpdb;
+
+	if ( $value == get_site_option( $key ) )
+	 	return;
+	
+	if ( is_array($value) || is_object($value) )
+		$value = serialize($value);
+	$value = $wpdb->escape( $value );
+
+	if ( !get_site_option( $key ) )
+		add_site_option( $key, $value );
+
+	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '".$wpdb->escape( $value )."' WHERE meta_key = '$key'" );
+	wpmu_update_cache( $key, $value, "site_options" );
 }
 
 function get_blog_option( $blog_id, $key, $default='na' ) {
 	global $wpdb, $wpmuBaseTablePrefix;
-
-	$option = $wpdb->get_row( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'" );
-	if( $option == false ) {
-		if( $default != 'na' ) {
-			return $default;
-		} else {
-			return false;
-		}
+	$cache = wpmu_get_cache( $blog_id."-".$key, "get_blog_option" );
+	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 30 ) { 
+		$opt = $cache[ 'value' ];
 	} else {
-		@ $kellogs = unserialize($option->option_value);
-		if ($kellogs !== FALSE) {
-			$option_value = $kellogs;
+		$option = $wpdb->get_row( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'" );
+		if( $option == false ) {
+			if( $default != 'na' ) {
+				$opt = $default;
+			} else {
+				$opt = false;
+			}
 		} else {
-			$option_value = $option->option_value;
+			@ $kellogs = unserialize($option->option_value);
+			if ($kellogs !== FALSE) {
+				$option_value = $kellogs;
+			} else {
+				$option_value = $option->option_value;
+			}
+			$opt = $option_value;
 		}
-		return $option_value;
+		wpmu_update_cache( $blog_id."-".$key, $opt, "get_blog_option" );
 	}
+
+	return $opt;
 }
 
 function add_blog_option( $blog_id, $key, $value ) {
@@ -560,8 +553,8 @@ function update_blog_option( $blog_id, $key, $value ) {
     }
 }
 
-function switch_to_blog( $blog_id ) {
-    global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache;
+function switch_to_blog( $new_blog ) {
+    global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched;
 
     // FIXME
 
@@ -581,10 +574,12 @@ function switch_to_blog( $blog_id ) {
     $tmpoldblogdetails[ 'cache_categories' ] = $cache_categories;
     $tmpoldblogdetails[ 'table_prefix' ] = $table_prefix;
     $tmpoldblogdetails[ 'post_cache' ]     = $post_cache;
+    $tmpoldblogdetails[ 'wp_object_cache' ] = $wp_object_cache;
+    $tmpoldblogdetails[ 'blog_id' ] = $blog_id;
 
     // fix the new prefix.
-    $table_prefix = $wpmuBaseTablePrefix . $blog_id . "_";
-    $wpdb->blogid           = $blog_id;
+    $table_prefix = $wpmuBaseTablePrefix . $new_blog . "_";
+    $wpdb->blogid           = $new_blog;
     $wpdb->posts            = $table_prefix . 'posts';
     $wpdb->categories       = $table_prefix . 'categories';
     $wpdb->post2cat         = $table_prefix . 'post2cat';
@@ -593,16 +588,21 @@ function switch_to_blog( $blog_id ) {
     $wpdb->linkcategories   = $table_prefix . 'linkcategories';
     $wpdb->options          = $table_prefix . 'options';
     $wpdb->postmeta         = $table_prefix . 'postmeta';
+    $blog_id = $new_blog;
 
     $cache_settings = array();
     unset( $cache_settings );
     unset( $category_cache );
     unset( $cache_categories );
     unset( $post_cache );
+    unset( $wp_object_cache );
+    $wp_object_cache = new WP_Object_Cache();
+    $wp_object_cache->cache_enabled = false;
+    $switched = true;
 }
 
 function restore_current_blog() {
-    global $table_prefix, $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache;
+    global $table_prefix, $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched;
     // backup
     $wpdb->blogid = $tmpoldblogdetails[ 'blogid' ];
     $wpdb->posts = $tmpoldblogdetails[ 'posts' ];
@@ -618,7 +618,12 @@ function restore_current_blog() {
     $category_cache = $tmpoldblogdetails[ 'category_cache' ];
     $cache_categories = $tmpoldblogdetails[ 'cache_categories' ];
     $table_prefix = $tmpoldblogdetails[ 'table_prefix' ];
-    $post_cache = $tmpoldblogdetails[ 'post_cache' ];
+    $post_cache      = $tmpoldblogdetails[ 'post_cache' ];
+    $wp_object_cache = $tmpoldblogdetails[ 'wp_object_cache' ];
+    $blog_id = $tmpoldblogdetails[ 'blog_id' ];
+    unset( $tmpoldblogdetails );
+    $wp_object_cache->cache_enabled = true;
+    $switched = false;
 }
 
 function get_users_of_blog( $id ) {
@@ -646,6 +651,18 @@ function update_archived( $id, $archived ) {
     $wpdb->query( "UPDATE {$wpdb->blogs} SET archived = '{$archived}' WHERE blog_id = '$id'" );
 
     return $archived;
+}
+
+function update_blog_status( $id, $pref, $value ) {
+    global $wpdb;
+    $wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}' WHERE blog_id = '$id'" );
+
+    return $value;
+}
+
+function get_blog_status( $id, $pref ) {
+    global $wpdb;
+    return $wpdb->get_var( "SELECT $pref FROM {$wpdb->blogs} WHERE blog_id = '$id'" );
 }
 
 function get_last_updated( $display = false ) {
@@ -762,8 +779,17 @@ function get_blog_count( $id = 0 ) {
 
 function get_blog_post( $blog_id, $post_id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
+	
+	$cache = wpmu_get_cache( $blog_id."-".$post_id, "get_blog_post" );
+	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 10 ) { 
+		$post = $cache[ 'value' ];
+	} else {
+		$post = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
+		wpmu_update_cache( $blog_id."-".$post_id, $post, "get_blog_post" );
+	}
 
-	return $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
+	return $post;
+
 }
 
 function add_user_to_blog( $blog_id, $user_id, $role ) {
@@ -776,9 +802,45 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 
 function get_blog_permalink( $blog_id, $post_id ) {
 	global $wpdb, $cache_settings;
-	switch_to_blog( $blog_id );
-	$link = get_permalink( $post_id );
-	restore_current_blog();
+	
+	$cache = wpmu_get_cache( $blog_id."-".$post_id, "permalink" );
+	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 30 ) { // cache for 30 seconds
+		$link = $cache[ 'value' ];
+	} else {
+		switch_to_blog( $blog_id );
+		$link = get_permalink( $post_id );
+		restore_current_blog();
+		wpmu_update_cache( $blog_id."-".$post_id, $link, "permalink" );
+	}
 	return $link;
+}
+function wpmu_update_cache( $key, $value, $path ) {
+	if( defined( "WPMU_CACHE_PATH" ) ) {
+		@mkdir( CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/", 0700 );
+		@mkdir( CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/temp/", 0700 );
+		$cache_path = CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/" . md5( $key );
+		$tmpfname = tempnam( CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/temp/", "tempname");
+		$handle = fopen($tmpfname, "w");
+		$cache = array( "value" => $value, "time" => time() );
+		fwrite( $handle, serialize( $cache ) );
+		fclose($handle);
+		if( file_exists( $cache_path ) )
+			@unlink( $cache_path );
+		rename( $tmpfname, $cache_path );
+	}
+}
+
+function wpmu_get_cache( $key, $path ) {
+	if( defined( "WPMU_CACHE_PATH" ) ) {
+		$cache_path = CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/" . md5( $key );
+		if ( @file_exists( $cache_path ) ) {
+			$cache = unserialize( @file_get_contents( $cache_path ) );
+			return $cache;
+		} else {
+			return false;
+		}
+	} else {
+		return false;
+	}
 }
 ?>

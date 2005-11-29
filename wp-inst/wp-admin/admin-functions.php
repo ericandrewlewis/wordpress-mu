@@ -81,10 +81,6 @@ function relocate_children($old_ID, $new_ID) {
 function fix_attachment_links($post_ID) {
 	global $wp_rewrite;
 
-	// Relevance check.
-	if ( false == $wp_rewrite->using_permalinks() )
-		return;
-
 	$post = & get_post($post_ID);
 
 	$search = "#<a[^>]+rel=('|\")[^'\"]*attachment[^>]*>#ie";
@@ -869,7 +865,7 @@ function add_meta($post_ID) {
 	$metakeyinput = $wpdb->escape(stripslashes(trim($_POST['metakeyinput'])));
 	$metavalue = $wpdb->escape(stripslashes(trim($_POST['metavalue'])));
 
-	if (!empty ($metavalue) && ((('#NONE#' != $metakeyselect) && !empty ($metakeyselect)) || !empty ($metakeyinput))) {
+	if ( ('0' === $metavalue || !empty ($metavalue)) && ((('#NONE#' != $metakeyselect) && !empty ($metakeyselect)) || !empty ($metakeyinput)) ) {
 		// We have a key/value pair. If both the select and the 
 		// input for the key have data, the input takes precedence:
 

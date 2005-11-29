@@ -257,6 +257,7 @@ class WP_Query {
 		// First let's clear some variables
 		$whichcat = '';
 		$whichauthor = '';
+		$whichpage = '';
 		$result = '';
 		$where = '';
 		$limits = '';
@@ -350,9 +351,25 @@ class WP_Query {
 			$q['name'] = sanitize_title($q['name']);
 			$where .= " AND post_name = '" . $q['name'] . "'";
 		} else if ('' != $q['pagename']) {
-			$q['pagename'] = sanitize_title(basename(str_replace('%2F', '/', urlencode($q['pagename']))));
+			$q['pagename'] = str_replace('%2F', '/', urlencode(urldecode($q['pagename'])));
+			$page_paths = '/' . trim($q['pagename'], '/');
+			$q['pagename'] = sanitize_title(basename($page_paths));
 			$q['name'] = $q['pagename'];
-			$where .= " AND post_name = '" . $q['pagename'] . "'";
+			$page_paths = explode('/', $page_paths);
+			foreach($page_paths as $pathdir)
+				$page_path .= ($pathdir!=''?'/':'') . sanitize_title($pathdir);
+				
+			$all_page_ids = get_all_page_ids();
+			$reqpage = 0;			
+			foreach ( $all_page_ids as $page_id ) {
+				$page = get_page($page_id);
+				if ( $page->fullpath == $page_path ) {
+					$reqpage = $page_id;
+					break;
+				}
+			}
+			
+			$where .= " AND (ID = '$reqpage')";
 		} elseif ('' != $q['attachment']) {
 			$q['attachment'] = sanitize_title($q['attachment']);
 			$q['name'] = $q['attachment'];
@@ -511,7 +528,7 @@ class WP_Query {
 			$q['author'] = $wpdb->get_var("SELECT ID FROM $wpdb->users WHERE user_nicename='".$q['author_name']."'");
 			$whichauthor .= ' AND (post_author = '.intval($q['author']).')';
 		}
-
+		
 		$where .= $search.$whichcat.$whichauthor;
 
 		if ((empty($q['order'])) || ((strtoupper($q['order']) != 'ASC') && (strtoupper($q['order']) != 'DESC'))) {
@@ -1466,7 +1483,8 @@ class WP {
 					$request_match = $req_uri . '/' . $request;
 				}
 
-				if (preg_match("!^$match!", $request_match, $matches)) {
+				if (preg_match("!^$match!", $request_match, $matches) ||
+					preg_match("!^$match!", urldecode($request_match), $matches)) {
 					// Got a match.
 					$this->matched_rule = $match;
 
@@ -1482,27 +1500,28 @@ class WP {
 
 					// If we're processing a 404 request, clear the error var
 					// since we found something.
-					if (isset($_GET['error'])) {
+					if (isset($_GET['error']))
 						unset($_GET['error']);
-					}
 
-					if (isset($error)) {
+					if (isset($error))
 						unset($error);
-					}
 
 					break;
 				}
 			}
 
 			// If req_uri is empty or if it is a request for ourself, unset error.
-			if ( empty($request) || $req_uri == $self ) {
-				if (isset($_GET['error'])) {
+			if ( empty($request) || $req_uri == $self || strstr($_SERVER['PHP_SELF'], 'wp-admin/') ) {
+				if (isset($_GET['error']))
 					unset($_GET['error']);
-				}
 
-				if (isset($error)) {
+				if (isset($error))
 					unset($error);
-				}
+					
+				if ( isset($query_vars) && strstr($_SERVER['PHP_SELF'], 'wp-admin/') )
+					unset($query_vars);
+					
+				$this->did_permalink = false;
 			}
 		}
 
@@ -1620,7 +1639,7 @@ class WP {
 		// issue a 404 if one was already issued, if the request was a search,
 		// or if the request was a regular query string request rather than a
 		// permalink request.
-		if ( (0 == count($wp_query->posts)) && !is_404() && !is_search() && ( $this->did_permalink || (!empty($_SERVER['QUERY_STRING']) && (false === strpos($_SERVER['REQUEST_URI'], '?'))) ) ) {
+		if ( (0 == count($wp_query->posts)) && !is_404() && !is_category() && !is_search() && ( $this->did_permalink || (!empty($_SERVER['QUERY_STRING']) && (false === strpos($_SERVER['REQUEST_URI'], '?'))) ) ) {
 			$wp_query->set_404();
 			status_header( 404 );
 		}	elseif( is_404() != true ) {
