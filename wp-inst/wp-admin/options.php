@@ -33,7 +33,7 @@ case 'update':
     
 	if (!$_POST['page_options']) {
 		foreach ($_POST as $key => $value) {
-			$options[] = "'$key'";
+			$options[] = "$key";
 		}
 	} else {
 		$options = explode(',', stripslashes($_POST['page_options']));
