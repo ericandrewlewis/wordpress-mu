@@ -26,8 +26,9 @@ class WP_Roles {
 		if ( isset($this->roles[$role]) )
 			return;
 
-		$this->roles[$role] = array('name' => $display_name,
-																'capabilities' => $capabilities);
+		$this->roles[$role] = array(
+			'name' => $display_name,
+			'capabilities' => $capabilities);
 		update_option($this->role_key, $this->roles);
 		$this->role_objects[$role] = new WP_Role($role, $capabilities);
 		$this->role_names[$role] = $display_name;
@@ -280,11 +281,23 @@ function current_user_can($capability) {
 	return call_user_func_array(array(&$current_user, 'has_cap'), $args);
 }
 
-// Convenience wrapper around $wp_roles.
+// Convenience wrappers around $wp_roles.
 function get_role($role) {
 	global $wp_roles;
 
 	return $wp_roles->get_role($role);
+}
+
+function add_role($role, $display_name, $capabilities = '') {
+	global $wp_roles;
+
+	return $wp_roles->add_role($role, $display_name, $capabilities = '');
+}
+
+function remove_role($role) {
+	global $wp_roles;
+
+	return $wp_roles->remove_role($role);
 }
 
 //

@@ -64,7 +64,7 @@ if (!defined('CASE_UPPER')) {
  * @link        http://php.net/function.array_change_key_case
  * @author      Stephan Schmidt <schst@php.net>
  * @author      Aidan Lister <aidan@php.net>
- * @version     $Revision: 3198 $
+ * @version     $Revision: 3245 $
  * @since       PHP 4.2.0
  * @require     PHP 4.0.0 (user_error)
  */
@@ -91,7 +91,7 @@ if (!function_exists('array_change_key_case')) {
 
 /* Added in PHP 4.3.0 */
 
-if( !(function_exists('glob')) ):
+if( !function_exists('glob') ):
 function glob($pattern) {
 	// get pathname (everything up until the last / or \)
 	$path=$output=null;
