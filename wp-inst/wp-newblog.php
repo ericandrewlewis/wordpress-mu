@@ -20,6 +20,7 @@ td input {
 <?php
 
 function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email = '', $admin_login = '', $form = '', $errormsg = '' ) {
+    global $current_site;
     print "<h2>Get your own blog</h2>";
     if( is_array( $errormsg ) ) {
 	print "<p>There was a problem, please correct the form below and try again.</p>";
@@ -37,7 +38,7 @@ function displayInitialForm( $weblog_id = '', $weblog_title = '', $admin_email =
     if( strlen( $errormsg[ 'weblog_id' ] ) > 3 ) {
 	    ?><p><strong>Warning! <?php echo $errormsg[ 'weblog_id' ] ?></strong></p><?php
     }
-    print '<input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.wordpress.com</span><br />(<strong>Your address will be username.wordpress.com.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
+    print '<input name="weblog_id" type="text" id="weblog_id" value="'.$weblog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.' . $current_site->domain . '</span><br />(<strong>Your address will be username.' . $current_site->domain . '.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
     if( $errormsg[ 'weblog_title' ] != '' ) {
 	print '<tr class="error">';
     } else {
