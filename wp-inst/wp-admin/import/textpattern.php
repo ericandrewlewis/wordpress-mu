@@ -42,7 +42,7 @@ class Textpattern_Import {
 	{
 		echo '<div class="wrap">';
 		echo '<h2>'.__('Import Textpattern').'</h2>';
-		echo '<p>'.__('Steps may take a few minutes depending on the size of your database. Please be patient.</p>');
+		echo '<p>'.__('Steps may take a few minutes depending on the size of your database. Please be patient.').'</p>';
 	}
 
 	function footer() 
@@ -52,12 +52,12 @@ class Textpattern_Import {
 	
 	function greet() 
 	{
-		_e('<p>Howdy! This importer allows you to extract posts from any Textpattern 4.0.2+ into your blog. This has not been tested on previous versions of Textpattern.  Mileage may vary.</p>');
-		_e('<p>Your Textpattern Configuration settings are as follows:</p>');
-		_e('<form action="admin.php?import=textpattern&amp;step=1" method="post">');
+		echo '<p>'.__('Howdy! This importer allows you to extract posts from any Textpattern 4.0.2+ into your blog. This has not been tested on previous versions of Textpattern.  Mileage may vary.').'</p>';
+		echo '<p>'.__('Your Textpattern Configuration settings are as follows:').'</p>';
+		echo '<form action="admin.php?import=textpattern&amp;step=1" method="post">';
 		$this->db_form();
-		_e('<input type="submit" name="submit" value="Import Categories" />');
-		_e('</form>');
+		echo '<input type="submit" name="submit" value="Import Categories" />';
+		echo '</form>';
 	}
 
 	function get_txp_cats() 
@@ -162,7 +162,7 @@ class Textpattern_Import {
 		// Do the Magic
 		if(is_array($categories))
 		{
-			echo __('<p>Importing Categories...<br /><br /></p>');
+			echo '<p>'.__('Importing Categories...').'<br /><br /></p>';
 			foreach ($categories as $category) 
 			{
 				$count++;
@@ -186,7 +186,7 @@ class Textpattern_Import {
 			
 			// Store category translation for future use
 			add_option('txpcat2wpcat',$txpcat2wpcat);
-			echo __('<p>Done! <strong>'.$count.'</strong> categories imported.<br /><br /></p>');
+			echo '<p>'.sprintf(__('Done! <strong>%1$s</strong> categories imported.'), $count).'<br /><br /></p>';
 			return true;
 		}
 		echo __('No Categories to Import!');
@@ -203,7 +203,7 @@ class Textpattern_Import {
 		// Midnight Mojo
 		if(is_array($users))
 		{
-			echo __('<p>Importing Users...<br /><br /></p>');
+			echo '<p>'.__('Importing Users...').'<br /><br /></p>';
 			foreach($users as $user)
 			{
 				$count++;
@@ -258,7 +258,7 @@ class Textpattern_Import {
 			add_option('txpid2wpid',$txpid2wpid);
 			
 			
-			echo __('<p>Done! <strong>'.$count.'</strong> users imported.<br /><br /></p>');
+			echo '<p>'.sprintf(__('Done! <strong>%1$s</strong> users imported.'), $count).'<br /><br /></p>';
 			return true;
 		}// End if(is_array($users)
 		
@@ -278,7 +278,7 @@ class Textpattern_Import {
 		// Do the Magic
 		if(is_array($posts))
 		{
-			echo __('<p>Importing Posts...<br /><br /></p>');
+			echo '<p>'.__('Importing Posts...').'<br /><br /></p>';
 			foreach($posts as $post)
 			{
 				$count++;
@@ -344,7 +344,7 @@ class Textpattern_Import {
 		// Store ID translation for later use
 		add_option('txpposts2wpposts',$txpposts2wpposts);
 		
-		echo __('<p>Done! <strong>'.$count.'</strong> posts imported.<br /><br /></p>');
+		echo '<p>'.sprintf(__('Done! <strong>%1$s</strong> posts imported.'), $count).'<br /><br /></p>';
 		return true;	
 	}
 	
@@ -359,7 +359,7 @@ class Textpattern_Import {
 		// Magic Mojo
 		if(is_array($comments))
 		{
-			echo __('<p>Importing Comments...<br /><br /></p>');
+			echo '<p>'.__('Importing Comments...').'<br /><br /></p>';
 			foreach($comments as $comment)
 			{
 				$count++;
@@ -411,7 +411,7 @@ class Textpattern_Import {
 			get_comment_count($ret_id);
 			
 			
-			echo __('<p>Done! <strong>'.$count.'</strong> comments imported.<br /><br /></p>');
+			echo '<p>'.sprintf(__('Done! <strong>%1$s</strong> comments imported.'), $count).'<br /><br /></p>';
 			return true;
 		}
 		echo __('No Comments to Import!');
@@ -427,7 +427,7 @@ class Textpattern_Import {
 		// Deal with the links
 		if(is_array($links))
 		{
-			echo __('<p>Importing Links...<br /><br /></p>');
+			echo '<p>'.__('Importing Links...').'<br /><br /></p>';
 			foreach($links as $link)
 			{
 				$count++;
@@ -462,7 +462,9 @@ class Textpattern_Import {
 				$txplinks2wplinks[$link_id] = $ret_id;
 			}
 			add_option('txplinks2wplinks',$txplinks2wplinks);
-			echo __('<p>Done! <strong>'.$count.'</strong> Links imported.<br /><br /></p>');
+			echo '<p>';
+			printf(__('Done! <strong>%s</strong> Links imported'), $count);
+			echo '<br /><br /></p>';
 			return true;
 		}
 		echo __('No Links to Import!');
@@ -478,9 +480,9 @@ class Textpattern_Import {
 		
 		
 			
-		_e('<form action="admin.php?import=textpattern&amp;step=2" method="post">');
-		_e('<input type="submit" name="submit" value="Import Users" />');
-		_e('</form>');
+		echo '<form action="admin.php?import=textpattern&amp;step=2" method="post">';
+		printf('<input type="submit" name="submit" value="%s" />', __('Import Users'));
+		echo '</form>';
 
 	}
 	
@@ -490,9 +492,9 @@ class Textpattern_Import {
 		$users = $this->get_txp_users(); 
 		$this->users2wp($users);
 		
-		_e('<form action="admin.php?import=textpattern&amp;step=3" method="post">');
-		_e('<input type="submit" name="submit" value="Import Posts" />');
-		_e('</form>');
+		echo '<form action="admin.php?import=textpattern&amp;step=3" method="post">';
+		printf('<input type="submit" name="submit" value="%s" />', __('Import Posts'));
+		echo '</form>';
 	}
 	
 	function import_posts()
@@ -501,9 +503,9 @@ class Textpattern_Import {
 		$posts = $this->get_txp_posts();
 		$this->posts2wp($posts);
 		
-		_e('<form action="admin.php?import=textpattern&amp;step=4" method="post">');
-		_e('<input type="submit" name="submit" value="Import Comments" />');
-		_e('</form>');
+		echo '<form action="admin.php?import=textpattern&amp;step=4" method="post">';
+		printf('<input type="submit" name="submit" value="%s" />', __('Import Comments'));
+		echo '</form>';
 	}
 	
 	function import_comments()
@@ -512,9 +514,9 @@ class Textpattern_Import {
 		$comments = $this->get_txp_comments();
 		$this->comments2wp($comments);
 		
-		_e('<form action="admin.php?import=textpattern&amp;step=5" method="post">');
-		_e('<input type="submit" name="submit" value="Import Links" />');
-		_e('</form>');
+		echo '<form action="admin.php?import=textpattern&amp;step=5" method="post">';
+		printf('<input type="submit" name="submit" value="%s" />', __('Import Links'));
+		echo '</form>';
 	}
 	
 	function import_links()
@@ -524,9 +526,9 @@ class Textpattern_Import {
 		$this->links2wp($links);
 		add_option('txp_links', $links);
 		
-		_e('<form action="admin.php?import=textpattern&amp;step=6" method="post">');
-		_e('<input type="submit" name="submit" value="Finish" />');
-		_e('</form>');
+		echo '<form action="admin.php?import=textpattern&amp;step=6" method="post">';
+		printf('<input type="submit" name="submit" value="%s" />', __('Finish'));
+		echo '</form>';
 	}
 	
 	function cleanup_txpimport()
@@ -547,32 +549,32 @@ class Textpattern_Import {
 	
 	function tips()
 	{
-		echo __('<p>Welcome to WordPress.  We hope (and expect!) that you will find this platform incredibly rewarding!  As a new WordPress user coming from Textpattern, there are some things that we would like to point out.  Hopefully, they will help your transition go as smoothly as possible.</p>');
-		echo __('<h3>Users</h3>');
-		echo __('<p>You have already setup WordPress and have been assigned an administrative login and password.  Forget it.  You didn\'t have that login in Textpattern, why should you have it here?  Instead we have taken care to import all of your users into our system.  Unfortunately there is one downside.  Because both WordPress and Textpattern uses a strong encryption hash with passwords, it is impossible to decrypt it and we are forced to assign temporary passwords to all your users.  <strong>Every user has the same username, but their passwords are reset to password123.</strong>  So <a href="/wp-login.php">Login</a> and change it.</p>');
-		echo __('<h3>Preserving Authors</h3>');
-		echo __('<p>Secondly, we have attempted to preserve post authors.  If you are the only author or contributor to your blog, then you are safe.  In most cases, we are successful in this preservation endeavor.  However, if we cannot ascertain the name of the writer due to discrepancies between database tables, we assign it to you, the administrative user.</p>');
-		echo __('<h3>Textile</h3>');
-		echo __('<p>Also, since you\'re coming from Textpattern, you probably have been using Textile to format your comments and posts.  If this is the case, we recommend downloading and installing <a href="http://www.huddledmasses.org/2004/04/19/wordpress-plugin-textile-20/">Textile for WordPress</a>.  Trust me... You\'ll want it.</p>');
-		echo __('<h3>WordPress Resources</h3>');
-		echo __('<p>Finally, there are numerous WordPress resources around the internet.  Some of them are:</p>');
-		echo __('<ul>');
-		echo __('<li><a href="http://www.wordpress.org">The official WordPress site</a></li>');
-		echo __('<li><a href="http://wordpress.org/support/">The WordPress support forums</li>');
-		echo __('<li><a href="http://codex.wordpress.org">The Codex (In other words, the WordPress Bible)</a></li>');
-		echo __('</ul>');
-		echo __('<p>That\'s it! What are you waiting for? Go <a href="/wp-login.php">login</a>!</p>');
+		echo '<p>'.__('Welcome to WordPress.  We hope (and expect!) that you will find this platform incredibly rewarding!  As a new WordPress user coming from Textpattern, there are some things that we would like to point out.  Hopefully, they will help your transition go as smoothly as possible.').'</p>';
+		echo '<h3>'.__('Users').'</h3>';
+		echo '<p>'.sprintf(__('You have already setup WordPress and have been assigned an administrative login and password.  Forget it.  You didn\'t have that login in Textpattern, why should you have it here?  Instead we have taken care to import all of your users into our system.  Unfortunately there is one downside.  Because both WordPress and Textpattern uses a strong encryption hash with passwords, it is impossible to decrypt it and we are forced to assign temporary passwords to all your users.  <strong>Every user has the same username, but their passwords are reset to password123.</strong>  So <a href="%1$s">Login</a> and change it.'), '/wp-login.php').'</p>';
+		echo '<h3>'.__('Preserving Authors').'</h3>';
+		echo '<p>'.__('Secondly, we have attempted to preserve post authors.  If you are the only author or contributor to your blog, then you are safe.  In most cases, we are successful in this preservation endeavor.  However, if we cannot ascertain the name of the writer due to discrepancies between database tables, we assign it to you, the administrative user.').'</p>';
+		echo '<h3>'.__('Textile').'</h3>';
+		echo '<p>'.__('Also, since you\'re coming from Textpattern, you probably have been using Textile to format your comments and posts.  If this is the case, we recommend downloading and installing <a href="http://www.huddledmasses.org/2004/04/19/wordpress-plugin-textile-20/">Textile for WordPress</a>.  Trust me... You\'ll want it.').'</p>';
+		echo '<h3>'.__('WordPress Resources').'</h3>';
+		echo '<p>'.__('Finally, there are numerous WordPress resources around the internet.  Some of them are:').'</p>';
+		echo '<ul>';
+		echo '<li>'.__('<a href="http://www.wordpress.org">The official WordPress site</a>').'</li>';
+		echo '<li>'.__('<a href="http://wordpress.org/support/">The WordPress support forums').'</li>';
+		echo '<li>'.__('<a href="http://codex.wordpress.org">The Codex (In other words, the WordPress Bible)</a>').'</li>';
+		echo '</ul>';
+		echo '<p>'.sprintf(__('That\'s it! What are you waiting for? Go <a href="%1$s">login</a>!'), '/wp-login.php').'</p>';
 	}
 	
 	function db_form()
 	{
-		_e('<ul>');
-		_e('<li><label for="dbuser">Textpattern Database User:</label> <input type="text" name="dbuser" /></li>');
-		_e('<li><label for="dbpass">Textpattern Database Password:</label> <input type="password" name="dbpass" /></li>');
-		_e('<li><label for="dbname">Textpattern Database Name:</label> <input type="text" name="dbname" /></li>');
-		_e('<li><label for="dbhost">Textpattern Database Host:</label> <input type="text" name="dbhost" value="localhost" /></li>');
-		_e('<li><label for="dbprefix">Textpattern Table prefix (if any)t:</label> <input type="text" name="dbprefix" /></li>');
-		_e('</ul>');		
+		echo '<ul>';
+		printf('<li><label for="dbuser">%s</label> <input type="text" name="dbuser" /></li>', __('Textpattern Database User:'));
+		printf('<li><label for="dbpass">%s</label> <input type="password" name="dbpass" /></li>', __('Textpattern Database Password:'));
+		printf('<li><label for="dbname">%s</label> <input type="text" name="dbname" /></li>', __('Textpattern Database Name:'));
+		printf('<li><label for="dbhost">%s</label> <input type="text" name="dbhost" value="localhost" /></li>', __('Textpattern Database Host:'));
+		printf('<li><label for="dbprefix">%s</label> <input type="text" name="dbprefix" /></li>', __('Textpattern Table prefix (if any):'));
+		echo '</ul>';
 	}
 	
 	function dispatch() 
