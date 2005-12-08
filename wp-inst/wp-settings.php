@@ -81,6 +81,8 @@ $wpdb->hide_errors();
 $domain = addslashes($_SERVER['HTTP_HOST']);
 if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
+if( substr( $domain, -3, 3 ) == ':80' )
+	$domain = str_replace(":80", "", $domain);
 
 function is_installed() {
     global $wpdb, $domain, $base;
@@ -279,13 +281,14 @@ if( $is_archived == 'yes' ) {
 }
 
 if( $current_blog->archived == '1' ) {
-    die( "This blog has been archived or suspended temporarily. Please check back later." );
+    die( "This blog has been archived or suspended." );
 }
 
 if( $current_blog->spam == '1' ) {
-    die( "This blog has been archived or suspended temporarily. Please check back later." );
+    die( "This blog has been archived or suspended." );
 }
 
+/*
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies
     $cookiehash = ''; // Remove in 1.4
@@ -302,16 +305,21 @@ if ( !defined('SITECOOKIEPATH') )
 	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('siteurl') . '/' ) );
 if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', false);
+*/
 
 require (ABSPATH . WPINC . '/vars.php');
 
 do_action('core_files_loaded');
+
+/*
 
 // Check for hacks file if the option is enabled
 if (get_settings('hack_file')) {
 	if (file_exists(ABSPATH . '/my-hacks.php'))
 		require(ABSPATH . '/my-hacks.php');
 }
+
+*/
 
 if ( get_settings('active_plugins') ) {
 	$current_plugins = get_settings('active_plugins');
