@@ -432,24 +432,22 @@ function is_site_admin( $user_login = false ) {
 	return false;
 }
 
-function get_site_option( $option, $default = false ) {
+function get_site_option( $option, $default = false, $use_cache = true ) {
 	global $wpdb;
 
-	$value = wp_cache_get($option, 'site-options');
+	if( $use_cache == true ) {
+		$value = wp_cache_get($option, 'site-options');
+	} else {
+		$value = false;
+	}
 
 	if ( false === $value ) {
-		$cache = wpmu_get_cache( $option, "site_options" );
-		if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 300 ) { // cache for 300 seconds
-			$value = $cache[ 'value' ];
-		} else {
-			$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$option' AND site_id = '$wpdb->siteid'");
-		}
-		if ( $value ) {
-			wpmu_update_cache( $option, $value, "site_options" );
+		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$option' AND site_id = '$wpdb->siteid'");
+		if ( ! is_null($value) ) {
 			wp_cache_set($option, $value, 'site-options');
+		} elseif ( $default ) {
+			return $default;
 		} else {
-			if ( $default )
-				return $default;
 			return false;
 		}
 	}
@@ -465,12 +463,13 @@ function get_site_option( $option, $default = false ) {
 function add_site_option( $key, $value ) {
 	global $wpdb;
 
-	if ( get_site_option( $key ) ) // If we already have it
+	if ( get_site_option( $key, false, false ) ) // If we already have it
 		return false;
 
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
 	$value = $wpdb->escape( $value );
+	wp_cache_set($key, $value, 'site-options');
 	$wpdb->query( "INSERT INTO $wpdb->sitemeta ( site_id , meta_key , meta_value ) VALUES ( '$wpdb->siteid', '$key', '$value')" );
 	return $wpdb->insert_id;
 }
@@ -485,11 +484,11 @@ function update_site_option( $key, $value ) {
 		$value = serialize($value);
 	$value = $wpdb->escape( $value );
 
-	if ( !get_site_option( $key ) )
+	if ( get_site_option( $key, false, false ) == false )
 		add_site_option( $key, $value );
 
 	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '".$wpdb->escape( $value )."' WHERE meta_key = '$key'" );
-	wpmu_update_cache( $key, $value, "site_options" );
+	wp_cache_replace($key, $value, "site-options");
 }
 
 function get_blog_option( $blog_id, $key, $default='na' ) {
@@ -843,4 +842,24 @@ function wpmu_get_cache( $key, $path ) {
 		return false;
 	}
 }
+
+// wpmu admin functions
+
+function wpmu_admin_do_redirect( $url = '' ) {
+	if( isset( $_GET[ 'redirect' ] ) ) {
+		if( substr( $_GET[ 'redirect' ], 0, 2 ) == 's_' ) {
+			header( "Location: {$url}?updated=true&action=blogs&s=". wp_specialchars( substr( $_GET[ 'redirect' ], 2 ) ) );
+			die();
+		}
+	}
+	header( "Location: {$url}?updated=true" );
+	die();
+}
+
+function wpmu_admin_redirect_url() {
+	if( isset( $_GET[ 's' ] ) ) {
+		return "s_".$_GET[ 's' ];
+	}
+}
+
 ?>

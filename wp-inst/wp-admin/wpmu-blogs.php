@@ -48,14 +48,26 @@ switch( $_GET[ 'action' ] ) {
 	</tr> 
 	<tr valign="top"> 
 	<th scope="row">Public</th> 
-	<td><input type='radio' name='blog[public]' value='yes'<?php if( $details[ 'public' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
-	    <input type='radio' name='blog[public]' value='no'<?php if( $details[ 'public' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
+	<td><input type='radio' name='blog[public]' value='1' <?php if( $details[ 'public' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='blog[public]' value='0' <?php if( $details[ 'public' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
 	    </td> 
 	</tr> 
 	<tr valign="top"> 
 	<th scope="row">Archived</th> 
-	<td><input type='radio' name='option[archived]' value='yes'<?php if( $archived == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
-	    <input type='radio' name='option[archived]' value='no'<?php if( $archived == '0' ) echo " checked"?>> No &nbsp;&nbsp;
+	<td><input type='radio' name='blog[archived]' value='1' <?php if( $details[ 'archived' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='blog[archived]' value='0' <?php if( $details[ 'archived' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
+	    </td> 
+	</tr> 
+	<tr valign="top"> 
+	<th scope="row">Mature</th> 
+	<td><input type='radio' name='blog[mature]' value='1' <?php if( $details[ 'mature' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='blog[mature]' value='0' <?php if( $details[ 'mature' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
+	    </td> 
+	</tr> 
+	<tr valign="top"> 
+	<th scope="row">Spam</th> 
+	<td><input type='radio' name='blog[spam]' value='1' <?php if( $details[ 'spam' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='blog[spam]' value='0' <?php if( $details[ 'spam' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
 	    </td> 
 	</tr> 
     <tr><td colspan='2'>
@@ -294,7 +306,7 @@ $posts_columns = array(
   'blogname'     => __('Blog Name'),
   'last_updated' => __('Last Updated'),
   'registered'   => __('Registered'),
-  'users'        => __('Users'),
+  //'users'        => __('Users'),
   'plugins'      => __('Actions')
 );
 $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
@@ -304,6 +316,7 @@ $posts_columns['control_view']      = '';
 $posts_columns['control_edit']      = '';
 $posts_columns['control_backend']   = '';
 $posts_columns['control_deactivate']    = '';
+$posts_columns['control_spam']    = '';
 $posts_columns['control_delete']    = '';
 
 ?>
@@ -361,11 +374,13 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		<?php
 		break;
 
+	/*
 	case 'users':
 		?>
 		<td valign='top'><?php $blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); if( is_array( $blogusers ) ) while( list( $key, $val ) = each( $blogusers ) ) { print '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a><BR>'; }  ?></td>
 		<?php
 		break;
+		*/
 
 	case 'control_view':
 		?>
@@ -385,6 +400,18 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		<?php
 		break;
 
+	case 'control_spam':
+		if( get_blog_status( $blog[ 'blog_id' ], "spam" ) == '1' ) {
+			?>
+				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=unspamblog&amp;id=".$blog[ 'blog_id' ]."' class='edit' onclick=\"return confirm('" . sprintf(__("You are about to mark this blog as not spam?\\n  \'OK\' to activate, \'Cancel\' to stop.") ) . "')\">" . __('Not Spam') . "</a>"; ?></td>
+			<?php
+		} else {
+			?>
+				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=spamblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to mark this blog as spam?\\n  \'OK\' to continue, \'Cancel\' to stop.") ) . "')\">" . __('Spam') . "</a>"; ?></td>
+			<?php
+		}
+		break;
+
 	case 'control_deactivate':
 		if( is_archived( $blog[ 'blog_id' ] ) == '1' ) {
 			?>
@@ -399,7 +426,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_delete':
 		?>
-		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deleteblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
+		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deleteblog&amp;id=".$blog[ 'blog_id' ]."&amp;redirect=".wpmu_admin_redirect_url()."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
 		<?php
 		break;
 

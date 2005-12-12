@@ -1,7 +1,9 @@
 * html #poststuff {
 	height: 100%; /* kill peekaboo bug in IE */
 }
-
+body {
+	border: none;
+}
 a {
 	border-bottom: 1px solid #69c;
 	color: #00019b;
@@ -555,9 +557,17 @@ table .vers, table .name {
 	margin-right: 190px;
 }
 
+* html #template div {
+	margin-right: 0px;
+}
+
+#template, #template div, #editcat, #addcat {
+	zoom: 1;
+}
+
 #template textarea {
 	font: small 'Courier New', Courier, monospace;
-	width: 99%;
+	width: 97%;
 }
 
 #templateside {

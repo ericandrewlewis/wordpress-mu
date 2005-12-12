@@ -5,6 +5,7 @@ do_action( "wpmuadminedit", "" );
 
 function wpmu_delete_blog( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
+	do_action( "delete_blog", $id );
 	$drop_tables = array( $wpmuBaseTablePrefix . $id . "_categories",
 			$wpmuBaseTablePrefix . $id . "_comments",
 			$wpmuBaseTablePrefix . $id . "_linkcategories",
@@ -47,7 +48,9 @@ switch( $_GET[ 'action' ] ) {
 		update_site_option( "first_post", $_POST[ 'first_post' ] );
 		update_site_option( "welcome_email", $_POST[ 'welcome_email' ] );
 		update_site_option( "fileupload_maxk", $_POST[ 'fileupload_maxk' ] );
-		update_site_option( "super_users", $_POST[ 'super_users' ] );
+		$site_admins = explode( ' ', $_POST['site_admins'] );
+		if ( is_array( $site_admins ) )
+			update_site_option( 'site_admins' , $site_admins );
 		header( "Location: wpmu-options.php?updated=true" );
 		exit;
 	break;
@@ -74,8 +77,7 @@ switch( $_GET[ 'action' ] ) {
 		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%' limit 0,10";
 		$users = $wpdb->get_results( $query );
 		if( is_array( $users ) ) {
-			while( list( $key, $val ) = each( $users ) ) 
-			{ 
+			while( list( $key, $val ) = each( $users ) ) { 
 				print '<span onclick="javascript:return update_AJAX_search_box(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
 			}
 		} else {
@@ -125,19 +127,17 @@ switch( $_GET[ 'action' ] ) {
 				}
 			}
 		}
-
 		// update blogs table
-		if( $_POST[ 'blog' ][ 'domain' ] != $current_site->domain ) {
-			$query = "UPDATE ".$wpdb->blogs."
+		$query = "UPDATE $wpdb->blogs
 				SET    domain       = '".$_POST[ 'blog' ][ 'domain' ]."',
-				       path         = '".$_POST[ 'blog' ][ 'path' ]."',
-				       registered   = '".$_POST[ 'blog' ][ 'registered' ]."',
-				       last_updated = '".$_POST[ 'blog' ][ 'last_updated' ]."',
-				       public       = '".$_POST[ 'blog' ][ 'public' ]."'
-				WHERE  blog_id = '".$id."'";
-			$wpdb->query( $query );
-		}
-
+				path         = '".$_POST[ 'blog' ][ 'path' ]."',
+				registered   = '".$_POST[ 'blog' ][ 'registered' ]."',
+				public       = '".$_POST[ 'blog' ][ 'public' ]."',
+				archived     = '".$_POST[ 'blog' ][ 'archived' ]."',
+				mature       = '".$_POST[ 'blog' ][ 'mature' ]."',
+				spam         = '".$_POST[ 'blog' ][ 'spam' ]."' 
+			WHERE  blog_id = '$id'";
+		$result = $wpdb->query( $query );
 		// user roles
 		if( is_array( $_POST[ 'role' ] ) == true ) {
 			$newroles = $_POST[ 'role' ];
@@ -182,7 +182,7 @@ switch( $_GET[ 'action' ] ) {
 		$id = $_GET[ 'id' ];
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "allblogs":
 		if( is_site_admin() == false ) {
@@ -209,7 +209,23 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
+		do_action( "deactivate_blog", $_GET[ 'id' ] );
 		update_archived( $_GET[ 'id' ], '1' );
+		header( "Location: wpmu-blogs.php?updated=true" );
+	break;
+	case "unspamblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		update_blog_status( $_GET[ 'id' ], "spam", '0' );
+		header( "Location: wpmu-blogs.php?updated=true" );
+	break;
+	case "spamblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		do_action( "make_spam_blog", $_GET[ 'id' ] );
+		update_blog_status( $_GET[ 'id' ], "spam", '1' );
 		header( "Location: wpmu-blogs.php?updated=true" );
 	break;
     	case "updateuser":

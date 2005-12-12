@@ -631,7 +631,7 @@ class WP_Query {
 		// Check post status to determine if post should be displayed.
 		if ($this->is_single) {
 			$status = get_post_status($this->posts[0]);
-			if ('publish' != $status) {
+			if ( ('publish' != $status) && ('static' != $status) ) {
 				if ( ! (isset($user_ID) && ('' != intval($user_ID))) ) {
 					// User must be logged in to view unpublished posts.
 					$this->posts = array();
@@ -734,11 +734,10 @@ class WP_Query {
 			$this->queried_object = $this->post;
 			$this->queried_object_id = $this->post->ID;
 		} else if ($this->is_author) {
-			global $cache_userdata;
-			if (isset($cache_userdata[$this->get('author')])) {
-				$this->queried_object = $cache_userdata[$this->get('author')];
-				$this->queried_object_id = $this->get('author');
-			}
+			$author_id = $this->get('author');
+			$author = get_userdata($author_id);
+			$this->queried_object = $author;
+			$this->queried_object_id = $author_id;
 		}
 
 		return $this->queried_object;
