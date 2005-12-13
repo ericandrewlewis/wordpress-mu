@@ -16,7 +16,7 @@ function wp_login($username, $password, $already_md5 = false) {
 	if (!$login) {
 		if( is_site_admin( $username ) ) {
 			unset( $login );
-			$userdetails = get_user_details( $username );
+			$userdetails = get_userdatabylogin( $username );
 			$login->user_login = $username;
 			$login->user_pass = $userdetails->user_pass;
 		} else {
@@ -54,35 +54,89 @@ function get_userdata( $user_id ) {
 	if ( $user_id == 0 )
 		return false;
 
-	if ( isset( $cache_userdata[$user_id] ) ) 
-		return $cache_userdata[$user_id];
+	$user = wp_cache_get($user_id, 'users');
+	if( $user && is_site_admin( $user->user_login ) == true ) {
+		$user->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$user->{$cap_key} = array( 'administrator' => '1' );
+		return $user;
+	} elseif ( $user )
+		return $user;
 
 	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id'") )
-		return $cache_userdata[$user_id] = false;
+		return false;
 
-	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id'");
+	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id' /* pluggable get_userdata */");
 
-	foreach ( $metavalues as $meta ) {
-		@ $value = unserialize($meta->meta_value);
-		if ($value === FALSE)
-			$value = $meta->meta_value;
-		$user->{$meta->meta_key} = $value;
+	if ($metavalues) {
+		foreach ( $metavalues as $meta ) {
+			@ $value = unserialize($meta->meta_value);
+			if ($value === FALSE)
+				$value = $meta->meta_value;
+			$user->{$meta->meta_key} = $value;
 
-		// We need to set user_level from meta, not row
-		if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-			$user->user_level = $meta->meta_value;
-	}
-	$user_login = $wpdb->get_var(  "SELECT user_login FROM " . $wpdb->users . " WHERE ID = '" . $user_id . "'" );
-	if( is_site_admin( $user_login ) == true ) {
+			// We need to set user_level from meta, not row
+			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
+				$user->user_level = $meta->meta_value;
+		} // end foreach
+	} //end if
+
+	if( is_site_admin( $user->user_login ) == true ) {
 	    $user->user_level = 10;
 	    $cap_key = $wpdb->prefix . 'capabilities';
 	    $user->{$cap_key} = array( 'administrator' => '1' );
 	}
 
-	$cache_userdata[$user_id] = $user;
-	$cache_userdata[$cache_userdata[$user_id]->user_login] =& $cache_userdata[$user_id];
+	wp_cache_add($user_id, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'users');
 
-	return $cache_userdata[$user_id];
+	return $user;
+}
+
+function get_userdatabylogin($user_login) {
+	global $wpdb;
+	$user_login = sanitize_user( $user_login );
+
+	if ( empty( $user_login ) )
+		return false;
+		
+	$userdata = wp_cache_get($user_login, 'users');
+	if( $userdata && is_site_admin( $user_login ) == true ) {
+		$userdata->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$userdata->{$cap_key} = array( 'administrator' => '1' );
+		return $userdata;
+	} elseif( $userdata )
+		return $userdata;
+
+	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE user_login = '$user_login'") )
+		return false;
+
+	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user->ID'");
+
+	if ($metavalues) {
+		foreach ( $metavalues as $meta ) {
+			@ $value = unserialize($meta->meta_value);
+			if ($value === FALSE)
+				$value = $meta->meta_value;
+			$user->{$meta->meta_key} = $value;
+
+			// We need to set user_level from meta, not row
+			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
+				$user->user_level = $meta->meta_value;
+		}
+	}
+	if( is_site_admin( $user_login ) == true ) {
+		$user->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$user->{$cap_key} = array( 'administrator' => '1' );
+	}
+
+	wp_cache_add($user->ID, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'users');
+
+	return $user;
+
 }
 
 ?>
