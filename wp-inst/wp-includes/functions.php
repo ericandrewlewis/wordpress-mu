@@ -305,12 +305,18 @@ function get_option($option) {
 	return get_settings($option);
 }
 
-function get_user_option( $option ) {
+function get_user_option( $option, $user = 0 ) {
 	global $wpdb, $current_user;
-	if ( isset( $current_user->{$wpdb->prefix . $option} ) ) // Blog specific
-		return $current_user->{$wpdb->prefix . $option};
-	elseif ( isset( $current_user->{$option} ) ) // User specific and cross-blog
-		return $current_user->{$option};
+	
+	if ( empty($user) )
+		$user = $current_user;
+	else
+		$user = get_userdata($user);
+
+	if ( isset( $user->{$wpdb->prefix . $option} ) ) // Blog specific
+		return $user->{$wpdb->prefix . $option};
+	elseif ( isset( $user->{$option} ) ) // User specific and cross-blog
+		return $user->{$option};
 	else // Blog global
 		return get_option( $option );
 }
@@ -502,7 +508,7 @@ function update_post_meta($post_id, $key, $value, $prev_value = '') {
 
 	$original_prev = $prev_value;
 	if ( is_array($prev_value) || is_object($prev_value) )
-		$prev_value = serialize($value);
+		$prev_value = $wpdb->escape(serialize($prev_value));
 
 	if (! $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key
 = '$key' AND post_id = '$post_id'") ) {

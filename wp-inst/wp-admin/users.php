@@ -41,11 +41,7 @@ case 'dodelete':
 
 	check_admin_referer();
 
-	if( is_site_admin() == false ) {
-		header('Location: users.php?update=del');
-		exit;
-	}
-	if ( empty($_POST['users']) ) {
+	if (empty($_POST['users'])) {
 		header('Location: users.php');
 	}
 
@@ -75,11 +71,6 @@ case 'dodelete':
 break;
 
 case 'delete':
-
-	if( is_site_admin() == false ) {
-		header('Location: users.php');
-		exit;
-	}
 
 	check_admin_referer();
 

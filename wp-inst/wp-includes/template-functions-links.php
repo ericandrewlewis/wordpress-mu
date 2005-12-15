@@ -209,11 +209,16 @@ function edit_post_link($link = 'Edit This', $before = '', $after = '') {
 
 	get_currentuserinfo();
 
-	if ( !user_can_edit_post($user_ID, $post->ID) || is_attachment() ) {
+	if ( !user_can_edit_post($user_ID, $post->ID) ) {
 		return;
 	}
 
-	$location = get_settings('siteurl') . "/wp-admin/post.php?action=edit&amp;post=$post->ID";
+	if ( is_attachment() )
+		$file = 'attachments';
+	else
+		$file = 'post';
+
+	$location = get_settings('siteurl') . "/wp-admin/{$file}.php?action=edit&amp;post=$post->ID";
 	echo $before . "<a href=\"$location\">$link</a>" . $after;
 }
 
@@ -465,8 +470,6 @@ function next_posts_link($label='Next Page &raquo;', $max_page=0) {
 				preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
 				$fromwhere = $matches[1];
 				$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
-				if( $posts_per_page == 0 )
-					$posts_per_page = 10;
 				$max_page = $max_num_pages = ceil($numposts / $posts_per_page);
 			}
 	}
