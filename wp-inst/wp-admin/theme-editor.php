@@ -49,7 +49,7 @@ switch($action) {
 case 'update':
 
 	if ( !current_user_can('edit_themes') )
-		die(__('<p>You have do not have sufficient permissions to edit templates for this blog.</p>'));
+	die('<p>'.__('You have do not have sufficient permissions to edit templates for this blog.').'</p>');
 
 	$newcontent = stripslashes($_POST['newcontent']);
 	$theme = urlencode($theme);
@@ -70,7 +70,7 @@ default:
 	
 	require_once('admin-header.php');
 	if ( !current_user_can('edit_themes') )
-		die(__('<p>You have do not have sufficient permissions to edit themes for this blog.</p>'));
+	die('<p>'.__('You have do not have sufficient permissions to edit themes for this blog.').'</p>');
 
 	update_recently_edited($file);
 	

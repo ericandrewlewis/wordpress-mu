@@ -31,7 +31,7 @@ function upgrade_all() {
 		upgrade_130();
 	}
 	
-	if ( $wp_current_db_version < 3243 )
+	if ( $wp_current_db_version < 3308 )
 		upgrade_160();
 
 	save_mod_rewrite_rules();
@@ -242,7 +242,7 @@ function upgrade_130() {
 
 function upgrade_160_helper( $users ) {
 	global $wpdb, $table_prefix;
-	
+
 	populate_roles_160();
 
 	foreach ( $users as $user_details ) :
