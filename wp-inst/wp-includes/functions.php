@@ -600,6 +600,50 @@ function &get_post(&$post, $output = OBJECT) {
 	}
 }
 
+function &get_children($post = 0, $output = OBJECT) {
+	global $post_cache, $wpdb;
+
+	if ( empty($post) ) {
+		if ( isset($GLOBALS['post']) )
+			$post_parent = & $GLOBALS['post']->post_parent;
+		else
+			return false;
+	} elseif ( is_object($post) ) {
+		$post_parent = $post->post_parent;
+	} else {
+		$post_parent = $post;
+	}
+
+	$post_parent = (int) $post_parent;
+
+	$query = "SELECT * FROM $wpdb->posts WHERE post_parent = $post_parent";
+
+	$children = $wpdb->get_results($query);
+
+	if ( $children ) {
+		foreach ( $children as $key => $child ) {
+			$post_cache[$child->ID] =& $children[$key];
+			$kids[$child->ID] =& $children[$key];
+		}
+	} else {
+		return false;
+	}
+
+	if ( $output == OBJECT ) {
+		return $kids;
+	} elseif ( $output == ARRAY_A ) {
+		foreach ( $kids as $kid )
+			$weeuns[$kid->ID] = get_object_vars($kids[$kid->ID]);
+		return $weeuns;
+	} elseif ( $output == ARRAY_N ) {
+		foreach ( $kids as $kid )
+			$babes[$kid->ID] = array_values(get_object_vars($kids[$kid->ID]));
+		return $babes;
+	} else {
+		return $kids;
+	}
+}
+
 function set_page_path($page) {
 	$page->fullpath = '/' . $page->post_name;
 	$path = $page->fullpath;
@@ -772,7 +816,6 @@ function get_all_page_ids() {
 }
 
 function gzip_compression() {
-	if ( strstr($_SERVER['PHP_SELF'], 'wp-admin') ) return false;
 	if ( !get_settings('gzipcompression') ) return false;
 
 	if ( extension_loaded('zlib') ) {
@@ -865,7 +908,7 @@ function trackback($trackback_url, $title, $excerpt, $ID) {
 
 	$tb_url = addslashes( $tb_url );
 	$wpdb->query("UPDATE $wpdb->posts SET pinged = CONCAT(pinged, '\n', '$tb_url') WHERE ID = '$ID'");
-	return $wpdb->query("UPDATE $wpdb->posts SET to_ping = REPLACE(to_ping, '$tb_url', '') WHERE ID = '$ID'");
+	return $wpdb->query("UPDATE $wpdb->posts SET to_ping = TRIM(REPLACE(to_ping, '$tb_url', '')) WHERE ID = '$ID'");
 }
 
 function make_url_footnote($content) {
@@ -942,7 +985,7 @@ function debug_fclose($fp) {
 	}
 }
 
-function check_for_pings() {
+function spawn_pinger() {
 	global $wpdb;
 	$doping = false;
 	if ( $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE TRIM(to_ping) != '' LIMIT 1") )
@@ -951,8 +994,13 @@ function check_for_pings() {
 	if ( $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_pingme' OR meta_key = '_encloseme' LIMIT 1") )
 		$doping = true;
 
-	if ( $doping )
-		echo '<iframe id="pingcheck" src="' . get_settings('siteurl') .'/wp-admin/execute-pings.php?time=' . time() . '" style="border:none;width:1px;height:1px;"></iframe>';
+	if ( $doping ) {
+		$ping_url = get_settings('siteurl') .'/wp-admin/execute-pings.php';
+		$parts = parse_url($ping_url);
+		$argyle = @ fsockopen($parts['host'], $_SERVER['SERVER_PORT'], $errno, $errstr, 0.01);
+		if ( $argyle )
+			fputs($argyle, "GET {$parts['path']}?time=".time()." HTTP/1.0\r\nHost: {$_SERVER['HTTP_HOST']}\r\n\r\n");
+       }
 }
 
 function do_enclose( $content, $post_ID ) {

@@ -56,10 +56,7 @@
 	// General options
 	$expiresOffset = 3600 * 24 * 30; // 30 days util client cache expires
 
-	// Only gzip the contents if clients and server support it
-	$encodings = explode(',', strtolower($_SERVER['HTTP_ACCEPT_ENCODING']));
-	if (in_array('gzip', $encodings) && function_exists('ob_gzhandler'))
-		@ ob_start("ob_gzhandler"); // Don't let warnings foul up the JS
+	gzip_compression();
 
 	// Output rest of headers
 	header("Content-type: text/javascript; charset: UTF-8");
@@ -119,7 +116,8 @@
 	$mce_browsers = apply_filters('mce_browsers', array('msie', 'gecko', 'opera'));
 	$mce_browsers = implode($mce_browsers, ',');
 ?>
-tinyMCE.init({
+
+initArray = {
 	mode : "specific_textareas",
 	textarea_trigger : "title",
 	width : "100%",
@@ -145,5 +143,12 @@ tinyMCE.init({
 	valid_elements : "<?php echo $valid_elements; ?>",
 <?php do_action('mce_options'); ?>
 	plugins : "<?php echo $plugins; ?>"
-});
+};
+
+<?php
+	// For people who really REALLY know what they're doing with TinyMCE
+	do_action('tinymce_before_init');
+?>
+
+tinyMCE.init(initArray);
 
