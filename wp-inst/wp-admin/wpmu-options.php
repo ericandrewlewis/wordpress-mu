@@ -68,8 +68,8 @@ if (isset($_GET['updated'])) {
 		<legend><?php _e('Administration Settings') ?></legend> 
 		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 		<tr valign="top"> 
-		<th scope="row"><?php _e('Super Users:') ?></th> 
-		<td><input name="super_users" type="text" id="super_users" style="width: 95%" value="<?php echo get_site_option( 'super_users', 'admin' ) ?>" size="45" />
+		<th scope="row"><?php _e('Site Admins:') ?></th> 
+		<td><input name="site_admins" type="text" id="site_admins" style="width: 95%" value="<?php echo implode( " ", get_site_option( 'site_admins', array( 'admin' ) ) ) ?>" size="45" />
 		<br />
 		<?php _e('These users may login to the main blog and administer the site.') ?></td> 
 		</tr> 
