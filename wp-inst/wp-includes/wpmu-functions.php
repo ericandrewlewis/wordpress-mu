@@ -102,6 +102,11 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
     if( strpos( " " . $username, "_" ) != false )
 	    return "error: username must not contain _";
 
+    // all numeric?
+    preg_match( '/[0-9]*/', $username, $match );
+    if( $match[0] == $username )
+	    return "error: username must not be all numeric";
+
     $errmsg = false ;
     $errmsg = apply_filters( "createBlog_check", $errmsg );
     if( $errmsg != false ) 
@@ -395,18 +400,18 @@ function get_user_details( $username ) {
 
 function get_blog_details( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
-	$cache = wpmu_get_cache( $id, "blog-details" );
-	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 300 ) { // cache for 300 seconds
-		$row = $cache[ 'value' ];
-	} else {
-		$row = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id'" );
-		$name = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" );
-		$row->blogname = $name->option_value;
-		$row->siteurl = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
-		wpmu_update_cache( $id, $row, "blog-details" );
-	}
+	$details = wp_cache_get( $id, 'blog-details' );
 
-	return $row;
+	if ( $details )
+		return unserialize( $details );
+	
+	$details = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id'" );
+	$details->blogname = stripslashes( $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" ) );
+	$details->siteurl  = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
+
+	wp_cache_set( $id, serialize( $details ), 'blog-details' );
+
+	return $details;
 }
 
 function get_current_user_id() {
@@ -648,6 +653,9 @@ function is_archived( $id ) {
 function update_archived( $id, $archived ) {
     global $wpdb;
     $wpdb->query( "UPDATE {$wpdb->blogs} SET archived = '{$archived}' WHERE blog_id = '$id'" );
+    $blog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '$id'" );
+    $key = md5( $blog->domain . $blog->path );
+    wp_cache_set($key, serialize( $blog ), 'blog-lookup');
 
     return $archived;
 }
@@ -655,6 +663,9 @@ function update_archived( $id, $archived ) {
 function update_blog_status( $id, $pref, $value ) {
     global $wpdb;
     $wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}' WHERE blog_id = '$id'" );
+    $blog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '$id'" );
+    $key = md5( $blog->domain . $blog->path );
+    wp_cache_set($key, serialize( $blog ), 'blog-lookup');
 
     return $value;
 }
