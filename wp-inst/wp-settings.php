@@ -22,7 +22,7 @@ $HTTP_USER_AGENT = getenv('HTTP_USER_AGENT');
 unset( $wp_filter, $cache_userdata, $cache_lastcommentmodified, $cache_lastpostdate, $cache_settings, $category_cache, $cache_categories );
 
 if ( ! isset($blog_id) )
-	$blog_id = 1;
+	$blog_id = 0;
 
 // Fix for IIS, which doesn't set REQUEST_URI
 if ( empty( $_SERVER['REQUEST_URI'] ) ) {
@@ -75,6 +75,7 @@ $wpdb->site             = $table_prefix . 'site';
 $wpdb->sitemeta         = $table_prefix . 'sitemeta';
 $wpdb->sitecategories	= $table_prefix . 'sitecategories';
 
+
 // find out what tables to use from $wpblog
 $wpdb->hide_errors();
 
@@ -82,7 +83,7 @@ $domain = addslashes($_SERVER['HTTP_HOST']);
 if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
 if( substr( $domain, -3, 3 ) == ':80' )
-	$domain = str_replace(":80", "", $domain);
+	$domain = str_replace(':80', '', $domain);
 
 function is_installed() {
     global $wpdb, $domain, $base;
@@ -258,6 +259,12 @@ require (ABSPATH . WPINC . '/version.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
 
+$current_site->site_name = get_site_option('site_name');
+
+if( $current_site->site_name == false ) {
+	$current_site->site_name = ucfirst( $current_site->domain );
+}
+
 if( defined( "WP_INSTALLING" ) == false ) {
 	$locale = get_option( "WPLANG" );
 	if( $locale == false )
@@ -281,11 +288,11 @@ if( $is_archived == 'yes' ) {
 }
 
 if( $current_blog->archived == '1' ) {
-    die( "This blog has been archived or suspended." );
+    die( 'This blog has been archived or suspended.' );
 }
 
 if( $current_blog->spam == '1' ) {
-    die( "This blog has been archived or suspended." );
+    die( 'This blog has been archived or suspended.' );
 }
 
 /*
