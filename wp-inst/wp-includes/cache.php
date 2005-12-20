@@ -58,7 +58,7 @@ class WP_Object_Cache {
 	var $cache = array ();
 	var $dirty_objects = array ();
 	var $non_existant_objects = array ();
-	var $global_groups = array ('users', 'usermeta', 'site-options');
+	var $global_groups = array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details');
 	var $blog_id;
 	var $cold_cache_hits = 0;
 	var $warm_cache_hits = 0;
