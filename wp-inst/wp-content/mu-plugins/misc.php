@@ -6,43 +6,57 @@ function fix_upload_details( $uploads ) {
 }
 add_filter( "upload_dir", "fix_upload_details" );
 
+function get_dirsize($directory) {
+	$size = 0;
+	if(substr($directory,-1) == '/') $directory = substr($directory,0,-1);
+	if(!file_exists($directory) || !is_dir($directory) || !is_readable($directory)) return false;
+	if($handle = opendir($directory)) {
+		while(($file = readdir($handle)) !== false) {
+			$path = $directory.'/'.$file;
+			if($file != '.' && $file != '..') {
+				if(is_file($path)) {
+					$size += filesize($path);
+				} elseif(is_dir($path)) {
+					$handlesize = get_dirsize($path);
+					if($handlesize >= 0) {
+						$size += $handlesize;
+					} else {
+						return false;
+					}
+				}
+			}
+		}
+		closedir($handle);
+	}
+	return $size;
+}
+
 function upload_is_user_over_quota( $ret ) {
 	global $wpdb;
 	
 	// Default space allowed is 10 MB 
-	$spaceAllowed = get_site_option("blog_upload_space" );
-	if( $spaceAllowed == false )
-		$spaceAllowed = 10;
+	$spaceAllowed = get_site_option("blog_upload_space");
+	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 10;
 	
 	$dirName = ABSPATH."wp-content/blogs.dir/" . $wpdb->blogid . "/files/";
+	$size = get_dirsize($dirName) / 1024 / 1024;
 	
-  	$dir  = dir($dirName);
-   	$size = 0;
-
-	while($file = $dir->read()) {
-		if ($file != '.' && $file != '..') {
-			if (is_dir($file)) {
-	           $size += dirsize($dirName . '/' . $file);
-	       } else {
-	           $size += filesize($dirName . '/' . $file);
-	       }
-	   }
+	if( ($spaceAllowed-$size) < 0 ) { 
+		return "Sorry, you have used your space allocation. Please delete some files to upload more files."; //No space left
+	} else {
+		return false;
 	}
-	$dir->close();
-	$size = $size / 1024 / 1024;
-	
-	if( intval( $spaceAllowed ) < intval( $size ) ) {
-		// No space left
-		$ret = "You don't have any more space. Delete some files to upload more.";
-	}
-	return $ret;
 }
 add_filter( "pre_upload_error", "upload_is_user_over_quota" );
-add_filter( "check_uploaded_file", "upload_is_user_over_quota" );
 
 function upload_is_file_too_big( $ret ) {
-	if( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
-		$ret = "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.";
+	$type = substr( $_FILES[ 'image' ][ 'name' ], 1+strpos( $_FILES[ 'image' ][ 'name' ], '.' ) );
+	$allowed_types = split( " ", get_site_option( "upload_filetypes" ) );
+	if( in_array( $type, $allowed_types ) == false ) {
+		$ret = "You cannot upload files of this type.<br />";
+	} elseif( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
+		$ret = "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.<br />";
+	}
 
 	return $ret;
 }

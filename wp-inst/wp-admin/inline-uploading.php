@@ -661,8 +661,9 @@ th {
 </div>
 </div>
 <?php elseif ( $action == 'upload' ) : ?>
-	<?php if( apply_filters( "pre_upload_error", false ) == true ) {
-		?><div class="center tip">Sorry, you have used your space allocation. Please delete some files to upload more files.</div><?php
+	<?php $upload_err = apply_filters( "pre_upload_error", false ); 
+	if( $upload_err != false ) {
+		?><div class="center tip"><?php echo $upload_err ?></div><?php
 	} else { ?>
 <div class="tip"></div>
 <form enctype="multipart/form-data" id="uploadForm" method="POST" action="<?php echo basename(__FILE__); ?>">
