@@ -30,7 +30,7 @@ if( defined( "WP_INSTALLING" ) )
 
 class DOC_Referers {
 
-    var $table_version = 0.1;
+    var $table_version = 0.2;
 
     function DOC_Referers() {
 	add_action('admin_menu', array(&$this, 'admin_menu'));
@@ -68,7 +68,7 @@ class DOC_Referers {
 	if(!include_once(ABSPATH . 'wp-admin/upgrade-functions.php')) {
 	    die(_e('There is was error adding the required tables to the database.  Please refer to the documentation regarding this issue.', 'DOC_Referers'));
 	}
-	$qry = "CREATE TABLE " . $wpdb->doc_blacklist . " (
+	$qry = "CREATE TABLE IF NOT EXISTS " . $wpdb->doc_blacklist . " (
 		ID int(11) NOT NULL auto_increment,
 		blogID varchar(32) NOT NULL default '',
 		URL varchar(250) NOT NULL default '',
@@ -79,7 +79,7 @@ class DOC_Referers {
 		);";
 	$wpdb->query( $qry );
 
-	$qry = "CREATE TABLE " . $wpdb->doc_referers . " (
+	$qry = "CREATE TABLE IF NOT EXISTS " . $wpdb->doc_referers . " (
 		blogID char( 32 ) default NULL ,
 		visitID int( 11 ) NOT NULL AUTO_INCREMENT ,
 		visitTime timestamp( 14 ) NOT NULL ,
@@ -93,8 +93,7 @@ class DOC_Referers {
 		KEY blogID ( blogID ) ,
 		KEY refpost ( refpost ) ,
 		KEY dayofmonth ( dayofmonth )
-		);
-	";
+		);";
 	$wpdb->query( $qry );
 
 	$this->settings['table_version'] = $this->table_version;
