@@ -295,7 +295,7 @@ if( $current_blog->spam == '1' ) {
     die( 'This blog has been archived or suspended.' );
 }
 
-/*
+
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies
     $cookiehash = ''; // Remove in 1.4
@@ -312,7 +312,7 @@ if ( !defined('SITECOOKIEPATH') )
 	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('siteurl') . '/' ) );
 if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', false);
-*/
+
 
 require (ABSPATH . WPINC . '/vars.php');
 
