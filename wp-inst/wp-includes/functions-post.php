@@ -136,8 +136,8 @@ function wp_insert_post($postarr = array()) {
 			post_name = '$post_name',
 			to_ping = '$to_ping',
 			pinged = '$pinged',
-			post_modified = '$post_date',
-			post_modified_gmt = '$post_date_gmt',
+			post_modified = '".current_time('mysql')."',
+			post_modified_gmt = '".current_time('mysql',1)."',
 			post_parent = '$post_parent',
 			menu_order = '$menu_order'
 			WHERE ID = $post_ID");
@@ -272,8 +272,11 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 		$to_ping = preg_replace('|\s+|', "\n", $to_ping);
 	else
 		$to_ping = '';
-	
-	$post_parent = (int) $post_parent;
+
+	if ( isset($post_parent) )
+		$post_parent = (int) $post_parent;
+	else
+		$post_parent = 0;
 
 	if ( isset($menu_order) )
 		$menu_order = (int) $menu_order;
@@ -282,6 +285,14 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 
 	if ( !isset($post_password) )
 		$post_password = '';
+
+	if ( isset($to_ping) )
+		$to_ping = preg_replace('|\s+|', "\n", $to_ping);
+	else
+		$to_ping = '';
+
+	if ( ! isset($pinged) )
+		$pinged = '';
 
 	if ($update) {
 		$wpdb->query(
@@ -298,8 +309,9 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 			post_password = '$post_password',
 			post_name = '$post_name',
 			to_ping = '$to_ping',
-			post_modified = '$post_date',
-			post_modified_gmt = '$post_date_gmt',
+			pinged = '$pinged',
+			post_modified = '".current_time('mysql')."',
+			post_modified_gmt = '".current_time('mysql',1)."',
 			post_parent = '$post_parent',
 			menu_order = '$menu_order',
 			post_mime_type = '$post_mime_type',
@@ -308,9 +320,9 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 	} else {
 		$wpdb->query(
 			"INSERT INTO $wpdb->posts
-			(post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt,  post_status, comment_status, ping_status, post_password, post_name, to_ping, post_modified, post_modified_gmt, post_parent, menu_order, post_mime_type, guid)
+			(post_author, post_date, post_date_gmt, post_content, post_title, post_excerpt,  post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_parent, menu_order, post_mime_type, guid)
 			VALUES
-			('$post_author', '$post_date', '$post_date_gmt', '$post_content', '$post_title', '$post_excerpt', '$post_status', '$comment_status', '$ping_status', '$post_password', '$post_name', '$to_ping', '$post_date', '$post_date_gmt', '$post_parent', '$menu_order', '$post_mime_type', '$guid')");
+			('$post_author', '$post_date', '$post_date_gmt', '$post_content', '$post_title', '$post_excerpt', '$post_status', '$comment_status', '$ping_status', '$post_password', '$post_name', '$to_ping', '$pinged', '$post_date', '$post_date_gmt', '$post_parent', '$menu_order', '$post_mime_type', '$guid')");
 			$post_ID = $wpdb->insert_id;			
 	}
 	
@@ -757,18 +769,37 @@ function add_ping($post_id, $uri) { // Add a URI to those already pung
 	return $wpdb->query("UPDATE $wpdb->posts SET pinged = '$new' WHERE ID = $post_id");
 }
 
+//fetches the pages returned as a FLAT list, but arranged in order of their hierarchy, i.e., child parents
+//immediately follow their parents
+function get_page_hierarchy($posts, $parent = 0) {
+	$result = array ( );
+	if ($posts) { foreach ($posts as $post) {
+		if ($post->post_parent == $parent) {
+			$result[$post->ID] = $post->post_name;
+			$children = get_page_hierarchy($posts, $post->ID);
+			$result += $children; //append $children to $result
+		}
+	} }
+	return $result;
+}
+
 function generate_page_rewrite_rules() {
 	global $wpdb;
-	$posts = $wpdb->get_results("SELECT ID, post_name FROM $wpdb->posts WHERE post_status = 'static' ORDER BY post_parent DESC");
+	
+	//get pages in order of hierarchy, i.e. children after parents
+	$posts = get_page_hierarchy($wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_status = 'static'"));
+	//now reverse it, because we need parents after children for rewrite rules to work properly
+	$posts = array_reverse($posts, true);
 
 	$page_rewrite_rules = array();
 	
 	if ($posts) {
-		foreach ($posts as $post) {
+		
+		foreach ($posts as $id => $post) {
 			// URI => page name
-			$uri = get_page_uri($post->ID);
+			$uri = get_page_uri($id);
 			
-			$page_rewrite_rules[$uri] = $post->post_name;
+			$page_rewrite_rules[$uri] = $post;
 		}
 		
 		update_option('page_uris', $page_rewrite_rules);
@@ -819,7 +850,7 @@ function wp_upload_dir() {
 
         // Make sure we have an uploads dir
         if ( ! file_exists( $path ) ) {
-                if ( ! mkdir( $path ) )
+                if ( ! @ mkdir( $path ) )
                         return array('error' => "Unable to create directory $path. Is its parent directory writable by the server?");
 		@ chmod( $path, $dir_perms );
 	}
@@ -833,14 +864,14 @@ function wp_upload_dir() {
 
         // Make sure we have a yearly dir
         if ( ! file_exists( $pathy ) ) {
-                if ( ! mkdir( $pathy ) )
+                if ( ! @ mkdir( $pathy ) )
                         return array('error' => "Unable to create directory $pathy. Is $path writable?");
 		@ chmod( $pathy, $dir_perms );
 	}
 
         // Make sure we have a monthly dir
         if ( ! file_exists( $pathym ) ) {
-                if ( ! mkdir( $pathym ) )
+                if ( ! @ mkdir( $pathym ) )
                         return array('error' => "Unable to create directory $pathym. Is $pathy writable?");
 		@ chmod( $pathym, $dir_perms );
 	}

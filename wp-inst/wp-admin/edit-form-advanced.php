@@ -33,9 +33,9 @@ $form_prevstatus = '<input type="hidden" name="prev_status" value="' . $post->po
 
 $form_trackback = '<input type="text" name="trackback_url" style="width: 415px" id="trackback" tabindex="7" value="'. str_replace("\n", ' ', $post->to_ping) .'" />';
 
-if ('' != $pinged) {
-	$pings .= '<p>'. __('Already pinged:') . '</p><ul>';
-	$already_pinged = explode("\n", trim($pinged));
+if ('' != $post->pinged) {
+	$pings = '<p>'. __('Already pinged:') . '</p><ul>';
+	$already_pinged = explode("\n", trim($post->pinged));
 	foreach ($already_pinged as $pinged_url) {
 		$pings .= "\n\t<li>$pinged_url</li>";
 	}
@@ -237,7 +237,7 @@ if ( false != $uploading_iframe_src )
 <h3 class="dbx-handle"><?php _e('Trackbacks') ?></h3>
 <div class="dbx-content"><?php _e('Send trackbacks to'); ?>: <?php echo $form_trackback; ?> (<?php _e('Separate multiple URIs with spaces'); ?>)
 <?php 
-if ('' != $pinged)
+if ( ! empty($pings) )
 	echo $pings;
 ?>
 </div>
