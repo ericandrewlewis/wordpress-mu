@@ -42,6 +42,10 @@ if ( strpos($_SERVER['SCRIPT_FILENAME'], 'php.cgi') == strlen($_SERVER['SCRIPT_F
 if ( strstr( $_SERVER['SCRIPT_NAME'], 'php.cgi' ) )
 	unset($_SERVER['PATH_INFO']);
 
+// Fix empty PHP_SELF
+$PHP_SELF = $_SERVER['PHP_SELF'];
+if ( empty($PHP_SELF) )
+	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
 if ( !(phpversion() >= '4.1') )
 	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.1' );
@@ -169,15 +173,13 @@ if( $blog_id == false ) {
     }
 }
 
-if( $public == '0' ) {
-    // need to put checks in here?
-    // A hook?
-    die( "This blog is private." );
+if( '0' == $current_blog->public ) {
+	// This just means the blog shouldn't show up in google, etc. Only to registered members
 }
 
 $wpdb->show_errors();
 
-$table_prefix = $table_prefix.$blog_id."_";
+$table_prefix = $table_prefix . $blog_id . '_';
 
 // Table names
 $wpdb->siteid           = $site_id;
@@ -313,19 +315,16 @@ if ( !defined('SITECOOKIEPATH') )
 if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', false);
 
-
 require (ABSPATH . WPINC . '/vars.php');
 
 do_action('core_files_loaded');
 
 /*
-
 // Check for hacks file if the option is enabled
 if (get_settings('hack_file')) {
 	if (file_exists(ABSPATH . '/my-hacks.php'))
 		require(ABSPATH . '/my-hacks.php');
 }
-
 */
 
 if ( get_settings('active_plugins') ) {

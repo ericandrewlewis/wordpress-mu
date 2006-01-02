@@ -6,7 +6,7 @@
  * generic function for inserting data into the posts table.
  */
 function wp_insert_post($postarr = array()) {
-	global $wpdb, $allowedtags, $user_ID;
+	global $wpdb, $wp_rewrite, $allowedtags, $user_ID;
 
 	if ( is_object($postarr) )
 		$postarr = get_object_vars($postarr);
@@ -121,7 +121,7 @@ function wp_insert_post($postarr = array()) {
 
 	if ($update) {
 		$wpdb->query(
-			"UPDATE $wpdb->posts SET
+			"UPDATE IGNORE $wpdb->posts SET
 			post_author = '$post_author',
 			post_date = '$post_date',
 			post_date_gmt = '$post_date_gmt',
@@ -143,7 +143,7 @@ function wp_insert_post($postarr = array()) {
 			WHERE ID = $post_ID");
 	} else {
 		$wpdb->query(
-			"INSERT INTO $wpdb->posts
+			"INSERT IGNORE INTO $wpdb->posts
 			(post_author, post_date, post_date_gmt, post_content, post_content_filtered, post_title, post_excerpt,  post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_parent, menu_order, post_mime_type)
 			VALUES
 			('$post_author', '$post_date', '$post_date_gmt', '$post_content', '$post_content_filtered', '$post_title', '$post_excerpt', '$post_status', '$comment_status', '$ping_status', '$post_password', '$post_name', '$to_ping', '$pinged', '$post_date', '$post_date_gmt', '$post_parent', '$menu_order', '$post_mime_type')");
@@ -196,7 +196,7 @@ function wp_insert_post($postarr = array()) {
 			spawn_pinger();
 		}
 	} else if ($post_status == 'static') {
-		generate_page_rewrite_rules();
+		$wp_rewrite->flush_rules();
 
 		if ( !empty($page_template) )
 			if ( ! update_post_meta($post_ID, '_wp_page_template',  $page_template))
@@ -526,7 +526,7 @@ function wp_set_post_cats($blogid = '1', $post_ID = 0, $post_categories = array(
 }	// wp_set_post_cats()
 
 function wp_delete_post($postid = 0) {
-	global $wpdb;
+	global $wpdb, $wp_rewrite;
 	$postid = (int) $postid;
 
 	if ( !$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = $postid") )
@@ -559,8 +559,8 @@ function wp_delete_post($postid = 0) {
 	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = $postid");
 
 	if ( 'static' == $post->post_status )
-		generate_page_rewrite_rules();
-	
+		$wp_rewrite->flush_rules();
+
 	return $post;
 }
 
@@ -697,15 +697,21 @@ function do_trackbacks($post_id) {
 	$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = $post_id");
 	$to_ping = get_to_ping($post_id);
 	$pinged  = get_pung($post_id);
-	if ( empty($to_ping) )
+	if ( empty($to_ping) ) {
+		$wpdb->query("UPDATE $wpdb->posts SET to_ping = '' WHERE ID = '$post_id'");
 		return;
+	}
+	
 	if (empty($post->post_excerpt))
 		$excerpt = apply_filters('the_content', $post->post_content);
 	else
 		$excerpt = apply_filters('the_excerpt', $post->post_excerpt);
 	$excerpt = str_replace(']]>', ']]&gt;', $excerpt);
 	$excerpt = strip_tags($excerpt);
-	$excerpt = substr($excerpt, 0, 252) . '...';
+	if ( function_exists('mb_strcut') ) // For international trackbacks
+    	$excerpt = mb_strcut($excerpt, 0, 252, get_settings('blog_charset')) . '...';
+	else
+		$excerpt = substr($excerpt, 0, 252) . '...';
 
 	$post_title = apply_filters('the_title', $post->post_title);
 	$post_title = strip_tags($post_title);
@@ -792,19 +798,29 @@ function generate_page_rewrite_rules() {
 	$posts = array_reverse($posts, true);
 
 	$page_rewrite_rules = array();
-	
+	$page_attachment_rewrite_rules = array();
+
 	if ($posts) {
 		
 		foreach ($posts as $id => $post) {
+
 			// URI => page name
 			$uri = get_page_uri($id);
-			
+			$attachments = $wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_status = 'attachment' AND post_parent = '$id'");
+			if ( $attachments ) {
+				foreach ( $attachments as $attachment ) {
+					$attach_uri = get_page_uri($attachment->ID);
+					$page_attachment_rewrite_rules[$attach_uri] = $attachment->post_name;
+				}
+			}
+
 			$page_rewrite_rules[$uri] = $post;
 		}
-		
+
 		update_option('page_uris', $page_rewrite_rules);
 		
-		save_mod_rewrite_rules();
+		if ( $page_attachment_rewrite_rules )
+			update_option('page_attachment_uris', $page_attachment_rewrite_rules);
 	}
 }
 
@@ -835,48 +851,67 @@ function get_attached_file($attachment_id) {
 	return get_post_meta($attachment_id, '_wp_attached_file', true);
 }
 
+function wp_mkdir_p($target) {
+	// from php.net/mkdir user contributed notes
+	if (file_exists($target)) {
+		if (! @ is_dir($target))
+			return false;
+		else
+			return true;
+	}
+
+	// Attempting to create the directory may clutter up our display.
+	if (@ mkdir($target)) {
+		$stat = @ stat(dirname($target));
+		$dir_perms = $stat['mode'] & 0007777;  // Get the permission bits.
+		@ chmod($target, $dir_perms);
+		return true;
+	} else {
+		if ( is_dir(dirname($target)) )
+			return false;	
+	}
+
+	// If the above failed, attempt to create the parent node, then try again.
+	if (wp_mkdir_p(dirname($target)))
+		return wp_mkdir_p($target);
+
+	return false;
+}
+
 // Returns an array containing the current upload directory's path and url, or an error message.
 function wp_upload_dir() {
-        if ( defined('UPLOADS') )
-                $dir = UPLOADS;
-        else
-                $dir = 'wp-content/uploads';
+	$dir = trim(get_settings('fileupload_realpath'));
+	$url = trim(get_settings('fileupload_url'));
 
-	$path = ABSPATH . $dir;
-	
-	// Give the new dirs the same perms as wp-content.
-	$stat = stat(ABSPATH . 'wp-content');
-	$dir_perms = $stat['mode'] & 0000777;  // Get the permission bits.
-
-        // Make sure we have an uploads dir
-        if ( ! file_exists( $path ) ) {
-                if ( ! @ mkdir( $path ) )
-                        return array('error' => "Unable to create directory $path. Is its parent directory writable by the server?");
-		@ chmod( $path, $dir_perms );
+	$custom = true;
+	if ( empty($dir) || empty($url) ) {
+		$dir = ABSPATH . 'wp-content/uploads';
+		$url = get_option('siteurl') . '/wp-content/uploads';
+		$custom = false;
 	}
 
-        // Generate the yearly and monthly dirs
-        $time = current_time( 'mysql' );
-        $y = substr( $time, 0, 4 );
-        $m = substr( $time, 5, 2 );
-        $pathy = "$path/$y";
-        $pathym = "$path/$y/$m";
-
-        // Make sure we have a yearly dir
-        if ( ! file_exists( $pathy ) ) {
-                if ( ! @ mkdir( $pathy ) )
-                        return array('error' => "Unable to create directory $pathy. Is $path writable?");
-		@ chmod( $pathy, $dir_perms );
+	if ( defined('UPLOADS') ) {
+		$dir = ABSPATH . UPLOADS;
+		$url =  get_option('siteurl') . '/' . UPLOADS;
+		$custom = false;
 	}
 
-        // Make sure we have a monthly dir
-        if ( ! file_exists( $pathym ) ) {
-                if ( ! @ mkdir( $pathym ) )
-                        return array('error' => "Unable to create directory $pathym. Is $pathy writable?");
-		@ chmod( $pathym, $dir_perms );
+	if ( ! $custom) {
+		// Generate the yearly and monthly dirs
+		$time = current_time( 'mysql' );
+		$y = substr( $time, 0, 4 );
+		$m = substr( $time, 5, 2 );
+		$dir = $dir . "/$y/$m";
+		$url = $url . "/$y/$m";
 	}
 
-    $uploads = array('path' => $pathym, 'url' => get_option('siteurl') . "/$dir/$y/$m", 'error' => false);
+	// Make sure we have an uploads dir
+	if ( ! wp_mkdir_p( $dir ) ) {
+		$message = sprintf(__('Unable to create directory %s. Is its parent directory writable by the server?'), $dir);
+		return array('error' => $message);
+	}
+
+    $uploads = array('path' => $dir, 'url' => $url, 'error' => false);
 	return apply_filters('upload_dir', $uploads);
 }
 
@@ -891,10 +926,25 @@ function wp_upload_bits($name, $type, $bits) {
 
 	$number = '';
 	$filename = $name;
-	while ( file_exists($upload['path'] . "/$filename") )
-		$filename = str_replace("$number.$ext", ++$number . ".$ext", $filename);
+	$path_parts = pathinfo($filename);
+	$ext = $path_parts['extension'];
+	if ( empty($ext) )
+		$ext = '';
+	else
+		$ext = ".$ext";
+	while ( file_exists($upload['path'] . "/$filename") ) {
+		if ( '' == "$number$ext" )
+			$filename = $filename . ++$number . $ext;
+		else
+			$filename = str_replace("$number$ext", ++$number . $ext, $filename);
+	}
+		
+	$new_file = $upload['path'] . "/$filename";
+	if ( ! wp_mkdir_p( dirname($new_file) ) ) {
+		$message = sprintf(__('Unable to create directory %s. Is its parent directory writable by the server?'), dirname($new_file));
+		return array('error' => $message);
+	}
 
-	$new_file = $uploads['path'] . "/$filename";
 	$ifp = @ fopen($new_file, 'wb');
 	if ( ! $ifp )
 		return array('error' => "Could not write file $new_file.");
@@ -903,13 +953,14 @@ function wp_upload_bits($name, $type, $bits) {
 	fclose($ifp);
 	// Set correct file permissions
 	$stat = @ stat(dirname($new_file));
-	$perms = $stat['mode'] & 0000777;
+	$perms = $stat['mode'] & 0007777;
+	$perms = $perms & 0000666;
 	@ chmod($new_file, $perms);
 
 	// Compute the URL
 	$url = $upload['url'] . "/$filename";
 
-	return array('file' => $new_file, 'url' => $url);
+	return array('file' => $new_file, 'url' => $url, 'error' => false);
 }
 
 ?>

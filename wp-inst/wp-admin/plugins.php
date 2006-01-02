@@ -28,6 +28,7 @@ if ( isset($_GET['action']) ) {
 		do_action('deactivate_' . trim( $_GET['plugin'] ));
 		header('Location: plugins.php?deactivate=true');
 	}
+	exit;
 }
 
 $title = __('Manage Plugins');

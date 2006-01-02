@@ -5,7 +5,7 @@ require_once(ABSPATH . '/wp-admin/upgrade-schema.php');
 define( "RESET_CAPS", true );
 // Functions to be called in install and upgrade scripts
 function upgrade_all() {
-	global $wp_current_db_version, $wp_db_version;
+	global $wp_current_db_version, $wp_db_version, $wp_rewrite;
 	$wp_current_db_version = __get_option('db_version');
 
 	// We are up-to-date.  Nothing to do.
@@ -34,7 +34,7 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 3308 )
 		upgrade_160();
 
-	save_mod_rewrite_rules();
+	$wp_rewrite->flush_rules();
 	
 	update_option('db_version', $wp_db_version);
 }

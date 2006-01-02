@@ -30,10 +30,10 @@ case 'update':
 	$any_changed = 0;
 	
 	check_admin_referer();
-    
+
 	if (!$_POST['page_options']) {
 		foreach ($_POST as $key => $value) {
-			$options[] = "$key";
+			$options[] = $key;
 		}
 	} else {
 		$options = explode(',', stripslashes($_POST['page_options']));
@@ -54,7 +54,8 @@ case 'update':
 	      $value = 'closed';
 
 	    if( $option == 'blogdescription' || $option == 'blogname' )
-		    $value = wp_filter_post_kses( $value );
+		    if (current_user_can('unfiltered_html') == false)
+			    $value = wp_filter_post_kses( $value );
 
 	    if ( update_option($option, $value) )
 	      $any_changed++;
@@ -65,7 +66,7 @@ case 'update':
 			// If siteurl or home changed, reset cookies.
 			if ( get_settings('siteurl') != $old_siteurl || get_settings('home') != $old_home ) {
 				// If home changed, write rewrite rules to new location.
-				save_mod_rewrite_rules();
+				$wp_rewrite->flush_rules();
 				// Get currently logged in user and password.
 				get_currentuserinfo();
 				// Clear cookies for old paths.

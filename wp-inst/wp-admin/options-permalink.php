@@ -77,8 +77,6 @@ if ( isset($_POST) ) {
 $permalink_structure = get_settings('permalink_structure');
 $category_base = get_settings('category_base');
 
-generate_page_rewrite_rules();
-
 if ( (!file_exists($home_path.'.htaccess') && is_writable($home_path)) || is_writable($home_path.'.htaccess') )
 	$writable = true;
 else
@@ -89,7 +87,7 @@ if ($wp_rewrite->using_index_permalinks())
 else
 	$usingpi = false;
 
-save_mod_rewrite_rules();
+$wp_rewrite->flush_rules();
 ?>
 
 <?php if (isset($_POST['submit'])) : ?>

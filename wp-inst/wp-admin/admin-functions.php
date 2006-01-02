@@ -1249,7 +1249,9 @@ function get_admin_page_title() {
 		return $title;
 	}
 
-	$parent = get_admin_page_parent();
+	$hook = get_plugin_page_hook($plugin_page, $pagenow);
+
+	$parent = $parent1 = get_admin_page_parent();
 	if (empty ($parent)) {
 		foreach ($menu as $menu_array) {
 			if (isset ($menu_array[3])) {
@@ -1257,7 +1259,7 @@ function get_admin_page_title() {
 					$title = $menu_array[3];
 					return $menu_array[3];
 				} else
-					if (isset ($plugin_page) && ($plugin_page == $menu_array[2])) {
+					if (isset ($plugin_page) && ($plugin_page == $menu_array[2]) && ($hook == $menu_array[3])) {
 						$title = $menu_array[3];
 						return $menu_array[3];
 					}
@@ -1271,7 +1273,7 @@ function get_admin_page_title() {
 						$title = $submenu_array[3];
 						return $submenu_array[3];
 					} else
-						if (isset ($plugin_page) && ($plugin_page == $submenu_array[2])) {
+						if (isset ($plugin_page) && ($plugin_page == $submenu_array[2]) && (($parent == $pagenow) || ($parent == $plugin_page) || ($plugin_page == $hook) || (($pagenow == 'admin.php') && ($parent1 != $submenu_array[2])))) {
 							$title = $submenu_array[3];
 							return $submenu_array[3];
 						}
@@ -1719,7 +1721,7 @@ function wp_handle_upload(&$file, $overrides = false) {
 		return $upload_error_handler($file, __('File is empty. Please upload something more substantial.'));
 
 	// A properly uploaded file will pass this test. There should be no reason to override this one.
-	if (! is_uploaded_file($file['tmp_name']) )
+	if (! @ is_uploaded_file($file['tmp_name']) )
 		return $upload_error_handler($file, __('Specified file failed upload test.'));
 
 	// A correct MIME type will pass this test.
@@ -1748,13 +1750,21 @@ function wp_handle_upload(&$file, $overrides = false) {
 	} else {
 		$number = '';
 		$filename = $file['name'];
-		while ( file_exists($uploads['path'] . "/$filename") )
-			$filename = str_replace("$number.$ext", ++$number . ".$ext", $filename);
+		if ( empty($ext) )
+			$ext = '';
+		else
+			$ext = ".$ext";
+		while ( file_exists($uploads['path'] . "/$filename") ) {
+			if ( '' == "$number$ext" )
+				$filename = $filename . ++$number . $ext;
+			else
+				$filename = str_replace("$number$ext", ++$number . $ext, $filename);
+		}
 	}
 
 	// Move the file to the uploads dir
 	$new_file = $uploads['path'] . "/$filename";
-	if ( false === move_uploaded_file($file['tmp_name'], $new_file) )
+	if ( false === @ move_uploaded_file($file['tmp_name'], $new_file) )
 		die(printf(__('The uploaded file could not be moved to %s.'), $file['path']));
 
 	// Set correct file permissions

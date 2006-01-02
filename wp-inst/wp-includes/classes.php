@@ -381,7 +381,9 @@ class WP_Query {
 			
 			$where .= " AND (ID = '$reqpage')";
 		} elseif ('' != $q['attachment']) {
-			$q['attachment'] = sanitize_title($q['attachment']);
+			$q['attachment'] = str_replace('%2F', '/', urlencode(urldecode($q['attachment'])));
+			$attach_paths = '/' . trim($q['attachment'], '/');
+			$q['attachment'] = sanitize_title(basename($attach_paths));
 			$q['name'] = $q['attachment'];
 			$where .= " AND post_name = '" . $q['attachment'] . "'";
 		}
@@ -483,14 +485,21 @@ class WP_Query {
 				$cat_path .= ($pathdir!=''?'/':'') . sanitize_title($pathdir);
 
 			$all_cat_ids = get_all_category_ids();
-			$q['cat'] = 0;			
+			$q['cat'] = 0; $partial_match = 0;
 			foreach ( $all_cat_ids as $cat_id ) {
 				$cat = get_category($cat_id);
 				if ( $cat->fullpath == $cat_path ) {
 					$q['cat'] = $cat_id;
 					break;
+				} elseif ( $cat->category_nicename == $q['category_name'] ) {
+					$partial_match = $cat_id;
 				}
 			}
+			
+			//if we don't match the entire hierarchy fallback on just matching the nicename
+			if (!$q['cat'] && $partial_match) {
+				$q['cat'] = $partial_match;
+			}			
 
 			$tables = ", $wpdb->post2cat, $wpdb->categories";
 			$join = " LEFT JOIN $wpdb->post2cat ON ($wpdb->posts.ID = $wpdb->post2cat.post_id) LEFT JOIN $wpdb->categories ON ($wpdb->post2cat.category_id = $wpdb->categories.cat_ID) ";
@@ -953,16 +962,22 @@ class WP_Rewrite {
 
 	function page_rewrite_rules() {
 		$uris = get_settings('page_uris');
+		$attachment_uris = get_settings('page_attachment_uris');
 
 		$rewrite_rules = array();
 		$page_structure = $this->get_page_permastruct();
-		if( is_array( $uris ) )
-			{
-				foreach ($uris as $uri => $pagename) {
-					$this->add_rewrite_tag('%pagename%', "($uri)", 'pagename=');
-					$rewrite_rules += $this->generate_rewrite_rules($page_structure);
-				}
+		if( is_array( $attachment_uris ) ) {
+			foreach ($attachment_uris as $uri => $pagename) {
+				$this->add_rewrite_tag('%pagename%', "($uri)", 'attachment=');
+				$rewrite_rules += $this->generate_rewrite_rules($page_structure);
 			}
+		}
+		if( is_array( $uris ) ) {
+			foreach ($uris as $uri => $pagename) {
+				$this->add_rewrite_tag('%pagename%', "($uri)", 'pagename=');
+				$rewrite_rules += $this->generate_rewrite_rules($page_structure);
+			}
+		}
 
 		return $rewrite_rules;
 	}
@@ -1225,11 +1240,14 @@ class WP_Rewrite {
 				$rewrite = $rewrite + array($pagematch => $pagequery);
 
 			if ($num_toks) {
-				$post = 0;
+				$post = false;
+				$page = false;
 				if (strstr($struct, '%postname%') || strstr($struct, '%post_id%')
 						|| strstr($struct, '%pagename%')
 						|| (strstr($struct, '%year%') &&  strstr($struct, '%monthnum%') && strstr($struct, '%day%') && strstr($struct, '%hour%') && strstr($struct, '%minute') && strstr($struct, '%second%'))) {
-					$post = 1;
+					$post = true;
+					if  ( strstr($struct, '%pagename%') )
+						$page = true;
 					$trackbackmatch = $match . $trackbackregex;
 					$trackbackquery = $trackbackindex . '?' . $query . '&tb=1';
 					$match = rtrim($match, '/');
@@ -1257,9 +1275,10 @@ class WP_Rewrite {
 				$rewrite = $rewrite + array($match => $query);
 
 				if ($post) {
-					$rewrite = array($trackbackmatch => $trackbackquery) + $rewrite +
-						array($sub1 => $subquery, $sub1tb => $subtbquery, $sub1feed => $subfeedquery, $sub1feed2 => $subfeedquery) +
-						array($sub2 => $subquery, $sub2tb => $subtbquery, $sub2feed => $subfeedquery, $sub2feed2 => $subfeedquery);
+					$rewrite = array($trackbackmatch => $trackbackquery) + $rewrite;
+					if ( ! $page )
+						$rewrite = $rewrite + array($sub1 => $subquery, $sub1tb => $subtbquery, $sub1feed => $subfeedquery, $sub1feed2 => $subfeedquery);
+					$rewrite = $rewrite + array($sub2 => $subquery, $sub2tb => $subtbquery, $sub2feed => $subfeedquery, $sub2feed2 => $subfeedquery);
 				}
 			}
 
@@ -1327,8 +1346,14 @@ class WP_Rewrite {
 	}
 
 	function wp_rewrite_rules() {
-		$this->matches = 'matches';
-		return $this->rewrite_rules();
+		$this->rules = get_option('rewrite_rules');
+		if ( empty($this->rules) ) {
+			$this->matches = 'matches';
+			$this->rewrite_rules();
+			update_option('rewrite_rules', $this->rules);
+		}
+
+		return $this->rules;
 	}
 
 	function mod_rewrite_rules() {
@@ -1382,6 +1407,14 @@ class WP_Rewrite {
 		$rules = apply_filters('rewrite_rules', $rules);  // Deprecated
 
 		return $rules;
+	}
+
+	function flush_rules() {
+		generate_page_rewrite_rules();
+		delete_option('rewrite_rules');
+		$this->wp_rewrite_rules();
+		if ( function_exists('save_mod_rewrite_rules') )
+			save_mod_rewrite_rules();
 	}
 
 	function init() {
@@ -1461,16 +1494,21 @@ class WP {
 			$self = $_SERVER['PHP_SELF'];
 			$home_path = parse_url(get_settings('home'));
 			$home_path = $home_path['path'];
+			$home_path = trim($home_path, '/');
 
 			// Trim path info from the end and the leading home path from the
 			// front.  For path info requests, this leaves us with the requesting
 			// filename, if any.  For 404 requests, this leaves us with the
 			// requested permalink.	
 			$req_uri = str_replace($pathinfo, '', $req_uri);
-			$req_uri = str_replace($home_path, '', $req_uri);
 			$req_uri = trim($req_uri, '/');
-			$pathinfo = str_replace($home_path, '', $pathinfo);
+			$req_uri = preg_replace("|^$home_path|", '', $req_uri);
+			$req_uri = trim($req_uri, '/');
 			$pathinfo = trim($pathinfo, '/');
+			$pathinfo = preg_replace("|^$home_path|", '', $pathinfo);
+			$pathinfo = trim($pathinfo, '/');
+			$self = trim($self, '/');
+			$self = preg_replace("|^$home_path|", '', $self);
 			$self = str_replace($home_path, '', $self);
 			$self = trim($self, '/');
 

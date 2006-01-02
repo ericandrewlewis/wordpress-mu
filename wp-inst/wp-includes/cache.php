@@ -53,7 +53,7 @@ define('CACHE_SERIAL_FOOTER', "\n?".">");
 class WP_Object_Cache {
 	var $cache_dir;
 	var $cache_enabled = false;
-	var $expiration_time = 86400;
+	var $expiration_time = 900;
 	var $flock_filename = 'wp_object_cache.lock';
 	var $cache = array ();
 	var $dirty_objects = array ();
@@ -205,7 +205,9 @@ class WP_Object_Cache {
 			}
 
 			if (!file_exists($this->cache_dir.$make_dir."index.php")) {
+				$file_perms = $perms & 0000666;
 				@ touch($this->cache_dir.$make_dir."index.php");
+				@ chmod($this->cache_dir.$make_dir."index.php", $file_perms);
 			}
 		}
 
@@ -268,7 +270,8 @@ class WP_Object_Cache {
 
 		// Give the new dirs the same perms as wp-content.
 		$stat = stat(ABSPATH.'wp-content');
-		$dir_perms = $stat['mode'] & 0000777; // Get the permission bits.
+		$dir_perms = $stat['mode'] & 0007777; // Get the permission bits.
+		$file_perms = $dir_perms & 0000666; // Remove execute bits for files.
 
 		// Make the base cache dir.
 		if (!file_exists($this->cache_dir)) {
@@ -279,6 +282,7 @@ class WP_Object_Cache {
 
 		if (!file_exists($this->cache_dir."index.php")) {
 			@ touch($this->cache_dir."index.php");
+			@ chmod($this->cache_dir."index.php", $file_perms);
 		}
 
 		// Acquire a write lock. 
@@ -314,6 +318,7 @@ class WP_Object_Cache {
 						@ unlink($temp_file);
 					}
 				}
+				@ chmod($cache_file, $file_perms);
 			}
 		}
 
