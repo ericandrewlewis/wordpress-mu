@@ -50,7 +50,7 @@ function upload_is_user_over_quota( $ret ) {
 add_filter( "pre_upload_error", "upload_is_user_over_quota" );
 
 function upload_is_file_too_big( $ret ) {
-	$type = substr( $_FILES[ 'image' ][ 'name' ], 1+strpos( $_FILES[ 'image' ][ 'name' ], '.' ) );
+	$type = strtolower( substr( $_FILES[ 'image' ][ 'name' ], 1+strpos( $_FILES[ 'image' ][ 'name' ], '.' ) ) );
 	$allowed_types = split( " ", get_site_option( "upload_filetypes" ) );
 	if( in_array( $type, $allowed_types ) == false ) {
 		$ret = "You cannot upload files of this type.<br />";
