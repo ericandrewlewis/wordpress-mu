@@ -593,6 +593,9 @@ function &get_post(&$post, $output = OBJECT) {
 		}
 	}
 
+	if ( defined(WP_IMPORTING) )
+		unset($post_cache);
+
 	if ( $output == OBJECT ) {
 		return $_post;
 	} elseif ( $output == ARRAY_A ) {
