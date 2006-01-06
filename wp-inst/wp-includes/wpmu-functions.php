@@ -879,4 +879,15 @@ function wpmu_admin_redirect_url() {
 	}
 }
 
+function is_blog_user() {
+	global $current_user, $wpdb, $wpmuBaseTablePrefix;
+
+	$cap_key = $wpmuBaseTablePrefix . $wpdb->blogid . '_capabilities';
+
+	if ( is_array($current_user->$cap_key) && in_array(1, $current_user->$cap_key) )
+		return true;
+
+	return false;
+}
+
 ?>

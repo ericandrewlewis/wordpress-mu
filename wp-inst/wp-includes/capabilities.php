@@ -349,6 +349,9 @@ function user_can_create_draft($user_id, $blog_id = 1, $category_id = 'None') {
 
 /* returns true if $user_id can edit $post_id */
 function user_can_edit_post($user_id, $post_id, $blog_id = 1) {
+	if ( function_exists('is_site_admin') && !is_site_admin() && function_exists('is_blog_user') && !is_blog_user() )
+		return false;
+
 	$author_data = get_userdata($user_id);
 	$post = get_post($post_id);
 	$post_author_data = get_userdata($post->post_author);
