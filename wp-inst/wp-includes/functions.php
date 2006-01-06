@@ -477,7 +477,7 @@ function get_post_meta($post_id, $key, $single = false) {
 		if ( $single ) {
 			return maybe_unserialize( $post_meta_cache[$post_id][$key][0] );
 		} else {
-			return maybe_unserialize( $post_meta_cache[$post_id][$key][0] );
+			return maybe_unserialize( $post_meta_cache[$post_id][$key] );
 		}
 	}
 
