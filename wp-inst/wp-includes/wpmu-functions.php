@@ -469,8 +469,10 @@ function get_site_option( $option, $default = false, $use_cache = true ) {
 
 function add_site_option( $key, $value ) {
 	global $wpdb;
+	
+	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '$wpdb->siteid'");
 
-	if ( get_site_option( $key, false, false ) ) // If we already have it
+	if ( false !== $exists ) // If we already have it
 		return false;
 
 	if ( is_array($value) || is_object($value) )
@@ -664,7 +666,9 @@ function update_archived( $id, $archived ) {
 
 function update_blog_status( $id, $pref, $value ) {
 	global $wpdb;
+
 	$wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}' WHERE blog_id = '$id'" );
+	$wpdb->query( "UPDATE {$wpdb->blogs} SET last_updated = NOW() WHERE blog_id = '$id'" );
 	refresh_blog_details( $id );
 
 	return $value;
