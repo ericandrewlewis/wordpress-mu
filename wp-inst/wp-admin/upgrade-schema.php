@@ -255,10 +255,15 @@ function populate_options() {
 	add_option('html_type', 'text/html');
 	// 1.5.1
 	add_option('use_trackback', 0);
-	// 1.6
+	// 2.0
 	add_option('default_role', 'subscriber');
 	add_option('rich_editing', 'true');
 	add_option('db_version', $wp_db_version);
+	// 2.1
+	add_option('uploads_use_yearmonth_folders', 1);
+	add_option('fileupload_realpath', ABSPATH . 'wp-content/uploads');
+	add_option('fileupload_url', ''); //if this is empty it will be obtained from fileupload_realpath
+	
 
 	add_site_option( 'customizefeed1', '0' );
 	add_site_option( 'customizefeed2', '0' );
