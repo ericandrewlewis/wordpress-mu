@@ -261,7 +261,9 @@ require (ABSPATH . WPINC . '/version.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
 
-$current_site->site_name = get_site_option('site_name');
+if( defined( "WP_INSTALLING" ) == false ) {
+	$current_site->site_name = get_site_option('site_name');
+}
 
 if( $current_site->site_name == false ) {
 	$current_site->site_name = ucfirst( $current_site->domain );
