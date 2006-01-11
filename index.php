@@ -408,6 +408,10 @@ function step3() {
     $wpdb->query( $query );
     $wpdb->query( "INSERT INTO ".$wpdb->site." ( id, domain, path ) VALUES ( NULL, '$domain', '$base' )" );
     $wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (1, 'Uncategorized', 'uncategorized', '')" );
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'upload_filetypes', 'jpg jpeg png gif mp3 mov avi wmv midi mid pdf' )" );
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'blog_upload_space', '10' )" );
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'fileupload_maxk', '1500' )" );
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'site_admins', 'admin' )" );
 
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'welcome_email', 'Dear User,
 
@@ -422,8 +426,7 @@ Login Here: BLOG_URLwp-login.php
 We hope you enjoy your new weblog.
  Thanks!
 
---The WordPress Team
-SITE_NAME')" );
+--The Team @ SITE_NAME')" );
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' )" );
 
     $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
