@@ -259,11 +259,15 @@ function populate_options() {
 	add_option('default_role', 'subscriber');
 	add_option('rich_editing', 'true');
 	add_option('db_version', $wp_db_version);
-	// 2.1
-	add_option('uploads_use_yearmonth_folders', 1);
-	add_option('fileupload_realpath', ABSPATH . 'wp-content/uploads');
-	add_option('fileupload_url', ''); //if this is empty it will be obtained from fileupload_realpath
-	
+	// 2.0.1
+	if ( ini_get('safe_mode') ) {
+		// Safe mode screws up mkdir(), so we must use a flat structure.
+		add_option('uploads_use_yearmonth_folders', 0);
+		add_option('upload_path', 'wp-content');
+	} else {
+		add_option('uploads_use_yearmonth_folders', 1);
+		add_option('upload_path', 'wp-content/uploads');
+	}
 
 	add_site_option( 'customizefeed1', '0' );
 	add_site_option( 'customizefeed2', '0' );

@@ -679,7 +679,7 @@ function wp_blacklist_check($author, $email, $url, $comment, $user_ip, $user_age
 function wp_proxy_check($ipnum) {
 	if ( get_option('open_proxy_check') && isset($ipnum) ) {
 		$rev_ip = implode( '.', array_reverse( explode( '.', $ipnum ) ) );
-		$lookup = $rev_ip . '.opm.blitzed.org';
+		$lookup = $rev_ip . '.opm.blitzed.org.';
 		if ( $lookup != gethostbyname( $lookup ) )
 			return true;
 	}
@@ -878,22 +878,20 @@ function wp_mkdir_p($target) {
 function wp_upload_dir() {
 	$siteurl = get_settings('siteurl');
 	//prepend ABSPATH to $dir and $siteurl to $url if they're not already there
-	$dir = ABSPATH . str_replace(ABSPATH, '', trim(get_settings('fileupload_realpath')));
-	$url = $siteurl . str_replace($siteurl, '', trim(get_settings('fileupload_url')));
+	$path = str_replace(ABSPATH, '', trim(get_settings('upload_path')));
+	$dir = ABSPATH . $path;
+	$url = trailingslashit($siteurl) . $path;
 
 	if ( $dir == ABSPATH ) { //the option was empty
 		$dir = ABSPATH . 'wp-content/uploads';
 	}
-	if ( $url == $siteurl ) { //the option was empty
-		$url = get_option('siteurl') . '/' . str_replace(ABSPATH, '', $dir);
-	}
 
 	if ( defined('UPLOADS') ) {
 		$dir = ABSPATH . UPLOADS;
-		$url =  get_option('siteurl') . '/' . UPLOADS;
+		$url = trailingslashit($siteurl) . UPLOADS;
 	}
 
-	if ( get_settings('uploads_yearmonth_folders')) {
+	if ( get_settings('uploads_use_yearmonth_folders')) {
 		// Generate the yearly and monthly dirs
 		$time = current_time( 'mysql' );
 		$y = substr( $time, 0, 4 );
