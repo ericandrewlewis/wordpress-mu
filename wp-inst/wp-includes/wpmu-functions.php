@@ -70,7 +70,7 @@ function wpmu_checkAvailableSpace($action) {
 add_filter('fileupload_init','wpmu_checkAvailableSpace');
 
 function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $source = 'regpage', $site_id = 1 ) {
-	global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site, $wp_roles, $new_user_id, $new_blog_id;
+	global $wpdb, $table_prefix, $wp_queries, $wpmuBaseTablePrefix, $current_site, $wp_roles, $new_user_id, $new_blog_id, $wp_rewrite;
 
 	$domain       = addslashes( $domain );
 	$weblog_title = addslashes( $weblog_title );
@@ -190,7 +190,7 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 	$wpdb->query("UPDATE $wpdb->options SET option_value = '".$admin_email."' WHERE option_name = 'admin_email'");
 
 	// Default category
-	$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."')");
+	$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename, category_count) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."', '1')");
 
 	// First post
 	$now = date('Y-m-d H:i:s');
@@ -265,11 +265,12 @@ SITE_NAME" ) );
 	$first_post = str_replace( "SITE_NAME", $current_site->site_name, $first_post );
 	$first_post = stripslashes( $first_post );
 
-	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt')");
+	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, comment_count) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt', '1')");
 	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '".addslashes(__('About'))."', '0', '".addslashes(__('about'))."', '$now', '$now_gmt', 'static')");
 
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
+	update_option( "post_count", 1 );
 
 	// Default comment
 	$wpdb->query("INSERT INTO $wpdb->comments (comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content) VALUES ('1', '".addslashes(__('Mr WordPress'))."', '', 'http://" . $current_site->domain . $current_site->path . "', '127.0.0.1', '$now', '$now_gmt', '".addslashes(__('Hi, this is a comment.<br />To delete a comment, just log in, and view the posts\' comments, there you will have the option to edit or delete them.'))."')");
@@ -289,6 +290,8 @@ SITE_NAME" ) );
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
 	@mail($admin_email, __('New ' . $current_site->site_name . ' Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
+
+	$wp_rewrite->flush_rules();
 
 	// restore wpdb variables
 	reset( $tmp );
@@ -528,43 +531,50 @@ function get_blog_option( $blog_id, $key, $default='na' ) {
 	return $opt;
 }
 
-function add_blog_option( $blog_id, $key, $value ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+function add_blog_option( $id, $key, $value ) {
+	global $wpdb, $wpmuBaseTablePrefix, $blog_id;
 
-	if( $value != get_blog_option( $blog_id, $key ) ) {
+	if( $value != get_blog_option( $id, $key ) ) {
 		if ( is_array($value) || is_object($value) )
 			$value = serialize($value);
-		$query = "SELECT option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'";
+		$query = "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = '$key'";
 		if( $wpdb->get_row( $query ) == false ) {
-			$wpdb->query( "INSERT INTO {$wpmuBaseTablePrefix}{$blog_id}_options ( `option_id` , `blog_id` , `option_name` , `option_can_override` , `option_type` , `option_value` , `option_width` , `option_height` , `option_description` , `option_admin_level` , `autoload` ) VALUES ( NULL, '0', '{$key}', 'Y', '1', '{$value}', '20', '8', '', '10', 'yes')" );
+			$wpdb->query( "INSERT INTO {$wpmuBaseTablePrefix}{$id}_options ( `option_id` , `blog_id` , `option_name` , `option_can_override` , `option_type` , `option_value` , `option_width` , `option_height` , `option_description` , `option_admin_level` , `autoload` ) VALUES ( NULL, '0', '{$key}', 'Y', '1', '{$value}', '20', '8', '', '10', 'yes')" );
+			$current_blog_id = $blog_id;
+			$blog_id = $id;
+			wp_cache_set( $key, $value );
+			$blog_id = $current_blog_id;
 		} else {
-			update_blog_option( $blog_id, $key, $value );
+			update_blog_option( $id, $key, $value );
 		}
 	}
 }
 
 
-function update_blog_option( $blog_id, $key, $value ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+function update_blog_option( $id, $key, $value ) {
+	global $wpdb, $wpmuBaseTablePrefix, $blog_id;
 
-	if( $value != get_blog_option( $blog_id, $key ) ) {
+	if( $value != get_blog_option( $id, $key ) ) {
 		if ( is_array($value) || is_object($value) )
 			$value = serialize($value);
 
-		$value = trim($value); // I can't think of any situation we wouldn't want to trim
-		$query = "SELECT option_name, option_value FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '$key'";
+		if ( is_string($newvalue) )
+			$value = trim($value); 
+		$query = "SELECT option_name, option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = '$key'";
 		if( $wpdb->get_row( $query ) == false ) {
-			add_blog_option( $blog_id, $key, $value );
+			add_blog_option( $id, $key, $value );
 		} else {
-			$wpdb->query( "UPDATE {$wpmuBaseTablePrefix}{$blog_id}_options SET option_value = '".$wpdb->escape( $value )."' WHERE option_name = '".$key."'" );
+			$wpdb->query( "UPDATE {$wpmuBaseTablePrefix}{$id}_options SET option_value = '".$wpdb->escape( $value )."' WHERE option_name = '".$key."'" );
+			$current_blog_id = $blog_id;
+			$blog_id = $id;
+			wp_cache_set( $key, $value );
+			$blog_id = $current_blog_id;
 		}
 	}
 }
 
 function switch_to_blog( $new_blog ) {
 	global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched;
-
-	// FIXME
 
 	// backup
 	$tmpoldblogdetails[ 'blogid' ]         = $wpdb->blogid;
