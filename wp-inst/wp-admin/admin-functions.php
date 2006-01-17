@@ -1670,7 +1670,7 @@ function wp_handle_upload(&$file, $overrides = false) {
 		'avi' => 'video/avi',
 		'mov|qt' => 'video/quicktime',
 		'mpeg|mpg|mpe' => 'video/mpeg',
-		'txt|c|cc|h|php' => 'text/plain',
+		'txt|c|cc|h' => 'text/plain',
 		'rtx' => 'text/richtext',
 		'css' => 'text/css',
 		'htm|html' => 'text/html',
@@ -1750,6 +1750,7 @@ function wp_handle_upload(&$file, $overrides = false) {
 	} else {
 		$number = '';
 		$filename = str_replace('#', '_', $file['name']);
+		$filename = str_replace(array('\\', "'"), '', $filename);
 		if ( empty($ext) )
 			$ext = '';
 		else
