@@ -931,7 +931,7 @@ function make_url_footnote($content) {
 		$link_url = $matches[2][$i];
 		$link_text = $matches[4][$i];
 		$content = str_replace($link_match, $link_text.' '.$link_number, $content);
-		$link_url = ((strtolower(substr($link_url,0,7)) != 'http://') && (strtolower(substr($link_url,0,7)) != 'https://')) ? get_settings('home') . $link_url : $link_url;
+		$link_url = ((strtolower(substr($link_url,0,7)) != 'http://') && (strtolower(substr($link_url,0,8)) != 'https://')) ? get_settings('home') . $link_url : $link_url;
 		$links_summary .= "\n".$link_number.' '.$link_url;
 	}
 	$content = strip_tags($content);
@@ -1687,6 +1687,11 @@ function get_stylesheet_uri() {
 }
 
 function get_template() {
+	$template = get_settings('template');
+	if (!file_exists(get_theme_root() . "/$template")) { //works for dirs too
+		update_option('template', 'default');
+		update_option('stylesheet', 'default');
+	}
 	return apply_filters('template', get_settings('template'));
 }
 

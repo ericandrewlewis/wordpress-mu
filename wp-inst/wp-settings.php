@@ -86,8 +86,7 @@ $wpdb->hide_errors();
 $domain = addslashes($_SERVER['HTTP_HOST']);
 if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
-if( substr( $domain, -3, 3 ) == ':80' )
-	$domain = str_replace(':80', '', $domain);
+$domain = preg_replace('/:.*$/', '', $domain); // Strip ports
 
 function is_installed() {
     global $wpdb, $domain, $base;
@@ -362,7 +361,6 @@ $_SERVER = add_magic_quotes($_SERVER);
 $wp_query   = new WP_Query();
 $wp_rewrite = new WP_Rewrite();
 $wp         = new WP();
-$wp_roles   = new WP_Roles();
 
 define('TEMPLATEPATH', get_template_directory());
 

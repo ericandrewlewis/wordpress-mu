@@ -136,7 +136,8 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 	$tmp[ 'options' ]         = $wpdb->options;
 	$tmp[ 'postmeta' ]       = $wpdb->postmeta;
 	$tmptable_prefix         = $table_prefix;
-	$tmprolekey              = $wp_roles->role_key;
+	if( is_object( $wp_roles ) )
+		$tmprolekey              = $wp_roles->role_key;
 
 	// fix the new prefix.
 	$table_prefix = $wpmuBaseTablePrefix . $blog_id . "_";
@@ -150,7 +151,8 @@ function createBlog( $domain, $path, $username, $weblog_title, $admin_email, $so
 	$wpdb->linkcategories   = $table_prefix . 'linkcategories';
 	$wpdb->options          = $table_prefix . 'options';
 	$wpdb->postmeta         = $table_prefix . 'postmeta';
-	$wp_roles->role_key     = $table_prefix . 'user_roles';
+	if( is_object( $wp_roles ) )
+		$wp_roles->role_key     = $table_prefix . 'user_roles';
 	wp_cache_flush();
 
 	@mkdir( ABSPATH . "wp-content/blogs.dir/".$blog_id, 0777 );
@@ -291,6 +293,7 @@ SITE_NAME" ) );
 		$current_site->site_name = "WordPress MU";
 	@mail($admin_email, __('New ' . $current_site->site_name . ' Blog').": ".stripslashes( $weblog_title ), $message, $message_headers);
 
+	$wp_rewrite->init();
 	$wp_rewrite->flush_rules();
 
 	// restore wpdb variables
@@ -300,7 +303,8 @@ SITE_NAME" ) );
 		$wpdb->$key = $val;
 	}
 	$table_prefix = $tmptable_prefix;
-	$wp_roles->role_key = $tmprolekey;
+	if( $tmprolekey )
+		$wp_roles->role_key = $tmprolekey;
 
 	$wpdb->show_errors();
 	wp_cache_flush();

@@ -56,24 +56,4 @@ $passsql = DB_PASSWORD;
 
 require_once( ABSPATH.'wp-settings.php' );
 
-if( $redirect )
-{
-    if( $p )
-    {
-        $url = get_permalink( $p );
-    }
-    elseif( $m )
-    {
-        $url = get_settings( 'siteurl' )."/".substr( $m, 0, 4 )."/".substr( $m, 4, 2 );
-    }
-    elseif( $cat )
-    {
-        $query = "SELECT cat_name FROM ".$wpdb->categories." WHERE cat_ID='$cat'";
-        $cat_name = $wpdb->get_var( $query );
-        $url = get_settings( 'siteurl' ). "/category/".$cat_name;
-    }
-    header("HTTP/1.0 301 Moved Permanently");
-    header( "Location: $url" );
-    exit;
-}
 ?>
