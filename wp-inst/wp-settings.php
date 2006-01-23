@@ -220,8 +220,6 @@ else
 
 wp_cache_init();
 
-$wp_filters = array();
-
 if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
 	return;
 
