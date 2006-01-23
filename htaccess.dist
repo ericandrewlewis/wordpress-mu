@@ -1,3 +1,5 @@
+php_flag register_globals 0
+php_flag display_errors 0
 RewriteEngine On
 RewriteBase BASE/
 
