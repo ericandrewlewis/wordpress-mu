@@ -1,4 +1,7 @@
 <?php
+if( defined( 'ABSPATH' ) == false )
+	die();
+
 // Turn register globals off
 function unregister_GLOBALS() {
 	if ( !ini_get('register_globals') )
