@@ -30,7 +30,7 @@ class MT_Import {
 
 	function users_form($n) {
 		global $wpdb, $testing;
-		$users = $wpdb->get_results("SELECT * FROM $wpdb->users ORDER BY ID");
+		$users = get_users_of_blog();
 ?><select name="userselect[<?php echo $n; ?>]">
 	<option value="#NONE#">- Select -</option>
 	<?php
