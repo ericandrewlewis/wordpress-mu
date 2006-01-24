@@ -1,7 +1,7 @@
 <?php
 
 function wp_login($username, $password, $already_md5 = false) {
-	global $wpdb, $error;
+	global $wpdb, $error, $current_user;
 
 	if ( !$username )
 		return false;
@@ -11,7 +11,11 @@ function wp_login($username, $password, $already_md5 = false) {
 		return false;
 	}
 
-	$login = $wpdb->get_row("SELECT ID, user_login, user_pass FROM $wpdb->users WHERE user_login = '$username'");
+	if ($current_user->data->user_login == $username)
+		return true;
+
+	$login = get_userdatabylogin($username);
+	//$login = $wpdb->get_row("SELECT ID, user_login, user_pass FROM $wpdb->users WHERE user_login = '$username'");
 
 	if (!$login) {
 		if( is_site_admin( $username ) ) {
@@ -36,6 +40,16 @@ function wp_login($username, $password, $already_md5 = false) {
 		$error = __('<strong>Error</strong>: Wrong username.');
 		return false;
 	} else {
+		$primary_blog = get_usermeta( $login->ID, "primary_blog" );
+		if( $primary_blog ) {
+			$details = get_blog_details( $primary_blog );
+			if( is_object( $details ) ) {
+				if( $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
+					$error = __('<strong>Error</strong>: Blog suspended.');
+					return false;
+				}
+			}
+		}
 		// If the password is already_md5, it has been double hashed.
 		// Otherwise, it is plain text.
 		if ( ($already_md5 && $login->user_login == $username && md5($login->user_pass) == $password) || ($login->user_login == $username && $login->user_pass == md5($password)) ) {
@@ -55,13 +69,15 @@ function get_userdata( $user_id ) {
 		return false;
 
 	$user = wp_cache_get($user_id, 'users');
-	if( $user && is_site_admin( $user->user_login ) == true ) {
-		$user->user_level = 10;
-		$cap_key = $wpdb->prefix . 'capabilities';
-		$user->{$cap_key} = array( 'administrator' => '1' );
-		return $user;
-	} elseif ( $user )
-		return $user;
+	if( $user->user_level != '' ) {
+		if( $user && is_site_admin( $user->user_login ) == true ) {
+			$user->user_level = 10;
+			$cap_key = $wpdb->prefix . 'capabilities';
+			$user->{$cap_key} = array( 'administrator' => '1' );
+			return $user;
+		} elseif ( $user )
+			return $user;
+	}
 
 	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id'") )
 		return false;
@@ -88,7 +104,7 @@ function get_userdata( $user_id ) {
 	}
 
 	wp_cache_add($user_id, $user, 'users');
-	wp_cache_add($user->user_login, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'userlogins');
 
 	return $user;
 }
@@ -100,7 +116,7 @@ function get_userdatabylogin($user_login) {
 	if ( empty( $user_login ) )
 		return false;
 		
-	$userdata = wp_cache_get($user_login, 'users');
+	$userdata = wp_cache_get($user_login, 'userlogins');
 	if( $userdata && is_site_admin( $user_login ) == true ) {
 		$userdata->user_level = 10;
 		$cap_key = $wpdb->prefix . 'capabilities';
@@ -133,7 +149,7 @@ function get_userdatabylogin($user_login) {
 	}
 
 	wp_cache_add($user->ID, $user, 'users');
-	wp_cache_add($user->user_login, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'userlogins');
 
 	return $user;
 
