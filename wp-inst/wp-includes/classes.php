@@ -226,6 +226,11 @@ class WP_Query {
 		if ('' != $qv['comments_popup']) {
 			$this->is_comments_popup = true;
 		}
+		
+		//if we're previewing inside the write screen
+		if ('' != $qv['preview']) {
+			$this->is_preview = true;
+		}
 
 		if (strstr($_SERVER['PHP_SELF'], 'wp-admin/')) {
 			$this->is_admin = true;
@@ -971,13 +976,13 @@ class WP_Rewrite {
 		if( is_array( $attachment_uris ) ) {
 			foreach ($attachment_uris as $uri => $pagename) {
 				$this->add_rewrite_tag('%pagename%', "($uri)", 'attachment=');
-				$rewrite_rules += $this->generate_rewrite_rules($page_structure);
+				$rewrite_rules = array_merge($rewrite_rules, $this->generate_rewrite_rules($page_structure));
 			}
 		}
 		if( is_array( $uris ) ) {
 			foreach ($uris as $uri => $pagename) {
 				$this->add_rewrite_tag('%pagename%', "($uri)", 'pagename=');
-				$rewrite_rules += $this->generate_rewrite_rules($page_structure);
+				$rewrite_rules = array_merge($rewrite_rules, $this->generate_rewrite_rules($page_structure));
 			}
 		}
 
@@ -1239,7 +1244,7 @@ class WP_Rewrite {
 			if ($feed) 
 				$rewrite = array($feedmatch => $feedquery, $feedmatch2 => $feedquery2);
 			if ($paged)
-				$rewrite = $rewrite + array($pagematch => $pagequery);
+				$rewrite = array_merge($rewrite, array($pagematch => $pagequery));
 
 			if ($num_toks) {
 				$post = false;
@@ -1274,19 +1279,17 @@ class WP_Rewrite {
 					$query = $index . '?' . $query;
 				}
 				        
-				$rewrite = $rewrite + array($match => $query);
+				$rewrite = array_merge($rewrite, array($match => $query));
 
 				if ($post) {
-					$rewrite = array($trackbackmatch => $trackbackquery) + $rewrite;
+					$rewrite = array_merge(array($trackbackmatch => $trackbackquery), $rewrite);
 					if ( ! $page )
-						$rewrite = $rewrite + array($sub1 => $subquery, $sub1tb => $subtbquery, $sub1feed => $subfeedquery, $sub1feed2 => $subfeedquery);
-					$rewrite = $rewrite + array($sub2 => $subquery, $sub2tb => $subtbquery, $sub2feed => $subfeedquery, $sub2feed2 => $subfeedquery);
+						$rewrite = array_merge($rewrite, array($sub1 => $subquery, $sub1tb => $subtbquery, $sub1feed => $subfeedquery, $sub1feed2 => $subfeedquery));
+					$rewrite = array_merge($rewrite, array($sub2 => $subquery, $sub2tb => $subtbquery, $sub2feed => $subfeedquery, $sub2feed2 => $subfeedquery));
 				}
 			}
-
-			$post_rewrite = $rewrite + $post_rewrite;
+			$post_rewrite = array_merge($rewrite, $post_rewrite);
 		}
-
 		return $post_rewrite;
 	}
 
@@ -1339,7 +1342,7 @@ class WP_Rewrite {
 		$page_rewrite = apply_filters('page_rewrite_rules', $page_rewrite);
 
 		// Put them together.
-		$this->rules = $page_rewrite + $root_rewrite + $comments_rewrite + $search_rewrite + $category_rewrite + $author_rewrite + $date_rewrite + $post_rewrite;
+		$this->rules = array_merge($page_rewrite, $root_rewrite, $comments_rewrite, $search_rewrite, $category_rewrite, $author_rewrite, $date_rewrite, $post_rewrite);
 
 		do_action('generate_rewrite_rules', array(&$this));
 		$this->rules = apply_filters('rewrite_rules_array', $this->rules);
@@ -1456,7 +1459,7 @@ class WP_Rewrite {
 }
 
 class WP {
-	var $public_query_vars = array('m', 'p', 'posts', 'w', 'cat', 'withcomments', 's', 'search', 'exact', 'sentence', 'debug', 'calendar', 'page', 'paged', 'more', 'tb', 'pb', 'author', 'order', 'orderby', 'year', 'monthnum', 'day', 'hour', 'minute', 'second', 'name', 'category_name', 'feed', 'author_name', 'static', 'pagename', 'page_id', 'error', 'comments_popup', 'attachment', 'attachment_id', 'subpost', 'subpost_id');
+	var $public_query_vars = array('m', 'p', 'posts', 'w', 'cat', 'withcomments', 's', 'search', 'exact', 'sentence', 'debug', 'calendar', 'page', 'paged', 'more', 'tb', 'pb', 'author', 'order', 'orderby', 'year', 'monthnum', 'day', 'hour', 'minute', 'second', 'name', 'category_name', 'feed', 'author_name', 'static', 'pagename', 'page_id', 'error', 'comments_popup', 'attachment', 'attachment_id', 'subpost', 'subpost_id', 'preview');
 
 	var $private_query_vars = array('posts_per_page', 'posts_per_archive_page', 'what_to_show', 'showposts', 'nopaging', 'show_post_type');
 
