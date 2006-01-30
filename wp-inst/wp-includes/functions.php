@@ -466,7 +466,7 @@ AND meta_key = '$key'");
 		$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = '$post_id'
 AND meta_key = '$key' AND meta_value = '$value'");
 		$cache_key = $post_meta_cache['$post_id'][$key];
-		foreach ( $cache_key as $index => $data )
+		if ($cache_key) foreach ( $cache_key as $index => $data )
 			if ( $data == $value )
 				unset($post_meta_cache['$post_id'][$key][$index]);
 	}
@@ -820,7 +820,7 @@ function get_all_category_ids() {
 function get_all_page_ids() {
 	global $wpdb;
 	
-	if ( ! $page_ids = wp_cache_get('all_page_ids', 'posts') ) {
+	if ( ! $page_ids = wp_cache_get('all_page_ids', 'pages') ) {
 		$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_status='static'");
 		wp_cache_add('all_page_ids', $page_ids, 'pages');
 	}
@@ -1006,6 +1006,9 @@ function spawn_pinger() {
 
 	if ( $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_pingme' OR meta_key = '_encloseme' LIMIT 1") )
 		$doping = true;
+
+	if ( substr(php_sapi_name(), 0, 3) == 'cgi' )
+		return $doping;
 
 	if ( $doping ) {
 		$ping_url = get_settings('siteurl') .'/wp-admin/execute-pings.php';
@@ -2224,9 +2227,10 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 	if ( is_array($meta_value) || is_object($meta_value) )
 		$meta_value = serialize($meta_value);
 	$meta_value = trim( $meta_value );
-
-	if ( '' == $meta_value )
-		return false;
+	
+	if (empty($meta_value)) {
+		delete_usermeta($user_id, $meta_key);
+	}
 
 	$cur = $wpdb->get_row("SELECT * FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
 	if ( !$cur ) {

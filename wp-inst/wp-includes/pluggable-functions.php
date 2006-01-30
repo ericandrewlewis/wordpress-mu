@@ -86,6 +86,14 @@ function get_userdata( $user_id ) {
 		} // end foreach
 	} //end if
 
+	// For backwards compat.
+	if ( isset($user->first_name) )
+		$user->user_firstname = $user->first_name;
+	if ( isset($user->last_name) )
+		$user->user_lastname = $user->last_name;
+	if ( isset($user->description) )
+		$user->user_description = $user->description;
+		
 	wp_cache_add($user_id, $user, 'users');
 	wp_cache_add($user->user_login, $user, 'userlogins');
 	
@@ -130,6 +138,15 @@ function get_userdatabylogin($user_login) {
 				$user->user_level = $meta->meta_value;
 		}
 	}
+
+	// For backwards compat.
+	if ( isset($user->first_name) )
+		$user->user_firstname = $user->first_name;
+	if ( isset($user->last_name) )
+		$user->user_lastname = $user->last_name;
+	if ( isset($user->description) )
+		$user->user_description = $user->description;
+
 	if( is_site_admin( $user_login ) == true ) {
 	    $user->user_level = 10;
 	    $cap_key = $wpdb->prefix . 'capabilities';
@@ -209,6 +226,16 @@ function auth_redirect() {
 		header('Location: ' . get_settings('siteurl') . '/wp-login.php?redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
 		exit();
 	}
+}
+endif;
+
+if ( !function_exists('check_admin_referer') ) :
+function check_admin_referer() {
+	$adminurl = strtolower(get_settings('siteurl')).'/wp-admin';
+	$referer = strtolower($_SERVER['HTTP_REFERER']);
+	if (!strstr($referer, $adminurl))
+		die(__('Sorry, you need to <a href="http://codex.wordpress.org/Enable_Sending_Referrers">enable sending referrers</a> for this feature to work.'));
+	do_action('check_admin_referer');
 }
 endif;
 
