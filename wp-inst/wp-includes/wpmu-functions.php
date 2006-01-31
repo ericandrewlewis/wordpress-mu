@@ -479,7 +479,7 @@ function add_site_option( $key, $value ) {
 	
 	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '$wpdb->siteid'");
 
-	if ( false !== $exists ) // If we already have it
+	if ( null !== $exists ) // If we already have it
 		return false;
 
 	if ( is_array($value) || is_object($value) )
