@@ -30,9 +30,8 @@ class MT_Import {
 
 	function users_form($n) {
 		global $wpdb, $testing;
-		$users = get_users_of_blog();
+		$users = get_users_of_blog($wpdb->blogid);
 ?><select name="userselect[<?php echo $n; ?>]">
-	<option value="#NONE#">- Select -</option>
 	<?php
 
 
@@ -133,10 +132,11 @@ class MT_Import {
 	}
 
 	function mt_authors_form() {
+		$this->header();
 ?>
+<h2><?php _e('Select Authors'); ?></h2>
 <p><?php _e('To make it easier for you to edit and save the imported posts and drafts, you may want to change the name of the author of the posts. For example, you may want to import all the entries as <code>admin</code>s entries.'); ?></p>
-<p><?php _e('Below, you can see the names of the authors of the MovableType posts in <i>italics</i>. For each of these names, you can either pick an author in your WordPress installation from the menu, or enter a name for the author in the textbox.'); ?></p>
-<p><?php _e('If a new user is created by WordPress, the password will be set, by default, to "changeme". Quite suggestive, eh? ;)'); ?></p>
+<p><?php _e('Below, you can see the names of the authors of the MovableType posts in <i>italics</i>. For each of these names, pick an author from your blog from the menu'); ?></p>
 	<?php
 
 
@@ -146,7 +146,7 @@ class MT_Import {
 		$j = -1;
 		foreach ($authors as $author) {
 			++ $j;
-			echo '<li><i>'.$author.'</i><br />'.'<input type="text" value="'.$author.'" name="'.'user[]'.'" maxlength="30">';
+			echo '<li><i>'.$author.'</i><br />';
 			$this->users_form($j);
 			echo '</li>';
 		}
@@ -156,7 +156,12 @@ class MT_Import {
 		echo '</ol>';
 
 		flush();
+		$this->footer();
+?>
+<?php
 	}
+
+
 
 	function select_authors() {
 		$file = wp_import_handle_upload();
@@ -173,6 +178,7 @@ class MT_Import {
 
 	function process_posts() {
 		global $wpdb;
+		$this->header();
 		$i = -1;
 		echo "<ol>";
 		foreach ($this->posts as $post) {
@@ -379,7 +385,7 @@ class MT_Import {
 				}
 				if ( $num_pings )
 					printf(__('(%s pings)'), $num_pings);
-
+				
 				echo "</li>";
 			}
 			flush();
@@ -390,6 +396,7 @@ class MT_Import {
 		wp_import_cleanup($this->id);
 
 		echo '<h3>'.sprintf(__('All done. <a href="%s">Have fun!</a>'), get_option('home')).'</h3>';
+		$this->footer();
 	}
 
 	function import() {
@@ -420,11 +427,11 @@ class MT_Import {
 	}
 
 	function MT_Import() {
-		// Nothing.
+		// Nothing.	
 	}
 }
 
 $mt_import = new MT_Import();
 
-register_importer('mt', 'Movable Type', __('Import posts and comments from your Movable Type blog'), array ($mt_import, 'dispatch'));
+register_importer('mt', 'Movable Type / Typepad', __('Import posts and comments from your Movable Type or Typepad blog from their export file.'), array ($mt_import, 'dispatch'));
 ?>

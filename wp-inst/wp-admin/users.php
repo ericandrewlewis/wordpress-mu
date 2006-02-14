@@ -151,6 +151,16 @@ case 'addexistinguser':
 	if ($new_user_login != '' && $new_user_login != 'admin' ) {
 		if ( username_exists( $new_user_login ) ) {
 			$user_ID = $wpdb->get_var( "SELECT ID FROM $wpdb->users WHERE user_login = '$new_user_login'" );
+			$primary_blog = get_usermeta( $user_ID, "primary_blog" );
+			if( $primary_blog ) {
+				$details = get_blog_details( $primary_blog );
+				if( is_object( $details ) ) {
+					if( $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
+						header( "Location: users.php?update=notactive" );
+						die();
+					}
+				}
+			}
 			if( $wpdb->get_var( "SELECT user_id FROM {$wpdb->usermeta} WHERE user_id = '{$user_ID}' AND meta_key = '{$wpdb->prefix}capabilities'" ) == false ) {
 				$user = new WP_User($user_ID);
 				$user->set_role( $_POST[ 'new_role' ] );
@@ -225,6 +235,11 @@ default:
 			<div id="message" class="updated fade"><p><?php _e('Other users have been deleted.'); ?></p></div>
 		<?php
 			break;
+		case 'notactive':
+		?>
+			<div id="message" class="updated fade"><p><?php _e('User not added. User is deleted or not active.'); ?></p></div>
+		<?php
+			break;
 		}
 	endif; 
 	if ( isset($errors) ) : ?>
@@ -277,20 +292,27 @@ default:
 			$style = ('class="alternate"' == $style) ? '' : 'class="alternate"';
 			$numposts = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_author = '$user_object->ID' and post_status = 'publish'");
 			if (0 < $numposts) $numposts = "<a href='edit.php?author=$user_object->ID' title='" . __('View posts') . "'>$numposts</a>";
+			$do_not_edit = ( !is_site_admin() && $user_object->ID == $current_user->ID );
+			$disabled = $do_not_edit ? "disabled='disabled' " : '';
 			echo "
 				<tr $style>
-				<td><input type='checkbox' name='users[]' id='user_{$user_object->ID}' value='{$user_object->ID}' /> <label for='user_{$user_object->ID}'>{$user_object->ID}</label></td>
+				<td><input type='checkbox' name='users[]' id='user_{$user_object->ID}' value='{$user_object->ID}' {$disabled}/> <label for='user_{$user_object->ID}'>{$user_object->ID}</label></td>
 				<td><label for='user_{$user_object->ID}'><strong>$user_object->user_login</strong></label></td>
 				<td><label for='user_{$user_object->ID}'>$user_object->first_name $user_object->last_name</label></td>
-				<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>
-				<td><select name='new_roles[{$user_object->ID}]' id='new_role'>";
-			foreach($wp_roles->role_names as $roleid => $name) {
-				$selected = '';
-				if( $role == $roleid)
-					$selected = 'selected="selected"';
-				echo "<option {$selected} value=\"{$roleid}\">{$name}</option>";
+				<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>";
+			if ( $do_not_edit ) {
+				echo "<td><b>{$wp_roles->role_names[$role]}</b></td>";
+			} else {
+				echo "<td><select name='new_roles[{$user_object->ID}]' id='new_role'>";
+				foreach($wp_roles->role_names as $roleid => $name) {
+					$selected = '';
+					if( $role == $roleid)
+						$selected = 'selected="selected"';
+					echo "<option {$selected} value=\"{$roleid}\">{$name}</option>";
+				}
+				echo "</select></td>";
 			}
-			echo "</select></td><td align='right'>$numposts</td><td>";
+			echo "<td align='right'>$numposts</td><td>";
 			if (is_site_admin())
 				echo "<a href='user-edit.php?user_id=$user_object->ID' class='edit'>".__('Edit')."</a>";
 			echo '</td></tr>';

@@ -5,8 +5,8 @@ else
     require_once('../wp-config.php');
 
 if ( get_option('db_version') != $wp_db_version )
-	die (sprintf(__("Your database is out-of-date.  Please <a href='%s'>upgrade</a>."), get_option('siteurl') . '/wp-admin/upgrade.php'));
-    
+	$out = @file( get_option( "siteurl" ) . "/wp-admin/upgrade.php?step=1" ); // upgrade the db!
+
 require_once(ABSPATH . 'wp-admin/admin-functions.php');
 require_once(ABSPATH . 'wp-admin/admin-db.php');
 require_once(ABSPATH . WPINC . '/registration-functions.php');
@@ -60,13 +60,16 @@ if (isset($_GET['page'])) {
 			die(__('Invalid plugin page'));
 		}
 
-		if (! file_exists(ABSPATH . "wp-content/plugins/$plugin_page"))
+		if (! file_exists(ABSPATH . "wp-content/plugins/$plugin_page") && ! file_exists(ABSPATH . "wp-content/mu-plugins/$plugin_page"))
 			die(sprintf(__('Cannot load %s.'), $plugin_page));
 
 		if (! isset($_GET['noheader']))
 			require_once(ABSPATH . '/wp-admin/admin-header.php');
 
-		include(ABSPATH . "wp-content/plugins/$plugin_page");
+		if ( file_exists(ABSPATH . "wp-content/mu-plugins/$plugin_page") )
+			include(ABSPATH . "wp-content/mu-plugins/$plugin_page");
+		else
+			include(ABSPATH . "wp-content/plugins/$plugin_page");
 	}
 
 	include(ABSPATH . 'wp-admin/admin-footer.php');

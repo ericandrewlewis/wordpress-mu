@@ -312,11 +312,16 @@ function &get_pages($args = '') {
 		}
 	}
 
-	$pages = $wpdb->get_results("SELECT * " .
+	$q = "SELECT * " .
 		"FROM $wpdb->posts " .
 		"WHERE post_type = 'page' AND post_status = 'publish' " .
 		"$exclusions " .
-		"ORDER BY " . $r['sort_column'] . " " . $r['sort_order']);
+		"ORDER BY " . $r['sort_column'] . " " . $r['sort_order'];
+
+	if ( !$pages = wp_cache_get( md5( $q ), 'general') ) {
+		$pages = $wpdb->get_results($q);
+		wp_cache_set( md5( $q ), $pages, 'general', 180);		
+	}
 
 	if ( empty($pages) )
 		return array();

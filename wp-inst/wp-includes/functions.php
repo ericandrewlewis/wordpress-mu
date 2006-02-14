@@ -1404,10 +1404,14 @@ function update_page_cache(&$pages) {
 
 
 function clean_page_cache($id) {
-	global $page_cache;
+	global $page_cache, $wpdb;
 
 	if ( isset( $page_cache[$id] ) )
 		unset( $page_cache[$id] );
+
+	$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type='page'");
+	wp_cache_set('all_page_ids', $page_ids, 'pages');
+	
 }
 
 function update_post_category_cache($post_ids) {
@@ -2217,6 +2221,11 @@ function get_usermeta( $user_id, $meta_key = '') {
 	global $wpdb;
 	$user_id = (int) $user_id;
 
+	$user = get_userdata( $user_id );
+	
+	if ( $meta_key && isset($user->{$meta_key}) )
+		return $user->{$meta_key};
+
 	if ( !empty($meta_key) ) {
 		$meta_key = preg_replace('|a-z0-9_|i', '', $meta_key);
 		$metas = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
@@ -2273,7 +2282,8 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 	$user = get_userdata($user_id);
 	wp_cache_delete($user_id, 'users');
 	wp_cache_delete($user->user_login, 'userlogins');
-
+	wp_cache_delete( md5($user_id . $meta_key), 'usermeta' );
+	
 	return true;
 }
 
@@ -2295,6 +2305,7 @@ function delete_usermeta( $user_id, $meta_key, $meta_value = '' ) {
 	$user = get_userdata($user_id);
 	wp_cache_delete($user_id, 'users');
 	wp_cache_delete($user->user_login, 'userlogins');
+	wp_cache_delete( md5($user_id . $meta_key), 'usermeta' );
 
 	return true;
 }

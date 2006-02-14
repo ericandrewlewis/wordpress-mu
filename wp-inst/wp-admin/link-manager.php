@@ -34,7 +34,9 @@ $links_show_order = $_COOKIE['links_show_order_' . COOKIEHASH];
 if ('' != $_POST['assign']) $action = 'assign';
 if ('' != $_POST['visibility']) $action = 'visibility';
 if ('' != $_POST['move']) $action = 'move';
-if ('' != $_POST['linkcheck']) $linkcheck = $_POST[linkcheck];
+if ('' != $_POST['linkcheck']) $linkcheck = $_POST[ 'linkcheck' ];
+
+update_option( 'links_last_updated', time() );
 
 switch ($action) {
   case 'assign':

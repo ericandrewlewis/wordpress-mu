@@ -328,7 +328,11 @@ function get_archives($type='', $limit='', $format='html', $before = '', $after 
 	$add_minutes = intval(60 * (get_settings('gmt_offset') - $add_hours));
 
 	if ( 'monthly' == $type ) {
-		$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
+		$arcresults = wp_cache_get( md5('archives' . $type . $limit), 'general');
+		if ( !$arcresults ) {
+			$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
+			wp_cache_set( md5('archives' . $type . $limit), $arcresults, 'general', 360 );
+		}
 		if ( $arcresults ) {
 			$afterafter = $after;
 			foreach ( $arcresults as $arcresult ) {

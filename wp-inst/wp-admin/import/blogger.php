@@ -2,7 +2,7 @@
 
 class Blogger_Import {
 
-	var $lump_authors = false;
+	var $lump_authors = true;
 	var $import = array();
 
 	// Shows the welcome screen and the magic iframe.
@@ -20,6 +20,11 @@ class Blogger_Import {
 		else
 			echo "<p>$incompat</p>";
 		echo "</div>\n";
+	}
+
+	function reencode($text) {
+		return $text;
+		return mb_convert_encoding($text, get_setting('blog_charset'), $this->import['blogs'][$_GET['blog']]['options']['blog-formatting']['backup']['encoding']);
 	}
 
 	// Deletes saved data and redirect.
@@ -94,7 +99,7 @@ class Blogger_Import {
 		$ch = curl_init();
 		if ($user && $pass) curl_setopt($ch, CURLOPT_USERPWD,"{$user}:{$pass}");
 		curl_setopt($ch, CURLOPT_URL,$url);
-		curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+		curl_setopt($ch, CURLOPT_TIMEOUT, 20);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);
 		curl_setopt($ch, CURLOPT_USERAGENT, 'Blogger Exporter');
@@ -243,14 +248,14 @@ class Blogger_Import {
 			if ( ! count( $blogsary[1] < 1 ) )
 				die(__('No blogs found for this user.'));
 			$this->import['blogs'] = array();
-			$template = '<MainPage><br /><br /><br /><p>'.__('Are you looking for %title%? It is temporarily out of service. Please try again in a few minutes. Meanwhile, discover <a href="http://wordpress.org/">a better blogging tool</a>.').'</p><BloggerArchives><a class="archive" href="<$BlogArchiveURL$>"><$BlogArchiveName$></a><br /></BloggerArchives></MainPage><ArchivePage><Blogger><wordpresspost><$BlogItemDateTime$>|W|P|<$BlogItemAuthorNickname$>|W|P|<$BlogItemBody$>|W|P|<$BlogItemNumber$>|W|P|<$BlogItemTitle$>|W|P|<$BlogItemAuthorEmail$><BlogItemCommentsEnabled><BlogItemComments><wordpresscomment><$BlogCommentDateTime$>|W|P|<$BlogCommentAuthor$>|W|P|<$BlogCommentBody$></BlogItemComments></BlogItemCommentsEnabled></Blogger></ArchivePage>';
+			$template = '<!--<MainPage><BloggerArchives><a class="wparchive" href="<$BlogArchiveURL$>"><$BlogArchiveName$></a><br /></BloggerArchives></MainPage><ArchivePage><Blogger><wordpresspost><$BlogItemDateTime$>|W|P|<$BlogItemAuthorNickname$>|W|P|<$BlogItemBody$>|W|P|<$BlogItemNumber$>|W|P|<$BlogItemTitle$>|W|P|<$BlogItemAuthorEmail$><BlogItemCommentsEnabled><BlogItemComments><wordpresscomment><$BlogCommentDateTime$>|W|P|<$BlogCommentAuthor$>|W|P|<$BlogCommentBody$></BlogItemComments></BlogItemCommentsEnabled></Blogger></ArchivePage>-->';
 			foreach ( $blogsary[1] as $key => $id ) {
 				// Define the required Blogger options.
 				$blog_opts = array(
 					'blog-options-basic' => false,
 					'blog-options-archiving' => array('archiveFrequency' => 'm'),
 					'blog-publishing' => array('publishMode'=>'0', 'blogID' => "$id", 'subdomain' => mt_rand().mt_rand(), 'pingWeblogs' => 'false'),
-					'blog-formatting' => array('timeStampFormat' => '0', 'encoding'=>'UTF-8', 'convertLineBreaks'=>'false', 'floatAlignment'=>'false'),
+					'blog-formatting' => array('timeStampFormat' => '0', 'convertLineBreaks'=>'false', 'floatAlignment'=>'false'),
 					'blog-comments' => array('commentsTimeStampFormat' => '0'),
 					'template-edit' => array( 'templateText' =>  str_replace('%title%', trim($blogsary[2][$key]), $template) )
 				);
@@ -316,6 +321,9 @@ class Blogger_Import {
 							continue;
 						}
 						$paramary = $optary['modify'];
+					} elseif ( 'template-edit' == $blog_opt ) {
+						$optary['modify']['templateText'] = $_POST['templateText'] . $optary['modify']['templateText'];
+						$paramary = array_merge($_POST, $optary['modify']);
 					} else {
 						$paramary = array_merge($_POST, $optary['modify']);
 					}
@@ -363,9 +371,9 @@ class Blogger_Import {
 	// Step 5: Get the archive URLs from the new blog.
 	function get_archive_urls() {
 		$bloghtml = $this->get_blogger($this->import['blogs'][$_GET['blog']]['url']);
-		if (! strstr($bloghtml['body'], '<a class="archive"') )
+		if (! strstr($bloghtml['body'], '<a class="wparchive"') )
 			die(__('Your Blogger blog did not take the new template or did not respond.'));
-		preg_match_all('#<a class="archive" href="([^"]*)"#', $bloghtml['body'], $archives);
+		preg_match_all('#<a class="wparchive" href="([^"]*)"#', $bloghtml['body'], $archives);
 		foreach ($archives[1] as $archive) {
 			$this->import['blogs'][$_GET['blog']]['archives'][$archive] = false;
 		}
@@ -443,10 +451,10 @@ class Blogger_Import {
 
 					$post_date = "$postyear-$postmonth-$postday $posthour:$postminute:$postsecond";
 
-					$post_content = addslashes($post_content);
+					$post_content = addslashes($this->reencode($post_content));
 					$post_content = str_replace(array('<br>','<BR>','<br/>','<BR/>','<br />','<BR />'), "\n", $post_content); // the XHTML touch... ;)
 
-					$post_title = addslashes($post_title);
+					$post_title = addslashes($this->reencode($post_title));
 
 					$post_status = 'publish';
 
@@ -476,12 +484,12 @@ class Blogger_Import {
 						else if (($comment_date[2] == 'AM') && ($commenthour == '12'))
 							$commenthour = '00';
 						$comment_date = "$commentyear-$commentmonth-$commentday $commenthour:$commentminute:$commentsecond";
-						$comment_author = addslashes(strip_tags($commentinfo[1]));
+						$comment_author = addslashes($this->reencode(strip_tags($commentinfo[1])));
 						if ( strpos($commentinfo[1], 'a href') ) {
 							$comment_author_parts = explode('&quot;', htmlentities($commentinfo[1]));
 							$comment_author_url = $comment_author_parts[1];
 						} else $comment_author_url = '';
-						$comment_content = $commentinfo[2];
+						$comment_content = $this->reencode($commentinfo[2]);
 						$comment_content = str_replace(array('<br>','<BR>','<br/>','<BR/>','<br />','<BR />'), "\n", $comment_content);
 						$comment_approved = 1;
 						if ( comment_exists($comment_author, $comment_date) ) {
@@ -509,7 +517,7 @@ class Blogger_Import {
 					}
 				}
 				$status = sprintf(__('%s post(s) parsed, %s skipped...'), $postcount,  $skippedpostcount).' '.
-					sprintf(__('%s comment(s) parsed, %s skipped...'), $commentcoun, $skippedcommentcount).' '.
+					sprintf(__('%s comment(s) parsed, %s skipped...'), $commentcount, $skippedcommentcount).' '.
 					' <strong>'.__('Done').'</strong>';
 				$import = $this->import;
 				$import['blogs'][$_GET['blog']]['archives']["$url"] = $status;
@@ -660,6 +668,6 @@ class Blogger_Import {
 
 $blogger_import = new Blogger_Import();
 
-register_importer('blogger', 'Blogger', __('Import posts and comments from a Blogger account'), array ($blogger_import, 'start'));
+register_importer('blogger', 'Blogger', __('Import posts and comments from a Blogger account.'), array ($blogger_import, 'start'));
 
 ?>

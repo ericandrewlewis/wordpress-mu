@@ -301,7 +301,11 @@ function list_cats($optionall = 1, $all = 'All', $sort_column = 'ID', $sort_orde
 			WHERE cat_ID > 0 $exclusions
 			ORDER BY $sort_column $sort_order";
 
-		$categories = $wpdb->get_results($query);
+		$categories = wp_cache_get( md5( $query), 'general');
+		if ( !$categories ) {
+			$categories = $wpdb->get_results($query);
+			wp_cache_set( md5($query), $categories, 'general', 360);
+		}
 	}
 
 	if ( $optiondates ) {

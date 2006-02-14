@@ -65,7 +65,7 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 	<p><strong><?php _e('User updated.') ?></strong></p>
 </div>
 <?php endif; ?>
-<?php if ( count($errors) != 0 ) : ?>
+<?php if ( count($errors) != 0 ) { ?>
 <div class="error">
 	<ul>
 	<?php
@@ -73,7 +73,7 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 	?>
 	</ul>
 </div>
-<?php endif; ?>
+<?php } else { ?>
 
 <div class="wrap">
 <h2><?php _e('Edit User'); ?></h2>
@@ -232,6 +232,7 @@ if( $invites_list != '' )
 		}
 		?></table></div><?php
 	}
+}
 }
 break;
 }

@@ -225,8 +225,10 @@ default:
 <div id="login">
 <h1><a href="http://<?php echo $current_site->domain . $current_site->path ?>"><?php echo $current_site->site_name ?></a></h1>
 <?php
-if ( $error )
+if ( $error ) {
 	echo "<div id='login_error'>$error</div>";
+	echo "<p align='center'><strong>Note:</strong> You must <a href='http://www.google.com/cookies.html'>enable cookies</a> to use WordPress.com.</p>";
+}
 ?>
 
 <form name="loginform" id="loginform" action="wp-login.php" method="post">
