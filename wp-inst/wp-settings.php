@@ -12,7 +12,7 @@ function unregister_GLOBALS() {
 
 	// Variables that shouldn't be unset
 	$noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES', 'table_prefix');
-	
+
 	$input = array_merge($_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array());
 	foreach ( $input as $k => $v ) 
 		if ( !in_array($k, $noUnset) && isset($GLOBALS[$k]) )
@@ -30,7 +30,7 @@ if ( ! isset($blog_id) )
 // Fix for IIS, which doesn't set REQUEST_URI
 if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 	$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME']; // Does this work under CGI?
-	
+
 	// Append the query string if it exists and isn't null
 	if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
 		$_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
@@ -375,6 +375,7 @@ if ( file_exists(TEMPLATEPATH . "/functions.php") )
 
 function shutdown_action_hook() {
 	do_action('shutdown');
+	wp_cron();
 	wp_cache_close();
 }
 register_shutdown_function('shutdown_action_hook');

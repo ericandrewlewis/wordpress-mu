@@ -84,7 +84,7 @@ if ( is_month() ) {
   </fieldset>
 </form>
 
-<?php $arc_result = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS yyear, MONTH(post_date) AS mmonth FROM $wpdb->posts WHERE post_date != '0000-00-00 00:00:00' ORDER BY post_date DESC");
+<?php $arc_result = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS yyear, MONTH(post_date) AS mmonth FROM $wpdb->posts WHERE post_type = 'post' ORDER BY post_date DESC");
 
 if ( count($arc_result) ) { ?>
 
@@ -93,15 +93,15 @@ if ( count($arc_result) ) { ?>
 	<legend><?php _e('Browse Month&hellip;') ?></legend>
     <select name='m'>
 	<?php
-		foreach ($arc_result as $arc_row) {			
+		foreach ($arc_result as $arc_row) {
 			$arc_year  = $arc_row->yyear;
 			$arc_month = $arc_row->mmonth;
-			
+
 			if( isset($_GET['m']) && $arc_year . zeroise($arc_month, 2) == (int) $_GET['m'] )
 				$default = 'selected="selected"';
 			else
 				$default = null;
-			
+
 			echo "<option $default value=\"" . $arc_year.zeroise($arc_month, 2) . '">';
 			echo $month[zeroise($arc_month, 2)] . " $arc_year";
 			echo "</option>\n";
@@ -157,7 +157,7 @@ $class = ('alternate' == $class) ? '' : 'alternate';
 foreach($posts_columns as $column_name=>$column_display_name) {
 
 	switch($column_name) {
-	
+
 	case 'id':
 		?>
 		<th scope="row"><?php echo $id ?></th>
@@ -210,7 +210,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_delete':
 		?>
-		<td><?php if ( current_user_can('edit_post',$post->ID) ) { echo "<a href='post.php?action=delete&amp;post=$id' class='delete' onclick=\"return deleteSomething( 'post', " . $id . ", '" . sprintf(__("You are about to delete this post &quot;%s&quot;.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), wp_specialchars(get_the_title('', ''), 1) ) . "' );\">" . __('Delete') . "</a>"; } ?></td>
+		<td><?php if ( current_user_can('delete_post',$post->ID) ) { echo "<a href='post.php?action=delete&amp;post=$id' class='delete' onclick=\"return deleteSomething( 'post', " . $id . ", '" . sprintf(__("You are about to delete this post &quot;%s&quot;.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), wp_specialchars(get_the_title('', ''), 1) ) . "' );\">" . __('Delete') . "</a>"; } ?></td>
 		<?php
 		break;
 

@@ -42,9 +42,9 @@ function get_permalink($id = 0) {
 	);
 
 	$post = &get_post($id);
-	if ( $post->post_status == 'static' )
+	if ( $post->post_type == 'page' )
 		return get_page_link($post->ID);
-	elseif ($post->post_status == 'attachment')
+	elseif ($post->post_type == 'attachment')
 		return get_attachment_link($post->ID);
 
 	$permalink = get_settings('permalink_structure');
@@ -252,14 +252,16 @@ function get_previous_post($in_same_cat = false, $excluded_categories = '') {
 
 	$sql_exclude_cats = '';
 	if ( !empty($excluded_categories) ) {
-		$blah = explode('and', $excluded_categories);
+		$blah = explode(' and ', $excluded_categories);
 		foreach ( $blah as $category ) {
 			$category = intval($category);
-			$sql_exclude_cats .= " AND post_category != $category";
+			$sql_cat_ids = " OR pc.category_ID = '$category'";
 		}
+		$posts_in_ex_cats = $wpdb->get_col("SELECT p.ID FROM $wpdb->posts p LEFT JOIN $wpdb->post2cat pc ON pc.post_id=p.ID WHERE 1 = 0 $sql_cat_ids GROUP BY p.ID");
+		$posts_in_ex_cats_sql = 'AND ID NOT IN (' . implode($posts_in_ex_cats, ',') . ')';
 	}
 
-	return @$wpdb->get_row("SELECT ID, post_title FROM $wpdb->posts $join WHERE post_date < '$current_post_date' AND post_status = 'publish' $sqlcat $sql_exclude_cats ORDER BY post_date DESC LIMIT 1");
+	return @$wpdb->get_row("SELECT ID, post_title FROM $wpdb->posts $join WHERE post_date < '$current_post_date' AND post_type = 'post' AND post_status = 'publish' $posts_in_ex_cats_sql ORDER BY post_date DESC LIMIT 1");
 }
 
 function get_next_post($in_same_cat = false, $excluded_categories = '') {
@@ -269,7 +271,7 @@ function get_next_post($in_same_cat = false, $excluded_categories = '') {
 		return null;
 
 	$current_post_date = $post->post_date;
-	
+
 	$join = '';
 	if ( $in_same_cat ) {
 		$join = " INNER JOIN $wpdb->post2cat ON $wpdb->posts.ID= $wpdb->post2cat.post_id ";
@@ -283,16 +285,16 @@ function get_next_post($in_same_cat = false, $excluded_categories = '') {
 
 	$sql_exclude_cats = '';
 	if ( !empty($excluded_categories) ) {
-		$blah = explode('and', $excluded_categories);
+		$blah = explode(' and ', $excluded_categories);
 		foreach ( $blah as $category ) {
 			$category = intval($category);
-			$sql_exclude_cats .= " AND post_category != $category";
+			$sql_cat_ids = " OR pc.category_ID = '$category'";
 		}
+		$posts_in_ex_cats = $wpdb->get_col("SELECT p.ID from $wpdb->posts p LEFT JOIN $wpdb->post2cat pc ON pc.post_id = p.ID WHERE 1 = 0 $sql_cat_ids GROUP BY p.ID");
+		$posts_in_ex_cats_sql = 'AND ID NOT IN (' . implode($posts_in_ex_cats, ',') . ')';
 	}
 
-	$now = current_time('mysql');
-	
-	return @$wpdb->get_row("SELECT ID,post_title FROM $wpdb->posts $join WHERE post_date > '$current_post_date' AND post_date < '$now' AND post_status = 'publish' $sqlcat $sql_exclude_cats AND ID != $post->ID ORDER BY post_date ASC LIMIT 1");
+	return @$wpdb->get_row("SELECT ID,post_title FROM $wpdb->posts $join WHERE post_date > '$current_post_date' AND post_type = 'post' AND post_status = 'publish' $posts_in_ex_cats_sql AND ID != $post->ID ORDER BY post_date ASC LIMIT 1");
 }
 
 
@@ -435,7 +437,7 @@ function get_pagenum_link($pagenum = 1) {
 	if ( $permalink )
 		$qstr = trailingslashit($qstr);
 	$qstr = preg_replace('/&([^#])(?![a-z]{1,8};)/', '&#038;$1', trailingslashit( get_settings('home') ) . $qstr );
-	
+
 	// showing /page/1/ or ?paged=1 is redundant
 	if ( 1 === $pagenum ) {
 		$qstr = str_replace('page/1/', '', $qstr); // for mod_rewrite style

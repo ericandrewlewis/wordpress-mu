@@ -22,7 +22,7 @@ function mysql2date($dateformatstring, $mysqlstring, $translate = true) {
 		return false;
 	}
 	$i = mktime(substr($m,11,2),substr($m,14,2),substr($m,17,2),substr($m,5,2),substr($m,8,2),substr($m,0,4));
-	
+
 	if ( -1 == $i || false == $i )
 		$i = 0;
 
@@ -110,17 +110,16 @@ function get_lastpostdate($timezone = 'server') {
 	global $cache_lastpostdate, $pagenow, $wpdb;
 	$add_seconds_blog = get_settings('gmt_offset') * 3600;
 	$add_seconds_server = date('Z');
-	$now = current_time('mysql', 1);
 	if ( !isset($cache_lastpostdate[$timezone]) ) {
 		switch(strtolower($timezone)) {
 			case 'gmt':
-				$lastpostdate = $wpdb->get_var("SELECT post_date_gmt FROM $wpdb->posts WHERE post_date_gmt <= '$now' AND post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
+				$lastpostdate = $wpdb->get_var("SELECT post_date_gmt FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
 				break;
 			case 'blog':
-				$lastpostdate = $wpdb->get_var("SELECT post_date FROM $wpdb->posts WHERE post_date_gmt <= '$now' AND post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
+				$lastpostdate = $wpdb->get_var("SELECT post_date FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
 				break;
 			case 'server':
-				$lastpostdate = $wpdb->get_var("SELECT DATE_ADD(post_date_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_date_gmt <= '$now' AND post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
+				$lastpostdate = $wpdb->get_var("SELECT DATE_ADD(post_date_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
 				break;
 		}
 		$cache_lastpostdate[$timezone] = $lastpostdate;
@@ -134,17 +133,16 @@ function get_lastpostmodified($timezone = 'server') {
 	global $cache_lastpostmodified, $pagenow, $wpdb;
 	$add_seconds_blog = get_settings('gmt_offset') * 3600;
 	$add_seconds_server = date('Z');
-	$now = current_time('mysql', 1);
 	if ( !isset($cache_lastpostmodified[$timezone]) ) {
 		switch(strtolower($timezone)) {
 			case 'gmt':
-				$lastpostmodified = $wpdb->get_var("SELECT post_modified_gmt FROM $wpdb->posts WHERE post_modified_gmt <= '$now' AND post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
+				$lastpostmodified = $wpdb->get_var("SELECT post_modified_gmt FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
 				break;
 			case 'blog':
-				$lastpostmodified = $wpdb->get_var("SELECT post_modified FROM $wpdb->posts WHERE post_modified_gmt <= '$now' AND post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
+				$lastpostmodified = $wpdb->get_var("SELECT post_modified FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
 				break;
 			case 'server':
-				$lastpostmodified = $wpdb->get_var("SELECT DATE_ADD(post_modified_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_modified_gmt <= '$now' AND post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
+				$lastpostmodified = $wpdb->get_var("SELECT DATE_ADD(post_modified_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
 				break;
 		}
 		$lastpostdate = get_lastpostdate($timezone);
@@ -171,7 +169,7 @@ function user_pass_ok($user_login,$user_pass) {
 
 function get_usernumposts($userid) {
 	global $wpdb;
-	return $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_author = '$userid' AND post_status = 'publish'");
+	return $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->posts WHERE post_author = '$userid' AND post_type = 'post' AND post_status = 'publish'");
 }
 
 
@@ -312,7 +310,7 @@ function get_option($option) {
 
 function get_user_option( $option, $user = 0 ) {
 	global $wpdb, $current_user;
-	
+
 	if ( empty($user) )
 		$user = $current_user;
 	else
@@ -580,7 +578,7 @@ function &get_post(&$post, $output = OBJECT) {
 		else
 			$_post = null;
 	} elseif ( is_object($post) ) {
-		if ( 'static' == $post->post_status )
+		if ( 'page' == $post->post_type )
 			return get_page($post, $output);
 		if ( !isset($post_cache[$post->ID]) )
 			$post_cache[$post->ID] = &$post;
@@ -593,7 +591,7 @@ function &get_post(&$post, $output = OBJECT) {
 		else {
 			$query = "SELECT * FROM $wpdb->posts WHERE ID = '$post' LIMIT 1";
 			$_post = & $wpdb->get_row($query);
-			if ( 'static' == $_post->post_status )
+			if ( 'page' == $_post->post_type )
 				return get_page($_post, $output);
 			$post_cache[$post] = & $_post;
 		}
@@ -665,10 +663,41 @@ function set_page_path($page) {
 		$curpage = get_page($curpage->post_parent);
 		$path = '/' . $curpage->post_name . $path;
 	}
-	
+
 	$page->fullpath = $path;
 
 	return $page;
+}
+
+function get_page_by_path($page_path) {
+	global $wpdb;
+	$page_path = rawurlencode(urldecode($page_path));
+	$page_path = str_replace('%2F', '/', $page_path);
+	$page_path = str_replace('%20', ' ', $page_path);
+	$page_paths = '/' . trim($page_path, '/');
+	$leaf_path  = sanitize_title(basename($page_paths));
+	$page_paths = explode('/', $page_paths);
+	foreach($page_paths as $pathdir)
+		$full_path .= ($pathdir!=''?'/':'') . sanitize_title($pathdir);
+
+	$pages = $wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_name = '$leaf_path'");
+
+	if ( empty($pages) ) 
+		return 0;
+
+	foreach ($pages as $page) {
+		$path = '/' . $leaf_path;
+		$curpage = $page;
+		while ($curpage->post_parent != 0) {
+			$curpage = $wpdb->get_row("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE ID = '$curpage->post_parent'");
+			$path = '/' . $curpage->post_name . $path;
+		}
+
+		if ( $path == $full_path )
+			return $page->ID;
+	}
+
+	return 0;
 }
 
 // Retrieves page data given a page ID or page object.
@@ -684,7 +713,7 @@ function &get_page(&$page, $output = OBJECT) {
 			$_page = null;
 		}
 	} elseif ( is_object($page) ) {
-		if ( 'static' != $page->post_status )
+		if ( 'post' == $page->post_type )
 			return get_post($page, $output);
 		wp_cache_add($page->ID, $page, 'pages');
 		$_page = $page;
@@ -699,15 +728,15 @@ function &get_page(&$page, $output = OBJECT) {
 		} else {
 			$query = "SELECT * FROM $wpdb->posts WHERE ID= '$page' LIMIT 1";
 			$_page = & $wpdb->get_row($query);
-			if ( 'static' != $_page->post_status )
+			if ( 'post' == $_page->post_type )
 				return get_post($_page, $output);
 			wp_cache_add($_page->ID, $_page, 'pages');
 		}
 	}
-	
+
 	if (!isset($_page->fullpath)) {
 		$_page = set_page_path($_page);
-		wp_cache_replace($_page->cat_ID, $_page, 'pages');
+		wp_cache_replace($_page->ID, $_page, 'pages');
 	}
 
 	if ( $output == OBJECT ) {
@@ -729,7 +758,7 @@ function set_category_path($cat) {
 		$curcat = get_category($curcat->category_parent);
 		$path = '/' . $curcat->category_nicename . $path;
 	}
-	
+
 	$cat->fullpath = $path;
 
 	return $cat;
@@ -755,7 +784,7 @@ function &get_category(&$category, $output = OBJECT) {
 
 	if ( !isset($_category->fullpath) ) {
 		$_category = set_category_path($_category);
-		wp_cache_replace($_category->cat_ID, $_category, 'category');	
+		wp_cache_replace($_category->cat_ID, $_category, 'category');
 	}
 
 	if ( $output == OBJECT ) {
@@ -808,23 +837,23 @@ function get_catname($cat_ID) {
 
 function get_all_category_ids() {
 	global $wpdb;
-	
+
 	if ( ! $cat_ids = wp_cache_get('all_category_ids', 'category') ) {
 		$cat_ids = $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories");
 		wp_cache_add('all_category_ids', $cat_ids, 'category');
 	}
-	
+
 	return $cat_ids;
 }
 
 function get_all_page_ids() {
 	global $wpdb;
-	
+
 	if ( ! $page_ids = wp_cache_get('all_page_ids', 'pages') ) {
-		$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_status='static'");
+		$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type = 'page'");
 		wp_cache_add('all_page_ids', $page_ids, 'pages');
 	}
-	
+
 	return $page_ids;
 }
 
@@ -1326,12 +1355,10 @@ function get_posts($args) {
 	if ( !isset($r['order']) )
 		$r['order'] = 'DESC';
 
-	$now = current_time('mysql');
-
 	$posts = $wpdb->get_results(
 		"SELECT DISTINCT * FROM $wpdb->posts " .
 		( empty( $r['category'] ) ? "" : ", $wpdb->post2cat " ) .
-		" WHERE post_date <= '$now' AND (post_status = 'publish') ".
+		" WHERE (post_type = 'post' AND post_status = 'publish') ".
 		( empty( $r['category'] ) ? "" : "AND $wpdb->posts.ID = $wpdb->post2cat.post_id AND $wpdb->post2cat.category_id = " . $r['category']. " " ) .
 		" GROUP BY $wpdb->posts.ID ORDER BY " . $r['orderby'] . " " . $r['order'] . " LIMIT " . $r['offset'] . ',' . $r['numberposts'] );
 
@@ -1396,7 +1423,7 @@ function update_post_category_cache($post_ids) {
 
 	if ( empty($dogs) )
 		return;
-		
+
 	foreach ($dogs as $catt)
 		$category_cache[$catt->post_id][$catt->category_id] = &get_category($catt->category_id);
 }
@@ -1503,7 +1530,7 @@ function is_attachment () {
 
 function is_preview() {
 	global $wp_query;
-	
+
 	return $wp_query->is_preview;
 }
 
@@ -2157,7 +2184,7 @@ function wp_remote_fopen( $uri ) {
 
 function wp($query_vars = '') {
 	global $wp;
-	
+
 	$wp->main($query_vars);
 }
 
@@ -2227,7 +2254,7 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 	if ( is_array($meta_value) || is_object($meta_value) )
 		$meta_value = serialize($meta_value);
 	$meta_value = trim( $meta_value );
-	
+
 	if (empty($meta_value)) {
 		delete_usermeta($user_id, $meta_key);
 	}
@@ -2240,13 +2267,13 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 	} else if ( $cur->meta_value != $meta_value ) {
 		$wpdb->query("UPDATE $wpdb->usermeta SET meta_value = '$meta_value' WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
 	} else {
-		return false;	
+		return false;
 	}
-	
+
 	$user = get_userdata($user_id);
 	wp_cache_delete($user_id, 'users');
 	wp_cache_delete($user->user_login, 'userlogins');
-	
+
 	return true;
 }
 
@@ -2264,11 +2291,11 @@ function delete_usermeta( $user_id, $meta_key, $meta_value = '' ) {
 		$wpdb->query("DELETE FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key' AND meta_value = '$meta_value'");
 	else
 		$wpdb->query("DELETE FROM $wpdb->usermeta WHERE user_id = '$user_id' AND meta_key = '$meta_key'");
-		
+
 	$user = get_userdata($user_id);
 	wp_cache_delete($user_id, 'users');
 	wp_cache_delete($user->user_login, 'userlogins');
-	
+
 	return true;
 }
 
@@ -2293,6 +2320,72 @@ function plugin_basename($file) {
 function get_num_queries() {
 	global $wpdb;
 	return $wpdb->num_queries;
+}
+
+function wp_schedule_event($timestamp, $recurrence, $hook) {
+	$args = array_slice(func_get_args(), 3);
+	$crons = get_option('cron');
+	$crons[$timestamp][$hook] = array('recur' => $recurrence, 'args' => $args);
+	ksort($crons);
+	update_option('cron', $crons);
+}
+
+function wp_unschedule_event($timestamp, $hook) {
+	$crons = get_option('cron');
+	unset($crons[$timestamp][$hook]);
+	if ( empty($crons[$timestamp]) )
+		unset($crons[$timestamp]);
+	update_option('cron', $crons);
+}
+
+function wp_clear_scheduled_hook($hook) {
+	while($timestamp = next_scheduled('scheduled_hook'))
+		wp_unschedule_event($timestamp, 'scheduled_hook');
+}
+
+function next_scheduled($hook) {
+	$crons = get_option('cron');
+	if ( empty($crons) )
+		return false;
+	foreach($crons as $timestamp => $cron) {
+		//if($timestamp <= time()) continue;
+		if(isset($cron[$hook])) return $timestamp;
+	}
+	return false;
+}
+
+function spawn_cron() {
+	if (array_shift(array_keys(get_option('cron'))) > time()) return;
+
+	$cron_url = get_settings('siteurl') . '/wp-cron.php';
+	$parts = parse_url($cron_url);
+	$argyle = @ fsockopen($parts['host'], $_SERVER['SERVER_PORT'], $errno, $errstr, 0.01);
+	if ( $argyle )
+		fputs($argyle, "GET {$parts['path']}?time=" . time() . '&check='
+		. md5(DB_PASS . '187425') . " HTTP/1.0\r\nHost: {$_SERVER['HTTP_HOST']}\r\n\r\n");
+}
+
+function wp_cron() {
+	$crons = get_option('cron');
+	if (!is_array($crons) || array_shift(array_keys($crons)) > time())
+		return;
+
+	foreach ($crons as $timestamp => $cronhooks) {
+		if ($timestamp > time()) break;
+		foreach($cronhooks as $hook => $args) {
+			do_action($hook, $args['args']);
+			$recurrence = $args['recur'];
+			if ( 'hourly' == $recurrence ) {
+				$args = array_merge( array($timestamp + 3600, $recurrence, $hook), $args['args']);
+				call_user_func_array('wp_schedule_event', $args);
+			} else if ( 'daily' == $recurrence ) {
+				$args = array_merge( array($timestamp + 86400, $recurrence, $hook), $args['args']);
+				call_user_func_array('wp_schedule_event', $args);
+			}
+
+			wp_unschedule_event($timestamp, $hook);
+		}
+	}
 }
 
 ?>

@@ -106,7 +106,7 @@ CREATE TABLE $wpdb->posts (
   post_title text NOT NULL,
   post_category int(4) NOT NULL default '0',
   post_excerpt text NOT NULL,
-  post_status enum('publish','draft','private','static','object','attachment') NOT NULL default 'publish',
+  post_status enum('publish','draft','private','static','object','attachment','inherit','future') NOT NULL default 'publish',
   comment_status enum('open','closed','registered_only') NOT NULL default 'open',
   ping_status enum('open','closed') NOT NULL default 'open',
   post_password varchar(20) NOT NULL default '',
@@ -119,7 +119,7 @@ CREATE TABLE $wpdb->posts (
   post_parent bigint(20) NOT NULL default '0',
   guid varchar(255) NOT NULL default '',
   menu_order int(11) NOT NULL default '0',
-  post_type varchar(100) NOT NULL default '',
+  post_type varchar(100) NOT NULL default 'post',
   post_mime_type varchar(100) NOT NULL default '',
   comment_count bigint(20) NOT NULL default '0',
   PRIMARY KEY  (ID),
@@ -295,7 +295,8 @@ function populate_options() {
 }
 
 function populate_roles() {
-	populate_roles_160();	
+	populate_roles_160();
+	populate_roles_210();
 }
 
 function populate_roles_160() {
@@ -307,7 +308,7 @@ function populate_roles_160() {
 	add_role('author', __('Author'));
 	add_role('contributor', __('Contributor'));
 	add_role('subscriber', __('Subscriber'));
-	
+
 	// Add caps for Administrator role
 	$role = get_role('administrator');
 	$role->add_cap('switch_themes');
@@ -340,7 +341,7 @@ function populate_roles_160() {
 	$role->add_cap('level_2');
 	$role->add_cap('level_1');
 	$role->add_cap('level_0');
-	
+
 	// Add caps for Editor role
 	$role = get_role('editor');
 	$role->add_cap('moderate_comments');
@@ -362,7 +363,7 @@ function populate_roles_160() {
 	$role->add_cap('level_2');
 	$role->add_cap('level_1');
 	$role->add_cap('level_0');
-	
+
 	// Add caps for Author role
 	$role = get_role('author');
 	$role->add_cap('upload_files');
@@ -373,18 +374,48 @@ function populate_roles_160() {
 	$role->add_cap('level_2');
 	$role->add_cap('level_1');
 	$role->add_cap('level_0');
-	
+
 	// Add caps for Contributor role
 	$role = get_role('contributor');
 	$role->add_cap('edit_posts');
 	$role->add_cap('read');
 	$role->add_cap('level_1');
 	$role->add_cap('level_0');
-	
+
 	// Add caps for Subscriber role
 	$role = get_role('subscriber');
 	$role->add_cap('read');
 	$role->add_cap('level_0');
+}
+
+function populate_roles_210() {
+	$roles = array('administrator', 'editor');
+	foreach ($roles as $role) {
+		$role = get_role($role);
+		if ( empty($role) )
+			continue;
+
+		$role->add_cap('edit_others_pages');
+		$role->add_cap('edit_published_pages');
+		$role->add_cap('publish_pages');
+		$role->add_cap('delete_pages');
+		$role->add_cap('delete_others_pages');
+		$role->add_cap('delete_published_pages');
+		$role->add_cap('delete_posts');
+		$role->add_cap('delete_others_posts');
+		$role->add_cap('delete_published_posts');
+	}
+
+	$role = get_role('author');
+	if ( ! empty($role) ) {
+		$role->add_cap('delete_posts');
+		$role->add_cap('delete_published_posts');
+	}
+
+	$role = get_role('contributor');
+	if ( ! empty($role) ) {
+		$role->add_cap('delete_posts');
+	}
 }
 
 ?>

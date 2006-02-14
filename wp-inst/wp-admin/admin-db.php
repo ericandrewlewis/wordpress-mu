@@ -243,7 +243,7 @@ function wp_delete_user($id, $reassign = 'novalue') {
 
 function get_link($link_id, $output = OBJECT) {
 	global $wpdb;
-	
+
 	$link = $wpdb->get_row("SELECT * FROM $wpdb->links WHERE link_id = '$link_id'");
 
 	if ( $output == OBJECT ) {
@@ -259,7 +259,7 @@ function get_link($link_id, $output = OBJECT) {
 
 function wp_insert_link($linkdata) {
 	global $wpdb, $current_user;
-	
+
 	extract($linkdata);
 
 	$update = false;
@@ -267,14 +267,14 @@ function wp_insert_link($linkdata) {
 		$update = true;
 
 	if ( empty($link_rating) )
-		$link_rating = 0;	
+		$link_rating = 0;
 
 	if ( empty($link_target) )
-		$link_target = '';	
+		$link_target = '';
 
 	if ( empty($link_visible) )
 		$link_visible = 'Y';
-		
+
 	if ( empty($link_owner) )
 		$link_owner = $current_user->id;
 
@@ -293,7 +293,7 @@ function wp_insert_link($linkdata) {
 		$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_category, link_description, link_visible, link_owner, link_rating, link_rel, link_notes, link_rss) VALUES('$link_url','$link_name', '$link_image', '$link_target', '$link_category', '$link_description', '$link_visible', '$link_owner', '$link_rating', '$link_rel', '$link_notes', '$link_rss')");
 		$link_id = $wpdb->insert_id;
 	}
-	
+
 	if ( $update )
 		do_action('edit_link', $link_id);
 	else
@@ -306,12 +306,12 @@ function wp_update_link($linkdata) {
 	global $wpdb;
 
 	$link_id = (int) $linkdata['link_id'];
-	
+
 	$link = get_link($link_id, ARRAY_A);
-	
+
 	// Escape data pulled from DB.
 	$link = add_magic_quotes($link);
-	
+
 	// Merge old and new fields with new fields overwriting old ones.
 	$linkdata = array_merge($link, $linkdata);
 
@@ -322,7 +322,7 @@ function wp_delete_link($link_id) {
 	global $wpdb;
 
 	do_action('delete_link', $link_id);
-	return $wpdb->query("DELETE FROM $wpdb->links WHERE link_id = '$link_id'");	
+	return $wpdb->query("DELETE FROM $wpdb->links WHERE link_id = '$link_id'");
 }
 
 function post_exists($title, $content = '', $post_date = '') {

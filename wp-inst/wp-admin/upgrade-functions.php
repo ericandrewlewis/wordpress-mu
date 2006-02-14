@@ -21,7 +21,7 @@ function upgrade_all() {
 		if ( !empty($template) )
 			$wp_current_db_version = 2541;
 	}
-	
+
 	populate_options();
 
 	if ( $wp_current_db_version < 2541 ) {
@@ -30,12 +30,15 @@ function upgrade_all() {
 		upgrade_110();
 		upgrade_130();
 	}
-	
+
 	if ( $wp_current_db_version < 3308 )
 		upgrade_160();
 
+	if ( $wp_current_db_version < 3514 )
+		upgrade_210();
+
 	$wp_rewrite->flush_rules();
-	
+
 	update_option('db_version', $wp_db_version);
 }
 
@@ -52,7 +55,7 @@ function upgrade_100() {
 			}
 		}
 	}
-	
+
 	$categories = $wpdb->get_results("SELECT cat_ID, cat_name, category_nicename FROM $wpdb->categories");
 	foreach ($categories as $category) {
 		if ('' == $category->category_nicename) { 
@@ -75,7 +78,7 @@ function upgrade_100() {
 	else:
 		$catwhere = '';
 	endif;
-	
+
 	$allposts = $wpdb->get_results("SELECT ID, post_category FROM $wpdb->posts WHERE post_category != '0' $catwhere");
 	if ($allposts) :
 		foreach ($allposts as $post) {
@@ -109,7 +112,7 @@ function upgrade_101() {
 
 function upgrade_110() {
 	global $wpdb;
-	
+
     // Set user_nicename.
 	$users = $wpdb->get_results("SELECT ID, user_nickname, user_nicename FROM $wpdb->users");
  	foreach ($users as $user) {
@@ -288,7 +291,7 @@ function upgrade_160_helper( $users ) {
 				update_usermeta( $user->ID, $table_prefix . 'capabilities', array($role => true) );
 			}
 		}
-			
+
 	endforeach;
 }
 
@@ -303,7 +306,7 @@ function upgrade_160() {
 	foreach ( $old_user_fields as $old )
 		$wpdb->query("ALTER TABLE $wpdb->users DROP $old");
 	$wpdb->show_errors();
-	
+
 	if ( 0 == $wpdb->get_var("SELECT SUM(category_count) FROM $wpdb->categories") ) { // Create counts
 		$categories = $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories");
 		foreach ( $categories as $cat_id ) {
@@ -330,11 +333,39 @@ function upgrade_160() {
 			post_mime_type = '$object->post_type',
 			post_type = ''
 			WHERE ID = $object->ID");
-			
+
 			$meta = get_post_meta($object->ID, 'imagedata', true);
 			if ( ! empty($meta['file']) )
 				add_post_meta($object->ID, '_wp_attached_file', $meta['file']);
 		}
+	}
+}
+
+function upgrade_210() {
+	global $wpdb, $table_prefix, $wp_current_db_version;
+
+	if ( $wp_current_db_version < 3506 ) {
+		// Update status and type.
+		$posts = $wpdb->get_results("SELECT ID, post_status FROM $wpdb->posts");
+
+		if ( ! empty($posts) ) foreach ($posts as $post) {
+			$status = $post->post_status;
+			$type = 'post';
+
+			if ( 'static' == $status ) {
+				$status = 'publish';
+				$type = 'page';
+			} else if ( 'attachment' == $status ) {
+				$status = 'inherit';
+				$type = 'attachment';
+			}
+
+			$wpdb->query("UPDATE $wpdb->posts SET post_status = '$status', post_type = '$type' WHERE ID = '$post->ID'");
+		}
+	}
+
+	if ( $wp_current_db_version < 3513 ) {
+		populate_roles_210();
 	}
 }
 
@@ -458,17 +489,17 @@ function deslash($content) {
 
 function dbDelta($queries, $execute = true) {
 	global $wpdb;
-	
+
 	// Seperate individual queries into an array
 	if( !is_array($queries) ) {
 		$queries = explode( ';', $queries );
 		if('' == $queries[count($queries) - 1]) array_pop($queries);
 	}
-	
+
 	$cqueries = array(); // Creation Queries
 	$iqueries = array(); // Insertion Queries
 	$for_update = array();
-	
+
 	// Create a tablename index for an array ($cqueries) of queries
 	foreach($queries as $qry) {
 		if(preg_match("|CREATE TABLE ([^ ]*)|", $qry, $matches)) {
@@ -487,7 +518,7 @@ function dbDelta($queries, $execute = true) {
 		else {
 			// Unrecognized query type
 		}
-	}	
+	}
 
 	// Check to see which tables and fields exist
 	if($tables = $wpdb->get_col('SHOW TABLES;')) {
@@ -506,13 +537,13 @@ function dbDelta($queries, $execute = true) {
 				$flds = explode("\n", $qryline);
 
 				//echo "<hr/><pre>\n".print_r(strtolower($table), true).":\n".print_r($cqueries, true)."</pre><hr/>";
-				
+
 				// For every field line specified in the query
 				foreach($flds as $fld) {
 					// Extract the field name
 					preg_match("|^([^ ]*)|", trim($fld), $fvals);
 					$fieldname = $fvals[1];
-					
+
 					// Verify the found field name
 					$validfield = true;
 					switch(strtolower($fieldname))
@@ -528,18 +559,18 @@ function dbDelta($queries, $execute = true) {
 						break;
 					}
 					$fld = trim($fld);
-					
+
 					// If it's a valid field, add it to the field array
 					if($validfield) {
 						$cfields[strtolower($fieldname)] = trim($fld, ", \n");
 					}
 				}
-				
+
 				// Fetch the table column structure from the database
 				$tablefields = $wpdb->get_results("DESCRIBE {$table};");
-								
+
 				// For every field in the table
-				foreach($tablefields as $tablefield) {				
+				foreach($tablefields as $tablefield) {
 					// If the table field exists in the field array...
 					if(array_key_exists(strtolower($tablefield->Field), $cfields)) {
 						// Get the field type from the query
@@ -552,7 +583,7 @@ function dbDelta($queries, $execute = true) {
 							$cqueries[] = "ALTER TABLE {$table} CHANGE COLUMN {$tablefield->Field} " . $cfields[strtolower($tablefield->Field)];
 							$for_update[$table.'.'.$tablefield->Field] = "Changed type of {$table}.{$tablefield->Field} from {$tablefield->Type} to {$fieldtype}";
 						}
-						
+
 						// Get the default value from the array
 							//echo "{$cfields[strtolower($tablefield->Field)]}<br>";
 						if(preg_match("| DEFAULT '(.*)'|i", $cfields[strtolower($tablefield->Field)], $matches)) {
@@ -579,11 +610,11 @@ function dbDelta($queries, $execute = true) {
 					$cqueries[] = "ALTER TABLE {$table} ADD COLUMN $fielddef";
 					$for_update[$table.'.'.$fieldname] = 'Added column '.$table.'.'.$fieldname;
 				}
-				
+
 				// Index stuff goes here
 				// Fetch the table index structure from the database
 				$tableindices = $wpdb->get_results("SHOW INDEX FROM {$table};");
-				
+
 				if($tableindices) {
 					// Clear the index array
 					unset($index_ary);
@@ -612,7 +643,7 @@ function dbDelta($queries, $execute = true) {
 						}
 						$index_columns = '';
 						// For each column in the index
-						foreach($index_data['columns'] as $column_data) {					
+						foreach($index_data['columns'] as $column_data) {
 							if($index_columns != '') $index_columns .= ',';
 							// Add the field to the column list string
 							$index_columns .= $column_data['fieldname'];

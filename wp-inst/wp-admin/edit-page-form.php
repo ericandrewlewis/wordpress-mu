@@ -30,7 +30,7 @@ if (isset($mode) && 'bookmarklet' == $mode) {
 <input type="hidden" name="user_ID" value="<?php echo $user_ID ?>" />
 <input type="hidden" name="action" value='<?php echo $form_action ?>' />
 <?php echo $form_extra ?>
-<input type="hidden" name="post_status" value="static" />
+<input type="hidden" name="post_type" value="page" />
 
 <script type="text/javascript">
 <!--
@@ -55,8 +55,17 @@ addLoadEvent(focusit);
 </div>
 </fieldset>
 
+<fieldset class="dbx-box">
+<h3 class="dbx-handle"><?php _e('Page Status') ?></h3> 
+<div class="dbx-content"><?php if ( current_user_can('publish_posts') ) : ?>
+<label for="post_status_publish" class="selectit"><input id="post_status_publish" name="post_status" type="radio" value="publish" <?php checked($post->post_status, 'publish'); ?> /> <?php _e('Published') ?></label>
+<?php endif; ?>
+	  <label for="post_status_draft" class="selectit"><input id="post_status_draft" name="post_status" type="radio" value="draft" <?php checked($post->post_status, 'draft'); ?> /> <?php _e('Draft') ?></label>
+	  <label for="post_status_private" class="selectit"><input id="post_status_private" name="post_status" type="radio" value="private" <?php checked($post->post_status, 'private'); ?> /> <?php _e('Private') ?></label></div>
+</fieldset>
+
 <fieldset id="passworddiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Password-Protect Post') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Password-Protect Page') ?></h3> 
 <div class="dbx-content"><input name="post_password" type="text" size="13" id="post_password" value="<?php echo $post->post_password ?>" /></div>
 </fieldset>
 
@@ -81,13 +90,13 @@ addLoadEvent(focusit);
 <?php } ?>
 
 <fieldset id="slugdiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Post slug') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page slug') ?></h3> 
 <div class="dbx-content"><input name="post_name" type="text" size="13" id="post_name" value="<?php echo $post->post_name ?>" /></div>
 </fieldset>
 
 <?php if ( $authors = get_editable_authors( $current_user->id ) ) : // TODO: ROLE SYSTEM ?>
 <fieldset id="authordiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Post author'); ?>:</h3>
+<h3 class="dbx-handle"><?php _e('Page author'); ?>:</h3>
 <div class="dbx-content">
 <select name="post_author_override" id="post_author_override">
 <?php 

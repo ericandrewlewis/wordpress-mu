@@ -16,7 +16,7 @@ if (!defined('SAVEQUERIES'))
 class wpdb {
 
 	var $show_errors = true;
-	var $num_queries = 0;	
+	var $num_queries = 0;
 	var $last_query;
 	var $col_info;
 	var $queries;
@@ -81,7 +81,7 @@ class wpdb {
 
 	// ====================================================================
 	//	Format a string correctly for safe insert under all PHP conditions
-	
+
 	function escape($string) {
 		return addslashes( $string ); // Disable rest for now, causing problems
 		if( !$this->dbh || version_compare( phpversion(), '4.3.0' ) == '-1' )
@@ -107,7 +107,7 @@ class wpdb {
 			<code>$this->last_query</code></p>
 			</div>";
 		} else {
-			return false;	
+			return false;
 		}
 	}
 
@@ -117,7 +117,7 @@ class wpdb {
 	function show_errors() {
 		$this->show_errors = true;
 	}
-	
+
 	function hide_errors() {
 		$this->show_errors = false;
 	}
@@ -248,7 +248,7 @@ class wpdb {
 
 			// Log number of rows the query returned
 			$this->num_rows = $num_rows;
-			
+
 			// Return number of rows selected
 			$return_val = $this->num_rows;
 		}
@@ -362,7 +362,7 @@ class wpdb {
 		$this->time_start = $mtime[1] + $mtime[0];
 		return true;
 	}
-	
+
 	function timer_stop($precision = 3) {
 		$mtime = microtime();
 		$mtime = explode(' ', $mtime);
@@ -374,7 +374,7 @@ class wpdb {
 	function bail($message) { // Just wraps errors in a nice header and footer
 	if ( !$this->show_errors )
 		return false;
-	header( 'Content-Type: text/html; charset=utf-8');		
+	header( 'Content-Type: text/html; charset=utf-8');
 	echo <<<HEAD
 	<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 	<html xmlns="http://www.w3.org/1999/xhtml">
@@ -394,22 +394,22 @@ class wpdb {
 			margin-right: 25%;
 			padding: .2em 2em;
 		}
-		
+
 		h1 {
 			color: #006;
 			font-size: 18px;
 			font-weight: lighter;
 		}
-		
+
 		h2 {
 			font-size: 16px;
 		}
-		
+
 		p, li, dt {
 			line-height: 140%;
 			padding-bottom: 2px;
 		}
-	
+
 		ul, ol {
 			padding: 5px 5px 5px 20px;
 		}

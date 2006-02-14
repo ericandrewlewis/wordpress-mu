@@ -23,7 +23,7 @@ $action = "delete";
 }
 
 // Fix submenu highlighting for pages.
-if ( isset($_REQUEST['post']) && 'static' == get_post_status($_REQUEST['post']) )
+if ( isset($_REQUEST['post']) && 'page' == get_post_type($_REQUEST['post']) )
 	$submenu_file = 'page-new.php';
 
 $editing = true;
@@ -50,7 +50,7 @@ case 'post':
 		$location = 'post.php?posted=true';
 	}
 
-	if ( 'static' == $_POST['post_status'] )
+	if ( 'page' == $_POST['post_type'] )
 		$location = "page-new.php?saved=true";
 
 	if ( isset($_POST['save']) )
@@ -71,8 +71,8 @@ case 'edit':
 		die ( __('You are not allowed to edit this post.') );
 
 	$post = get_post_to_edit($post_ID);
-	
-	if ($post->post_status == 'static')
+
+	if ($post->post_type == 'page')
 		include('edit-page-form.php');
 	else
 		include('edit-form-advanced.php');
@@ -90,7 +90,7 @@ case 'editattachment':
 
 	// Don't let these be changed
 	unset($_POST['guid']);
-	$_POST['post_status'] = 'attachment';
+	$_POST['post_type'] = 'attachment';
 
 	// Update the thumbnail filename
 	$oldmeta = $newmeta = get_post_meta($post_id, '_wp_attachment_metadata', true);
@@ -130,11 +130,11 @@ case 'delete':
 	$post_id = (isset($_GET['post']))  ? intval($_GET['post']) : intval($_POST['post_ID']);
 
 	$post = & get_post($post_id);
-	
-	if ( !current_user_can('edit_post', $post_id) )	
+
+	if ( !current_user_can('edit_post', $post_id) )
 		die( __('You are not allowed to delete this post.') );
 
-	if ( $post->post_status == 'attachment' ) {
+	if ( $post->post_type == 'attachment' ) {
 		if ( ! wp_delete_attachment($post_id) )
 			die( __('Error in deleting...') );
 	} else {
@@ -161,7 +161,7 @@ case 'editcomment':
 	if ( ! $comment = get_comment($comment) )
 		die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'javascript:history.go(-1)'));
 
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )	
+	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post.') );
 
 	$comment = get_comment_to_edit($comment);
@@ -180,7 +180,7 @@ case 'confirmdeletecomment':
 	if ( ! $comment = get_comment($comment) )
 		die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
 
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )	
+	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to delete comments on this post.') );
 
 	echo "<div class='wrap'>\n";
@@ -223,7 +223,7 @@ case 'deletecomment':
 	if ( ! $comment = get_comment($comment) )
 			 die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'post.php'));
 
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )	
+	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post.') );
 
 	wp_set_comment_status($comment->comment_ID, "delete");
@@ -252,7 +252,7 @@ case 'unapprovecomment':
 	if ( ! $comment = get_comment($comment) )
 		die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
 
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )	
+	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post, so you cannot disapprove this comment.') );
 
 	wp_set_comment_status($comment->comment_ID, "hold");
@@ -272,7 +272,7 @@ case 'mailapprovecomment':
 	if ( ! $comment = get_comment($comment) )
 			 die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
 
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )	
+	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post, so you cannot approve this comment.') );
 
 	if ('1' != $comment->comment_approved) {
@@ -298,7 +298,7 @@ case 'approvecomment':
 	if ( ! $comment = get_comment($comment) )
 		die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
 
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )	
+	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post, so you cannot approve this comment.') );
 
 	wp_set_comment_status($comment->comment_ID, "approve");

@@ -14,9 +14,9 @@ case 'register':
 
 	$user_login = sanitize_user( $_POST['user_login'] );
 	$user_email = $_POST['user_email'];
-	
+
 	$errors = array();
-		
+
 	if ( $user_login == '' )
 		$errors['user_login'] = __('<strong>ERROR</strong>: Please enter a username.');
 
@@ -33,10 +33,8 @@ case 'register':
 	if ( username_exists( $user_login ) )
 		$errors['user_login'] = __('<strong>ERROR</strong>: This username is already registered, please choose another one.');
 
-	/* checking the email isn't already used by another user */
-	$email_exists = $wpdb->get_row("SELECT user_email FROM $wpdb->users WHERE user_email = '$user_email'");
-	if ( $email_exists)
-		die (__('<strong>ERROR</strong>: This email address is already registered, please supply another.'));
+	if ( email_exists( $user_email ) )
+		$errors['user_email'] = __('<strong>ERROR</strong>: This email is already registered, please choose another one.');
 
 	if ( 0 == count($errors) ) {
 		$password = substr( md5( uniqid( microtime() ) ), 0, 7);
@@ -47,15 +45,15 @@ case 'register':
 		else
 			wp_new_user_notification($user_id, $password);
 	}
-	
+
 	if ( 0 == count($errors) ) {
-			
+
 	?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>WordPress &raquo; <?php _e('Registration Complete') ?></title>
-	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_settings('blog_charset'); ?>" />	
+	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_settings('blog_charset'); ?>" />
 	<link rel="stylesheet" href="wp-admin/wp-admin.css" type="text/css" />
 	<style type="text/css">
 	.submit {
@@ -101,11 +99,11 @@ default:
 <h2><?php _e('Register for this blog') ?></h2>
 <?php if ( isset($errors) ) : ?>
 <div class="error">
-	<ul>
+	<p>
 	<?php
-	foreach($errors as $error) echo "<li>$error</li>";
+	foreach($errors as $error) echo "$error<br />";
 	?>
-	</ul>
+	</p>
 </div>
 <?php endif; ?>
 <form method="post" action="wp-register.php" id="registerform">

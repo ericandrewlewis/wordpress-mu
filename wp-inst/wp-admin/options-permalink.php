@@ -42,7 +42,7 @@ structure.onfocus = function () { document.getElementById('custom_selection').ch
 
 var aInputs = document.getElementsByTagName('input');
 
-for (var i = 0; i < aInputs.length; i++) {		
+for (var i = 0; i < aInputs.length; i++) {
 aInputs[i].onclick = aInputs[i].onkeyup = upit;
 }
 }
@@ -65,7 +65,7 @@ if ( isset($_POST) ) {
 			$permalink_structure = preg_replace('#/+#', '/', '/' . $_POST['permalink_structure']);
 		$wp_rewrite->set_permalink_structure($permalink_structure);
 	}
-	
+
 	if ( isset($_POST['category_base']) ) {
 		$category_base = $_POST['category_base'];
 		if (! empty($category_base) )
@@ -73,7 +73,7 @@ if ( isset($_POST) ) {
 		$wp_rewrite->set_category_base($category_base);
 	}
 }
-	
+
 $permalink_structure = get_settings('permalink_structure');
 $category_base = get_settings('category_base');
 
@@ -142,7 +142,7 @@ $structures = array(
 checked="checked"
 <?php } ?>
  /> 
-<?php _e('Custom, specify below'); ?>	
+<?php _e('Custom, specify below'); ?>
 </label>
 <br />
 </p>

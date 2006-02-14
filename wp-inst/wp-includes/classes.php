@@ -53,7 +53,7 @@ class WP_Query {
 		$this->is_admin = false;
 		$this->is_attachment = false;
 	}
-	
+
 	function init () {
 		unset($this->posts);
 		unset($this->query);
@@ -63,7 +63,7 @@ class WP_Query {
 		$this->post_count = 0;
 		$this->current_post = -1;
 		$this->in_the_loop = false;
-		
+
 		$this->init_query_flags();
 	}
 
@@ -97,7 +97,7 @@ class WP_Query {
 			$qv['attachment'] = $qv['subpost'];
 		if ( '' != $qv['subpost_id'] )
 			$qv['attachment_id'] = $qv['subpost_id'];
-			
+
 		if ( ('' != $qv['attachment']) || (int) $qv['attachment_id'] ) {
 			$this->is_single = true;
 			$this->is_attachment = true;
@@ -226,7 +226,7 @@ class WP_Query {
 		if ('' != $qv['comments_popup']) {
 			$this->is_comments_popup = true;
 		}
-		
+
 		//if we're previewing inside the write screen
 		if ('' != $qv['preview']) {
 			$this->is_preview = true;
@@ -247,9 +247,9 @@ class WP_Query {
 
 	function set_404() {
 		$this->init_query_flags();
-		$this->is_404 = true;	
+		$this->is_404 = true;
 	}
-	
+
 	function get($query_var) {
 		if (isset($this->query_vars[$query_var])) {
 			return $this->query_vars[$query_var];
@@ -268,7 +268,7 @@ class WP_Query {
 		do_action('pre_get_posts', array(&$this));
 
 		// Shorthand.
-		$q = $this->query_vars;	
+		$q = &$this->query_vars;
 
 		// First let's clear some variables
 		$whichcat = '';
@@ -306,7 +306,7 @@ class WP_Query {
 			$q['page'] = trim($q['page'], '/');
 			$q['page'] = (int) $q['page'];
 		}
-	
+
 		$add_hours = intval(get_settings('gmt_offset'));
 		$add_minutes = intval(60 * (get_settings('gmt_offset') - $add_hours));
 		$wp_posts_post_date_field = "post_date"; // "DATE_ADD(post_date, INTERVAL '$add_hours:$add_minutes' HOUR_MINUTE)";
@@ -367,24 +367,12 @@ class WP_Query {
 			$q['name'] = sanitize_title($q['name']);
 			$where .= " AND post_name = '" . $q['name'] . "'";
 		} else if ('' != $q['pagename']) {
+			$reqpage = get_page_by_path($q['pagename']);
 			$q['pagename'] = str_replace('%2F', '/', urlencode(urldecode($q['pagename'])));
 			$page_paths = '/' . trim($q['pagename'], '/');
 			$q['pagename'] = sanitize_title(basename($page_paths));
 			$q['name'] = $q['pagename'];
-			$page_paths = explode('/', $page_paths);
-			foreach($page_paths as $pathdir)
-				$page_path .= ($pathdir!=''?'/':'') . sanitize_title($pathdir);
-				
-			$all_page_ids = get_all_page_ids();
-			$reqpage = 0;
-			if (is_array($all_page_ids)) { foreach ( $all_page_ids as $page_id ) {
-				$page = get_page($page_id);
-				if ( $page->fullpath == $page_path ) {
-					$reqpage = $page_id;
-					break;
-				}
-			} }
-			
+
 			$where .= " AND (ID = '$reqpage')";
 		} elseif ('' != $q['attachment']) {
 			$q['attachment'] = str_replace('%2F', '/', urlencode(urldecode($q['attachment'])));
@@ -501,11 +489,11 @@ class WP_Query {
 					$partial_match = $cat_id;
 				}
 			}
-			
+
 			//if we don't match the entire hierarchy fallback on just matching the nicename
 			if (!$q['cat'] && $partial_match) {
 				$q['cat'] = $partial_match;
-			}			
+			}
 
 			$tables = ", $wpdb->post2cat, $wpdb->categories";
 			$join = " LEFT JOIN $wpdb->post2cat ON ($wpdb->posts.ID = $wpdb->post2cat.post_id) LEFT JOIN $wpdb->categories ON ($wpdb->post2cat.category_id = $wpdb->categories.cat_ID) ";
@@ -553,7 +541,7 @@ class WP_Query {
 			$q['author'] = $wpdb->get_var("SELECT ID FROM $wpdb->users WHERE user_nicename='".$q['author_name']."'");
 			$whichauthor .= ' AND (post_author = '.intval($q['author']).')';
 		}
-		
+
 		$where .= $search.$whichcat.$whichauthor;
 
 		if ((empty($q['order'])) || ((strtoupper($q['order']) != 'ASC') && (strtoupper($q['order']) != 'DESC'))) {
@@ -583,32 +571,34 @@ class WP_Query {
 			}
 		}
 
-		$now = gmdate('Y-m-d H:i:59');
+		//$now = gmdate('Y-m-d H:i:59');
 		
 		//only select past-dated posts, except if a logged in user is viewing a single: then, if they
 		//can edit the post, we let them through
-		if ($pagenow != 'post.php' && $pagenow != 'edit.php' && !($this->is_single && $user_ID)) {
-			$where .= " AND post_date_gmt <= '$now'";
-			$distinct = 'DISTINCT';
-		}
+		//if ($pagenow != 'post.php' && $pagenow != 'edit.php' && !($this->is_single && $user_ID)) {
+		//	$where .= " AND post_date_gmt <= '$now'";
+		//	$distinct = 'DISTINCT';
+		//}
 
 		if ( $this->is_attachment ) {
-			$where .= ' AND (post_status = "attachment")';
+			$where .= ' AND (post_type = "attachment")';
 		} elseif ($this->is_page) {
-			$where .= ' AND (post_status = "static")';
+			$where .= ' AND (post_type = "page")';
 		} elseif ($this->is_single) {
-			$where .= ' AND (post_status != "static")';
+			$where .= ' AND (post_type = "post")';
 		} else {
-			$where .= ' AND (post_status = "publish"';
+			$where .= ' AND (post_type = "post" AND (post_status = "publish"';
 
-			if (isset($user_ID) && ('' != intval($user_ID)))
-				$where .= " OR post_author = $user_ID AND post_status != 'draft' AND post_status != 'static')";
+			if ( $pagenow == 'post.php' || $pagenow == 'edit.php' )
+				$where .= " OR post_status = 'future'";
 			else
-				$where .= ')';				
+				$distinct = 'DISTINCT';
+	
+			if ( is_user_logged_in() )
+				$where .= " OR post_author = $user_ID AND post_status = 'private'))";
+			else
+				$where .= '))';
 		}
-
-		if (! $this->is_attachment )
-			$where .= ' AND post_status != "attachment"';
 
 		// Apply filters on where and join prior to paging so that any
 		// manipulations to them are reflected in the paging by day queries.
@@ -654,10 +644,11 @@ class WP_Query {
 		$this->posts = $wpdb->get_results($this->request);
 
 		// Check post status to determine if post should be displayed.
-		if ($this->is_single) {
+		if ($this->is_single || $this->is_page) {
 			$status = get_post_status($this->posts[0]);
-			if ( ('publish' != $status) && ('static' != $status) ) {
-				if ( ! (isset($user_ID) && ('' != intval($user_ID))) ) {
+			//$type = get_post_type($this->posts[0]);
+			if ( ('publish' != $status) ) {
+				if ( ! is_user_logged_in() ) {
 					// User must be logged in to view unpublished posts.
 					$this->posts = array();
 				} else {
@@ -669,16 +660,14 @@ class WP_Query {
 							$this->is_preview = true;
 							$this->posts[0]->post_date = current_time('mysql');
 						}
+					}  else if ('future' == $status) {
+						$this->is_preview = true;
+						if (!current_user_can('edit_post', $this->posts[0]->ID)) {
+							$this->posts = array ( );
+						}
 					} else {
 						if (! current_user_can('read_post', $this->posts[0]->ID))
 							$this->posts = array();
-					}
-				}
-			} else {
-				if (mysql2date('U', $this->posts[0]->post_date_gmt) > mysql2date('U', $now)) { //it's future dated
-					$this->is_preview = true;
-					if (!current_user_can('edit_post', $this->posts[0]->ID)) {
-						$this->posts = array ( );
 					}
 				}
 			}
@@ -691,9 +680,7 @@ class WP_Query {
 		if ($this->post_count > 0) {
 			$this->post = $this->posts[0];
 		}
-		
-		// Save any changes made to the query vars.
-		$this->query_vars = $q;
+
 		return $this->posts;
 	}
 
@@ -852,7 +839,7 @@ class retrospam_mgr {
 		$head = '<div class="wrap"><h2>' . __('Check Comments Results:') . '</h2>';
 
 		$foot .= '<p><a href="options-discussion.php">' . __('&laquo; Return to Discussion Options page.') . '</a></p></div>';
-		
+
 		return $head . $body . $foot;
 	} 	// End function display_edit_form
 
@@ -933,7 +920,7 @@ class WP_Rewrite {
 			return false;
 		else
 			return true;
-	}					
+	}
 
 	function using_index_permalinks() {
 		if (empty($this->permalink_structure)) {
@@ -953,7 +940,7 @@ class WP_Rewrite {
 			return true;
 		else
 			return false;
-	}					
+	}
 
 	function preg_index($number) {
 		$match_prefix = '$';
@@ -998,7 +985,7 @@ class WP_Rewrite {
 			$this->date_structure = '';
 			return false;
 		}
-		
+
 		// The date permalink must have year, month, and day separated by slashes.
 		$endians = array('%year%/%monthnum%/%day%', '%day%/%monthnum%/%year%', '%monthnum%/%day%/%year%');
 
@@ -1081,7 +1068,7 @@ class WP_Rewrite {
 			$this->category_structure = $this->category_base . '/';
 
 		$this->category_structure .= '%category%';
-		
+
 		return $this->category_structure;
 	}
 
@@ -1164,10 +1151,10 @@ class WP_Rewrite {
 		// If the tag already exists, replace the existing pattern and query for
 		// that tag, otherwise add the new tag, pattern, and query to the end of
 		// the arrays.
-		$position = array_search($tag, $this->rewritecode);		
+		$position = array_search($tag, $this->rewritecode);
 		if (FALSE !== $position && NULL !== $position) {
 			$this->rewritereplace[$position] = $pattern;
-			$this->queryreplace[$position] = $query;			
+			$this->queryreplace[$position] = $query;
 		} else {
 			$this->rewritecode[] = $tag;
 			$this->rewritereplace[] = $pattern;
@@ -1185,7 +1172,7 @@ class WP_Rewrite {
 
 		$trackbackregex = 'trackback/?$';
 		$pageregex = 'page/?([0-9]{1,})/?$';
-		
+
 		$front = substr($permalink_structure, 0, strpos($permalink_structure, '%'));
 		preg_match_all('/%.+?%/', $permalink_structure, $tokens);
 
@@ -1315,13 +1302,13 @@ class WP_Rewrite {
 		// Date
 		$date_rewrite = $this->generate_rewrite_rules($this->get_date_permastruct());
 		$date_rewrite = apply_filters('date_rewrite_rules', $date_rewrite);
-		
+
 		// Root
 		$root_rewrite = $this->generate_rewrite_rules($this->root . '/');
 		$root_rewrite = apply_filters('root_rewrite_rules', $root_rewrite);
 
 		// Comments
-		$comments_rewrite = $this->generate_rewrite_rules($this->root . $this->comments_base, true, true, true);
+		$comments_rewrite = $this->generate_rewrite_rules($this->root . $this->comments_base, true, true, true, false);
 		$comments_rewrite = apply_filters('comments_rewrite_rules', $comments_rewrite);
 
 		// Search
@@ -1383,7 +1370,7 @@ class WP_Rewrite {
 			$rules .= "RewriteCond %{REQUEST_FILENAME} -f [OR]\n" .
 				"RewriteCond %{REQUEST_FILENAME} -d\n" .
 				"RewriteRule ^.*$ - [S=$num_rules]\n";
-		
+
 			foreach ($rewrite as $match => $query) {
 				// Apache 1.3 does not support the reluctant (non-greedy) modifier.
 				$match = str_replace('.+?', '.+', $match);
@@ -1393,7 +1380,7 @@ class WP_Rewrite {
 				if ($match == '(.+)/?$' || $match == '([^/]+)/?$' ) {
 					//nada.
 				}
-			
+
 				if (strstr($query, $this->index)) {
 					$rules .= 'RewriteRule ^' . $match . ' ' . $home_root . $query . " [QSA,L]\n";
 				} else {
@@ -1415,7 +1402,7 @@ class WP_Rewrite {
 	}
 
 	function flush_rules() {
-		generate_page_rewrite_rules();
+		generate_page_uri_index();
 		delete_option('rewrite_rules');
 		$this->wp_rewrite_rules();
 		if ( function_exists('save_mod_rewrite_rules') )
@@ -1424,7 +1411,7 @@ class WP_Rewrite {
 
 	function init() {
 		$this->permalink_structure = get_settings('permalink_structure');
-		$this->front = substr($this->permalink_structure, 0, strpos($this->permalink_structure, '%'));		
+		$this->front = substr($this->permalink_structure, 0, strpos($this->permalink_structure, '%'));
 		$this->root = '';
 		if ($this->using_index_permalinks()) {
 			$this->root = $this->index . '/';
@@ -1504,7 +1491,7 @@ class WP {
 			// Trim path info from the end and the leading home path from the
 			// front.  For path info requests, this leaves us with the requesting
 			// filename, if any.  For 404 requests, this leaves us with the
-			// requested permalink.	
+			// requested permalink.
 			$req_uri = str_replace($pathinfo, '', $req_uri);
 			$req_uri = trim($req_uri, '/');
 			$req_uri = preg_replace("|^$home_path|", '', $req_uri);
@@ -1573,10 +1560,10 @@ class WP {
 
 				if (isset($error))
 					unset($error);
-					
+
 				if ( isset($query_vars) && strstr($_SERVER['PHP_SELF'], 'wp-admin/') )
 					unset($query_vars);
-					
+
 				$this->did_permalink = false;
 			}
 		}
@@ -1630,7 +1617,7 @@ class WP {
 			// If string is empty, return 0. If not, attempt to parse into a timestamp
 			$client_modified_timestamp = $client_last_modified ? strtotime($client_last_modified) : 0;
 
-			// Make a timestamp for our most recent modification...	
+			// Make a timestamp for our most recent modification...
 			$wp_modified_timestamp = strtotime($wp_last_modified);
 
 			if ( ($client_last_modified && $client_etag) ?
