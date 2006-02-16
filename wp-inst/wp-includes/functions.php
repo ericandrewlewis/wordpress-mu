@@ -2221,7 +2221,11 @@ function get_usermeta( $user_id, $meta_key = '') {
 	global $wpdb;
 	$user_id = (int) $user_id;
 
-	$user = get_userdata( $user_id );
+	if ( function_exists('get_userdata') ) {
+		$user = get_userdata( $user_id );
+	} else {
+		$user = "";
+	}
 	
 	if ( $meta_key && isset($user->{$meta_key}) )
 		return $user->{$meta_key};
