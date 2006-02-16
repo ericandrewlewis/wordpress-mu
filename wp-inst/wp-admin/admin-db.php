@@ -112,7 +112,7 @@ function wp_insert_category($catarr) {
 	} else {
 		$wpdb->query ("UPDATE $wpdb->categories SET cat_name = '$cat_name', category_nicename = '$category_nicename', category_description = '$category_description', category_parent = '$category_parent' WHERE cat_ID = '$cat_ID'");
 	}
-	
+
 	if ( $category_nicename == '' ) {
 		$category_nicename = sanitize_title($cat_name, $cat_ID );
 		$wpdb->query( "UPDATE $wpdb->categories SET category_nicename = '$category_nicename' WHERE cat_ID = '$cat_ID'" );
@@ -128,6 +128,8 @@ function wp_insert_category($catarr) {
 		do_action('add_category', $cat_ID);
 	}
 	$cat_ID = apply_filters( "cat_id_filter", $cat_ID );
+
+	update_option( 'categories_last_updated', time() );
 
 	return $cat_ID;
 }
@@ -173,6 +175,7 @@ function wp_delete_category($cat_ID) {
 
 	wp_cache_delete($cat_ID, 'category');
 	wp_cache_delete('all_category_ids', 'category');
+	update_option( 'categories_last_updated', time() );
 
 	do_action('delete_category', $cat_ID);
 

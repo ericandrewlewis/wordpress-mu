@@ -83,6 +83,9 @@ if (! user_can_access_admin_page()) {
 	if( $primary_blog ) {
 		header( "Location: " . get_blog_option( $primary_blog, "siteurl" ) . "wp-admin/" );
 		exit;
+	} else {
+		header( "Location: http://{$current_user->data->user_login}.wordpress.com/wp-admin/" );
+		exit;
 	}
 	die( __('You do not have sufficient permissions to access this page.') );
 }

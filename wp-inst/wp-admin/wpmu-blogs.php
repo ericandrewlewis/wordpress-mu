@@ -222,7 +222,7 @@ switch( $_GET[ 'action' ] ) {
 			$start = intval( $_GET[ 'start' ] );
 		}
 		if( isset( $_GET[ 'num' ] ) == false ) {
-			$num = 30;
+			$num = 60;
 		} else {
 			$num = intval( $_GET[ 'num' ] );
 		}
@@ -236,6 +236,11 @@ switch( $_GET[ 'action' ] ) {
 				WHERE site_id = '".$wpdb->siteid."'
 				AND   ".$wpdb->blogs.".site_id = ".$wpdb->site.".id
 				AND   {$wpdb->blogs}.domain like '%".$_GET[ 's' ]."%'";
+		} elseif( $_GET[ 'blog_id' ] != '' ) {
+			$query = "SELECT * 
+				FROM ".$wpdb->blogs." 
+				WHERE site_id = '".$wpdb->siteid."'
+				AND   blog_id = '".$_GET[ 'blog_id' ]."'";
 		}
 		if( isset( $_GET[ 'sortby' ] ) == false ) {
 			$_GET[ 'sortby' ] = 'ID';
@@ -243,7 +248,7 @@ switch( $_GET[ 'action' ] ) {
 		if( $_GET[ 'sortby' ] == 'Registered' ) {
 			$query .= ' ORDER BY registered ';
 		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
-			$query .= ' ORDER BY blog_id ';
+			$query .= ' ORDER BY ' . $wpdb->blogs . '.blog_id ';
 		} elseif( $_GET[ 'sortby' ] == 'Last Updated' ) {
 			$query .= ' ORDER BY last_updated ';
 		} elseif( $_GET[ 'sortby' ] == 'Blog Name' ) {
@@ -263,21 +268,49 @@ switch( $_GET[ 'action' ] ) {
 			$next = true;
 		}
 ?>
+<script language="javascript">
+<!--
+var checkflag = "false";
+function check_all_rows() {
+	field = document.formlist;
+	if (checkflag == "false") {
+		for (i = 0; i < field.length; i++) {
+			if( field[i].name == 'allblogs[]' )
+				field[i].checked = true;}
+		checkflag = "true";
+		return "Uncheck All"; 
+	} else {
+		for (i = 0; i < field.length; i++) {
+			if( field[i].name == 'allblogs[]' )
+				field[i].checked = false; }
+		checkflag = "false";
+		return "Check All"; 
+	}
+}
+//  -->
+</script>
+
 <h2>Blogs</h2>
 <form name="searchform" action="wpmu-blogs.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
   <table><td>
   <fieldset> 
   <legend><?php _e('Search Blogs&hellip;') ?></legend> 
   <input type='hidden' name='action' value='blogs'>
-  <input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /> 
+  Name:&nbsp;<input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /><br />
+  Blog&nbsp;ID:&nbsp;<input type="text" name="blog_id" value="<?php if (isset($_GET[ 'blog_id' ])) echo wp_specialchars($_GET[ 'blog_id' ], 1); ?>" size="10" /><br />
   <input type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
   </fieldset>
+  <?php
+  if( isset($_GET[ 's' ]) && $_GET[ 's' ] != '' ) {
+	  ?><a href="/wp-admin/wpmu-users.php?action=users&s=<?php echo wp_specialchars($_GET[ 's' ], 1) ?>">Search Users: <?php echo wp_specialchars($_GET[ 's' ], 1) ?></a><?php
+  }
+  ?>
   </td><td>
   <fieldset> 
   <legend><?php _e('Blog Navigation') ?></legend> 
   <?php 
 
-  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
+  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ] . "&s=" . $_GET[ 's' ];
 
   if( $start == 0 ) { 
 	  echo 'Previous&nbsp;Blogs';
@@ -306,7 +339,7 @@ $posts_columns = array(
   'blogname'     => __('Blog Name'),
   'last_updated' => __('Last Updated'),
   'registered'   => __('Registered'),
-  //'users'        => __('Users'),
+  'users'        => __('Users'),
   'plugins'      => __('Actions')
 );
 $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
@@ -321,7 +354,8 @@ $posts_columns['control_delete']    = '';
 
 ?>
 
-<form action='wpmu-edit.php?action=allblogs' method='POST'>
+<form name='formlist' action='wpmu-edit.php?action=allblogs' method='POST'>
+<input type=button value="Check All" onClick="this.value=check_all_rows()"> 
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
@@ -374,13 +408,11 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		<?php
 		break;
 
-	/*
 	case 'users':
 		?>
 		<td valign='top'><?php $blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); if( is_array( $blogusers ) ) while( list( $key, $val ) = each( $blogusers ) ) { print '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a><BR>'; }  ?></td>
 		<?php
 		break;
-		*/
 
 	case 'control_view':
 		?>
@@ -456,7 +488,12 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 } // end if ($blogs)
 ?>
 </table>
-<p>Selected Blogs:<ul><li><input type='checkbox' name='blogfunction' value='delete'> Delete</li></ul>
+<input type=button value="Check All" onClick="this.value=check_all_rows()"> 
+<p>Selected Blogs:<ul>
+<li><input type='radio' name='blogfunction' id='delete' value='delete'> <label for='delete'>Delete</label></li>
+<li><input type='radio' name='blogfunction' id='spam' value='spam'> <label for='spam'>Mark as Spam</label></li>
+</ul>
+<input type='hidden' name='redirect' value='<?php echo $_SERVER[ 'REQUEST_URI' ] ?>'>
 <input type='submit' value='Apply Changes'></p>
 </form>
 <?php

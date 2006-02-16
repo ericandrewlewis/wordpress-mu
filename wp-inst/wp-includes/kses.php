@@ -21,6 +21,7 @@ if (!CUSTOM_TAGS) {
 	$allowedposttags = array (
 		'address' => array (),
 		'a' => array (
+			'class' => array (),
 			'href' => array (),
 			'title' => array (),
 			'rel' => array (),
@@ -92,6 +93,18 @@ if (!CUSTOM_TAGS) {
 			'size' => array (),
 			'width' => array ()),
 		'i' => array (),
+		'iframe' => array (
+			'longdesc' => array(),
+			'name' => array(),
+			'src' => array(),
+			'frameborder' => array(),
+			'marginwidth' => array(),
+			'marginheight' => array(),
+			'scroll' => array(),
+			'scrolling' => array(),
+			'align' => array(),
+			'height' => array(),
+			'width' => array ()),
 		'img' => array (
 			'alt' => array (),
 			'align' => array (),
@@ -252,6 +265,7 @@ function wp_kses_hook($string)
 # You add any kses hooks here.
 ###############################################################################
 {
+	$string = apply_filters('pre_kses', $string);
 	return $string;
 } # function wp_kses_hook
 
@@ -297,17 +311,21 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
 	}
 	# Allow HTML comments
 
-	if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9]+)([^>]*)>?$%', $string, $matches))
+	if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9]+)([^>]*)>?$%', $string, $matches)) {
+		wp_kses_reject(__('Seriously malformed HTML removed'));
 		return '';
 	# It's seriously malformed
+	}
 
 	$slash = trim($matches[1]);
 	$elem = $matches[2];
 	$attrlist = $matches[3];
 
-	if (!@ is_array($allowed_html[strtolower($elem)]))
+	if (!@ is_array($allowed_html[strtolower($elem)])) {
+		wp_kses_reject(sprintf(__('Removed <code>&lt;%1$s%2$s&gt</code> tag'), $slash, $elem));
 		return '';
 	# They are using a not allowed HTML element
+	}
 
 	if ($slash != '')
 		return "<$slash$elem>";
@@ -315,6 +333,43 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
 
 	return wp_kses_attr("$slash$elem", $attrlist, $allowed_html, $allowed_protocols);
 } # function wp_kses_split2
+
+$kses_messages = array();
+function wp_kses_reject($message) {
+	global $kses_messages;
+return; // Disabled
+	if ( count($kses_messages) == 0 )
+		add_action('save_post', 'wp_kses_save_message');
+
+	$kses_messages[] = $message;
+
+	return '';
+}
+
+function wp_kses_save_message($id) {
+	global $kses_messages;
+
+	foreach ( $kses_messages as $text )
+		$message .= "$text\n";
+
+	$kses_messages[] = "";
+
+	update_option('kses_message', $message);
+}
+
+function wp_kses_show_message() {
+	$message = get_option('kses_message');
+
+	if ( empty($message) )
+		return;
+	
+	echo "<div class='updated fade'>\n";
+	echo nl2br($message);
+	echo "</div>\n";
+
+	update_option('kses_message', '');
+}
+	
 
 function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 ###############################################################################
@@ -334,8 +389,11 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 
 	# Are any attributes allowed at all for this element?
 
-	if (@ count($allowed_html[strtolower($element)]) == 0)
+	if (@ count($allowed_html[strtolower($element)]) == 0) {
+		if ( ! empty($attr) )
+			wp_kses_reject(sprintf(__('All attributes removed from &lt;%s&gt; tag'), $element));
 		return "<$element$xhtml_slash>";
+	}
 
 	# Split it
 
@@ -347,12 +405,16 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 	$attr2 = '';
 
 	foreach ($attrarr as $arreach) {
-		if (!@ isset ($allowed_html[strtolower($element)][strtolower($arreach['name'])]))
+		if (!@ isset ($allowed_html[strtolower($element)][strtolower($arreach['name'])])) {
+			wp_kses_reject(sprintf(__('Attribute <code>%1$s</code> removed from <code>&lt;%2$s&gt;</code> tag'), $arreach['name'], $element));
 			continue; # the attribute is not allowed
+		}
 
 		$current = $allowed_html[strtolower($element)][strtolower($arreach['name'])];
-		if ($current == '')
+		if ($current == '') {
+			wp_kses_reject(sprintf(__('Attribute <code>%1$s</code> removed from <code>&lt;%2$s&gt;</code> tag'), $arreach['name'], $element));
 			continue; # the attribute is not allowed
+		}
 
 		if (!is_array($current))
 			$attr2 .= ' '.$arreach['whole'];
@@ -363,6 +425,7 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 			$ok = true;
 			foreach ($current as $currkey => $currval)
 				if (!wp_kses_check_attr_val($arreach['value'], $arreach['vless'], $currkey, $currval)) {
+					wp_kses_reject(sprintf(__('Attribute <code>%1$s</code> removed from <code>&lt;%2$s&gt;</code> tag due to illegal value'), $arreach['name'], $element));
 					$ok = false;
 					break;
 				}
@@ -717,6 +780,7 @@ function kses_init_filters() {
 		add_filter('pre_comment_content', 'wp_filter_kses');
 		add_filter('content_save_pre', 'wp_filter_post_kses');
 		add_filter('title_save_pre', 'wp_filter_kses');
+		add_action('admin_notices', 'wp_kses_show_message');
 }
 function wp_filter_post_display_kses($data) {
 	global $allowedposttags;

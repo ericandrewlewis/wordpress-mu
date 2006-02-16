@@ -318,9 +318,12 @@ function &get_pages($args = '') {
 		"$exclusions " .
 		"ORDER BY " . $r['sort_column'] . " " . $r['sort_order'];
 
-	if ( !$pages = wp_cache_get( md5( $q ), 'general') ) {
+	$cached_pages = wp_cache_get( md5( $q ), 'general');
+	if ( is_array( $cached_pages ) == false || ( is_array( $cached_pages ) == true && ( get_option( 'pages_last_updated' ) != false && $cached_pages[ 'time' ] < get_option( 'pages_last_updated' ) ) ) ) {
 		$pages = $wpdb->get_results($q);
-		wp_cache_set( md5( $q ), $pages, 'general', 180);		
+		wp_cache_set( md5( $q ), array( 'pages' => $pages, 'time' => time() ), 'general', 600 );
+	} else {
+		$pages = $cached_pages[ 'pages' ];
 	}
 
 	if ( empty($pages) )

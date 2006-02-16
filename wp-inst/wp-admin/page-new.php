@@ -17,6 +17,7 @@ if ( current_user_can('edit_pages') ) {
 
 	$post = get_default_post_to_edit();
 	$post->post_type = 'page';
+	$post->post_status = 'publish';
 
 	include('edit-page-form.php');
 }

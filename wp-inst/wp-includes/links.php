@@ -196,7 +196,13 @@ function get_links($category = -1,
 	/* The next 2 lines implement LIMIT TO processing */
 	if ($limit != -1)
 		$sql .= " LIMIT $limit";
-	$results = $wpdb->get_results($sql);
+	$cached_results = wp_cache_get( md5( $sql ), 'general');
+	if ( is_array( $cached_results ) == false || ( is_array( $cached_results ) == true && ( get_option( 'links_last_updated' ) != false && $cached_results[ 'time' ] < get_option( 'links_last_updated' ) ) ) ) {
+		$results = $wpdb->get_results($sql);
+		wp_cache_set( md5( $sql ), array( 'results' => $results, 'time' => time() ), 'general', 360 );
+	} else {
+		$results = $cached_results[ 'results' ];
+	}
 	if (!$results) {
 		return;
 	}
@@ -526,7 +532,8 @@ function get_links_list($order = 'name', $hide_if_empty = 'obsolete') {
 
 	if (!isset($direction)) $direction = '';
 	// Fetch the link category data as an array of hashesa
-	$cats = $wpdb->get_results("
+
+	$q = "
 		SELECT DISTINCT link_category, cat_name, show_images, 
 			show_description, show_rating, show_updated, sort_order, 
 			sort_desc, list_limit
@@ -534,7 +541,15 @@ function get_links_list($order = 'name', $hide_if_empty = 'obsolete') {
 		LEFT JOIN `$wpdb->linkcategories` ON (link_category = cat_id)
 		WHERE link_visible =  'Y'
 			AND list_limit <> 0
-		ORDER BY $cat_order $direction ", ARRAY_A);
+		ORDER BY $cat_order $direction ";
+	
+	$cached_results = wp_cache_get( md5( $q ), 'general');
+	if ( is_array( $cached_results ) == false || ( is_array( $cached_results ) == true && ( get_option( 'links_last_updated' ) != false && $cached_results[ 'time' ] < get_option( 'links_last_updated' ) ) ) ) {
+		$cats = $wpdb->get_results($q, ARRAY_A);
+		wp_cache_set( md5( $q ), array( 'results' => $cats, 'time' => time() ), 'general', 360 );
+	} else {
+		$cats = $cached_results[ 'results' ];
+	}
 
 	// Display each category
 	if ($cats) {

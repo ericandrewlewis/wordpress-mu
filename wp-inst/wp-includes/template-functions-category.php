@@ -301,10 +301,18 @@ function list_cats($optionall = 1, $all = 'All', $sort_column = 'ID', $sort_orde
 			WHERE cat_ID > 0 $exclusions
 			ORDER BY $sort_column $sort_order";
 
-		$categories = wp_cache_get( md5( $query), 'general');
+		$cached_results = wp_cache_get( md5( $query ), 'general');
+		if ( is_array( $cached_results ) == false || ( is_array( $cached_results ) == true && ( get_option( 'categories_last_updated' ) != false && $cached_results[ 'time' ] < get_option( 'categories_last_updated' ) ) ) ) {
+			$categories = $wpdb->get_results($query);
+			wp_cache_set( md5( $query ), array( 'results' => $categories, 'time' => time() ), 'general', 360 );
+		} else {
+			$categories = $cached_results[ 'results' ];
+		}
+		$cached_results = wp_cache_get( md5( $query), 'general');
+		$categories = $cached_results[ 'results' ];
 		if ( !$categories ) {
 			$categories = $wpdb->get_results($query);
-			wp_cache_set( md5($query), $categories, 'general', 360);
+			wp_cache_set( md5( $query ), array( 'results' => $categories, 'time' => time() ), 'general', 360);
 		}
 	}
 

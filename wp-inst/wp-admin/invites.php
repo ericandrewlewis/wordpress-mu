@@ -175,7 +175,7 @@ if( $invites_list != '' )
 				} else {
 					$invited_time = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE meta_key = '" . md5( $val ) . "_invite_timestamp'" );
 					if( $invited_time ) {
-						$days_left = 7 - intval( ( time() - $invited_time ) / 86400 );
+						$days_left = intval( get_site_option( "invite_time_limit" ) ) - intval( ( time() - $invited_time ) / 86400 );
 						print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em> ($days_left days left)";
 						if ( function_exists('delete_invite') )
 							print " (<a href='?action=deleteinvite&inviteemail=" . urlencode( $val ) . "'>Delete</a>)";

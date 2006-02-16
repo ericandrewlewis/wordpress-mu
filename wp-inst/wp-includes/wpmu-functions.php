@@ -268,7 +268,7 @@ SITE_NAME" ) );
 	$first_post = stripslashes( $first_post );
 
 	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, comment_count) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt', '1')");
-	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status) VALUES ('".$userID."', '$now', '$now_gmt', '".addslashes(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '".addslashes(__('About'))."', '0', '".addslashes(__('about'))."', '$now', '$now_gmt', 'static')");
+	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_excerpt, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status, post_type, to_ping, pinged, post_content_filtered) VALUES ('$userID', '$now', '$now_gmt', '".$wpdb->escape(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '', '".$wpdb->escape(__('About'))."', '0', '".$wpdb->escape(__('about'))."', '$now', '$now_gmt', 'publish', 'page', '', '', '')");
 
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
@@ -685,6 +685,14 @@ function update_blog_status( $id, $pref, $value ) {
 	$wpdb->query( "UPDATE {$wpdb->blogs} SET last_updated = NOW() WHERE blog_id = '$id'" );
 	refresh_blog_details( $id );
 
+	if( $pref == 'spam' ) {
+		if( $value == 1 ) {
+			do_action( "make_spam_blog", $id );
+		} else {
+			do_action( "make_ham_blog", $id );
+		}
+	}
+
 	return $value;
 }
 
@@ -779,7 +787,7 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 					unset( $blogs[ $key ] );
 
 				$blog_list[ $details[ 'blog_id' ] ] = $details;
-				$blog_list[ $details[ 'blog_id' ] ][ 'postcount' ] = $wpdb->get_var( "SELECT count(*) FROM " . $wpmuBaseTablePrefix . $details[ 'blog_id' ] . "_posts WHERE post_status='publish'" );
+				$blog_list[ $details[ 'blog_id' ] ][ 'postcount' ] = $wpdb->get_var( "SELECT count(*) FROM " . $wpmuBaseTablePrefix . $details[ 'blog_id' ] . "_posts WHERE post_status='publish' AND post_type='post'" );
 			}
 			unset( $blogs );
 			$blogs = $blog_list;
@@ -886,9 +894,21 @@ function wpmu_admin_do_redirect( $url = '' ) {
 			header( "Location: {$url}?updated=true&action=blogs&s=". wp_specialchars( substr( $_GET[ 'redirect' ], 2 ) ) );
 			die();
 		}
+	} elseif( isset( $_POST[ 'redirect' ] ) ) {
+		$url = $_POST[ 'redirect' ];
+		if( strpos( $url, 'updated=true' ) === false ) {
+			if( strpos( $url, '?' ) === true ) {
+				$url .=  '&updated=true';
+			} else {
+				$url .=  '?updated=true';
+			}
+		}
+		header( "Location: {$url}" );
+		die();
+	} else {
+		header( "Location: {$url}?updated=true" );
+		die();
 	}
-	header( "Location: {$url}?updated=true" );
-	die();
 }
 
 function wpmu_admin_redirect_url() {

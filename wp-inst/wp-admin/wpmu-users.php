@@ -8,8 +8,8 @@ switch( $_GET[ 'action' ] ) {
 			$wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE user_id = '" . $id . "'" );
 			$wpdb->query( "DELETE FROM " . $wpdb->users . " WHERE ID = '" . $id . "'" );
 		}
-		header( "Location: wpmu-users.php?updated=true" );
-		exit;
+		wpmu_admin_do_redirect( "wpmu-users.php" );
+		die();
 	break;
 }
 
@@ -81,12 +81,21 @@ switch( $_GET[ 'action' ] ) {
 	if( is_site_admin() == false ) {
 		die( __('<p>You do not have permission to access this page.</p>') );
 	}
-    	if( $_POST[ 'userfunction' ] == 'delete' ) {
-		if( is_array( $_POST[ 'allusers' ] ) ) {
-			while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
-				if( $val != '' && $val != '0' && $val != '1' ) {
+    	if( is_array( $_POST[ 'allusers' ] ) ) {
+		while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
+			if( $val != '' && $val != '0' && $val != '1' ) {
+				$user_details = get_userdata( $val );
+				if( $_POST[ 'userfunction' ] == 'delete' ) {
 					$wpdb->query( "DELETE FROM {$wpdb->users} WHERE ID = '$val'" );
 					$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '$val'" );
+				} elseif( $_POST[ 'userfunction' ] == 'spam' ) {
+					$blogs = get_blogs_of_user( $val );
+					if( is_array( $blogs ) ) {
+						while( list( $key, $details ) = each( $blogs ) ) { 
+							update_blog_status( $details->userblog_id, "spam", '1' );
+							do_action( "make_spam_blog", $details->userblog_id );
+						}
+					}
 				}
 			}
 		}
@@ -147,12 +156,17 @@ switch( $_GET[ 'action' ] ) {
   <input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /> 
   <input type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
   </fieldset>
+  <?php
+  if( isset($_GET[ 's' ]) && $_GET[ 's' ] != '' ) {
+	  ?><a href="/wp-admin/wpmu-blogs.php?action=blogs&s=<?php echo wp_specialchars($_GET[ 's' ], 1) ?>">Search Blogs: <?php echo wp_specialchars($_GET[ 's' ], 1) ?></a><?php
+  }
+  ?>
   </td><td>
   <fieldset> 
   <legend><?php _e('User Navigation') ?></legend> 
   <?php 
 
-  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ];
+  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ] . "&s=" .$_GET[ 's' ];
 
   if( $start == 0 ) { 
 	  echo 'Previous&nbsp;Users';
@@ -191,8 +205,30 @@ $posts_columns['control_edit']   = '';
 $posts_columns['control_delete'] = '';
 
 ?>
+<script language="javascript">
+<!--
+var checkflag = "false";
+function check_all_rows() {
+	field = document.formlist;
+	if (checkflag == "false") {
+		for (i = 0; i < field.length; i++) {
+			if( field[i].name == 'allusers[]' )
+				field[i].checked = true;}
+		checkflag = "true";
+		return "Uncheck All"; 
+	} else {
+		for (i = 0; i < field.length; i++) {
+			if( field[i].name == 'allusers[]' )
+				field[i].checked = false; }
+		checkflag = "false";
+		return "Check All"; 
+	}
+}
+//  -->
+</script>
 
-<form action='wpmu-users.php?action=allusers' method='POST'>
+<form name='formlist' action='wpmu-users.php?action=allusers' method='POST'>
+<input type=button value="Check All" onClick="this.value=check_all_rows()"> 
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
@@ -247,8 +283,15 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		break;
 
 	case 'blogs':
+		$blogs = get_blogs_of_user( $user[ 'ID' ] );
 		?>
-		<td><?php $blogs = get_blogs_of_user( $user[ 'ID' ] ); if( is_array( $blogs ) ) while( list( $key, $val ) = each( $blogs ) ) { print '<a href="wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain ) . '</a><BR>'; } ?></td>
+		<td><?php if( is_array( $blogs ) ) 
+				while( list( $key, $val ) = each( $blogs ) ) { 
+					print '<a href="wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain ) . '</a> (<a '; 
+					if( get_blog_status( $val->userblog_id, 'spam' ) == 1 )
+						print 'style="background-color: #f66" ';
+					print 'target="_new" href="http://'.$val->domain . $val->path.'">View</a>)<BR>'; 
+				} ?></td>
 		<?php
 		break;
 
@@ -260,7 +303,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_delete':
 		?>
-		<td><?php echo "<a href='wpmu-users.php?action=delete&amp;id=".$user[ 'ID' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this user?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
+		<td><?php echo "<a href='wpmu-users.php?action=delete&amp;id=".$user[ 'ID' ]."&amp;redirect=".wpmu_admin_redirect_url()."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this user?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
 		<?php
 		break;
 
@@ -284,7 +327,10 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 } // end if ($users)
 ?> 
 </table> 
-<p>Selected Users:<ul><li><input type='checkbox' name='userfunction' value='delete'> Delete</li></ul>
+<p>Selected Users:<ul>
+<li><input type='radio' name='userfunction' id='delete' value='delete'> <label for='delete'>Delete</label></li>
+<li><input type='radio' name='userfunction' id='spam' value='spam'> <label for='spam'>Mark as Spammers</label></li>
+</ul>
 <input type='submit' value='Apply Changes'></p>
 </form>
 

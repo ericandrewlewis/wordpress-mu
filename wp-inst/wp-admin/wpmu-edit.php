@@ -119,11 +119,9 @@ switch( $_GET[ 'action' ] ) {
 				$optvalue = $opts[ 'option_value' ];
 				$option_id = $opts[ 'option_id' ];
 				if( $opts == false ) {
-					$query = "INSERT INTO ".$options_table_name." ( `option_id` , `blog_id` , `option_name` , `option_can_override` , `option_type` , `option_value` , `option_width` , `option_height` , `option_description` , `option_admin_level` , `autoload` ) VALUES ( NULL, '0', '".$key."', 'Y', '1', '".$val."', '20', '8', '', '1', 'yes')";
-					$wpdb->query( $query );
+					add_blog_option( $id, $key, $val );
 				} elseif( $optvalue != $val ) {
-					$query = "UPDATE ".$options_table_name." SET option_value = '".$val."' WHERE  option_name  = '".$key."'";
-					$wpdb->query( $query );
+					update_blog_option( $id, $key, $val );
 				}
 			}
 		}
@@ -188,15 +186,23 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		if( $_POST[ 'blogfunction' ] == 'delete' ) {
-			if( is_array( $_POST[ 'allblogs' ] ) ) {
-				while( list( $key, $val ) = each( $_POST[ 'allblogs' ] ) )
-					if( $val != '0' && $val != '1' )
+		if( is_array( $_POST[ 'allblogs' ] ) ) {
+			while( list( $key, $val ) = each( $_POST[ 'allblogs' ] ) ) {
+				if( $val != '0' && $val != '1' ) {
+					if( $_POST[ 'blogfunction' ] == 'delete' ) {
 						wpmu_delete_blog( $val );
+					} elseif( $_POST[ 'blogfunction' ] == 'spam' ) {
+						update_blog_status( $val, "spam", '1' );
+					}
+				}
 			}
 		}
 
-		header( "Location: wpmu-blogs.php?updated=true" );
+		if( isset( $_POST[ 'redirect' ] ) ) {
+			wpmu_admin_do_redirect( $_POST[ 'redirect' ] );
+		} else {
+			header( "Location: wpmu-blogs.php?updated=true" );
+		}
 	break;
 	case "activateblog":
 		if( is_site_admin() == false ) {

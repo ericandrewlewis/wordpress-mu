@@ -18,26 +18,30 @@ switch( $_GET[ 'action' ] ) {
 		} else {
 			$n = $_GET[ 'n' ];
 		}
-		$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered DESC LIMIT $n, 10", ARRAY_A );
+		$blogs = $wpdb->get_results( "SELECT * FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND spam = '0' AND deleted = '0' AND archived = '0' ORDER BY registered DESC LIMIT $n, 5", ARRAY_A );
 		if( is_array( $blogs ) ) {
 			foreach( $blogs as $details ) {
-				$siteurl = $wpdb->get_var( "SELECT option_value from {$wpmuBaseTablePrefix}{$details[ 'blog_id' ]}_options WHERE option_name = 'siteurl'" );
-				print "$siteurl<br>";
-				$fp = fopen( $siteurl . "wp-admin/upgrade.php?step=1", "r" );
-				if( $fp ) {
-					while( feof( $fp ) == false ) {
-						fgets($fp, 4096);
+				if( $details[ 'spam' ] == 0 && $details[ 'deleted' ] == 0 && $details[ 'archived' ] == 0 ) {
+					$siteurl = $wpdb->get_var( "SELECT option_value from {$wpmuBaseTablePrefix}{$details[ 'blog_id' ]}_options WHERE option_name = 'siteurl'" );
+					print "$siteurl<br>";
+					$fp = fopen( $siteurl . "wp-admin/upgrade.php?step=1", "r" );
+					if( $fp ) {
+						while( feof( $fp ) == false ) {
+							fgets($fp, 4096);
+						}
+						fclose( $fp );
 					}
-					fclose( $fp );
+				} else {
+					print "Not upgrading: {$details[ 'domain' ]}<br>";
 				}
 			}
 			?>
-			<p>If your browser doesn't start loading the next page automatically click this link: <a href="?action=upgrade&n=<?php echo ($n + 10) ?>">Next Blogs</a> </p>
+			<p>If your browser doesn't start loading the next page automatically click this link: <a href="?action=upgrade&n=<?php echo ($n + 5) ?>">Next Blogs</a> </p>
 			<script language='javascript'>
 			<!--
 
 			function nextpage() {
-				location.href="wpmu-upgrade-site.php?action=upgrade&n=<?php echo ($n + 10) ?>";
+				location.href="wpmu-upgrade-site.php?action=upgrade&n=<?php echo ($n + 5) ?>";
 			}
 			setTimeout( "nextpage()", 250 );
 
