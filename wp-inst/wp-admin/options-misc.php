@@ -44,7 +44,7 @@ return;
 <p class="submit">
 <input type="hidden" name="action" value="update" />
 <input type="hidden" name="page_options" value="hack_file,use_linksupdate,uploads_use_yearmonth_folders,upload_path" /> 
-<input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
+<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 </p>
 </form> 
 </div>

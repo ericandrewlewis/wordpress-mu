@@ -365,7 +365,7 @@ $role_select .= '</select>';
     </td>
     </table>
   <p class="submit">
-    <input name="adduser" type="submit" id="adduser" value="<?php _e('Add User') ?> &raquo;" />
+    <input name="adduser" type="submit" id="adduser" value="<?php _e('Add User &raquo;') ?>" />
   </p>
   </form>
 </div>
