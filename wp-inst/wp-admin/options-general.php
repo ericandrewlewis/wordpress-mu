@@ -22,6 +22,10 @@ include('./admin-header.php');
 <?php _e('In a few words, explain what this weblog is about.') ?></td> 
 </tr> 
 <tr valign="top"> 
+<th scope="row"><?php _e('Search Engines:') ?> </th> 
+<td><label><input type="checkbox" name="blog_public" value="1" <?php checked('1', get_option('blog_public')); ?> /> <?php _e('I would like my blog to appear in search engines like Google and Technorati.'); ?></label>
+</td> 
+</tr>
 <th scope="row"><?php _e('E-mail address:') ?> </th> 
 <td><?php form_option('admin_email'); ?>
 <br />
@@ -106,7 +110,7 @@ endfor;
 
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="blogname,blogdescription,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration, WPLANG" /> 
+<input type="hidden" name="page_options" value="blogname,blogdescription,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,blog_public" /> 
 </p>
 </form>
 

@@ -374,8 +374,9 @@ function get_archives($type='', $limit='', $format='html', $before = '', $after 
 					}
 				}
 		}
-	} elseif ( 'postbypost' == $type ) {
-		$arcresults = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' ORDER BY post_date DESC" . $limit);
+	} elseif ( ( 'postbypost' == $type ) || ('alpha' == $type) ) {
+		('alpha' == $type) ? $orderby = "post_title ASC " : $orderby = "post_date DESC ";
+		$arcresults = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' ORDER BY $orderby $limit");
 		if ( $arcresults ) {
 			foreach ( $arcresults as $arcresult ) {
 				if ( $arcresult->post_date != '0000-00-00 00:00:00' ) {
@@ -706,4 +707,9 @@ function rsd_link() {
 	echo '<link rel="EditURI" type="application/rsd+xml" title="RSD" href="' . get_bloginfo('wpurl') . "/xmlrpc.php?rsd\" />\n";
 }
 
+function noindex() {
+	// If the blog is not public, tell robots to go away.
+	if ( ! get_option('blog_public') )
+		echo '<meta name="robots" content="noindex,nofollow" />' . "\n";
+}
 ?>

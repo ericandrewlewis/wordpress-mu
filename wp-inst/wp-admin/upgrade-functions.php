@@ -34,7 +34,7 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 3308 )
 		upgrade_160();
 
-	if ( $wp_current_db_version < 3533 )
+	if ( $wp_current_db_version < 3548 )
 		upgrade_210();
 
 	$wp_rewrite->flush_rules();
@@ -281,15 +281,13 @@ function upgrade_160_helper( $users ) {
 			$id = $wpdb->escape( $id );
 			$wpdb->query("UPDATE $wpdb->users SET display_name = '$id' WHERE ID = '$user->ID'");
 		endif;
-		
+
 		// FIXME: RESET_CAPS is temporary code to reset roles and caps if flag is set.
 		$caps = get_usermeta( $user->ID, $table_prefix . 'capabilities');
 		if ( empty($caps) || defined('RESET_CAPS') ) {
 			$level = get_usermeta($user->ID, $table_prefix . 'user_level');
-			if( empty( $level ) == false ) {
-				$role = translate_level_to_role($level);
-				update_usermeta( $user->ID, $table_prefix . 'capabilities', array($role => true) );
-			}
+			$role = translate_level_to_role($level);
+			update_usermeta( $user->ID, $table_prefix . 'capabilities', array($role => true) );
 		}
 
 	endforeach;

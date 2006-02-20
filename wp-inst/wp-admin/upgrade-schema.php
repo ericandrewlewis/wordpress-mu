@@ -271,6 +271,8 @@ function populate_options() {
 		add_option('uploads_use_yearmonth_folders', 1);
 		add_option('upload_path', 'wp-content/uploads');
 	}
+	// 2.1
+	add_option('blog_public', 1);
 
 	add_site_option( 'customizefeed1', '0' );
 	add_site_option( 'customizefeed2', '0' );
