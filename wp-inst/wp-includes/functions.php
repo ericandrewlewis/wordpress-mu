@@ -2288,7 +2288,6 @@ function update_usermeta( $user_id, $meta_key, $meta_value ) {
 	wp_cache_delete($user_id, 'users');
 	wp_cache_delete($user->user_login, 'userlogins');
 	wp_cache_delete( md5($user_id . $meta_key), 'usermeta' );
-	
 	return true;
 }
 
@@ -2387,7 +2386,7 @@ function wp_cron() {
 		return;
 
 	foreach ($crons as $timestamp => $cronhooks) {
-		if ($timestamp > time()) break;
+		if ($timestamp > current_time( 'timestamp' )) break;
 		foreach($cronhooks as $hook => $args) {
 			do_action($hook, $args['args']);
 			$recurrence = $args['recur'];
@@ -2404,4 +2403,10 @@ function wp_cron() {
 	}
 }
 
+function privacy_ping_filter( $sites ) {
+	if ( get_option('blog_public') )
+		return $sites;
+	else
+		return '';
+}
 ?>

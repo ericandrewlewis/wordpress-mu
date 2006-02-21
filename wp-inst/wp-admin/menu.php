@@ -10,7 +10,7 @@ if( is_array( $menu_perms ) == false )
 	$menu_perms = array();
 
 $menu[0] = array(__('Dashboard'), 'read', 'index.php');
-$menu[5] = array(__('Write'), 'edit_posts', 'post.php');
+$menu[5] = array(__('Write'), 'edit_posts', 'post-new.php');
 $menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
 $menu[20] = array(__('Links'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
@@ -23,13 +23,8 @@ else
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
 $menu[45] = array(__('Import'), 'import', 'import.php');
 
-/*
-if ( get_option('use_fileupload') )
-	$menu[50] = array(__('Upload'), 'upload_files', 'upload.php');
-*/
-
-$submenu['post.php'][5] = array(__('Write Post'), 'edit_posts', 'post.php');
-$submenu['post.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
+$submenu['post-new.php'][5] = array(__('Write Post'), 'edit_posts', 'post-new.php');
+$submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
 
 $submenu['edit.php'][5] = array(__('Posts'), 'edit_posts', 'edit.php');
 $submenu['edit.php'][10] = array(__('Pages'), 'edit_pages', 'edit-pages.php');

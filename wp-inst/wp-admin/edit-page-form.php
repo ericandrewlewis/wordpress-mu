@@ -20,7 +20,7 @@ $sendto = wp_specialchars( $sendto );
 
 ?>
 
-<form name="post" action="post.php" method="post" id="post">
+<form name="post" action="page.php" method="post" id="post">
 
 <?php
 if (isset($mode) && 'bookmarklet' == $mode) {
@@ -58,7 +58,7 @@ addLoadEvent(focusit);
 <fieldset class="dbx-box">
 <h3 class="dbx-handle"><?php _e('Page Status') ?></h3> 
 <div class="dbx-content"><?php if ( current_user_can('publish_posts') ) : ?>
-<label for="post_status_publish" class="selectit"><input id="post_status_publish" name="post_status" type="radio" value="publish" <?php checked($post->post_status, 'publish'); ?> /> <?php _e('Published') ?></label>
+<label for="post_status_publish" class="selectit"><input id="post_status_publish" name="post_status" type="radio" value="publish" <?php checked($post->post_status, 'publish'); checked($post->post_status, 'future'); ?> /> <?php _e('Published') ?></label>
 <?php endif; ?>
 	  <label for="post_status_draft" class="selectit"><input id="post_status_draft" name="post_status" type="radio" value="draft" <?php checked($post->post_status, 'draft'); ?> /> <?php _e('Draft') ?></label>
 	  <label for="post_status_private" class="selectit"><input id="post_status_private" name="post_status" type="radio" value="private" <?php checked($post->post_status, 'private'); ?> /> <?php _e('Private') ?></label></div>
@@ -226,7 +226,8 @@ if($metadata = has_meta($post_ID)) {
 
 </div>
 
-<?php if ('edit' == $action) : ?>
+<?php if ('edit' == $action) :
+	if ( current_user_can('delete_page', $post->ID) ) ?>
 		<input name="deletepost" class="delete" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this page') ?>" <?php echo "onclick=\"return confirm('" . sprintf(__("You are about to delete this page \'%s\'\\n  \'Cancel\' to stop, \'OK\' to delete."), $wpdb->escape($post->post_title) ) . "')\""; ?> />
 <?php endif; ?>
 </form>

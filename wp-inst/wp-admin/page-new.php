@@ -1,7 +1,7 @@
 <?php
 require_once('admin.php');
 $title = __('New Page');
-$parent_file = 'post.php';
+$parent_file = 'post-new.php';
 $editing = true;
 require_once('admin-header.php');
 ?>
@@ -17,7 +17,6 @@ if ( current_user_can('edit_pages') ) {
 
 	$post = get_default_post_to_edit();
 	$post->post_type = 'page';
-	$post->post_status = 'publish';
 
 	include('edit-page-form.php');
 }
