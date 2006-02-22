@@ -208,13 +208,19 @@ function get_feed_link($feed='rss2') {
 function edit_post_link($link = 'Edit This', $before = '', $after = '') {
 	global $post;
 
-	if ( ! current_user_can('edit_post', $post->ID) )
-		return;
-
 	if ( is_attachment() )
 		return;
-	else
+
+	if( $post->post_type == 'page' ) {
+		if ( ! current_user_can('edit_page', $post->ID) )
+			return;
+		$file = 'page';
+	} else {
+
+		if ( ! current_user_can('edit_post', $post->ID) )
+			return;
 		$file = 'post';
+	}
 
 	$location = get_settings('siteurl') . "/wp-admin/{$file}.php?action=edit&amp;post=$post->ID";
 	echo $before . "<a href=\"$location\">$link</a>" . $after;
@@ -226,7 +232,7 @@ function edit_comment_link($link = 'Edit This', $before = '', $after = '') {
 	if ( ! current_user_can('edit_post', $post->ID) )
 		return;
 
-	$location = get_settings('siteurl') . "/wp-admin/post.php?action=editcomment&amp;comment=$comment->comment_ID";
+	$location = get_settings('siteurl') . "/wp-admin/comment.php?action=editcomment&amp;comment=$comment->comment_ID";
 	echo $before . "<a href='$location'>$link</a>" . $after;
 }
 
