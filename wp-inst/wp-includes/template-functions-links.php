@@ -216,7 +216,6 @@ function edit_post_link($link = 'Edit This', $before = '', $after = '') {
 			return;
 		$file = 'page';
 	} else {
-
 		if ( ! current_user_can('edit_post', $post->ID) )
 			return;
 		$file = 'post';
@@ -229,8 +228,12 @@ function edit_post_link($link = 'Edit This', $before = '', $after = '') {
 function edit_comment_link($link = 'Edit This', $before = '', $after = '') {
 	global $post, $comment;
 
-	if ( ! current_user_can('edit_post', $post->ID) )
-		return;
+	if( $post->post_type == 'page' )
+		if ( ! current_user_can('edit_page', $post->ID) )
+			return;
+	else
+		if ( ! current_user_can('edit_post', $post->ID) )
+			return;
 
 	$location = get_settings('siteurl') . "/wp-admin/comment.php?action=editcomment&amp;comment=$comment->comment_ID";
 	echo $before . "<a href='$location'>$link</a>" . $after;
