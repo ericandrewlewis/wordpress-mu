@@ -117,7 +117,7 @@ class DOC_Referers {
 	    }
 
 	    if( $_GET[ $field ] != '' )
-		$vals .= "<input type='hidden' name='".$field."' value='".$_GET[ $field ]."'>\n";
+		$vals .= "<input type='hidden' name='".$field."' value='".htmlentities( $_GET[ $field ] )."'>\n";
 	}
 	return $vals;
     }
@@ -132,7 +132,7 @@ class DOC_Referers {
 		    if( $field != $var )
 		    {
 			    if( $_GET[ $field ] != '' )
-				    $url .= $sep.$field."=".$_GET[ $field ];
+				    $url .= $sep.$field."=".htmlentities( $_GET[ $field ] );
 		    }
 		    else
 		    {
@@ -146,14 +146,14 @@ class DOC_Referers {
     {
 	global $wpdb;
 
-	$action = $_GET[ 'action' ];
-	$day    = $_GET[ 'day' ];
+	$action = addslashes( $_GET[ 'action' ] );
+	$day    = intval( $_GET[ 'day' ] );
 	$del    = $_GET[ 'del' ];
-	$num    = $_GET[ 'num' ];
-	$more   = $_GET[ 'more' ];
-	$order  = $_GET[ 'order' ];
-	$ignoreDIRECT = $_GET[ 'ignoreDIRECT' ];
-	$internal = $_GET[ 'internal' ];
+	$num    = intval( $_GET[ 'num' ] );
+	$more   = intval( $_GET[ 'more' ] );
+	$order  = addslashes( $_GET[ 'order' ] );
+	$ignoreDIRECT = addslashes( $_GET[ 'ignoreDIRECT' ] );
+	$internal = addslashes( $_GET[ 'internal' ] );
 	
 	if( $ignoreDIRECT == '' ) {
 		$ignoreDIRECT = get_option( 'ignoreDIRECT' );
@@ -192,7 +192,7 @@ class DOC_Referers {
 		while( list( $key, $val ) = each( $del ) ) 
 		{ 
 		    $query = "DELETE FROM " . $wpdb->doc_referers . "
-			      WHERE       visitID = '".$val."'";
+			      WHERE       visitID = '".intval( $val )."'";
 		    $result = $wpdb->query($query);
 		}
 	    }
@@ -212,7 +212,7 @@ class DOC_Referers {
 		reset( $del );
 		while( list( $key, $val ) = each( $del ) ) 
 		{ 
-		    $query = "SELECT referingURL FROM " . $wpdb->doc_referers . " WHERE visitID = '".$val."'";
+		    $query = "SELECT referingURL FROM " . $wpdb->doc_referers . " WHERE visitID = '".intval( $val )."'";
 		    $result=$wpdb->get_var( $query );
 		    if( $result )
 		    {
@@ -230,7 +230,7 @@ class DOC_Referers {
 		reset( $del );
 		while( list( $key, $val ) = each( $del ) ) 
 		{ 
-		    $query = "DELETE FROM " . $wpdb->doc_blacklist . " WHERE ID='".$val."'";
+		    $query = "DELETE FROM " . $wpdb->doc_blacklist . " WHERE ID='".intval( $val )."'";
 		    $result = $wpdb->query($query);
 		}
 	    }
@@ -554,8 +554,8 @@ class DOC_Referers {
 	}
 
 	$ref = $_SERVER["HTTP_REFERER"];
-	$currentURL = $_SERVER[ 'REQUEST_URI' ];
-	$fullCurrentURL = "http://" . $_SERVER[ 'HTTP_HOST' ] . $_SERVER[ 'REQUEST_URI' ];
+	$currentURL = addslashes( $_SERVER[ 'REQUEST_URI' ] );
+	$fullCurrentURL = "http://" . addslashes( $_SERVER[ 'HTTP_HOST' ] ) . addslashes( $_SERVER[ 'REQUEST_URI' ] );
 	if( $ref == '' )
 	{
 	    $ref = "DIRECT";
@@ -661,7 +661,7 @@ class DOC_Referers {
 		}
 	    }
 
-	    $ua = getenv( 'HTTP_USER_AGENT' );
+	    $ua = addslashes( $_SERVER["HTTP_USER_AGENT"] );
 	    $useragents = array( "http://www.syndic8.com", "http://dir.com/pompos.html", "NaverBot-1.0", "http://help.yahoo.com/help/us/ysearch/slurp", "http://www.google.com/bot.html", "http://www.blogdigger.com/", "http://search.msn.com/msnbot.htm", "Feedster, LLC.", "http://www.breakingblogs.com/timbo_bot.html", "fastbuzz.com", "http://www.pubsub.com/", "http://www.bloglines.com", "http://www.drupal.org/", "Ask Jeeves/Teoma", "ia_archiver", "http://minutillo.com/steve/feedonfeeds/", "larbin_2", "lmspider", "kinjabot", "lickBot 2.0", "Downes/Referrers", "daypopbot", "www.globalspec.com" );
 	    reset( $useragents );
 	    while( list( $key, $val ) = each( $useragents ) ) 
