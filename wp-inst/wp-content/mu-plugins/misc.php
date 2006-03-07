@@ -65,6 +65,7 @@ add_filter( "check_uploaded_file", "upload_is_file_too_big" );
 add_filter('the_title', 'wp_filter_kses');
 function update_posts_count( $post_id ) {
 	global $wpdb;
+	$post_id = intval( $post_id );
 	$c = $wpdb->get_var( "SELECT count(*) FROM {$wpdb->posts} WHERE post_status = 'publish' and post_type='post'" );
 	update_option( "post_count", $c );
 }
@@ -72,6 +73,7 @@ add_action( "publish_post", "update_posts_count" );
 
 function update_pages_last_updated( $post_id ) {
 	global $wpdb;
+	$post_id = intval( $post_id );
 	if( $wpdb->get_var( "SELECT post_type FROM {$wpdb->posts} WHERE post_status = 'publish' and ID = '$post_id'" ) == 'page' )
 		update_option( "pages_last_updated", time() );
 }

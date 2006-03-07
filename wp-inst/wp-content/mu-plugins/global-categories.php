@@ -3,6 +3,7 @@
 function global_categories( $cat_ID ) {
     global $wpdb;
 
+    $cat_ID = intval( $cat_ID );
     $details = $wpdb->get_row( "SELECT * FROM $wpdb->categories WHERE cat_ID = '$cat_ID'" );
     if( $details == false ) { // this should *not* happen ever!
 	    return $cat_ID;

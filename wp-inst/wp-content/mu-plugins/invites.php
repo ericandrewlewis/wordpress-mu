@@ -37,7 +37,7 @@ function invites_check_user_hash() {
 	header( "Location: ".get_option( "siteurl" ) );
 	die( );
     } else {
-	$query = "SELECT meta_value FROM ".$wpdb->usermeta." WHERE user_id = '0' AND meta_key = 'invite' AND meta_value = '".$u."'";
+	$query = "SELECT meta_value FROM ".$wpdb->usermeta." WHERE user_id = '0' AND meta_key = 'invite' AND meta_value = '".addslashes( $u )."'";
 	$userhash = $wpdb->get_results( $query, ARRAY_A );
 
 	if( $userhash == false ) {
@@ -127,26 +127,27 @@ add_action('newblogform', 'invites_add_field');
 function invites_cleanup_db( $val ) {
 	global $wpdb, $wpmuBaseTablePrefix, $url, $weblog_title;
 	if( isset( $_POST[ 'u' ] ) ) {
-		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite' AND meta_value = '".$_POST[ 'u' ]."'" );
-		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_email'" );
-		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_to_name'" );
+		$u = addslashes( $_POST[ 'u' ] );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = 'invite' AND meta_value = '".$u."'" );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$u}_to_email'" );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$u}_to_name'" );
 
-		$add_to_blogroll = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
+		$add_to_blogroll = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$u}_add_to_blogroll'" );
 		if( $add_to_blogroll ) {
 			$userdetails = @unserialize( $add_to_blogroll );
 			if( is_array( $userdetails ) ) {
 				$wpdb->query("INSERT INTO {$wpmuBaseTablePrefix}{$userdetails[ 'blogid' ]}_links (link_url, link_name, link_category, link_owner) VALUES('" . addslashes( $url ) . "','" . addslashes( $weblog_title ) . "', '1', '" . intval( $userdetails[ 'userid' ] ) . "' )" );
 			}
-			$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$_POST[ 'u' ]}_add_to_blogroll'" );
+			$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '{$u}_add_to_blogroll'" );
 		}
 
 
-		$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . $_POST[ 'weblog_id' ] . "'" );
+		$id = $wpdb->get_var( "SELECT ID FROM ".$wpdb->users." WHERE user_login = '" . addslashes( $weblog_id ) . "'" );
 
 		if( $id ) {
-			$wpdb->query( "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$_POST[ 'u' ]."_invited_by'" );
+			$wpdb->query( "UPDATE ".$wpdb->usermeta." SET user_id = '".$id."', meta_key = 'invited_by' WHERE meta_key = '".$u."_invited_by'" );
 			$wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invites_left' , '" . get_site_option( "invites_per_user" ) . "' )" );
-			$wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invite_hash' , '{$_POST[ 'u' ]}' )" );
+			$wpdb->query( "INSERT INTO ".$wpdb->usermeta." ( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '{$id}', 'invite_hash' , '{$u}' )" );
 		}
 	}
 }
@@ -226,6 +227,7 @@ function expire_old_invites() {
 function delete_invite( $uid ) {
 	global $wpdb;
 
+	$uid = addslashes( $uid );
 	$email = $wpdb->get_var( "SELECT meta_value FROM ".$wpdb->usermeta." WHERE meta_key = '{$uid}_to_email'" );
 	if( $email ) {
 		$invited_by = $wpdb->get_var( "SELECT meta_value FROM ".$wpdb->usermeta." WHERE meta_key = '{$uid}_invited_by'" );
@@ -256,7 +258,7 @@ function invites_admin_content() {
 
     switch( $_GET[ 'action' ] ) {
 	case "updateinvitedefaults":
-	update_site_option( "invites_per_user", $_GET[ 'invites_per_user' ] );
+	update_site_option( "invites_per_user", intval( $_GET[ 'invites_per_user' ] ) );
 	update_site_option( "invites_default_message", $_GET[ 'invites_default_message' ] );
 	update_site_option( "invites_default_subject", $_GET[ 'invites_default_subject' ] );
 	update_site_option( "invites_add_number", intval( $_GET[ 'invites_add_number' ] ) );
