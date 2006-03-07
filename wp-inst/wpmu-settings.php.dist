@@ -4,7 +4,7 @@ if( defined( 'ABSPATH' ) == false )
 
 $base="BASE";
 
-if( isset( $_REQUEST[ 'wpblog' ] ) ) $wpblog = $_REQUEST[ 'wpblog' ];
+if( isset( $_REQUEST[ 'wpblog' ] ) ) $wpblog = addslashes( $_REQUEST[ 'wpblog' ] );
 
 if( isset( $wpblog ) == false )
 {

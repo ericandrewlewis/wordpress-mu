@@ -23,7 +23,8 @@ $action = "delete";
 
 switch($action) {
 case 'post':
-
+	check_admin_referer();
+	
 	$post_ID = write_post();
 
 	// Redirect.
@@ -76,6 +77,8 @@ case 'edit':
 	break;
 
 case 'editattachment':
+	check_admin_referer();
+
 	$post_id = (int) $_POST['post_ID'];
 
 	// Don't let these be changed
@@ -92,6 +95,8 @@ case 'editattachment':
 		add_post_meta($post_id, '_wp_attachment_metadata', $newmeta);
 
 case 'editpost':
+	check_admin_referer();
+	
 	$post_ID = edit_post();
 
 	if ($_POST['save']) {
@@ -107,7 +112,7 @@ case 'editpost':
 	} elseif ($action == 'editattachment') {
 		$location = 'attachments.php';
 	} else {
-		$location = 'post.php';
+		$location = 'post-new.php';
 	}
 	header ('Location: ' . $location); // Send user on their way while we keep working
 

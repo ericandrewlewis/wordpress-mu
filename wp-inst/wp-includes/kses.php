@@ -44,6 +44,10 @@ if (!CUSTOM_TAGS) {
 			'value' => array ()),
 		'caption' => array (
 			'align' => array ()),
+		'cite' => array (
+			'dir' => array(),
+			'lang' => array(),
+			'title' => array ()),
 		'code' => array (),
 		'col' => array (
 			'align' => array (),
@@ -767,7 +771,7 @@ function wp_kses_decode_entities($string)
 
 function wp_filter_kses($data) {
 	global $allowedtags;
-	return wp_kses($data, $allowedtags);
+	return addslashes( wp_kses(stripslashes( $data ), $allowedtags) );
 }
 
 function wp_filter_post_kses($data) {
@@ -775,21 +779,41 @@ function wp_filter_post_kses($data) {
 	return addslashes ( wp_kses(stripslashes( $data ), $allowedposttags) );
 }
 
-function kses_init_filters() {
-		add_filter('pre_comment_author', 'wp_filter_kses');
-		add_filter('pre_comment_content', 'wp_filter_kses');
-		add_filter('content_save_pre', 'wp_filter_post_kses');
-		add_filter('title_save_pre', 'wp_filter_kses');
-		add_action('admin_notices', 'wp_kses_show_message');
+function wp_filter_nohtml_kses($data) {
+	return addslashes ( wp_kses(stripslashes( $data ), array()) );
 }
+
+function kses_init_filters() {
+	// Normal filtering.
+	add_filter('pre_comment_content', 'wp_filter_kses');
+	add_filter('title_save_pre', 'wp_filter_kses');
+
+	// Post filtering
+	add_filter('content_save_pre', 'wp_filter_post_kses');
+	add_filter('pre_comment_author', 'wp_filter_kses');
+	add_action('admin_notices', 'wp_kses_show_message');
+}
+
+function kses_remove_filters() {
+	// Normal filtering.
+	remove_filter('pre_comment_content', 'wp_filter_kses');
+	remove_filter('title_save_pre', 'wp_filter_kses');
+
+	// Post filtering
+	remove_filter('content_save_pre', 'wp_filter_post_kses');
+}
+
 function wp_filter_post_display_kses($data) {
 	global $allowedposttags;
-	return wp_kses( $data, $allowedposttags);
+	return addslashes( wp_kses(stripslashes( $data ), $allowedtags) );
 }
 
 function kses_init() {
+	kses_remove_filters();
 
-		kses_init_filters();
+	kses_init_filters();
 }
+
 add_action('init', 'kses_init');
+add_action('set_current_user', 'kses_init');
 ?>
