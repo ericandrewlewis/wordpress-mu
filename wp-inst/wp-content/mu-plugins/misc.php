@@ -78,4 +78,17 @@ function update_pages_last_updated( $post_id ) {
 		update_option( "pages_last_updated", time() );
 }
 add_action( "save_post", "update_pages_last_updated" );
+
+function remove_unfiltered_html() {
+		$role = get_role('administrator');
+		if( $role->capabilities[ 'unfiltered_html' ] ) {
+			$role->remove_cap('unfiltered_html');
+		}
+		$role = get_role('editor');
+		if( $role->capabilities[ 'unfiltered_html' ] ) {
+			$role->remove_cap('unfiltered_html');
+		}
+}
+add_action( "init", "remove_unfiltered_html" );
+
 ?>
