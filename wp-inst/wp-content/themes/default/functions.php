@@ -4,13 +4,13 @@ function kubrick_head() {
 	$head = "<style type='text/css'>\n<!--";
 	$output = '';
 	if ( kubrick_header_image() ) {
-		$url =  kubrick_header_image_url() ;
+		$url =  strip_tags( kubrick_header_image_url() );
 		$output .= "#header { background: url('$url') no-repeat bottom center; }\n";
 	}
-	if ( false !== ( $color = kubrick_header_color() ) ) {
+	if ( false !== ( $color = strip_tags( kubrick_header_color() ) ) ) {
 		$output .= "#headerimg h1 a, #headerimg h1 a:visited, #headerimg .description { color: $color; }\n";
 	}
-	if ( false !== ( $display = kubrick_header_display() ) ) {
+	if ( false !== ( $display = strip_tags( kubrick_header_display() ) ) ) {
 		$output .= "#headerimg { display: $display }\n";
 	}
 	$foot = "--></style>\n";
