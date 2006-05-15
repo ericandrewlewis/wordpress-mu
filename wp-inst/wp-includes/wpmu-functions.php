@@ -997,8 +997,8 @@ function wpmu_signup($domain, $path, $title, $user, $user_email, $meta = '') {
 function wpmu_signup_notification($domain, $path, $title, $user, $user_email, $key, $meta = '') {
 	// Send email with activation link.
 	$message_headers = 'From: ' . stripslashes($title) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s\n\nAnd you can login on the home page:\n\nhttp://wordpress.com/"), 
-		"http://wordpress.com/activate/$key", "http://$domain");
+	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), 
+		"http://wordpress.com/wp-activate.php?key=$key", "http://$domain");
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $domain);
 	wp_mail($user_email, $subject, $message, $message_headers);
