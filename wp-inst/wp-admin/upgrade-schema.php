@@ -197,7 +197,7 @@ CREATE TABLE $wpdb->signups (
   meta longtext,
   active bigint(20),
   activated datetime NOT NULL default '0000-00-00 00:00:00',
-  PRIMARY KEY (domain),
+  PRIMARY KEY (domain,path),
   KEY user_login (user_login)
 );
 ";
