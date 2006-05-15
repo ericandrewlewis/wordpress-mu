@@ -41,7 +41,7 @@ function wptexturize($text) {
 		} else {
 			$next = true;
 		}
-		$curl = preg_replace('/&([^#])(?![a-z1-4]{1,8};)/', '&#038;$1', $curl);
+		$curl = preg_replace('/&([^#])(?![a-zA-Z1-4]{1,8};)/', '&#038;$1', $curl);
 		$output .= $curl;
 	}
 	return $output;
@@ -98,10 +98,14 @@ function seems_utf8($Str) { # by bmorel at ssi dot fr
 
 function wp_specialchars( $text, $quotes = 0 ) {
 	// Like htmlspecialchars except don't double-encode HTML entities
-	$text = preg_replace('/&([^#])(?![a-z1-4]{1,8};)/', '&#038;$1', $text);-
+	$text = preg_replace('/&([^#])(?![a-z1-4]{1,8};)/', '&#038;$1', $text);
 	$text = str_replace('<', '&lt;', $text);
 	$text = str_replace('>', '&gt;', $text);
-	if ( $quotes ) {
+	if ( 'double' === $quotes ) {
+		$text = str_replace('"', '&quot;', $text);
+	} elseif ( 'single' === $quotes ) {
+		$text = str_replace("'", '&#039;', $text);
+	} elseif ( $quotes ) {
 		$text = str_replace('"', '&quot;', $text);
 		$text = str_replace("'", '&#039;', $text);
 	}
@@ -1001,10 +1005,7 @@ function ent2ncr($text) {
 		'&diams;' => '&#9830;'
 	);
 
-	foreach ($to_ncr as $entity => $ncr) {
-		$text = str_replace($entity, $ncr, $text);
-	}
-	return $text;
+	return str_replace( array_keys($to_ncr), array_values($to_ncr), $text );
 }
 
 function wp_richedit_pre($text) {
@@ -1020,6 +1021,23 @@ function wp_richedit_pre($text) {
 	$output = str_replace('&gt;', '&amp;gt;', $output);
 
 	return apply_filters('richedit_pre', $output);
+}
+
+function clean_url( $url ) {
+	if ('' == $url) return $url;
+	$url = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $url);
+	$url = str_replace(';//', '://', $url);
+	$url = (!strstr($url, '://')) ? 'http://'.$url : $url;
+	$url = preg_replace('/&([^#])(?![a-z]{2,8};)/', '&#038;$1', $url);
+	return $url;
+}
+
+// Borrowed from the PHP Manual user notes. Convert entities, while
+// preserving already-encoded entities:
+function htmlentities2($myHTML) {
+	$translation_table=get_html_translation_table (HTML_ENTITIES,ENT_QUOTES);
+	$translation_table[chr(38)] = '&';
+	return preg_replace("/&(?![A-Za-z]{0,4}\w{2,3};|#[0-9]{2,3};)/","&amp;" , strtr($myHTML, $translation_table));
 }
 
 ?>

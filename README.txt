@@ -2,12 +2,13 @@ WordPress Multi User
 --------------------
 
 WordPress MU is a multi user version of WordPress.
+
 If you're not comfortable editing PHP code, taking care of a complex
 webserver and database system and being pro-active about following
 developments of this project then run, don't walk, to 
 http://wordpress.com/ and sign yourself and your friends up to free blogs.
 It's easier in the long run and you'll save yourself a lot of pain
-and angst.
+and angst. ;)
 
 Install
 =======
@@ -32,12 +33,17 @@ and change it to
 PHP
 ===
 For security reasons, it's very important that PHP be configured as follows:
+
 1. Don't display error messages to the browser. This is almost always
 turned off but sometimes when you're testing you turn this on and forget
 to reset it.
+
 2. GLOBAL variables must be turned off. This is one of the first things
 any security aware admin will do. These days the default is for it to
 be off!
+
+3. If you want to restrict blog signups, set the restrict domain email 
+setting in the admin.
 
 The easiest way of configuring it is via the .htaccess file that is
 created during the install. If you haven't installed WPMU yet then edit
@@ -59,11 +65,15 @@ php.ini. It's beyond the scope of this README to know exactly where it is
 on your machine, but if you're on a shared hosted server you probably
 don't have access to it as it requires root or administrator privileges
 to change.
+
 If you do have root access, try "locate php.ini" or check in:
+
 /etc/php4/apache2/php.ini
 /usr/local/lib/php.ini
+
 Once you have opened your php.ini, look for the sections related to 
 register_globals and display_errors. Make sure both are Off like so:
+
 display_errors = Off
 register_globals = Off
 
@@ -71,6 +81,7 @@ You'll have to restart Apache after you modify your php.ini for the
 settings to be updated.
 
 Support Forum:
+
 http://mu.wordpress.org/forums/
 
 http://mu.wordpress.org/

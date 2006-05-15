@@ -1,13 +1,18 @@
 <?php
 // Here we keep the DB structure and option values
 
-$wp_queries="CREATE TABLE $wpdb->categories (
+global $wp_queries;
+
+$wp_queries = "CREATE TABLE $wpdb->categories (
   cat_ID bigint(20) NOT NULL auto_increment,
   cat_name varchar(55) NOT NULL default '',
   category_nicename varchar(200) NOT NULL default '',
   category_description longtext NOT NULL,
   category_parent bigint(20) NOT NULL default '0',
   category_count bigint(20) NOT NULL default '0',
+  link_count bigint(20) NOT NULL default '0',
+  posts_private tinyint(1) NOT NULL default '0',
+  links_private tinyint(1) NOT NULL default '0',
   PRIMARY KEY  (cat_ID),
   KEY category_nicename (category_nicename)
 );
@@ -31,21 +36,12 @@ CREATE TABLE $wpdb->comments (
   KEY comment_approved (comment_approved),
   KEY comment_post_ID (comment_post_ID)
 );
-CREATE TABLE $wpdb->linkcategories (
-  cat_id bigint(20) NOT NULL auto_increment,
-  cat_name tinytext NOT NULL,
-  auto_toggle enum('Y','N') NOT NULL default 'N',
-  show_images enum('Y','N') NOT NULL default 'Y',
-  show_description enum('Y','N') NOT NULL default 'N',
-  show_rating enum('Y','N') NOT NULL default 'Y',
-  show_updated enum('Y','N') NOT NULL default 'Y',
-  sort_order varchar(64) NOT NULL default 'rand',
-  sort_desc enum('Y','N') NOT NULL default 'N',
-  text_before_link varchar(128) NOT NULL default '<li>',
-  text_after_link varchar(128) NOT NULL default '<br />',
-  text_after_all varchar(128) NOT NULL default '</li>',
-  list_limit int(11) NOT NULL default '-1',
-  PRIMARY KEY  (cat_id)
+CREATE TABLE $wpdb->link2cat (
+  rel_id bigint(20) NOT NULL auto_increment,
+  link_id bigint(20) NOT NULL default '0',
+  category_id bigint(20) NOT NULL default '0',
+  PRIMARY KEY  (rel_id),
+  KEY link_id (link_id,category_id)
 );
 CREATE TABLE $wpdb->links (
   link_id bigint(20) NOT NULL auto_increment,
@@ -119,11 +115,12 @@ CREATE TABLE $wpdb->posts (
   post_parent bigint(20) NOT NULL default '0',
   guid varchar(255) NOT NULL default '',
   menu_order int(11) NOT NULL default '0',
-  post_type varchar(100) NOT NULL default 'post',
+  post_type varchar(20) NOT NULL default 'post',
   post_mime_type varchar(100) NOT NULL default '',
   comment_count bigint(20) NOT NULL default '0',
   PRIMARY KEY  (ID),
-  KEY post_name (post_name)
+  KEY post_name (post_name),
+  KEY type_status_date (post_type, post_status, post_date, ID)
 );
 CREATE TABLE $wpdb->users (
   ID bigint(20) unsigned NOT NULL auto_increment,
@@ -188,6 +185,20 @@ CREATE TABLE $wpdb->sitecategories (
   category_description longtext NOT NULL,
   PRIMARY KEY  (cat_ID),
   KEY category_nicename (category_nicename)
+);
+CREATE TABLE $wpdb->signups (
+  domain varchar(200) NOT NULL default '',
+  path varchar(100) NOT NULL default '',
+  title longtext NOT NULL,
+  user_login varchar(60) NOT NULL default '',
+  user_email varchar(100) NOT NULL default '',
+  registered datetime NOT NULL default '0000-00-00 00:00:00',
+  activation_key longtext NOT NULL,
+  meta longtext,
+  active bigint(20),
+  activated datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY (domain),
+  KEY user_login (user_login)
 );
 ";
 

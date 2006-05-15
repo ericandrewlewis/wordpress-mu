@@ -373,6 +373,11 @@ class MagpieRSS {
 	}
 
 }
+
+function map_attrs($k, $v) {
+	return "$k=\"$v\"";
+}
+
 require_once( dirname(__FILE__) . '/class-snoopy.php');
 
 function fetch_rss ($url) {
@@ -383,6 +388,13 @@ function fetch_rss ($url) {
 		// error("fetch_rss called without a url");
 		return false;
 	}
+
+	$parts = parse_url($url);
+	if ( strstr($parts['host'], 'wordpress.com') && !preg_match('!/(feed|atom|rss|rss2)/?$|/feed/(feed|atom|rss|rss2)/?$|\.xml$!i', $parts['path']) )
+		$url = trim($url, '/') . '/feed/';
+
+	if ( $rss = wp_cache_get($url, 'rss') )
+		return $rss;
 
 	// if cache is disabled
 	if ( !MAGPIE_CACHE_ON ) {
@@ -464,6 +476,7 @@ function fetch_rss ($url) {
 					}
 					// add object to cache
 					$cache->set( $url, $rss );
+					wp_cache_set($url, $rss, 'rss', 3600);
 					return $rss;
 				}
 			}
@@ -478,10 +491,12 @@ function fetch_rss ($url) {
 				else {
 					$errormsg .=  "(HTTP Response: " . $resp->response_code .')';
 				}
+				wp_cache_set($url, $errormsg, 'rss', 3600);
 			}
 		}
 		else {
 			$errormsg = "Unable to retrieve RSS file for unknown reasons.";
+			wp_cache_set($url, $errormsg, 'rss', 3600);
 		}
 
 		// else fetch failed
@@ -491,6 +506,7 @@ function fetch_rss ($url) {
 			if ( MAGPIE_DEBUG ) {
 				debug("Returning STALE object for $url");
 			}
+			wp_cache_set($url, $rss, 'rss', 7200);
 			return $rss;
 		}
 
@@ -505,6 +521,7 @@ function fetch_rss ($url) {
 function _fetch_remote_file ($url, $headers = "" ) {
 	// Snoopy is an HTTP client in PHP
 	$client = new Snoopy();
+	$client->referer = 'http'.($_SERVER['HTTPS']?'s':'').'://'.$_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
 	$client->agent = MAGPIE_USER_AGENT;
 	$client->read_timeout = MAGPIE_FETCH_TIME_OUT;
 	$client->use_gzip = MAGPIE_USE_GZIP;
@@ -660,20 +677,15 @@ class RSSCache {
 \*=======================================================================*/
 	function set ($url, $rss) {
 		global $wpdb;
-		$cache_option = 'rss_' . $this->file_name( $url );
-		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
-		
-		if ( !$wpdb->get_var("SELECT meta_key FROM $wpdb->sitemeta WHERE meta_key = '$cache_option'") )
-			add_site_option($cache_option, '');
-		if ( !$wpdb->get_var("SELECT meta_key FROM $wpdb->sitemeta WHERE meta_key = '$cache_timestamp'") )
-			add_site_option($cache_timestamp, '');
-		
-		update_site_option($cache_option, $rss);
-		update_site_option($cache_timestamp, time() );
-		
-		return $cache_option;
-	}
+		$file = $this->file_name( $url );
 
+		$f = fopen( $file, 'w' );
+		fwrite( $f, serialize( $rss ) );
+		fclose( $f );
+
+		return true;
+	}
+	
 /*=======================================================================*\
 	Function:	get
 	Purpose:	fetch an item from the cache
@@ -682,17 +694,17 @@ class RSSCache {
 \*=======================================================================*/
 	function get ($url) {
 		$this->ERROR = "";
-		$cache_option = 'rss_' . $this->file_name( $url );
-
-		if ( ! get_site_option( $cache_option ) ) {
+		$file = $this->file_name( $url );
+		
+		if ( ! $contents = file_get_contents( $file ) ) {
 			$this->debug( 
 				"Cache doesn't contain: $url (cache option: $cache_option)"
 			);
 			return 0;
 		}
-
-		$rss = get_site_option( $cache_option );
-
+		
+		$rss = unserialize( $contents );
+		
 		return $rss;
 	}
 
@@ -705,25 +717,22 @@ class RSSCache {
 \*=======================================================================*/
 	function check_cache ( $url ) {
 		$this->ERROR = "";
-		$cache_option = $this->file_name( $url );
-		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
+		$file = $this->file_name( $url );
 
-		if ( $mtime = get_site_option($cache_timestamp) ) {
+		if ( !file_exists( $file ) )
+			return 'MISS';
+
+		if ( $mtime = filemtime($file) ) {
 			// find how long ago the file was added to the cache
 			// and whether that is longer then MAX_AGE
 			$age = time() - $mtime;
 			if ( $this->MAX_AGE > $age ) {
 				// object exists and is current
 				return 'HIT';
-			}
-			else {
+			} else {
 				// object exists but is old
 				return 'STALE';
 			}
-		}
-		else {
-			// object does not exist
-			return 'MISS';
 		}
 	}
 
@@ -748,7 +757,7 @@ class RSSCache {
 	Output:		a file name
 \*=======================================================================*/
 	function file_name ($url) {
-		return md5( $url );
+		return '/home/wpcom/cache/rss/' . md5( $url );
 	}
 
 /*=======================================================================*\

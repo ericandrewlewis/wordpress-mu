@@ -24,8 +24,6 @@ if( is_file( $file ) ) {
 		$mimetype = "image/$ext";
 	}
 
-	// from http://blog.rd2inc.com/archives/2005/03/24/making-dynamic-php-pages-cacheable/
-	//if( $headers[ 'If-Range' ] == '"' . $etag . '"' || $lastModified == $headers['If-Modified-Since']) {
 	if( $_SERVER[ 'HTTP_IF_NONE_MATCH' ] == '"' . $etag . '"' || $lastModified == $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
 		// They already have an up to date copy so tell them 
 		header('HTTP/1.1 304 Not Modified'); 

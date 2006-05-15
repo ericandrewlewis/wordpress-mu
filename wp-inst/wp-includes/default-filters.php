@@ -86,5 +86,11 @@ add_filter('option_ping_sites', 'privacy_ping_filter');
 add_action('wp_head', 'rsd_link');
 add_action('publish_future_post', 'wp_publish_post', 10, 1);
 add_action('wp_head', 'noindex', 1);
-add_action('init', 'wp_cron');
+if(!defined('DOING_CRON'))
+	add_action('init', 'wp_cron');
+add_action('do_feed_rdf', 'do_feed_rdf', 10, 1);
+add_action('do_feed_rss', 'do_feed_rss', 10, 1);
+add_action('do_feed_rss2', 'do_feed_rss2', 10, 1);
+add_action('do_feed_atom', 'do_feed_atom', 10, 1);
+add_action('do_pings', 'do_all_pings', 10, 1);
 ?>

@@ -22,14 +22,10 @@ function printheader() {
                 padding: .2em 2em;
         }
         
-        h1 {
+        h1, h2 {
                 color: #006;
                 font-size: 18px;
                 font-weight: lighter;
-        }
-        
-        h2 {
-                font-size: 16px;
         }
         
         p, li, dt {
@@ -61,26 +57,18 @@ text-align: center; border-top: 1px solid #ccc; padding-top: 1em; font-style: it
 </head>
 <body>
 
-<div align="center"><img src="wp-inst/wp-includes/images/wordpress-mu.png"></div><br>
-Welcome to WordPress MU, the Multi User Weblog System built on WordPress.<br><br>
+<h1><img src="wp-inst/wp-includes/images/wordpress-mu.png" alt="WordPress MU" /></h1>
 ';
 }
 
-function check_writeable_dir( $dir, $ret )
-{
-    if( is_writeable( $dir  ) == false )
-    {
-        print $dir." : <b style='color: #f55'>FAILED</b><br>Quick Fix: <code>chmod 777 $dir</code><br>";
+function check_writeable_dir( $dir, $ret ) {
+    if( is_writeable( $dir  ) == false ) {
+        print $dir." : <b style='color: #f55'>FAILED</b><br />Quick Fix: <code>chmod 777 $dir</code><br />";
         return false;
-    }
-    else
-    {
-        if( $ret == true )
-        {
+    } else {
+        if( $ret == true ) {
             return true;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
@@ -137,9 +125,7 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
                 $htaccess .= fgets( $fp, 4096 );
             }
             fclose( $fp );
-            $htaccess = str_replace( "REALPATH", $realpath, $htaccess );
             $htaccess = str_replace( "BASE", $base, $htaccess );
-            $htaccess = str_replace( "HOST", $url, $htaccess );
 	    if( touch( $newfilename ) ) {
 		    $fp = fopen( $newfilename, "w" );
 		    if( $fp ) {
@@ -211,47 +197,28 @@ function checkdirs() {
 }
 
 function step1() {
-    print "<h1>Welcome to WPMU</h1>";
-    print "<p>Please make sure mod_rewrite is installed as it will be activated at the end of this install.</p><p>If mod_rewrite is disabled ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.</p>";
+    print "<h2>Installing WP&micro;</h2>";
+    print "<p>Please make sure <code>mod_rewrite</code> is installed as it will be activated at the end of this install.</p>
+	<p>If the <code>mod_rewrite</code> module is disabled ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.</p>
+	<p>WPMU <strong>must be installed in the root directory of a domain</strong>, otherwise it won't work.";
     if( checkdirs() == false ) {
 	return false;
     }
-
-    // Create default template cache dirs
-    @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/smarty-cache" , 0777 );
-    @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/smarty-templates_c" , 0777 );
 
     // Create Blogs living area.
     @mkdir( dirname(__FILE__) . "/wp-inst/wp-content/blogs.dir", 0777 );
 
 
-    $url = "http://".$_SERVER["SERVER_NAME"] . dirname( $_SERVER[ "SCRIPT_NAME" ] );
+    $url = stripslashes( "http://".$_SERVER["SERVER_NAME"] . dirname( $_SERVER[ "SCRIPT_NAME" ] ) );
     if( substr( $url, -1 ) == '/' )
         $url = substr( $url, 0, -1 );
-    $base = dirname( $_SERVER["SCRIPT_NAME"] );
+    $base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
     if( $base != "/")
     {
            $base .= "/";
     } 
     $realpath = dirname(__FILE__);
 
-    if( is_file( dirname(__FILE__) . "./wp-inst/wpmu-settings.php" ) == false )
-    {
-        $configfile = '';
-        $fp = fopen( "./wp-inst/wpmu-settings.php.dist", "r" );
-        if( $fp )
-        {
-            while( !feof( $fp ) )
-            {
-                $configfile .= fgets( $fp, 4096 );
-            }
-            fclose( $fp );
-        }
-        $configfile = str_replace( "BASE", $base, $configfile );
-        $fp = fopen( "./wp-inst/wpmu-settings.php", "w" );
-        fwrite( $fp, $configfile );
-        fclose( $fp );
-    }
     return true;
 }
 
@@ -259,52 +226,33 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     print "
     <form method='post' action='index.php'> 
     <input type='hidden' name='action' value='step2'>
-    <h1>Virtual Server Support</h1>
-    <p>Each blog on your site will have their own hostname or 'sub domain'. Your blog addresses will appear like <span class='fakelink'>http://joesblog.example.com/</span> instead of <span class='fakelink'>http://www.example.com/joesblog/</span> but you need to do a few more things to Apache and your DNS settings before it'll work.</p>
-    <p>Apache will have to have a <q>wildcard</q> alias configured in the virtual server definition of your server. You'll have to add a wildcard DNS record for your domain too. That's usually as easy as adding a <q>*</q> hostname in your online dns software.</p>
-    <p>Virtual Server Support: <input type='radio' name='vhost' value='yes'> Yes&nbsp;&nbsp;<input type='radio' name='vhost' value='no' checked>No</p>
-    <p>More: <ul><li> <a href='http://codewalkers.com/archives/general_admin/234.html'>Sub-domain catch-all with Apache</a> via <a href='http://www.google.com/search?q=apache+wildcard+alias'>Google Search: apache wildcard alias</a></li><li> <a href='http://photomatt.net/2003/10/10/wildcard-dns-and-sub-domains/'>Wildcard dns and sub domains</a> via <a href='http://www.google.com/search?q=dns+wildcard+sub+domain'>Google Search: dns wildcard sub domain</a></li><li><a href='http://mu.wordpress.org/forums/topic/126#post-677'>mu forums: how to setup vhosts</a></li></ul></p>
-    <br />
-    <h1>Database</h1>
-<p>We need some information on the database. You will need to know the following items before proceeding.</p> 
-<ol> 
-  <li>Database name</li> 
-  <li>Database username</li> 
-  <li>Database password</li> 
-  <li>Database host</li> 
-  <li>Table prefix (if you want to run more than one WordPress in a single database) </li>
-</ol> 
-<p><strong>If for any reason this automatic file creation doesn't work, don't worry. All this does is fill in the database information to a configuration file. You may also simply open <code>wp-config-sample.php</code> in a text editor, fill in your information, and save it as <code>wp-config.php</code>. </strong></p>
+    <h2>Blog Addresses</h2>
+	<p>Please choose whether you would like blogs for the MU install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
+    <p><label><input type='radio' name='vhost' value='yes' /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
+	<label><input type='radio' name='vhost' value='no' /> Sub-directories (like <code>example.com/blog1</code></label></p>
+	
+    <h2>Database</h2>
 
   <p>Below you should enter your database connection details. If you're not sure about these, contact your host. </p>
-  <table> 
+  <table cellpadding='5'> 
     <tr> 
-      <th scope='row'>Database Name</th> 
-      <td><input name='dbname' type='text' size='45' value='".$dbname."' /></td> 
-      <td>The name of the database you want to run WP in. </td> 
+      <th scope='row' width='33%'>Database Name</th> 
+      <td><input name='dbname' type='text' size='45' value='$dbname' /></td>  
     </tr> 
     <tr> 
       <th scope='row'>User Name</th> 
-      <td><input name='uname' type='text' size='45' value='".$uname."' /></td> 
-      <td>Your MySQL username</td> 
+      <td><input name='uname' type='text' size='45' value='$uname' /></td> 
     </tr> 
     <tr> 
       <th scope='row'>Password</th> 
-      <td><input name='pwd' type='text' size='45' value='".$pwd."' /></td> 
-      <td>...and MySQL password.</td> 
+      <td><input name='pwd' type='text' size='45' value='$pwd' /></td> 
     </tr> 
     <tr> 
       <th scope='row'>Database Host</th> 
-      <td><input name='dbhost' type='text' size='45' value='".$dbhost."' /></td> 
-      <td>99% chance you won't need to change this value.</td> 
+      <td><input name='dbhost' type='text' size='45' value='$dbhost' /></td> 
     </tr>
-    <tr>
-      <th scope='row'>Table Prefix</th>
-      <td><input name='prefix' type='text' id='prefix' value='".$prefix."' size='45' /></td>
-      <td>If you want to run multiple WordPress installations in a single database, change this.</td>
-    </tr> 
   </table> 
-  <input name='submit' type='submit' value='Submit' /> 
+  <p class='submit'><input name='submit' type='submit' value='Submit' /> </p>
 </form> ";
 }
 
@@ -314,8 +262,8 @@ function step2() {
     $passwrd = $_POST['pwd'];
     $dbhost  = $_POST['dbhost'];
     $vhost   = $_POST['vhost' ]; 
-    $prefix  = $_POST['prefix'];
-    if (empty($prefix)) $prefix = 'wp_';
+    $prefix  = 'wp_';
+	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
 
     // Test the db connection.
     define('DB_NAME', $dbname);
@@ -358,6 +306,7 @@ function step2() {
 	    default:
 	    fwrite($handle, $line);
 	}
+	$line = str_replace( "BASE", $base, $line );
     }
     fclose($handle);
     chmod('wp-inst/wp-config.php', 0666);
@@ -389,7 +338,7 @@ function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $e
 
 function step3() {
     global $wpdb;
-    $base = dirname( $_SERVER["SCRIPT_NAME"] );
+    $base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
     if( $base != "/")
     {
            $base .= "/";
@@ -429,64 +378,47 @@ We hope you enjoy your new weblog.
 --The Team @ SITE_NAME')" );
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' )" );
 
-    $res = createBlog( $domain, $base, 'admin', $weblog_title, $email );
-    if( $res == 'ok' ) {
-	    $url = "http://".$_SERVER["HTTP_HOST"] . $base;
-	    update_option( "template", "home" );
-	    update_option( "stylesheet", "home" );
-	    add_site_option( "allowed_themes", 'a:2:{s:17:"WordPress Classic";b:1;s:17:"WordPress Default";b:1;}' );
-	    $realpath = dirname(__FILE__);
-	    do_htaccess( "htaccess.dist", ".htaccess", $realpath, $base, $url );
-	    do_htaccess( "wp-inst/htaccess.dist", "wp-inst/.htaccess", $realpath, $base, $url );
-
-	    $illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator", "blog" );
-	    add_site_option( "illegal_names", $illegal_names );
-
-	    print "<p>Well Done! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
-	    print "<p>You may view your new blog by visiting <a href='".$url."'>".$url."</a>!</p>";
-    } else {
-	if( $res == 'error: problem creating blog entry' ) {
-	    print "The <q>main</q> blog has already been created. Edit your blogs table and delete the entry for this domain!";
-	} elseif( $res == 'error: username used' ) {
-	    print "The username you chose is already in use, please select another one.";
-	}
-	print "<br>result: $res<br>";
-	printuserdetailsform( $_POST[ 'weblog_title' ], $_POST[ 'username' ], $_POST[ 'email' ] );
-    }
+	$pass = substr( md5( rand() ), 5, 12 );
+	$user_id = wpmu_create_user( 'admin', $pass, $email);
+	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array() );
+	update_blog_option( 1, 'template', 'home');
+	update_blog_option( 1, 'stylesheet', 'home');
+	print "<p>Congrats! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
 }
 
 switch( $_POST[ 'action' ] ) {
-    case "step2":
-	// get blog username
-	// create wp-inst/wp-config.php 
-	step2();
-	printuserdetailsform();
-    break;
-    case "step3":
-	// call createBlog();
-	// create .htaccess
-	// print login info and links.
-	require_once('./wp-inst/wp-config.php');
-        require_once('./wp-inst/wp-admin/upgrade-functions.php');
-	make_db_current_silent();
-	populate_options();
-        printheader();
-	step3();
-    break;
-    default:
-        // check that directories are writeable.
-        // create wp-inst/wpmu-settings.php
-        // get db auth info.
-        printheader();
-        if( step1() ) {
-	    printstep1form();
-	}
-    break;
+	case "step2":
+		// get blog username
+		// create wp-inst/wp-config.php 
+		step2();
+		printuserdetailsform();
+	break;
+	case "step3":
+		// call createBlog();
+		// create .htaccess
+		// print login info and links.
+		require_once('./wp-inst/wp-config.php');
+		require_once('./wp-inst/wp-admin/upgrade-functions.php');
+		make_db_current_silent();
+		populate_options();
+		do_htaccess( 'htaccess.dist', '.htaccess', '/', '/', '');
+		printheader();
+		step3();
+	break;
+	default:
+		// check that directories are writeable.
+		// create wp-inst/wpmu-settings.php
+		// get db auth info.
+		printheader();
+		if( step1() ) {
+		printstep1form();
+		}
+	break;
 }
 ?>
 <br /><br />
 <div align='center'>
-<a href="http://mu.wordpress.org/">WPMU</a> | <a href="http://mu.wordpress.org/forums/">Support Forums</a>
+<a href="http://mu.wordpress.org/">WordPress &micro;</a> | <a href="http://mu.wordpress.org/forums/">Support Forums</a>
 </div>
 </body>
 </html>

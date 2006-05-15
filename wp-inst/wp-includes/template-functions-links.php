@@ -92,7 +92,7 @@ function get_page_link($id = false) {
 
 	$pagestruct = $wp_rewrite->get_page_permastruct();
 
-	if ( '' != $pagestruct ) {
+	if ( '' != $pagestruct && 'draft' != $post->post_status ) {
 		$link = get_page_uri($id);
 		$link = str_replace('%pagename%', $link, $pagestruct);
 		$link = get_settings('home') . "/$link/";
@@ -228,12 +228,13 @@ function edit_post_link($link = 'Edit This', $before = '', $after = '') {
 function edit_comment_link($link = 'Edit This', $before = '', $after = '') {
 	global $post, $comment;
 
-	if( $post->post_type == 'page' )
+	if( $post->post_type == 'page' ){
 		if ( ! current_user_can('edit_page', $post->ID) )
 			return;
-	else
+	} else {
 		if ( ! current_user_can('edit_post', $post->ID) )
 			return;
+	}
 
 	$location = get_settings('siteurl') . "/wp-admin/comment.php?action=editcomment&amp;comment=$comment->comment_ID";
 	echo $before . "<a href='$location'>$link</a>" . $after;
@@ -343,49 +344,6 @@ function next_post_link($format='%link &raquo;', $link='%title', $in_same_cat = 
 	echo $format;	    
 }
 
-
-// Deprecated.	Use previous_post_link().
-function previous_post($format='%', $previous='previous post: ', $title='yes', $in_same_cat='no', $limitprev=1, $excluded_categories='') {
-
-	if ( empty($in_same_cat) || 'no' == $in_same_cat )
-		$in_same_cat = false;
-	else
-		$in_same_cat = true;
-
-	$post = get_previous_post($in_same_cat, $excluded_categories);
-
-	if ( !$post )
-		return;
-
-	$string = '<a href="'.get_permalink($post->ID).'">'.$previous;
-	if ( 'yes' == $title )
-		$string .= apply_filters('the_title', $post->post_title, $post);
-	$string .= '</a>';
-	$format = str_replace('%', $string, $format);
-	echo $format;
-}
-
-// Deprecated.	Use next_post_link().
-function next_post($format='%', $next='next post: ', $title='yes', $in_same_cat='no', $limitnext=1, $excluded_categories='') {
-
-	if ( empty($in_same_cat) || 'no' == $in_same_cat )
-		$in_same_cat = false;
-	else
-		$in_same_cat = true;
-
-	$post = get_next_post($in_same_cat, $excluded_categories);
-
-	if ( !$post	)
-		return;
-
-	$string = '<a href="'.get_permalink($post->ID).'">'.$next;
-	if ( 'yes' == $title )
-		$string .= apply_filters('the_title', $post->post_title, $nextpost);
-	$string .= '</a>';
-	$format = str_replace('%', $string, $format);
-	echo $format;
-}
-
 function get_pagenum_link($pagenum = 1) {
 	global $wp_rewrite;
 
@@ -469,16 +427,9 @@ function next_posts($max_page = 0) { // original by cfactor at cooltux.org
 }
 
 function next_posts_link($label='Next Page &raquo;', $max_page=0) {
-	global $paged, $result, $request, $posts_per_page, $wpdb, $max_num_pages;
+	global $paged, $wpdb;
 	if ( !$max_page ) {
-			if ( isset($max_num_pages) ) {
-				$max_page = $max_num_pages;
-			} else {
-				preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
-				$fromwhere = $matches[1];
-				$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
-				$max_page = $max_num_pages = ceil($numposts / $posts_per_page);
-			}
+		$max_page = _max_num_pages();
 	}
 	if ( !$paged )
 		$paged = 1;
@@ -512,25 +463,41 @@ function previous_posts_link($label='&laquo; Previous Page') {
 	}
 }
 
-function posts_nav_link($sep=' &#8212; ', $prelabel='&laquo; Previous Page', $nxtlabel='Next Page &raquo;') {
-	global $request, $posts_per_page, $wpdb, $max_num_pages;
-	if ( !is_single() ) {
+function _max_num_pages() {
+	static $max_num_pages;
+	global $wpdb, $wp_query;
+	
+	if (isset($max_num_pages)) return $max_num_pages;
+	
+	if ( 'posts' == get_query_var('what_to_show') ) {
+		preg_match('#FROM\s(.*)\sORDER BY#siU', $wp_query->request, $matches);
+		$fromwhere = $matches[1];
+		$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
+		$max_num_pages = ceil($numposts / get_option('posts_per_page'));
+	} else {
+		preg_match('#FROM\s(.*)\sORDER BY#siU', $wp_query->request, $matches);
+		$fromwhere = preg_replace('/( AND )?post_date >= (\'|\")(.*?)(\'|\")( AND post_date <= (\'\")(.*?)(\'\"))?/siU', '', $matches[1]);
+		$num_days = $wpdb->query("SELECT DISTINCT post_date FROM $fromwhere GROUP BY year(post_date), month(post_date), dayofmonth(post_date)");
+		$max_num_pages = ceil($num_days / get_option('posts_per_page'));
+	}
 
-		if ( 'posts' == get_query_var('what_to_show') ) {
-			if ( !isset($max_num_pages) ) {
-				preg_match('#FROM\s(.*)\sGROUP BY#siU', $request, $matches);
-				$fromwhere = $matches[1];
-				$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT ID) FROM $fromwhere");
-				$max_num_pages = ceil($numposts / $posts_per_page);
-			}
-		} else {
-			$max_num_pages = 999999;
+	return $max_num_pages;
+}
+
+function posts_nav_link($sep=' &#8212; ', $prelabel='&laquo; Previous Page', $nxtlabel='Next Page &raquo;') {
+	if ( !is_single() ) {
+		$max_num_pages = _max_num_pages();
+		$paged = get_query_var('paged');
+		
+		//only have sep if there's both prev and next results
+		if ($paged < 2 || $paged >= $max_num_pages) {
+			$sep = '';
 		}
 
 		if ( $max_num_pages > 1 ) {
 			previous_posts_link($prelabel);
 			echo preg_replace('/&([^#])(?![a-z]{1,8};)/', '&#038;$1', $sep);
-			next_posts_link($nxtlabel, $max_page);
+			next_posts_link($nxtlabel);
 		}
 	}
 }

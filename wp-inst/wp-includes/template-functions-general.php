@@ -27,10 +27,7 @@ function get_sidebar() {
 
 
 function wp_loginout() {
-	global $user_ID;
-	get_currentuserinfo();
-
-	if ('' == $user_ID)
+	if ( ! is_user_logged_in() )
 		$link = '<a href="' . get_settings('siteurl') . '/wp-login.php">' . __('Login') . '</a>';
 	else
 		$link = '<a href="' . get_settings('siteurl') . '/wp-login.php?action=logout">' . __('Logout') . '</a>';
@@ -40,16 +37,15 @@ function wp_loginout() {
 
 
 function wp_register( $before = '<li>', $after = '</li>' ) {
-	global $user_ID;
 
-	get_currentuserinfo();
-
-	if ( '' == $user_ID && get_settings('users_can_register') )
-		$link = $before . '<a href="' . get_settings('siteurl') . '/wp-register.php">' . __('Register') . '</a>' . $after;
-	elseif ( '' == $user_ID && !get_settings('users_can_register') )
-		$link = '';
-	else
+	if ( ! is_user_logged_in() ) {
+		if ( get_settings('users_can_register') )
+			$link = $before . '<a href="' . get_settings('siteurl') . '/wp-register.php">' . __('Register') . '</a>' . $after;
+		else
+			$link = '';
+	} else {
 		$link = $before . '<a href="' . get_settings('siteurl') . '/wp-admin/">' . __('Site Admin') . '</a>' . $after;
+	}
 
 	echo apply_filters('register', $link);
 }
@@ -62,7 +58,9 @@ function wp_meta() {
 
 function bloginfo($show='') {
 	$info = get_bloginfo($show);
-	if ( ! (strstr($info, 'url') || strstr($info, 'directory')) ) {
+	if (!strstr($show, 'url') && //don't filter URLs
+		!strstr($show, 'directory') &&
+		!strstr($show, 'home')) {
 		$info = apply_filters('bloginfo', $info, $show);
 		$info = convert_chars($info);
 	}
@@ -138,7 +136,7 @@ function get_bloginfo($show='') {
 
 function wp_title($sep = '&raquo;', $display = true) {
 	global $wpdb;
-	global $m, $year, $monthnum, $day, $category_name, $month, $posts;
+	global $m, $year, $monthnum, $day, $category_name, $wp_locale, $posts;
 
 	$cat = get_query_var('cat');
 	$p = get_query_var('p');
@@ -177,14 +175,14 @@ function wp_title($sep = '&raquo;', $display = true) {
 	// If there's a month
 	if ( !empty($m) ) {
 		$my_year = substr($m, 0, 4);
-		$my_month = $month[substr($m, 4, 2)];
+		$my_month = $wp_locale->get_month($m);
 		$title = "$my_year $sep $my_month";
 	}
 
 	if ( !empty($year) ) {
 		$title = $year;
 		if ( !empty($monthnum) )
-			$title .= " $sep ".$month[zeroise($monthnum, 2)];
+			$title .= " $sep ".$wp_locale->get_month($monthnum);
 		if ( !empty($day) )
 			$title .= " $sep ".zeroise($day, 2);
 	}
@@ -244,13 +242,13 @@ function single_cat_title($prefix = '', $display = true ) {
 
 
 function single_month_title($prefix = '', $display = true ) {
-	global $m, $monthnum, $month, $year;
+	global $m, $monthnum, $wp_locale, $year;
 	if ( !empty($monthnum) && !empty($year) ) {
 		$my_year = $year;
-		$my_month = $month[str_pad($monthnum, 2, '0', STR_PAD_LEFT)];
+		$my_month = $wp_locale->get_month($monthnum);
 	} elseif ( !empty($m) ) {
 		$my_year = substr($m, 0, 4);
-		$my_month = $month[substr($m, 4, 2)];
+		$my_month = $wp_locale->get_month($m);
 	}
 
 	if ( !empty($my_month) && $display )
@@ -296,7 +294,7 @@ function wp_get_archives($args = '') {
 
 
 function get_archives($type='', $limit='', $format='html', $before = '', $after = '', $show_post_count = false) {
-	global $month, $wpdb;
+	global $wp_locale, $wpdb;
 
 	if ( '' == $type )
 		$type = 'monthly';
@@ -338,10 +336,10 @@ function get_archives($type='', $limit='', $format='html', $before = '', $after 
 			foreach ( $arcresults as $arcresult ) {
 				$url	= get_month_link($arcresult->year,	$arcresult->month);
 				if ( $show_post_count ) {
-					$text = sprintf('%s %d', $month[zeroise($arcresult->month,2)], $arcresult->year);
+					$text = sprintf('%s %d', $wp_locale->get_month($arcresult->month), $arcresult->year);
 					$after = '&nbsp;('.$arcresult->posts.')' . $afterafter;
 				} else {
-					$text = sprintf('%s %d', $month[zeroise($arcresult->month,2)], $arcresult->year);
+					$text = sprintf('%s %d', $wp_locale->get_month($arcresult->month), $arcresult->year);
 				}
 				echo get_archives_link($url, $text, $format, $before, $after);
 			}
@@ -401,8 +399,8 @@ function calendar_week_mod($num) {
 }
 
 
-function get_calendar($daylength = 1) {
-	global $wpdb, $m, $monthnum, $year, $timedifference, $month, $month_abbrev, $weekday, $weekday_initial, $weekday_abbrev, $posts;
+function get_calendar($initial = true) {
+	global $wpdb, $m, $monthnum, $year, $timedifference, $wp_locale, $posts;
 
 	// Quick check. If we have no posts at all, abort!
 	if ( !$posts ) {
@@ -458,22 +456,19 @@ function get_calendar($daylength = 1) {
 			LIMIT 1");
 
 	echo '<table id="wp-calendar">
-	<caption>' . $month[zeroise($thismonth, 2)] . ' ' . date('Y', $unixmonth) . '</caption>
+	<caption>' . $wp_locale->get_month($thismonth) . ' ' . date('Y', $unixmonth) . '</caption>
 	<thead>
 	<tr>';
-
-	$day_abbrev = $weekday_initial;
-	if ( $daylength > 1 )
-		$day_abbrev = $weekday_abbrev;
 
 	$myweek = array();
 
 	for ( $wdcount=0; $wdcount<=6; $wdcount++ ) {
-		$myweek[]=$weekday[($wdcount+$week_begins)%7];
+		$myweek[] = $wp_locale->get_weekday(($wdcount+$week_begins)%7);
 	}
 
 	foreach ( $myweek as $wd ) {
-		echo "\n\t\t<th abbr=\"$wd\" scope=\"col\" title=\"$wd\">" . $day_abbrev[$wd] . '</th>';
+		$day_name = (true == $initial) ? $wp_locale->get_weekday_initial($wd) : $wp_locale->get_weekday_abbrev($wd);
+		echo "\n\t\t<th abbr=\"$wd\" scope=\"col\" title=\"$wd\">$day_name</th>";
 	}
 
 	echo '
@@ -484,9 +479,9 @@ function get_calendar($daylength = 1) {
 	<tr>';
 
 	if ( $previous ) {
-		echo "\n\t\t".'<td abbr="' . $month[zeroise($previous->month, 2)] . '" colspan="3" id="prev"><a href="' .
-		get_month_link($previous->year, $previous->month) . '" title="' . sprintf(__('View posts for %1$s %2$s'), $month[zeroise($previous->month, 2)],
-			date('Y', mktime(0, 0 , 0, $previous->month, 1, $previous->year))) . '">&laquo; ' . $month_abbrev[$month[zeroise($previous->month, 2)]] . '</a></td>';
+		echo "\n\t\t".'<td abbr="' . $wp_locale->get_month($previous->month) . '" colspan="3" id="prev"><a href="' .
+		get_month_link($previous->year, $previous->month) . '" title="' . sprintf(__('View posts for %1$s %2$s'), $wp_locale->get_month($previous->month),
+			date('Y', mktime(0, 0 , 0, $previous->month, 1, $previous->year))) . '">&laquo; ' . $wp_locale->get_month_abbrev($wp_locale->get_month($previous->month)) . '</a></td>';
 	} else {
 		echo "\n\t\t".'<td colspan="3" id="prev" class="pad">&nbsp;</td>';
 	}
@@ -494,9 +489,9 @@ function get_calendar($daylength = 1) {
 	echo "\n\t\t".'<td class="pad">&nbsp;</td>';
 
 	if ( $next ) {
-		echo "\n\t\t".'<td abbr="' . $month[zeroise($next->month, 2)] . '" colspan="3" id="next"><a href="' .
-		get_month_link($next->year, $next->month) . '" title="' . sprintf(__('View posts for %1$s %2$s'), $month[zeroise($next->month, 2)],
-			date('Y', mktime(0, 0 , 0, $next->month, 1, $next->year))) . '">' . $month_abbrev[$month[zeroise($next->month, 2)]] . ' &raquo;</a></td>';
+		echo "\n\t\t".'<td abbr="' . $wp_locale->get_month($next->month) . '" colspan="3" id="next"><a href="' .
+		get_month_link($next->year, $next->month) . '" title="' . sprintf(__('View posts for %1$s %2$s'), $wp_locale->get_month($next->month),
+			date('Y', mktime(0, 0 , 0, $next->month, 1, $next->year))) . '">' . $wp_locale->get_month_abbrev($wp_locale->get_month($next->month)) . ' &raquo;</a></td>';
 	} else {
 		echo "\n\t\t".'<td colspan="3" id="next" class="pad">&nbsp;</td>';
 	}
@@ -683,19 +678,19 @@ function get_post_modified_time( $d = 'U', $gmt = false ) { // returns timestamp
 
 
 function the_weekday() {
-	global $weekday, $id, $post;
-	$the_weekday = $weekday[mysql2date('w', $post->post_date)];
+	global $wp_locale, $id, $post;
+	$the_weekday = $wp_locale->get_weekday(mysql2date('w', $post->post_date));
 	$the_weekday = apply_filters('the_weekday', $the_weekday);
 	echo $the_weekday;
 }
 
 
 function the_weekday_date($before='',$after='') {
-	global $weekday, $id, $post, $day, $previousweekday;
+	global $wp_locale, $id, $post, $day, $previousweekday;
 	$the_weekday_date = '';
 	if ( $day != $previousweekday ) {
 		$the_weekday_date .= $before;
-		$the_weekday_date .= $weekday[mysql2date('w', $post->post_date)];
+		$the_weekday_date .= $wp_locale->get_weekday(mysql2date('w', $post->post_date));
 		$the_weekday_date .= $after;
 		$previousweekday = $day;
 	}
@@ -708,8 +703,9 @@ function rsd_link() {
 }
 
 function noindex() {
+	global $current_blog;
 	// If the blog is not public, tell robots to go away.
-	if ( ! get_option('blog_public') )
+	if ( 0 == $current_blog->public )
 		echo '<meta name="robots" content="noindex,nofollow" />' . "\n";
 }
 ?>

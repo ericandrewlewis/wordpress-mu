@@ -40,6 +40,28 @@ a.delete:hover {
 	overflow: hidden;
 }
 
+.widefat {
+	width: 100%;
+}
+
+.widefat td, .widefat th {
+	padding: 5px 6px;
+}
+
+.import-system {
+	font-size: 16px;
+}
+
+thead {
+	background: #dfdfdf
+}
+
+#import-upload-form {
+	width: 300px;
+	margin: auto;
+	text-align: center;
+}
+
 a.edit, a.delete, a.edit:hover, a.delete:hover {
 	border-bottom: none;
 	display: block;
@@ -89,11 +111,6 @@ fieldset label.selectit:hover {
 
 fieldset legend {
 	padding: .1em .3em;
-}
-
-fieldset span.cat-nest {
-	display: block;
-	margin-left: 10px;
 }
 
 fieldset.options {
@@ -241,8 +258,14 @@ form#upload #post_content {
 }
 
 .commentlist li {
-	border-bottom: 1px solid #369;
-	padding: .3em 1em;
+	border-bottom: 1px solid #ccc; 
+	padding: 1em 1em .2em;
+	margin: 0;
+}
+
+.commentlist p {
+	padding: 0;
+	margin: 0 0 .8em;
 }
 
 .clear {
@@ -326,6 +349,18 @@ form#upload #post_content {
 	color: #009ef0;
 }
 
+.approve {
+	display: none;
+}
+
+.unapproved .approve {
+	display: inline;
+}
+
+.unapproved .unapprove {
+	display: none;
+}
+
 .updated {
 	background: #CFEBF7 url(images/notice.gif) no-repeat 1em ;
 	border: 1px solid #2580B2;
@@ -353,7 +388,7 @@ form#upload #post_content {
 	clear: both;
 }
 
-table .vers, table .name {
+table .vers {
 	text-align: center;
 }
 
@@ -461,7 +496,12 @@ table .vers, table .name {
 	width: 300px;
 }
 
-#deletepost:hover {
+#deletepost:hover, #deletecomment:hover {
+	background: #ce0000;
+	color: #fff;
+}
+
+#deletebookmarks:hover {
 	background: #ce0000;
 	color: #fff;
 }
@@ -615,7 +655,7 @@ table .vers, table .name {
 	width: 170px;
 }
 
-#templateside h3, #postcustom p {
+#templateside h3, #postcustom p.submit {
 	margin: 0;
 }
 
@@ -713,6 +753,14 @@ table .vers, table .name {
 	background: #8B8;
 }
 
+#namediv, #emaildiv, #uridiv {
+	float: left;
+}
+
+#ajax-response {
+	padding: .5em;
+}
+
 /* A handy div class for hiding controls.
    Some browsers will disable them when you
    set display:none; */
@@ -799,11 +847,20 @@ table .vers, table .name {
 	margin-top: .5em;
 }
 
-#categorydiv div div {
+#categorydiv ul {
+	list-style: none;
+	padding: 0;
+	margin-left:10px;
+}
+#categorychecklist {
 	height: 12em;
 	overflow: auto;
+	margin-top: 8px;
 }
-
+#categorychecklist li {
+	margin: 0;
+	padding: 0;
+}
 #ajaxcat input {
 	border: 1px solid #ccc;
 }
@@ -946,4 +1003,7 @@ input#catadd { 	background: #a4a4a4;
 #jaxcat {
 	margin: 0;
 	padding: 0;
+}
+#ajax-response.alignleft {
+	margin-left: 2em;
 }

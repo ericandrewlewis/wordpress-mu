@@ -62,6 +62,7 @@ if (!CUSTOM_TAGS) {
 		'dd' => array (),
 		'div' => array (
 			'align' => array (),
+			'class' => array (),
 			'dir' => array ()),
 		'dl' => array (),
 		'dt' => array (),
@@ -97,7 +98,7 @@ if (!CUSTOM_TAGS) {
 			'size' => array (),
 			'width' => array ()),
 		'i' => array (),
-		'iframe' => array (
+		'iframe' => array ( // This is filtered to whitelisted domains later according to Andy
 			'longdesc' => array(),
 			'name' => array(),
 			'src' => array(),
@@ -127,8 +128,11 @@ if (!CUSTOM_TAGS) {
 			'for' => array ()),
 		'legend' => array (
 			'align' => array ()),
-		'li' => array (),
+		'li' => array (
+			'align' => array (),
+			'class' => array ()),
 		'p' => array (
+			'class' => array (),
 			'align' => array (),
 			'dir' => array()),
 		'pre' => array (

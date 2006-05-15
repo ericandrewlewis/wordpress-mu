@@ -1,7 +1,7 @@
 <?php
 
-require_once(ABSPATH . '/wp-admin/admin-functions.php');
-require_once(ABSPATH . '/wp-admin/upgrade-schema.php');
+require_once(ABSPATH . 'wp-admin/admin-functions.php');
+require_once(ABSPATH . 'wp-admin/upgrade-schema.php');
 define( "RESET_CAPS", true );
 // Functions to be called in install and upgrade scripts
 function upgrade_all() {
@@ -700,7 +700,6 @@ function dbDelta($queries, $execute = true) {
 
 function make_db_current() {
 	global $wp_queries;
-
 	$alterations = dbDelta($wp_queries);
 	echo "<ol>\n";
 	foreach($alterations as $alteration) echo "<li>$alteration</li>\n";

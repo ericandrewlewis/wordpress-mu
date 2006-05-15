@@ -75,113 +75,14 @@ if ( defined('WP_CACHE') )
 define('WPINC', 'wp-includes');
 require_once (ABSPATH . WPINC . '/wp-db.php');
 
-$wpdb->blogs            = $table_prefix . 'blogs';
-$wpdb->users            = $table_prefix . 'users';
-$wpdb->usermeta         = $table_prefix . 'usermeta';
-$wpdb->site             = $table_prefix . 'site';
-$wpdb->sitemeta         = $table_prefix . 'sitemeta';
-$wpdb->sitecategories	= $table_prefix . 'sitecategories';
+$wpdb->blogs            = 'wp_blogs';
+$wpdb->users            = 'wp_users';
+$wpdb->usermeta         = 'wp_usermeta';
+$wpdb->site             = 'wp_site';
+$wpdb->sitemeta         = 'wp_sitemeta';
+$wpdb->sitecategories	= 'wp_sitecategories';
 
-
-// find out what tables to use from $wpblog
-$wpdb->hide_errors();
-
-$domain = addslashes($_SERVER['HTTP_HOST']);
-if( substr( $domain, 0, 4 ) == 'www.' )
-	$domain = substr( $domain, 4 );
-$domain = preg_replace('/:.*$/', '', $domain); // Strip ports
-
-function is_installed() {
-    global $wpdb, $domain, $base;
-
-    if( defined( "WP_INSTALLING" ) == false ) {
-	    $check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
-	    if( $check == false ) {
-		    $msg = '<strong>Database Tables Missing.</strong><br /> The table <em>' . DB_NAME . '::' . $wpdb->site . '</em> is missing. Delete the .htaccess file and run the installer again!<br />';
-	    } else {
-		    $msg = '<strong>Could Not Find Blog!</strong><br />';
-		    $msg .= "Searched for <em>" . $domain . $base . "</em> in " . DB_NAME . "::" . $wpdb->blogs . " table. Is that right?<br />";
-	    }
-	    $msg .= "Please check that your database contains the following tables:<ul>
-		    <li> $wpdb->blogs </li>
-		    <li> $wpdb->users </li>
-		    <li> $wpdb->usermeta </li>
-		    <li> $wpdb->site </li>
-		    <li> $wpdb->sitemeta </li>
-		    <li> $wpdb->sitecategories </li>
-		    </ul>";
-	    $msg .= "If you suspect a problem please report it to <a href='http://mu.wordpress.org/forums/'>support forums</a>!";
-	    die( "<h1>Fatal Error</h1> " . $msg );
-    }
-}
-if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
-	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$base'");
-} else {
-	if( $base == '/' ) {
-		$wpblog = substr( $_SERVER[ 'REQUEST_URI' ], 1 );
-	} else {
-		$wpblog = str_replace( $base, '', $_SERVER[ 'REQUEST_URI' ] );
-	}
-	if( strpos( $wpblog, '/' ) )
-		$wpblog = substr( $wpblog, 0, strpos( $wpblog, '/' ) );
-	if( $wpblog == '' || file_exists( ABSPATH . $wpblog ) || is_dir( ABSPATH . $wpblog ) ) {
-		$searchdomain = $domain;
-	} else {
-		$searchdomain = $wpblog . "." . $domain;
-	}
-	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '{$searchdomain}' AND path = '$base'");
-}
-if( $current_blog == false ) {
-    is_installed();
-}
-$blog_id   = $current_blog->blog_id;
-$public = $current_blog->public;
-$site_id   = $current_blog->site_id;
-if( $site_id == 0 )
-	$site_id = 1;
-
-$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='$site_id'");
-if( $current_site == false ) {
-    is_installed();
-}
-$current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = '$site_id' AND meta_key = 'site_name'" );
-if( $current_site->site_name == false ) {
-	$current_site->site_name = ucfirst( $current_site->domain );
-	include( ABSPATH . "wp-admin/wpmu-upgrade.inc.php" );
-}
-
-if( $blog_id == false ) {
-    // no blog found, are we installing? Check if the table exists.
-    if ( defined('WP_INSTALLING') ) {
-	$query = "SELECT blog_id FROM ".$wpdb->blogs." limit 0,1";
-	$blog_id = $wpdb->get_var( $query );
-	if( $blog_id == false ) {
-	    // table doesn't exist. This is the first blog
-	    $blog_id = 1;
-	} else {
-	    // table exists
-	    // don't create record at this stage. we're obviously installing so it doesn't matter what the table vars below are like.
-	    // default to using the "main" blog.
-	    $blog_id = 1;
-	}
-    } else {
-	$check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
-	if( $check == false ) {
-	    $msg = ': DB Tables Missing';
-	} else {
-	    $msg = '';
-	}
-	die( "No Blog by that name on this system." . $msg );
-    }
-}
-
-if( '0' == $current_blog->public ) {
-	// This just means the blog shouldn't show up in google, etc. Only to registered members
-}
-
-$wpdb->show_errors();
-
-$table_prefix = $table_prefix . $blog_id . '_';
+require_once ( ABSPATH . 'wpmu-settings.php' );
 
 // Table names
 $wpdb->siteid           = $site_id;
@@ -191,9 +92,11 @@ $wpdb->categories       = $table_prefix . 'categories';
 $wpdb->post2cat         = $table_prefix . 'post2cat';
 $wpdb->comments         = $table_prefix . 'comments';
 $wpdb->links            = $table_prefix . 'links';
+$wpdb->link2cat         = $table_prefix . 'link2cat';
 $wpdb->linkcategories   = $table_prefix . 'linkcategories';
 $wpdb->options          = $table_prefix . 'options';
 $wpdb->postmeta         = $table_prefix . 'postmeta';
+$wpdb->signups		    = $table_prefix . 'signups';
 $wpdb->prefix           = $table_prefix;
 
 if ( defined('CUSTOM_USER_TABLE') )
@@ -247,18 +150,25 @@ require (ABSPATH . WPINC . '/functions-formatting.php');
 require (ABSPATH . WPINC . '/functions-post.php');
 require (ABSPATH . WPINC . '/capabilities.php');
 require (ABSPATH . WPINC . '/classes.php');
+require (ABSPATH . WPINC . '/query.php');
+require (ABSPATH . WPINC . '/theme.php');
 require (ABSPATH . WPINC . '/template-functions-general.php');
 require (ABSPATH . WPINC . '/template-functions-links.php');
 require (ABSPATH . WPINC . '/template-functions-author.php');
 require (ABSPATH . WPINC . '/template-functions-post.php');
 require (ABSPATH . WPINC . '/template-functions-category.php');
-require (ABSPATH . WPINC . '/comment-functions.php');
+require (ABSPATH . WPINC . '/comment.php');
+require (ABSPATH . WPINC . '/comment-template.php');
+require (ABSPATH . WPINC . '/rewrite.php');
 require (ABSPATH . WPINC . '/feed-functions.php');
-require (ABSPATH . WPINC . '/links.php');
+require (ABSPATH . WPINC . '/template-functions-bookmarks.php');
 require (ABSPATH . WPINC . '/kses.php');
+require (ABSPATH . WPINC . '/cron.php');
 require (ABSPATH . WPINC . '/version.php');
+require (ABSPATH . WPINC . '/deprecated.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
+require_once( ABSPATH . WPINC . '/registration-functions.php');
 
 if( defined( "WP_INSTALLING" ) == false ) {
 	$current_site->site_name = get_site_option('site_name');
@@ -290,15 +200,6 @@ if( $is_archived == 'yes' ) {
 	die( "This blog has been archived or suspended temporarily. Please check back later." );
 }
 
-if( $current_blog->archived == '1' ) {
-    die( 'This blog has been archived or suspended.' );
-}
-
-if( $current_blog->spam == '1' ) {
-    die( 'This blog has been archived or suspended.' );
-}
-
-
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies
     $cookiehash = ''; // Remove in 1.4
@@ -306,9 +207,9 @@ if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF']
 endif;
 
 if ( !defined('USER_COOKIE') )
-	define('USER_COOKIE', 'wordpressuser_'. COOKIEHASH);
+	define('USER_COOKIE', 'wordpressuser');
 if ( !defined('PASS_COOKIE') )
-	define('PASS_COOKIE', 'wordpresspass_'. COOKIEHASH);
+	define('PASS_COOKIE', 'wordpresspass');
 if ( !defined('COOKIEPATH') )
 	define('COOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('home') . '/' ) );
 if ( !defined('SITECOOKIEPATH') )
@@ -317,14 +218,6 @@ if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', false);
 
 require (ABSPATH . WPINC . '/vars.php');
-
-/*
-// Check for hacks file if the option is enabled
-if (get_settings('hack_file')) {
-	if (file_exists(ABSPATH . '/my-hacks.php'))
-		require(ABSPATH . '/my-hacks.php');
-}
-*/
 
 if ( get_settings('active_plugins') ) {
 	$current_plugins = get_settings('active_plugins');
@@ -367,6 +260,8 @@ load_default_textdomain();
 
 // Pull in locale data after loading text domain.
 require_once(ABSPATH . WPINC . '/locale.php');
+
+$wp_locale = new WP_Locale();
 
 // Load functions for active theme.
 if ( file_exists(TEMPLATEPATH . "/functions.php") )

@@ -8,14 +8,20 @@ class WP_Roles {
 	var $role_key;
 
 	function WP_Roles() {
-		global $table_prefix;
-		$this->role_key = $table_prefix . 'user_roles';
+		$this->_init();
+	}
+
+	function _init () {
+		global $wpdb;
+		$this->role_key = $wpdb->prefix . 'user_roles';
 
 		$this->roles = get_option($this->role_key);
 
 		if ( empty($this->roles) )
 			return;
 
+		$this->role_objects = array();
+		$this->role_names =  array();
 		foreach ($this->roles as $role => $data) {
 			$this->role_objects[$role] = new WP_Role($role, $this->roles[$role]['capabilities']);
 			$this->role_names[$role] = $this->roles[$role]['name'];
@@ -121,7 +127,7 @@ class WP_User {
 	var $allcaps = array();
 
 	function WP_User($id, $name = '') {
-		global $table_prefix;
+		global $wpdb;
 
 		if ( empty($id) && empty($name) )
 			return;
@@ -144,7 +150,12 @@ class WP_User {
 		}
 
 		$this->id = $this->ID;
-		$this->cap_key = $table_prefix . 'capabilities';
+		$this->_init_caps();
+	}
+
+	function _init_caps() {
+		global $wpdb;
+		$this->cap_key = $wpdb->prefix . 'capabilities';
 		$this->caps = &$this->{$this->cap_key};
 		if ( ! is_array($this->caps) )
 			$this->caps = array();
@@ -186,7 +197,7 @@ class WP_User {
 	}
 
 	function set_role($role) {
-		foreach($this->roles as $oldrole) 
+		foreach($this->roles as $oldrole)
 			unset($this->caps[$oldrole]);
 		$this->caps[$role] = true;
 		$this->roles = array($role => true);
@@ -205,9 +216,9 @@ class WP_User {
 	}
 
 	function update_user_level_from_caps() {
-	    global $table_prefix;
+	    global $wpdb;
 	    $this->user_level = array_reduce(array_keys($this->allcaps), 	array(&$this, 'level_reduction'), 0);
-	    update_usermeta($this->id, $table_prefix.'user_level', $this->user_level);
+	    update_usermeta($this->id, $wpdb->prefix.'user_level', $this->user_level);
 	}
 
 	function add_cap($cap, $grant = true) {
@@ -219,6 +230,14 @@ class WP_User {
 		if ( empty($this->caps[$cap]) ) return;
 		unset($this->caps[$cap]);
 		update_usermeta($this->id, $this->cap_key, $this->caps);
+	}
+
+	function remove_all_caps() {
+		global $wpdb;
+		$this->caps = array();
+		update_usermeta($this->id, $this->cap_key, '');
+		update_usermeta($this->id, $wpdb->prefix.'user_level', '');
+		$this->get_role_caps();
 	}
 
 	//has_cap(capability_or_role_name) or
@@ -395,7 +414,7 @@ function map_meta_cap($cap, $user_id) {
 
 // Capability checking wrapper around the global $current_user object.
 function current_user_can($capability) {
-	global $current_user;
+	$current_user = wp_get_current_user();
 
 	$args = array_slice(func_get_args(), 1);
 	$args = array_merge(array($capability), $args);
@@ -432,79 +451,6 @@ function remove_role($role) {
 		$wp_roles = new WP_Roles();
 
 	return $wp_roles->remove_role($role);
-}
-
-//
-// These are deprecated.  Use current_user_can().
-//
-
-/* returns true if $user_id can create a new post */
-function user_can_create_post($user_id, $blog_id = 1, $category_id = 'None') {
-	$author_data = get_userdata($user_id);
-	return ($author_data->user_level > 1);
-}
-
-/* returns true if $user_id can create a new post */
-function user_can_create_draft($user_id, $blog_id = 1, $category_id = 'None') {
-	$author_data = get_userdata($user_id);
-	return ($author_data->user_level >= 1);
-}
-
-/* returns true if $user_id can edit $post_id */
-function user_can_edit_post($user_id, $post_id, $blog_id = 1) {
-	if ( function_exists('is_site_admin') && !is_site_admin() && function_exists('is_blog_user') && !is_blog_user() )
-		return false;
-
-	$author_data = get_userdata($user_id);
-	$post = get_post($post_id);
-	$post_author_data = get_userdata($post->post_author);
-
-	if ( (($user_id == $post_author_data->ID) && !($post->post_status == 'publish' &&  $author_data->user_level < 2))
-	     || ($author_data->user_level > $post_author_data->user_level)
-	     || ($author_data->user_level >= 10) ) {
-		return true;
-	} else {
-		return false;
-	}
-}
-
-/* returns true if $user_id can delete $post_id */
-function user_can_delete_post($user_id, $post_id, $blog_id = 1) {
-	// right now if one can edit, one can delete
-	return user_can_edit_post($user_id, $post_id, $blog_id);
-}
-
-/* returns true if $user_id can set new posts' dates on $blog_id */
-function user_can_set_post_date($user_id, $blog_id = 1, $category_id = 'None') {
-	$author_data = get_userdata($user_id);
-	return (($author_data->user_level > 4) && user_can_create_post($user_id, $blog_id, $category_id));
-}
-
-/* returns true if $user_id can edit $post_id's date */
-function user_can_edit_post_date($user_id, $post_id, $blog_id = 1) {
-	$author_data = get_userdata($user_id);
-	return (($author_data->user_level > 4) && user_can_edit_post($user_id, $post_id, $blog_id));
-}
-
-/* returns true if $user_id can edit $post_id's comments */
-function user_can_edit_post_comments($user_id, $post_id, $blog_id = 1) {
-	// right now if one can edit a post, one can edit comments made on it
-	return user_can_edit_post($user_id, $post_id, $blog_id);
-}
-
-/* returns true if $user_id can delete $post_id's comments */
-function user_can_delete_post_comments($user_id, $post_id, $blog_id = 1) {
-	// right now if one can edit comments, one can delete comments
-	return user_can_edit_post_comments($user_id, $post_id, $blog_id);
-}
-
-function user_can_edit_user($user_id, $other_user) {
-	$user  = get_userdata($user_id);
-	$other = get_userdata($other_user);
-	if ( $user->user_level > $other->user_level || $user->user_level > 8 || $user->ID == $other->ID )
-		return true;
-	else
-		return false;
 }
 
 ?>

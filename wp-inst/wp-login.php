@@ -227,7 +227,7 @@ default:
 <?php
 if ( $error ) {
 	echo "<div id='login_error'>$error</div>";
-	echo "<p align='center'><strong>Note:</strong> You must <a href='http://www.google.com/cookies.html'>enable cookies</a> to use WordPress.com.</p>";
+	echo "<p align='center'><strong>Note:</strong> You must <a href='http://www.google.com/cookies.html'>enable cookies</a> to use WordPress.</p>";
 }
 ?>
 

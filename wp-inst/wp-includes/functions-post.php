@@ -199,7 +199,7 @@ function wp_insert_post($postarr = array()) {
 				(post_id,meta_key,meta_value) 
 				VALUES ('$post_ID','_encloseme','1')
 			");
-			spawn_pinger();
+			wp_schedule_single_event(time(), 'do_pings');
 		}
 	} else if ($post_type == 'page') {
 		wp_cache_delete('all_page_ids', 'pages');
@@ -210,9 +210,10 @@ function wp_insert_post($postarr = array()) {
 				add_post_meta($post_ID, '_wp_page_template',  $page_template, true);
 	}
 
-	if ( 'future' == $post_status )
-		wp_schedule_event(mysql2date('U', $post_date), 'once', 'publish_future_post', $post_ID);
-
+	if ( 'future' == $post_status ) {
+		wp_schedule_single_event(mysql2date('U', $post_date), 'publish_future_post', $post_ID);
+	}
+		
 	do_action('save_post', $post_ID);
 	do_action('wp_insert_post', $post_ID);
 
@@ -383,9 +384,14 @@ function wp_delete_attachment($postid) {
 
 	if ( ! empty($meta['thumb']) ) {
 		// Don't delete the thumb if another attachment uses it
-		if (! $foo = $wpdb->get_row("SELECT meta_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attachment_metadata' AND meta_value LIKE '%".$wpdb->escape($meta['thumb'])."%' AND post_id <> $postid"))
-			@ unlink(str_replace(basename($file), $meta['thumb'], $file));
+		if (! $wpdb->get_row("SELECT meta_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attachment_metadata' AND meta_value LIKE '%".$wpdb->escape($meta['thumb'])."%' AND post_id <> $postid")) {
+			$thumbfile = str_replace(basename($file), $meta['thumb'], $file);
+			$thumbfile = apply_filters('wp_delete_file', $thumbfile);
+			@ unlink($thumbfile);
+		}
 	}
+
+	$file = apply_filters('wp_delete_file', $file);
 
 	if ( ! empty($file) )
 		@ unlink($file);
@@ -999,6 +1005,111 @@ function wp_upload_bits($name, $type, $bits) {
 	$url = $upload['url'] . "/$filename";
 
 	return array('file' => $new_file, 'url' => $url, 'error' => false);
+}
+
+function do_all_pings() {
+	global $wpdb;
+
+	// Do pingbacks
+	while ($ping = $wpdb->get_row("SELECT * FROM {$wpdb->posts}, {$wpdb->postmeta} WHERE {$wpdb->posts}.ID = {$wpdb->postmeta}.post_id AND {$wpdb->postmeta}.meta_key = '_pingme' LIMIT 1")) {
+		$wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE post_id = {$ping->ID} AND meta_key = '_pingme';");
+		pingback($ping->post_content, $ping->ID);
+	}
+	
+	// Do Enclosures
+	while ($enclosure = $wpdb->get_row("SELECT * FROM {$wpdb->posts}, {$wpdb->postmeta} WHERE {$wpdb->posts}.ID = {$wpdb->postmeta}.post_id AND {$wpdb->postmeta}.meta_key = '_encloseme' LIMIT 1")) {
+		$wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE post_id = {$enclosure->ID} AND meta_key = '_encloseme';");
+		do_enclose($enclosure->post_content, $enclosure->ID);
+	}
+
+	// Do Trackbacks
+	$trackbacks = $wpdb->get_results("SELECT ID FROM $wpdb->posts WHERE CHAR_LENGTH(TRIM(to_ping)) > 7 AND post_status = 'publish'");
+	if ( is_array($trackbacks) ) {
+		foreach ( $trackbacks as $trackback ) {
+			do_trackbacks($trackback->ID);
+		}
+	}
+
+	//Do Update Services/Generic Pings
+	generic_ping();
+}
+
+/**
+ * Places two script links in <head>: one to get tinyMCE (big), one to configure and start it (small)
+ */
+function tinymce_include() {
+	$ver = '04162006';
+	$src1 = get_settings('siteurl') . "/wp-includes/js/tinymce/tiny_mce_gzip.php?ver=$ver";
+	$src2 = get_settings('siteurl') . "/wp-includes/js/tinymce/tiny_mce_config.php?ver=$ver";
+
+	echo "<script type='text/javascript' src='$src1'></script>\n";
+	echo "<script type='text/javascript' src='$src2'></script>\n";
+}
+
+/**
+ * Places a textarea according to the current user's preferences, filled with $content.
+ * Also places a script block that enables tabbing between Title and Content.
+ *
+ * @param string Editor contents
+ * @param string (optional) Previous form field's ID (for tabbing support)
+ */
+function the_editor($content, $id = 'content', $prev_id = 'title') {
+	$rows = get_settings('default_post_edit_rows');
+	if (($rows < 3) || ($rows > 100))
+		$rows = 12;
+
+	$rows = "rows='$rows'";
+
+	the_quicktags();
+
+	if ( user_can_richedit() )
+		add_filter('the_editor_content', 'wp_richedit_pre');
+
+	$the_editor = apply_filters('the_editor', "<div><textarea class='mceEditor' $rows cols='40' name='$id' tabindex='2' id='$id'>%s</textarea></div>\n");
+	$the_editor_content = apply_filters('the_editor_content', $content);
+
+	printf($the_editor, $the_editor_content);
+
+	?>
+	<script type="text/javascript">
+	//<!--
+	edCanvas = document.getElementById('<?php echo $id; ?>');
+	<?php if ( user_can_richedit() ) : ?>
+	// This code is meant to allow tabbing from Title to Post (TinyMCE).
+	if ( tinyMCE.isMSIE )
+		document.getElementById('<?php echo $prev_id; ?>').onkeydown = function (e)
+			{
+				e = e ? e : window.event;
+				if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
+					var i = tinyMCE.selectedInstance;
+					if(typeof i ==  'undefined')
+						return true;
+	                                tinyMCE.execCommand("mceStartTyping");
+					this.blur();
+					i.contentWindow.focus();
+					e.returnValue = false;
+					return false;
+				}
+			}
+	else
+		document.getElementById('<?php echo $prev_id; ?>').onkeypress = function (e)
+			{
+				e = e ? e : window.event;
+				if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
+					var i = tinyMCE.selectedInstance;
+					if(typeof i ==  'undefined')
+						return true;
+	                                tinyMCE.execCommand("mceStartTyping");
+					this.blur();
+					i.contentWindow.focus();
+					e.returnValue = false;
+					return false;
+				}
+			}
+	<?php endif; ?>
+	//-->
+	</script>
+	<?php
 }
 
 ?>

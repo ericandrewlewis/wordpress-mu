@@ -80,8 +80,10 @@ $global_db_list = array(
 			)
 			);
 
+$based = 'BASE';
+
 /* Stop editing */
 
 define('ABSPATH', dirname(__FILE__).'/');
-require_once(ABSPATH.'wpmu-settings.php');
+require_once(ABSPATH.'wp-settings.php');
 ?>
