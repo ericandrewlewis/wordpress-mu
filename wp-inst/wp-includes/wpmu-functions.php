@@ -957,7 +957,7 @@ function wpmu_validate_signup($blog_id, $blog_title, $user_name, $user_email) {
 
 	// Has someone already signed up for this domain?
 	// TODO: Check email too?
-	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE domain = '$mydomain'");
+	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE domain = '$mydomain' AND path = '$base'");
 	if ( ! empty($signup) ) {
 		$registered_at =  mysql2date('U', $signup->registered);
 		$now = current_time( 'timestamp', true );
