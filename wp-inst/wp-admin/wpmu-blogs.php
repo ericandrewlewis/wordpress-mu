@@ -25,10 +25,12 @@ switch( $_GET[ 'action' ] ) {
     $details = $wpdb->get_row( $query, ARRAY_A );
 
     print "<h2>Edit Blog</h2>";
+    print "<a href='http://{$details[ 'domain' ]}/'>{$details[ 'domain' ]}</a>";
     ?>
     <form name="form1" method="post" action="wpmu-edit.php?action=updateblog"> 
     <input type="hidden" name="id" value="<?php echo $_GET[ 'id' ] ?>" /> 
     <table><td valign='top'>
+    <div class="wrap">
     <table width="100%" border='0' cellspacing="2" cellpadding="5" class="editform"> 
 	<tr valign="top"> 
 	<th scope="row">URL</th> 
@@ -70,6 +72,12 @@ switch( $_GET[ 'action' ] ) {
 	    <input type='radio' name='blog[spam]' value='0' <?php if( $details[ 'spam' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
 	    </td> 
 	</tr> 
+	<tr valign="top"> 
+	<th scope="row">Deleted</th> 
+	<td><input type='radio' name='blog[deleted]' value='1' <?php if( $details[ 'deleted' ] == '1' ) echo " checked"?>> Yes&nbsp;&nbsp;
+	    <input type='radio' name='blog[deleted]' value='0' <?php if( $details[ 'deleted' ] == '0' ) echo " checked"?>> No &nbsp;&nbsp;
+	    </td> 
+	</tr> 
     <tr><td colspan='2'>
     <br />
     <br />
@@ -108,7 +116,7 @@ switch( $_GET[ 'action' ] ) {
 	    	?>
 		<tr valign="top"> 
 		<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
-		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo $val[ 'option_value' ] ?>" size="40" /></td> 
+		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo stripslashes( $val[ 'option_value' ] ) ?>" size="40" /></td> 
 		</tr> 
 		<?php
 	}
@@ -118,6 +126,7 @@ switch( $_GET[ 'action' ] ) {
     <p class="submit">
       <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
     </p>
+    </div>
     </td>
     <td valign='top'>
     <?php
@@ -149,14 +158,14 @@ switch( $_GET[ 'action' ] ) {
 	}
     }
     if( $out != '' ) {
-	print "<h3>Blog Themes</h3>";
+	print "<div class='wrap'><h3>Blog Themes</h3>";
 	print '<table width="100%" border="0" cellspacing="2" cellpadding="5" class="editform">';
 	print '<tr><th>Theme</th><th>Enable</th></tr>';
 	print $out;
-	print "</table>";
+	print "</table></div>";
     }
     $blogusers = get_users_of_blog( $_GET[ 'id' ] );
-    print "<h3>Blog Users</h3>";
+    print "<div class='wrap'><h3>Blog Users</h3>";
     if( is_array( $blogusers ) ) {
 	    print "<table width='100%'><caption>Current Users</caption>";
 	    print "<tr><th>User</th><th>Role</th><th>Remove</th><th></th></tr>";
@@ -205,7 +214,10 @@ switch( $_GET[ 'action' ] ) {
 		?></select></td>
 	</tr>
 </table>
-<br />
+</div>
+<div class='wrap'><strong>Misc Blog Actions</strong>
+<p><?php do_action( "wpmueditblogaction", $_GET[ 'id' ] ); ?></p>
+</div>
 <p class="submit">
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
 </p> 
@@ -232,15 +244,21 @@ switch( $_GET[ 'action' ] ) {
 			WHERE site_id = '".$wpdb->siteid."' ";
 		if( $_GET[ 's' ] != '' ) {
 			$query = "SELECT blog_id, {$wpdb->blogs}.domain, registered, last_updated
-				FROM ".$wpdb->blogs.", ".$wpdb->site." 
-				WHERE site_id = '".$wpdb->siteid."'
-				AND   ".$wpdb->blogs.".site_id = ".$wpdb->site.".id
-				AND   {$wpdb->blogs}.domain like '%".$_GET[ 's' ]."%'";
+				FROM $wpdb->blogs, $wpdb->site 
+				WHERE site_id = '$wpdb->siteid'
+				AND   {$wpdb->blogs}.site_id = {$wpdb->site}.id
+				AND   {$wpdb->blogs}.domain like '%". $_GET[ 's' ]."%'";
 		} elseif( $_GET[ 'blog_id' ] != '' ) {
 			$query = "SELECT * 
-				FROM ".$wpdb->blogs." 
-				WHERE site_id = '".$wpdb->siteid."'
-				AND   blog_id = '".$_GET[ 'blog_id' ]."'";
+				FROM $wpdb->blogs 
+				WHERE site_id = '$wpdb->siteid'
+				AND   blog_id = '".intval($_GET[ 'blog_id' ])."'";
+		} elseif( $_GET[ 'ip_address' ] != '' ) {
+			$query = "SELECT * 
+				FROM $wpdb->blogs, wp_registration_log
+				WHERE site_id = '$wpdb->siteid'
+				AND   {$wpdb->blogs}.blog_id = wp_registration_log.blog_id
+				AND   wp_registration_log.IP LIKE ('%".$_GET[ 'ip_address' ]."%')";
 		}
 		if( isset( $_GET[ 'sortby' ] ) == false ) {
 			$_GET[ 'sortby' ] = 'ID';
@@ -260,7 +278,8 @@ switch( $_GET[ 'action' ] ) {
 			$query .= "ASC";
 		}
 
-		$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+		if ( $_GET[ 'ip_address' ] == '' )
+			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
 		$blog_list = $wpdb->get_results( $query, ARRAY_A );
 		if( count( $blog_list ) < $num ) {
 			$next = false;
@@ -298,6 +317,7 @@ function check_all_rows() {
   <input type='hidden' name='action' value='blogs'>
   Name:&nbsp;<input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /><br />
   Blog&nbsp;ID:&nbsp;<input type="text" name="blog_id" value="<?php if (isset($_GET[ 'blog_id' ])) echo wp_specialchars($_GET[ 'blog_id' ], 1); ?>" size="10" /><br />
+  IP Address: <input type="text" name="ip_address" value="<?php if (isset($_GET[ 'ip_address' ])) echo wp_specialchars($_GET[ 'ip_address' ], 1); ?>" size="10" /><br />
   <input type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
   </fieldset>
   <?php
@@ -310,7 +330,7 @@ function check_all_rows() {
   <legend><?php _e('Blog Navigation') ?></legend> 
   <?php 
 
-  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ] . "&s=" . $_GET[ 's' ];
+  $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ] . "&s=" . $_GET[ 's' ] . "&ip_address=" . $_GET[ 'ip_address' ];
 
   if( $start == 0 ) { 
 	  echo 'Previous&nbsp;Blogs';
@@ -366,18 +386,18 @@ $posts_columns['control_delete']    = '';
 	</tr>
 <?php
 if ($blog_list) {
-$bgcolor = '';
-foreach ($blog_list as $blog) { 
-	$class = ('alternate' == $class) ? '' : 'alternate';
-	if( is_archived( $blog[ 'blog_id' ] ) == '1' ) {
-		?> 
-		<tr style='background: #fee' class='<?php echo $class; ?>'>
-		<?php
-	} else {
-		?> 
-		<tr class='<?php echo $class; ?>'>
-		<?php
-	}
+	$bgcolor = '';
+	$status_list = array( "archived" => "#fee", "spam" => "#faa", "deleted" => "#f55" );
+	foreach ($blog_list as $blog) { 
+		$class = ('alternate' == $class) ? '' : 'alternate';
+		reset( $status_list );
+		$bgcolour = "";
+		while( list( $status, $col ) = each( $status_list ) ) {
+			if( get_blog_status( $blog[ 'blog_id' ], $status ) == 1 ) {
+				$bgcolour = "style='background: $col'";
+			}
+		}
+		print "<tr $bgcolour class='$class'>";
 
 foreach($posts_columns as $column_name=>$column_display_name) {
 
@@ -410,7 +430,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'users':
 		?>
-		<td valign='top'><?php $blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); if( is_array( $blogusers ) ) while( list( $key, $val ) = each( $blogusers ) ) { print '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a><BR>'; }  ?></td>
+		<td valign='top'><?php $blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); if( is_array( $blogusers ) ) while( list( $key, $val ) = each( $blogusers ) ) { print '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a> ('.$val->user_email.')<BR>'; }  ?></td>
 		<?php
 		break;
 

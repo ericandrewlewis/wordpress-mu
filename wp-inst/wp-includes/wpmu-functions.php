@@ -173,14 +173,15 @@ function get_blog_details( $id ) {
 
 	if ( $details )
 		return unserialize( $details );
-	
+
 	$details = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id' /* get_blog_details */" );
-	
+
 	if ( !$details )
 		return false;
 
-	$details->blogname = stripslashes( $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" ) );
-	$details->siteurl  = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
+	$details->blogname = get_blog_option($id, 'blogname');
+	$details->siteurl  = get_blog_option($id, 'siteurl');
+
 	wp_cache_set( $id, serialize( $details ), 'blog-details' );
 
 	$key = md5( $details->domain . $details->path );
@@ -192,23 +193,18 @@ function get_blog_details( $id ) {
 function refresh_blog_details( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 	
-	if ( defined('WP_INSTALLING') )
-		return;
-	
-	$details = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id' /* refresh_blog_details */" );
-	$details->blogname = stripslashes( $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'blogname'" ) );
-	$details->siteurl  = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$id}_options WHERE option_name = 'siteurl'" );
+	$details = get_blog_details( $id );
 	wp_cache_delete( $id , 'blog-details' );
 
 	$key = md5( $details->domain . $details->path );
 	wp_cache_delete( $key , 'blog-lookup' );
 
-	return $details;
+	//return $details;
 }
 
 function get_current_user_id() {
 	global $current_user;
-	return $current_user->data->ID;
+	return $current_user->ID;
 }
 
 function is_site_admin( $user_login = false ) {
@@ -220,7 +216,7 @@ function is_site_admin( $user_login = false ) {
 	if ( $user_login )
 		$user_login = sanitize_user( $user_login );
 	else 
-		$user_login = $current_user->data->user_login;
+		$user_login = $current_user->user_login;
 
 	$site_admins = get_site_option( 'site_admins', array('admin') );
 	if( in_array( $user_login, $site_admins ) )
@@ -431,17 +427,16 @@ function get_blogs_of_user( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 	
 	$user = get_userdata( $id );
+	$blogs = array();
 
 	$i = 0;
 	foreach ( $user as $key => $value ) {
-		$i++;;
-
 		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
 			preg_match('/wp_(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) ) {
-				$blogs[$i]->userblog_id = $match[1];
-				$blogs[$i]->domain = $blog->domain;
+				$blogs[$match[1]]->userblog_id = $match[1];
+				$blogs[$match[1]]->domain = $blog->domain;
 			} else { // Temporary fix for people who don't get usermeta cleaned up when a blog is deleted
 				delete_usermeta( $id, "wp_{$match[1]}_capabilities" );
 				delete_usermeta( $id, "wp_{$match[1]}_user_level" );
@@ -453,18 +448,11 @@ function get_blogs_of_user( $id ) {
 }
 
 function is_archived( $id ) {
-	global $wpdb;
-	$details = get_blog_details( $id );
-	if( $details ) {
-		return $details->archived;
-	}
-	return $wpdb->get_var( "SELECT archived FROM {$wpdb->blogs} WHERE blog_id = '$id'" );
+	return get_blog_status($id, 'archived');
 }
 
 function update_archived( $id, $archived ) {
-	global $wpdb;
-	$wpdb->query( "UPDATE {$wpdb->blogs} SET archived = '{$archived}' WHERE blog_id = '$id'" );
-	refresh_blog_details( $id );
+	update_blog_status($id, 'archived', $archived);
 
 	return $archived;
 }
@@ -472,10 +460,10 @@ function update_archived( $id, $archived ) {
 function update_blog_status( $id, $pref, $value ) {
 	global $wpdb;
 
-	$wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}' WHERE blog_id = '$id'" );
-	$wpdb->query( "UPDATE {$wpdb->blogs} SET last_updated = NOW() WHERE blog_id = '$id'" );
-	refresh_blog_details( $id );
+	$wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}', last_updated = NOW() WHERE blog_id = '$id'" );
 
+	refresh_blog_details($id);
+	
 	if( $pref == 'spam' ) {
 		if( $value == 1 ) {
 			do_action( "make_spam_blog", $id );
@@ -850,7 +838,82 @@ function validate_email( $email, $check_domain = true) {
     return false;
 }
 
-function wpmu_validate_signup($blog_id, $blog_title, $user_name, $user_email) {
+function wpmu_validate_user_signup($user_name, $user_email) {
+	global $wpdb;
+
+	$errors = new WP_Error();
+
+	$user_name = sanitize_title($user_name);
+
+	if ( empty( $user_name ) )
+	   	$errors->add('user_name', __("Please enter a username"));
+
+	preg_match( "/[a-zA-Z0-9]+/", $user_name, $maybe );
+
+	if( $user_name != $maybe[0] ) {
+	    $errors->add('user_name', __("Only letters and numbers allowed"));
+	}
+
+	$illegal_names = get_site_option( "illegal_names" );
+	if( in_array( $user_name, $illegal_names ) == true ) {
+	    $errors->add('user_name',  __("That username is not allowed"));
+	}
+
+	if( strlen( $user_name ) < 4 ) {
+	    $errors->add('user_name',  __("Username must be at least 4 characters"));
+	}
+
+	if ( strpos( " " . $user_name, "_" ) != false )
+		$errors->add('user_name', __("Sorry, usernames may not contain the character '_'!"));
+
+	// all numeric?
+	preg_match( '/[0-9]*/', $user_name, $match );
+	if ( $match[0] == $user_name )
+		$errors->add('user_name', __("Sorry, usernames must have letters too!"));
+		
+	if ( !is_email( $user_email ) )
+	    $errors->add('user_email', __("Please enter a correct email address"));
+
+	if ( !validate_email( $user_email ) )
+		$errors->add('user_email', __("Please check your email address."));
+
+	$limited_email_domains = get_site_option( 'limited_email_domains' );
+	if ( is_array( $limited_email_domains ) && empty( $limited_email_domains ) == false ) {
+		$emaildomain = substr( $user_email, 1 + strpos( $user_email, '@' ) );
+		if( in_array( $emaildomain, $limited_email_domains ) == false ) {
+			$errors->add('user_email', __("Sorry, that email address is not allowed!"));
+		}
+	}
+
+	// Check if the username has been used already.
+	if ( username_exists($user_name) )
+		$errors->add('user_name', __("Sorry, that username already exists!"));
+
+	// Check if the email address has been used already.
+	//if ( email_exists($user_email) )
+	//	$errors->add('user_email', __("Sorry, that email address is already used!"));
+
+	// Has someone already signed up for this username?
+	// TODO: Check email too?
+	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE user_login = '$user_name'");
+	if ( ! empty($signup) ) {
+		$registered_at =  mysql2date('U', $signup->registered);
+		$now = current_time( 'timestamp', true );
+		$diff = $now - $registered_at;
+		// If registered more than two days ago, cancel registration and let this signup go through.
+		if ( $diff > 172800 ) {
+			$wpdb->query("DELETE FROM $wpdb->signups WHERE user_login = '$user_name'");
+		} else {
+			$errors->add('user_name', __("That username is currently reserved but may be available in a couple days."));
+		}
+	}
+
+	$result = array('user_name' => $user_name, 'user_email' => $user_email,	'errors' => $errors);
+
+	return apply_filters('wpmu_validate_user_signup', $result);
+}
+
+function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	global $wpdb, $domain, $base;
 
 	$errors = new WP_Error();
@@ -858,59 +921,6 @@ function wpmu_validate_signup($blog_id, $blog_title, $user_name, $user_email) {
 	if( $illegal_names == false ) {
 	    $illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator" );
 	    add_site_option( "illegal_names", $illegal_names );
-	}
-
-	// Validate username and email unless a user object was passed in.
-	if ( ! is_object($user_name) ) {
-		$user_name = sanitize_title($user_name);
-
-		if ( empty( $user_name ) )
-	    	$errors->add('user_name', __("Please enter a username"));
-
-		preg_match( "/[a-zA-Z0-9]+/", $user_name, $maybe );
-
-		if( $blog_id != $maybe[0] ) {
-		    $errors->add('user_name', __("Only letters and numbers allowed"));
-		}
-
-		if( in_array( $blog_id, $illegal_names ) == true ) {
-		    $errors->add('user_name',  __("That username is not allowed"));
-		}
-
-		if( strlen( $blog_id ) < 4 ) {
-		    $errors->add('user_name',  __("Username must be at least 4 characters"));
-		}
-
-		if ( strpos( " " . $user_name, "_" ) != false )
-			$errors->add('user_name', __("Sorry, usernames may not contain the character '_'!"));
-
-		// all numeric?
-		preg_match( '/[0-9]*/', $user_name, $match );
-		if ( $match[0] == $user_name )
-			$errors->add('user_name', __("Sorry, usernames must have letters too!"));
-		
-		if ( !is_email( $user_email ) )
-		    $errors->add('user_email', __("Please enter a correct email address"));
-
-		if ( !validate_email( $user_email ) )
-			$errors->add('user_email', __("Please check your email address."));
-
-		$limited_email_domains = get_site_option( 'limited_email_domains' );
-		if ( is_array( $limited_email_domains ) && empty( $limited_email_domains ) == false ) {
-			$emaildomain = substr( $user_email, 1 + strpos( $user_email, '@' ) );
-			if( in_array( $emaildomain, $limited_email_domains ) == false ) {
-				$errors->add('user_email', __("Sorry, that email address is not allowed!"));
-			}
-		}
-
-		// Check if the username has been used already.
-		if ( username_exists($user_name) )
-			$errors->add('user_name', __("Sorry, that username already exists!"));
-
-		// Check if the email address has been used already.
-		//if ( email_exists($user_email) )
-		//	$errors->add('user_email', __("Sorry, that email address is already used!"));
-
 	}
 
 	$blog_id = sanitize_title($blog_id);
@@ -945,19 +955,18 @@ function wpmu_validate_signup($blog_id, $blog_title, $user_name, $user_email) {
 	    $errors->add('blog_title', __("Please enter a blog title"));
 
 	// Check if the domain has been used already.
-	if ( constant( 'VHOST' ) == 'yes' ) {
-		$mydomain = "$blog_id.$domain";
-		$base = '/';
-	} else {
-		$mydomain = $domain;
-		$base = "/$blog_id/";
-	}
+	$mydomain = "$blog_id.$domain";
 	if ( domain_exists($mydomain, $base) )
 		$errors->add('blog_id', __("Sorry, that blog already exists!"));
 
+	if ( username_exists($blog_id) ) {
+		if  ( !is_object($user) && ( $user->user_login != $blog_id ) )
+			$errors->add('blog_id', __("Sorry, that blog is reserved!"));
+	}
+
 	// Has someone already signed up for this domain?
 	// TODO: Check email too?
-	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE domain = '$mydomain' AND path = '$base'");
+	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE domain = '$mydomain'");
 	if ( ! empty($signup) ) {
 		$registered_at =  mysql2date('U', $signup->registered);
 		$now = current_time( 'timestamp', true );
@@ -970,15 +979,15 @@ function wpmu_validate_signup($blog_id, $blog_title, $user_name, $user_email) {
 		}
 	}
 
-	$result = array('domain' => $mydomain, 'path' => $base, 'blog_id' => $blog_id, 'blog_title' => $blog_title, 'user_name' => $user_name, 'user_email' => $user_email,
+	$result = array('domain' => $mydomain, 'path' => $base, 'blog_id' => $blog_id, 'blog_title' => $blog_title,
 				'errors' => $errors);
 
-	return apply_filters('wpmu_validate_signup', $result);
+	return apply_filters('wpmu_validate_blog_signup', $result);
 }
 
 // Record signup information for future activation. wpmu_validate_signup() should be run
 // on the inputs before calling wpmu_signup().
-function wpmu_signup($domain, $path, $title, $user, $user_email, $meta = '') {
+function wpmu_signup_blog($domain, $path, $title, $user, $user_email, $meta = '') {
 	global $wpdb;
 
 	$key = substr( md5( time() . rand() . $domain ), 0, 16 );
@@ -990,11 +999,23 @@ function wpmu_signup($domain, $path, $title, $user, $user_email, $meta = '') {
 	$wpdb->query( "INSERT INTO $wpdb->signups ( domain, path, title, user_login, user_email, registered, activation_key, meta )
 					VALUES ( '$domain', '$path', '$title', '$user', '$user_email', '$registered', '$key', '$meta' )" );
 
-	wpmu_signup_notification($domain, $path, $title, $user, $user_email, $key, $meta);
+	wpmu_signup_blog_notification($domain, $path, $title, $user, $user_email, $key, $meta);
+}
+
+function wpmu_signup_user($user, $user_email, $meta = '') {
+	global $wpdb;
+
+	$key = substr( md5( time() . rand() . $user_email ), 0, 16 );
+	$registered = current_time('mysql', true);
+	$meta = serialize($meta);
+	$wpdb->query( "INSERT INTO $wpdb->signups ( domain, path, title, user_login, user_email, registered, activation_key, meta )
+					VALUES ( '', '', '', '$user', '$user_email', '$registered', '$key', '$meta' )" );
+
+	wpmu_signup_user_notification($user, $user_email, $key, $meta);
 }
 
 // Notify user of signup success.
-function wpmu_signup_notification($domain, $path, $title, $user, $user_email, $key, $meta = '') {
+function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_email, $key, $meta = '') {
 	// Send email with activation link.
 	$message_headers = 'From: ' . stripslashes($title) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
 	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), 
@@ -1004,7 +1025,17 @@ function wpmu_signup_notification($domain, $path, $title, $user, $user_email, $k
 	wp_mail($user_email, $subject, $message, $message_headers);
 }
 
-function wpmu_activate_blog($key) {
+function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
+	// Send email with activation link.
+	$message_headers = 'From: ' . stripslashes($user) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), 
+		"http://{$_SERVER[ 'SERVER_NAME' ]}/wp-activate.php?key=$key", "http://{$_SERVER[ 'SERVER_NAME' ]}");
+	// TODO: Don't hard code activation link.
+	$subject = sprintf(__('Activate %s'), $user);
+	wp_mail($user_email, $subject, $message, $message_headers);
+}
+
+function wpmu_activate_signup($key) {
 	global $wpdb;
 
 	$result = array();
@@ -1028,16 +1059,22 @@ function wpmu_activate_blog($key) {
 	if ( ! $user_id )
 		return new WP_Error('create_user', __('Could not create user'));
 
+	$now = current_time('mysql', true);
+
+	if ( empty($signup->domain) ) {
+		$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
+		wpmu_welcome_user_notification($user_id, $password, $meta);
+		do_action('wpmu_activate_user', $user_id, $password, $meta);
+		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
+	}
+
 	$meta = unserialize($signup->meta);	
-	
 	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta);
 
 	// TODO: What to do if we create a user but cannot create a blog?
 	if ( is_wp_error($blog_id) )
 		return $blog_id;
 
-	//$wpdb->query("DELETE FROM $wpdb->signups WHERE activation_key = '$key'");
-	$now = current_time('mysql', true);
 	$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
 
 	wpmu_welcome_notification($blog_id, $user_id, $password, $signup->title, $meta);
@@ -1064,11 +1101,12 @@ function wpmu_create_user( $user_name, $password, $email) {
 	update_user_option($user_id, 'capabilities', '');
 	update_user_option($user_id, 'user_level', '');
 
+	do_action( 'wpmu_new_user', $user_id );
+	
 	return $user_id;
 }
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
-	global $wp_queries;
 	$domain = addslashes( $domain );
 	$title = addslashes( $title );
 	$user_id = (int) $user_id;
@@ -1125,7 +1163,7 @@ function insert_blog($domain, $path, $site_id) {
 
 // Install an empty blog.  wpdb should already be switched.
 function install_blog($blog_id, $blog_title = '') {
-	global $wpdb, $table_prefix, $wp_queries;
+	global $wpdb, $table_prefix;
 	$wpdb->hide_errors();
 
 	require_once( ABSPATH . 'wp-admin/upgrade-functions.php');
@@ -1137,7 +1175,6 @@ function install_blog($blog_id, $blog_title = '') {
 
 	// Set everything up
 	make_db_current_silent();
-	//make_db_current();
 	populate_options();
 
 	// fix url.
@@ -1168,18 +1205,6 @@ function install_blog_defaults($blog_id, $user_id) {
 	$wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
 	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', 1, '$user_id', 'http://wordpress.com/feed/');");
 	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', 1, '$user_id', 'http://wordpress.org/development/feed/');");
-
-	// Invite
-	$invitee_id = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE meta_key = '{$_POST[ 'u' ]}_invited_by' AND user_id = '0'" );
-	if( $invitee_id ) {
-		$invitee_user_login = $wpdb->get_row( "SELECT user_login, user_email FROM {$wpdb->users} WHERE ID = '$invitee_id'" );
-		$invitee_blog = $wpdb->get_row( "SELECT blog_id, meta_value from {$wpdb->blogs}, {$wpdb->usermeta} WHERE user_id = '$invitee_id' AND meta_key = 'source_domain' AND {$wpdb->usermeta}.meta_value = {$wpdb->blogs}.domain" );
-		if( $invitee_blog )
-			$invitee_siteurl = $wpdb->get_var( "SELECT option_value FROM {$wpmuBaseTablePrefix}{$invitee_blog->blog_id}_options WHERE option_name = 'siteurl'" );
-	}
-
-	if( $invitee_siteurl && $invitee_user_login )
-		$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('{$invitee_siteurl}', '" . ucfirst( $invitee_user_login->user_login ) . "', 1, '$user_id', '');");
 
 	// First post
 	$now = date('Y-m-d H:i:s');
@@ -1249,11 +1274,42 @@ SITE_NAME" ) );
 	$welcome_email = str_replace( "PASSWORD", $password, $welcome_email );
 
 	$welcome_email = apply_filters( "update_welcome_email", $welcome_email, $blog_id, $user_id, $password, $title, $meta);
-	$message_headers = 'From: ' . $title . ' <wordpress@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$message_headers = 'From: ' . $title . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
 	$subject = sprintf(__('New %s Blog: %s'), $current_site->site_name, $title);
+	wp_mail($user->user_email, $subject, $message, $message_headers);	
+}
+
+function wpmu_welcome_user_notification($user_id, $password, $meta = '') {
+	global $current_site;
+
+	$welcome_email = __( "Dear User,
+		
+Your new account is setup.
+
+You can log in with the following information:
+Username: USERNAME
+Password: PASSWORD
+
+Thanks!
+
+--The WordPress Team
+SITE_NAME" );
+
+	$user = new WP_User($user_id);
+
+	$welcome_email = apply_filters( "update_welcome_user_email", $welcome_email, $user_id, $password, $meta);
+	$welcome_email = str_replace( "SITE_NAME", $current_site->site_name, $welcome_email );
+	$welcome_email = str_replace( "USERNAME", $user->user_login, $welcome_email );
+	$welcome_email = str_replace( "PASSWORD", $password, $welcome_email );
+
+	$message_headers = 'From: ' . $title . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$message = $welcome_email;
+	if( empty( $current_site->site_name ) )
+		$current_site->site_name = "WordPress MU";
+	$subject = sprintf(__('New %s User: %s'), $current_site->site_name, $user->user_login);
 	wp_mail($user->user_email, $subject, $message, $message_headers);	
 }
 

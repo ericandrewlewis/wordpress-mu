@@ -8,7 +8,7 @@ require_once ('admin.php');
 
 $title = __('Manage Bookmarks');
 $this_file = $parent_file = 'link-manager.php';
-$list_js = true;
+wp_enqueue_script( 'listman' );
 
 $wpvarstoreset = array ('action', 'cat_id', 'linkurl', 'name', 'image', 'description', 'visible', 'target', 'category', 'link_id', 'submit', 'order_by', 'links_show_cat_id', 'rating', 'rel', 'notes', 'linkcheck[]');
 
@@ -110,16 +110,17 @@ bookmarks ordered by
 </form>
 
 <form id="links" method="post" action="link.php">
+<?php wp_nonce_field('bulk-bookmarks') ?>
 <input type="hidden" name="link_id" value="" />
 <input type="hidden" name="action" value="" />
 <input type="hidden" name="order_by" value="<?php echo wp_specialchars($order_by, 1); ?>" />
 <input type="hidden" name="cat_id" value="<?php echo (int) $cat_id ?>" />
-<table width="100%" cellpadding="3" cellspacing="3">
+<table class="widefat">
 	<thead>
 	<tr>
-		<th width="15%"><?php _e('Name') ?></th>
-		<th><?php _e('URI') ?></th>
-		<th><?php _e('Categories') ?></th>
+		<th width="15%" style="text-align: left"><?php _e('Name') ?></th>
+		<th style="text-align: left"><?php _e('URI') ?></th>
+		<th style="text-align: left"><?php _e('Categories') ?></th>
 		<th><?php _e('rel') ?></th>
 		<th><?php _e('Visible') ?></th>
 		<th colspan="2"><?php _e('Action') ?></th>
@@ -175,7 +176,7 @@ if ($links)
 <?php
 
 		echo '<td><a href="link.php?link_id='.$link->link_id.'&amp;action=edit" class="edit">'.__('Edit').'</a></td>';
-		echo '<td><a href="link.php?link_id='.$link->link_id.'&amp;action=delete"'." class='delete' onclick=\"return deleteSomething( 'link', $link->link_id , '".sprintf(__("You are about to delete the &quot;%s&quot; bookmark to %s.\\n&quot;Cancel&quot; to stop, &quot;OK&quot; to delete."), wp_specialchars($link->link_name, 1), wp_specialchars($link->link_url)).'\' );" class="delete">'.__('Delete').'</a></td>';
+		echo '<td><a href="' . wp_nonce_url('link.php?link_id='.$link->link_id.'&amp;action=delete', 'delete-bookmark_' . $link->link_id ) . '"'." class='delete' onclick=\"return deleteSomething( 'link', $link->link_id , '".sprintf(__("You are about to delete the &quot;%s&quot; bookmark to %s.\\n&quot;Cancel&quot; to stop, &quot;OK&quot; to delete."), wp_specialchars($link->link_name, 1), wp_specialchars($link->link_url)).'\' );" class="delete">'.__('Delete').'</a></td>';
 		echo '<td align="center"><input type="checkbox" name="linkcheck[]" value="'.$link->link_id.'" /></td>';
 		echo "\n    </tr>\n";
 	}

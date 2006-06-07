@@ -2,7 +2,7 @@
 require_once('admin.php');
 $title = __('Pages');
 $parent_file = 'edit.php';
-$list_js = true;
+wp_enqueue_script( 'listman' );
 require_once('admin-header.php');
 ?>
 
@@ -19,7 +19,7 @@ require_once('admin-header.php');
 </form>
 
 <?php
-wp('post_type=page&orderby=menu_order&what_to_show=posts&posts_per_page=15&posts_per_archive_page=-1');
+wp('post_type=page&orderby=menu_order&what_to_show=posts&posts_per_page=-1&posts_per_archive_page=-1');
 
 if ( $_GET['s'] )
 	$all = false;
@@ -28,27 +28,24 @@ else
 
 if ($posts) {
 ?>
-<table id="the-list-x" width="100%" cellpadding="3" cellspacing="3"> 
-  <tr> 
-    <th scope="col"><?php _e('ID') ?></th> 
-    <th scope="col"><?php _e('Title') ?></th> 
-    <th scope="col"><?php _e('Owner') ?></th>
-	<th scope="col"><?php _e('Updated') ?></th>
-	<th scope="col"></th> 
-    <th scope="col"></th> 
-    <th scope="col"></th> 
-  </tr> 
+<table class="widefat"> 
+  <thead>
+  <tr>
+    <th scope="col"><?php _e('ID') ?></th>
+    <th scope="col" style="text-align: left"><?php _e('Title') ?></th>
+    <th scope="col" style="text-align: left"><?php _e('Owner') ?></th>
+	<th scope="col" style="text-align: left"><?php _e('Updated') ?></th>
+	<th scope="col" colspan="3"><?php _e('Action'); ?></th>
+  </tr>
+  </thead>
+  <tbody id="the-list">
 <?php
 page_rows(0, 0, $posts, $all);
 ?>
-</table> 
+  </tbody>
+</table>
 
 <div id="ajax-response"></div>
-
-<div class="navigation">
-<div class="alignleft"><?php next_posts_link(__('&laquo; Previous Entries')) ?></div>
-<div class="alignright"><?php previous_posts_link(__('Next Entries &raquo;')) ?></div>
-</div>
 
 <?php
 } else {

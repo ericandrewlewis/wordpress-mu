@@ -157,6 +157,12 @@ function is_preview() {
 	return $wp_query->is_preview;
 }
 
+function is_robots() {
+	global $wp_query;
+
+	return $wp_query->is_robots;
+}
+
 function is_search () {
 	global $wp_query;
 
@@ -272,6 +278,7 @@ class WP_Query {
 	var $is_comments_popup = false;
 	var $is_admin = false;
 	var $is_attachment = false;
+	var $is_robots = false;
 
 	function init_query_flags() {
 		$this->is_single = false;
@@ -292,6 +299,7 @@ class WP_Query {
 		$this->is_paged = false;
 		$this->is_admin = false;
 		$this->is_attachment = false;
+		$this->is_robots = false;
 	}
 
 	function init () {
@@ -319,6 +327,11 @@ class WP_Query {
 			parse_str($query, $qv);
 			$this->query = $query;
 			$this->query_vars = $qv;
+		}
+
+		if ( ! empty($qv['robots']) ) {
+			$this->is_robots = true;
+			return;
 		}
 
 		if ('404' == $qv['error']) {
@@ -697,6 +710,7 @@ class WP_Query {
 			$cat_array = preg_split('/[,\s]+/', $q['cat']);
 			$in_cats = $out_cats = '';
 			foreach ( $cat_array as $cat ) {
+				$cat = intval($cat);
 				$in = strstr($cat, '-') ? false : true;
 				$cat = trim($cat, '-');
 				if ( $in )
@@ -828,13 +842,23 @@ class WP_Query {
 		} else {
 			$where .= " AND (post_type = '$post_type' AND (post_status = 'publish'";
 
-			if ( is_admin() )
+			if ( is_admin() ) {
 				$where .= " OR post_status = 'future' OR post_status = 'draft'";
 	
-			if ( is_user_logged_in() )
-				$where .= " OR post_author = $user_ID AND post_status = 'private'))";
-			else
-				$where .= '))';
+				if ( is_user_logged_in() ) {
+					if ( 'post' == $post_type )
+						$cap = 'edit_private_posts';
+					else
+						$cap = 'edit_private_pages';
+
+					if ( current_user_can($cap) )
+						$where .= "OR post_status = 'private'";
+					else
+					$where .= " OR post_author = $user_ID AND post_status = 'private'";
+				}
+			}
+
+			$where .= '))';
 		}
 
 		// Apply filters on where and join prior to paging so that any

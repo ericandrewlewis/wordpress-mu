@@ -69,7 +69,7 @@ RewriteRule ^([_0-9a-zA-Z-]+)/wp-includes/images/(.*) 		BASE/wp-inst/wp-includes
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-includes/js/(.*) 		BASE/wp-inst/wp-includes/js/$2 [L]
 
 RewriteRule ^wp-signup.php$ 					BASE/wp-inst/wp-signup.php [L]
-RewriteRule ^wp-activate.php$ 					/wp-inst/wp-activate.php [L]
+RewriteRule ^wp-activate.php$ 					BASE/wp-inst/wp-activate.php [L]
 RewriteRule ^wp-login.php 					BASE/wp-inst/wp-login.php [L]
 RewriteRule ^wp-admin/(.*) 					BASE/wp-inst/wp-admin/$1 [L]
 RewriteRule ^wp-includes/images/(.*) 				BASE/wp-inst/wp-includes/images/$1 [L]

@@ -45,7 +45,7 @@ form { margin-top: 2em; }
 		else
 			$key = $_POST['key'];
 			
-		$result = wpmu_activate_blog($key);
+		$result = wpmu_activate_signup($key);
 		if ( is_wp_error($result) ) {
 			if ( 'already_active' == $result->get_error_code() )
 				echo __('The blog is already active.  Please check your email inbox for your username, password, and login instructions.');
@@ -68,7 +68,7 @@ form { margin-top: 2em; }
 </td>
 </tr>
 </table>
-<h3 class="view"><?php printf(__('<a href="%1$s">View your site</a> or <a href="%2$s">Login</a>'), $url, 'http://wordpress.com/'); ?></h3>
+<h3 class="view"><?php printf(__('<a href="%1$s">View your site</a> or <a href="%2$s">Login</a>'), $url, 'http://' . $_SERVER[ 'SERVER_NAME' ] . '/' ); ?></h3>
 <?php
 		}
 	}

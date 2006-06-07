@@ -75,10 +75,12 @@ switch($step) {
 	break;
 
 	case 1:
-	wp_cache_flush();
-	make_db_current_silent();
-	upgrade_all();
-	wp_cache_flush();
+	wp_upgrade();
+	if( $wpdb->get_row( "SELECT * FROM wp_blogs WHERE blog_id = '{$wpdb->blogid}'" ) ) {
+		$wpdb->query( "UPDATE wp_blogs SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
+	} else {
+		$wpdb->query( "INSERT INTO `wp_blogs` ( `blog_id` , `db_version` , `last_updated` ) VALUES ( '{$wpdb->blogid}', '{$wp_db_version}', NOW());" );
+	}
 
 	if ( empty( $_GET['backto'] ) )
 		$backto = __get_option('home');

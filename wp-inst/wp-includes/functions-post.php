@@ -161,7 +161,7 @@ function wp_insert_post($postarr = array()) {
 		$wpdb->query( "UPDATE $wpdb->posts SET post_name = '$post_name' WHERE ID = '$post_ID'" );
 	}
 
-	wp_set_post_cats('', $post_ID, $post_category);
+	wp_set_post_categories($post_ID, $post_category);
 
 	if ( 'page' == $post_type ) {
 		clean_page_cache($post_ID);
@@ -208,6 +208,9 @@ function wp_insert_post($postarr = array()) {
 		if ( !empty($page_template) )
 			if ( ! update_post_meta($post_ID, '_wp_page_template',  $page_template))
 				add_post_meta($post_ID, '_wp_page_template',  $page_template, true);
+				
+		if ( $post_status == 'publish' )
+			do_action('publish_page', $post_ID);
 	}
 
 	if ( 'future' == $post_status ) {
@@ -345,10 +348,10 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 		$wpdb->query( "UPDATE $wpdb->posts SET post_name = '$post_name' WHERE ID = '$post_ID'" );
 	}
 
-	wp_set_post_cats('', $post_ID, $post_category);
+	wp_set_post_categories($post_ID, $post_category);
 
 	if ( $file )
-		add_post_meta($post_ID, '_wp_attached_file', $file);
+		add_post_meta($post_ID, '_wp_attached_file', $file );
 
 	clean_post_cache($post_ID);
 
@@ -365,7 +368,7 @@ function wp_delete_attachment($postid) {
 	global $wpdb;
 	$postid = (int) $postid;
 
-	if ( !$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = $postid") )
+	if ( !$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = '$postid'") )
 		return $post;
 
 	if ( 'attachment' != $post->post_type )
@@ -374,13 +377,13 @@ function wp_delete_attachment($postid) {
 	$meta = get_post_meta($postid, '_wp_attachment_metadata', true);
 	$file = get_post_meta($postid, '_wp_attached_file', true);
 
-	$wpdb->query("DELETE FROM $wpdb->posts WHERE ID = $postid");
+	$wpdb->query("DELETE FROM $wpdb->posts WHERE ID = '$postid'");
 
-	$wpdb->query("DELETE FROM $wpdb->comments WHERE comment_post_ID = $postid");
+	$wpdb->query("DELETE FROM $wpdb->comments WHERE comment_post_ID = '$postid'");
 
-	$wpdb->query("DELETE FROM $wpdb->post2cat WHERE post_id = $postid");
+	$wpdb->query("DELETE FROM $wpdb->post2cat WHERE post_id = '$postid'");
 
-	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = $postid");
+	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = '$postid'");
 
 	if ( ! empty($meta['thumb']) ) {
 		// Don't delete the thumb if another attachment uses it
@@ -408,10 +411,10 @@ function wp_get_single_post($postid = 0, $mode = OBJECT) {
 
 	// Set categories
 	if($mode == OBJECT) {
-		$post->post_category = wp_get_post_cats('',$postid);
+		$post->post_category = wp_get_post_categories($postid);
 	} 
 	else {
-		$post['post_category'] = wp_get_post_cats('',$postid);
+		$post['post_category'] = wp_get_post_categories($postid);
 	}
 
 	return $post;
@@ -483,12 +486,14 @@ function wp_publish_post($post_id) {
 	return wp_update_post(array('post_status' => 'publish', 'ID' => $post_id));	
 }
 
-function wp_get_post_cats($blogid = '1', $post_ID = 0) {
+function wp_get_post_categories($post_ID = 0) {
 	global $wpdb;
+
+	$post_ID = (int) $post_ID;
 
 	$sql = "SELECT category_id 
 		FROM $wpdb->post2cat 
-		WHERE post_id = $post_ID 
+		WHERE post_id = '$post_ID' 
 		ORDER BY category_id";
 
 	$result = $wpdb->get_col($sql);
@@ -499,7 +504,7 @@ function wp_get_post_cats($blogid = '1', $post_ID = 0) {
 	return array_unique($result);
 }
 
-function wp_set_post_cats($blogid = '1', $post_ID = 0, $post_categories = array()) {
+function wp_set_post_categories($post_ID = 0, $post_categories = array()) {
 	global $wpdb;
 	// If $post_categories isn't already an array, make it one:
 	if (!is_array($post_categories) || 0 == count($post_categories))
@@ -550,7 +555,7 @@ function wp_set_post_cats($blogid = '1', $post_ID = 0, $post_categories = array(
 		$wpdb->query("UPDATE $wpdb->categories SET category_count = '$count' WHERE cat_ID = '$cat_id'");
 		wp_cache_delete($cat_id, 'category');
 	}
-}	// wp_set_post_cats()
+}	// wp_set_post_categories()
 
 function wp_delete_post($postid = 0) {
 	global $wpdb, $wp_rewrite;
@@ -565,7 +570,7 @@ function wp_delete_post($postid = 0) {
 	do_action('delete_post', $postid);
 
 	if ( 'publish' == $post->post_status && 'post' == $post->post_type ) {
-		$categories = wp_get_post_cats('', $post->ID);
+		$categories = wp_get_post_categories($post->ID);
 		if( is_array( $categories ) ) {
 			foreach ( $categories as $cat_id ) {
 				$wpdb->query("UPDATE $wpdb->categories SET category_count = category_count - 1 WHERE cat_ID = '$cat_id'");
@@ -600,25 +605,6 @@ function wp_delete_post($postid = 0) {
 // get permalink from post ID
 function post_permalink($post_id = 0, $mode = '') { // $mode legacy
 	return get_permalink($post_id);
-}
-
-// Get the name of a category from its ID
-function get_cat_name($cat_id) {
-	global $wpdb;
-
-	$cat_id -= 0; 	// force numeric
-	$name = $wpdb->get_var("SELECT cat_name FROM $wpdb->categories WHERE cat_ID=$cat_id");
-
-	return $name;
-}
-
-// Get the ID of a category from its name
-function get_cat_ID($cat_name='General') {
-	global $wpdb;
-
-	$cid = $wpdb->get_var("SELECT cat_ID FROM $wpdb->categories WHERE cat_name='$cat_name'");
-
-	return $cid?$cid:1;	// default to cat 1
 }
 
 // Get author's preferred display name
@@ -1032,18 +1018,6 @@ function do_all_pings() {
 
 	//Do Update Services/Generic Pings
 	generic_ping();
-}
-
-/**
- * Places two script links in <head>: one to get tinyMCE (big), one to configure and start it (small)
- */
-function tinymce_include() {
-	$ver = '04162006';
-	$src1 = get_settings('siteurl') . "/wp-includes/js/tinymce/tiny_mce_gzip.php?ver=$ver";
-	$src2 = get_settings('siteurl') . "/wp-includes/js/tinymce/tiny_mce_config.php?ver=$ver";
-
-	echo "<script type='text/javascript' src='$src1'></script>\n";
-	echo "<script type='text/javascript' src='$src2'></script>\n";
 }
 
 /**

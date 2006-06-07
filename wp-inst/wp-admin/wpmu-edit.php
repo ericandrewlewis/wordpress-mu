@@ -3,27 +3,6 @@ require_once('admin.php');
 
 do_action( "wpmuadminedit", "" );
 
-function wpmu_delete_blog( $id ) {
-	global $wpdb, $wpmuBaseTablePrefix;
-	do_action( "delete_blog", $id );
-	$drop_tables = array( $wpmuBaseTablePrefix . $id . "_categories",
-			$wpmuBaseTablePrefix . $id . "_comments",
-			$wpmuBaseTablePrefix . $id . "_linkcategories",
-			$wpmuBaseTablePrefix . $id . "_links",
-			$wpmuBaseTablePrefix . $id . "_options",
-			$wpmuBaseTablePrefix . $id . "_post2cat",
-			$wpmuBaseTablePrefix . $id . "_postmeta",
-			$wpmuBaseTablePrefix . $id . "_posts",
-			$wpmuBaseTablePrefix . $id . "_referer_visitLog",
-			$wpmuBaseTablePrefix . $id . "_referer_blacklist" );
-	reset( $drop_tables );
-	while( list( $key, $val ) = each( $drop_tables  ) ) 
-	{ 
-		$wpdb->query( "DROP TABLE IF EXISTS $val" );
-	}
-	$wpdb->query( "DELETE FROM ".$wpdb->blogs." WHERE blog_id = '".$id."'" );
-}
-
 $_POST[ 'id' ] = intval( $_POST[ 'id' ] );
 $_GET[ 'id' ] = intval( $_GET[ 'id' ] );
 $id = $_POST[ 'id' ];
@@ -108,21 +87,12 @@ switch( $_GET[ 'action' ] ) {
 		if( is_array( $_POST[ 'theme' ] ) ) {
 			$allowed_themes = $_POST[ 'theme' ];
 			$_POST[ 'option' ][ 'allowed_themes' ] = $_POST[ 'theme' ];
+		} else {
+			$_POST[ 'option' ][ 'allowed_themes' ] = '';
 		}
 		if( is_array( $_POST[ 'option' ] ) ) {
 			while( list( $key, $val ) = each( $_POST[ 'option' ] ) ) { 
-				if ( is_array($val) || is_object($val) )
-					$val = serialize($val);
-
-				$query = "SELECT option_id, option_value FROM ".$options_table_name." WHERE  option_name  = '".$key."'";
-				$opts = $wpdb->get_row( $query, ARRAY_A );
-				$optvalue = $opts[ 'option_value' ];
-				$option_id = $opts[ 'option_id' ];
-				if( $opts == false ) {
-					add_blog_option( $id, $key, $val );
-				} elseif( $optvalue != $val ) {
-					update_blog_option( $id, $key, $val );
-				}
+				update_blog_option( $id, $key, $val );
 			}
 		}
 		// update blogs table
@@ -133,9 +103,11 @@ switch( $_GET[ 'action' ] ) {
 				public       = '".$_POST[ 'blog' ][ 'public' ]."',
 				archived     = '".$_POST[ 'blog' ][ 'archived' ]."',
 				mature       = '".$_POST[ 'blog' ][ 'mature' ]."',
+				deleted      = '".$_POST[ 'blog' ][ 'deleted' ]."',
 				spam         = '".$_POST[ 'blog' ][ 'spam' ]."' 
 			WHERE  blog_id = '$id'";
 		$result = $wpdb->query( $query );
+		update_blog_status( $id, 'spam', $_POST[ 'blog' ][ 'spam' ] );
 		// user roles
 		if( is_array( $_POST[ 'role' ] ) == true ) {
 			$newroles = $_POST[ 'role' ];
@@ -179,7 +151,7 @@ switch( $_GET[ 'action' ] ) {
 		}
 		$id = $_GET[ 'id' ];
 		if( $id != '0' && $id != '1' )
-			wpmu_delete_blog( $id );
+			wpmu_delete_blog( $id, true );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "allblogs":
@@ -190,7 +162,7 @@ switch( $_GET[ 'action' ] ) {
 			while( list( $key, $val ) = each( $_POST[ 'allblogs' ] ) ) {
 				if( $val != '0' && $val != '1' ) {
 					if( $_POST[ 'blogfunction' ] == 'delete' ) {
-						wpmu_delete_blog( $val );
+						wpmu_delete_blog( $val, true );
 					} elseif( $_POST[ 'blogfunction' ] == 'spam' ) {
 						update_blog_status( $val, "spam", '1' );
 					}
@@ -232,6 +204,16 @@ switch( $_GET[ 'action' ] ) {
 		}
 		do_action( "make_spam_blog", $_GET[ 'id' ] );
 		update_blog_status( $_GET[ 'id' ], "spam", '1' );
+		header( "Location: wpmu-blogs.php?updated=true" );
+	break;
+	case "mature":
+		update_blog_status( $_GET[ 'id' ], 'mature', '1' );
+		do_action( 'mature_blog', $_GET[ 'id' ] );
+		header( "Location: wpmu-blogs.php?updated=true" );
+	break;
+	case "unmature":
+		update_blog_status( $_GET[ 'id' ], 'mature', '0' );
+		do_action( 'unmature_blog', $_GET[ 'id' ] );
 		header( "Location: wpmu-blogs.php?updated=true" );
 	break;
     	case "updateuser":

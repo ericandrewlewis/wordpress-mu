@@ -75,28 +75,26 @@ if ( defined('WP_CACHE') )
 define('WPINC', 'wp-includes');
 require_once (ABSPATH . WPINC . '/wp-db.php');
 
-$wpdb->blogs            = 'wp_blogs';
-$wpdb->users            = 'wp_users';
-$wpdb->usermeta         = 'wp_usermeta';
-$wpdb->site             = 'wp_site';
-$wpdb->sitemeta         = 'wp_sitemeta';
-$wpdb->sitecategories	= 'wp_sitecategories';
+$wpdb->blogs		= $table_prefix . 'blogs';
+$wpdb->users		= $table_prefix . 'users';
+$wpdb->usermeta		= $table_prefix . 'usermeta';
+$wpdb->site		= $table_prefix . 'site';
+$wpdb->sitemeta		= $table_prefix . 'sitemeta';
+$wpdb->sitecategories	= $table_prefix . 'sitecategories';
+$wpdb->signups		= $table_prefix . 'signups';
 
 require_once ( ABSPATH . 'wpmu-settings.php' );
-
-// Table names
 $wpdb->siteid           = $site_id;
 $wpdb->blogid           = $blog_id;
 $wpdb->posts            = $table_prefix . 'posts';
 $wpdb->categories       = $table_prefix . 'categories';
 $wpdb->post2cat         = $table_prefix . 'post2cat';
 $wpdb->comments         = $table_prefix . 'comments';
-$wpdb->links            = $table_prefix . 'links';
 $wpdb->link2cat         = $table_prefix . 'link2cat';
+$wpdb->links            = $table_prefix . 'links';
 $wpdb->linkcategories   = $table_prefix . 'linkcategories';
 $wpdb->options          = $table_prefix . 'options';
 $wpdb->postmeta         = $table_prefix . 'postmeta';
-$wpdb->signups		    = $table_prefix . 'signups';
 $wpdb->prefix           = $table_prefix;
 
 if ( defined('CUSTOM_USER_TABLE') )
@@ -111,6 +109,7 @@ $tableusers = $wpdb->users;
 $tablecategories = $wpdb->categories;
 $tablepost2cat = $wpdb->post2cat;
 $tablecomments = $wpdb->comments;
+$tablelink2cat = $wpdb->link2cat;
 $tablelinks = $wpdb->links;
 $tablelinkcategories = $wpdb->linkcategories;
 $tableoptions = $wpdb->options;
@@ -156,19 +155,21 @@ require (ABSPATH . WPINC . '/template-functions-general.php');
 require (ABSPATH . WPINC . '/template-functions-links.php');
 require (ABSPATH . WPINC . '/template-functions-author.php');
 require (ABSPATH . WPINC . '/template-functions-post.php');
-require (ABSPATH . WPINC . '/template-functions-category.php');
+require (ABSPATH . WPINC . '/category.php');
+require (ABSPATH . WPINC . '/category-template.php');
 require (ABSPATH . WPINC . '/comment.php');
 require (ABSPATH . WPINC . '/comment-template.php');
 require (ABSPATH . WPINC . '/rewrite.php');
 require (ABSPATH . WPINC . '/feed-functions.php');
-require (ABSPATH . WPINC . '/template-functions-bookmarks.php');
+require (ABSPATH . WPINC . '/bookmark.php');
+require (ABSPATH . WPINC . '/bookmark-template.php');
 require (ABSPATH . WPINC . '/kses.php');
 require (ABSPATH . WPINC . '/cron.php');
 require (ABSPATH . WPINC . '/version.php');
 require (ABSPATH . WPINC . '/deprecated.php');
+require (ABSPATH . WPINC . '/script-loader.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
-require_once( ABSPATH . WPINC . '/registration-functions.php');
 
 if( defined( "WP_INSTALLING" ) == false ) {
 	$current_site->site_name = get_site_option('site_name');
@@ -194,11 +195,17 @@ if( is_array( $plugins ) ) {
 }
 $wpdb->show_errors();
 
-$is_archived = get_settings( "is_archived" );
-if( $is_archived == 'yes' ) {
-	update_archived( $wpdb->blogid, 1 );
-	die( "This blog has been archived or suspended temporarily. Please check back later." );
-}
+if ( '1' == $current_blog->deleted )
+	graceful_fail('This user has elected to delete their account and the content is no longer available.');
+
+if ( '2' == $current_blog->deleted )
+		graceful_fail("This blog has not been activated yet. If you are having problems activating your blog, please contact <a href='mailto:support@wordpress.com'>support@wordpress.com</a>.");
+
+if( $current_blog->archived == '1' )
+    graceful_fail( 'This blog has been archived or suspended.' );
+
+if( $current_blog->spam == '1' )
+    graceful_fail( 'This blog has been archived or suspended.' );
 
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies

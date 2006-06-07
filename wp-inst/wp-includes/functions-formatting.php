@@ -278,7 +278,7 @@ function sanitize_user( $username, $strict = false ) {
 
 	// If strict, reduce to ASCII for max portability.
 	if ( $strict )
-		$username = preg_replace('|[^a-z0-9 _.-@]|i', '', $username);
+		$username = preg_replace('|[^a-z0-9 _.\-@]|i', '', $username);
 
 	return apply_filters('sanitize_user', $username, $raw_username, $strict);
 }
@@ -404,9 +404,9 @@ function funky_javascript_fix($text) {
                   Added Cleaning Hooks
              1.0  First Version
 */
-function balanceTags($text, $is_comment = 0) {
+function balanceTags($text, $is_comment = 0, $force = false) {
 
-	if ( get_option('use_balanceTags') == 0)
+	if ( !$force && get_option('use_balanceTags') == 0 )
 		return $text;
 
 	$tagstack = array(); $stacksize = 0; $tagqueue = ''; $newtext = '';
@@ -1040,4 +1040,9 @@ function htmlentities2($myHTML) {
 	return preg_replace("/&(?![A-Za-z]{0,4}\w{2,3};|#[0-9]{2,3};)/","&amp;" , strtr($myHTML, $translation_table));
 }
 
+// Escape single quotes, specialchar double quotes, and fix line endings.
+function js_escape($text) {
+	$text = wp_specialchars($text, 'double');
+	return preg_replace("/\r?\n/", "\\n", addslashes($text));	
+}
 ?>

@@ -6,6 +6,7 @@ $form_extra = "' />\n<input type='hidden' name='comment_ID' value='" . $comment-
 ?>
 
 <form name="post" action="comment.php" method="post" id="post">
+<?php wp_nonce_field('update-comment_' . $comment->comment_ID) ?>
 <div class="wrap">
 <input type="hidden" name="user_ID" value="<?php echo $user_ID ?>" />
 <input type="hidden" name="action" value='<?php echo $form_action . $form_extra ?>' />
@@ -17,19 +18,19 @@ function focusit() { // focus on first input field
 addLoadEvent(focusit);
 </script>
 <fieldset id="namediv">
-    <legend><?php _e('Name:') ?></legend>
+    <legend><label for="name"><?php _e('Name:') ?></label></legend>
 	<div>
-	  <input type="text" name="newcomment_author" size="22" value="<?php echo $comment->comment_author ?>" tabindex="1" id="name" />
+	  <input type="text" name="newcomment_author" size="25" value="<?php echo $comment->comment_author ?>" tabindex="1" id="name" />
     </div>
 </fieldset>
 <fieldset id="emaildiv">
-        <legend><?php _e('E-mail:') ?></legend>
+        <legend><label for="email"><?php _e('E-mail:') ?></label></legend>
 		<div>
-		  <input type="text" name="newcomment_author_email" size="30" value="<?php echo $comment->comment_author_email ?>" tabindex="2" id="email" />
+		  <input type="text" name="newcomment_author_email" size="20" value="<?php echo $comment->comment_author_email ?>" tabindex="2" id="email" />
     </div>
 </fieldset>
 <fieldset id="uridiv">
-        <legend><?php _e('URI:') ?></legend>
+        <legend><label for="URL"><?php _e('URI:') ?></label></legend>
 		<div>
 		  <input type="text" id="newcomment_author_url" name="newcomment_author_url" size="35" value="<?php echo $comment->comment_author_url ?>" tabindex="3" id="URL" />
     </div>
@@ -37,55 +38,8 @@ addLoadEvent(focusit);
 
 <fieldset style="clear: both;">
         <legend><?php _e('Comment') ?></legend>
-<?php the_quicktags(); ?>
-
-<?php
- $rows = get_settings('default_post_edit_rows');
- if (($rows < 3) || ($rows > 100)) {
-     $rows = 10;
- }
-?>
-<div><textarea title="true" rows="<?php echo $rows; ?>" cols="40" name="content" tabindex="4" id="content" style="width: 99%"><?php echo user_can_richedit() ? wp_richedit_pre($comment->comment_content) : $comment->comment_content; ?></textarea></div>
+	<?php the_editor($comment->comment_content, 'content', 'newcomment_author_url'); ?>
 </fieldset>
-
-<script type="text/javascript">
-<!--
-edCanvas = document.getElementById('content');
-<?php if ( user_can_richedit() ) : ?>
-// This code is meant to allow tabbing from Author URL to Post (TinyMCE).
-if ( tinyMCE.isMSIE )
-	document.getElementById('newcomment_author_url').onkeydown = function (e)
-		{
-			e = e ? e : window.event;
-			if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
-				var i = tinyMCE.selectedInstance;
-				if(typeof i ==  'undefined')
-					return true;
-                                tinyMCE.execCommand("mceStartTyping");
-				this.blur();
-				i.contentWindow.focus();
-				e.returnValue = false;
-				return false;
-			}
-		}
-else
-	document.getElementById('newcomment_author_url').onkeypress = function (e)
-		{
-			e = e ? e : window.event;
-			if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
-				var i = tinyMCE.selectedInstance;
-				if(typeof i ==  'undefined')
-					return true;
-                                tinyMCE.execCommand("mceStartTyping");
-				this.blur();
-				i.contentWindow.focus();
-				e.returnValue = false;
-				return false;
-			}
-		}
-<?php endif; ?>
-//-->
-</script>
 
 <p class="submit"><input type="submit" name="editcomment" id="editcomment" value="<?php echo $submitbutton_text ?>" style="font-weight: bold;" tabindex="6" />
   <input name="referredby" type="hidden" id="referredby" value="<?php echo $_SERVER['HTTP_REFERER']; ?>" />
@@ -106,14 +60,18 @@ else
 
 <?php if ( current_user_can('edit_posts') ) : ?>
 	<tr>
-		<th scope="row"><?php _e('Edit time'); ?>:</th>
-		<td><?php touch_time(('editcomment' == $action), 0); ?></td>
+		<th scope="row" valign="top"><?php _e('Edit time'); ?>:</th>
+		<td><?php touch_time(('editcomment' == $action), 0); ?> </td>
 	</tr>
 <?php endif; ?>
 
 	<tr>
-		<th scope="row"><?php _e('Delete'); ?>:</th>
-		<td><p><a class="delete" href="comment.php?action=confirmdeletecomment&amp;noredir=true&amp;comment=<?php echo $comment->comment_ID; ?>&amp;p=<?php echo $comment->comment_post_ID; ?>"><?php _e('Delete comment') ?></a></p></td>
+		<th scope="row" valign="top"><?php _e('Delete'); ?>:</th>
+		<td><input name="deletecomment" class="button" type="submit" id="deletecomment" tabindex="10" value="<?php _e('Delete this comment') ?>" <?php echo "onclick=\"return confirm('" . __("You are about to delete this comment \\n  \'Cancel\' to stop, \'OK\' to delete.") . "')\""; ?> /> 
+		<input type="hidden" name="comment" value="<?php echo $comment->comment_ID ?>" />
+		<input type="hidden" name="p" value="<?php echo $comment->comment_post_ID ?>" />
+		<input type="hidden" name="noredir" value="1" />
+	</td>
 	</tr>
 </table>
 

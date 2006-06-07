@@ -73,7 +73,7 @@ class retrospam_mgr {
 }
 
 class WP {
-	var $public_query_vars = array('m', 'p', 'posts', 'w', 'cat', 'withcomments', 's', 'search', 'exact', 'sentence', 'debug', 'calendar', 'page', 'paged', 'more', 'tb', 'pb', 'author', 'order', 'orderby', 'year', 'monthnum', 'day', 'hour', 'minute', 'second', 'name', 'category_name', 'feed', 'author_name', 'static', 'pagename', 'page_id', 'error', 'comments_popup', 'attachment', 'attachment_id', 'subpost', 'subpost_id', 'preview');
+	var $public_query_vars = array('m', 'p', 'posts', 'w', 'cat', 'withcomments', 's', 'search', 'exact', 'sentence', 'debug', 'calendar', 'page', 'paged', 'more', 'tb', 'pb', 'author', 'order', 'orderby', 'year', 'monthnum', 'day', 'hour', 'minute', 'second', 'name', 'category_name', 'feed', 'author_name', 'static', 'pagename', 'page_id', 'error', 'comments_popup', 'attachment', 'attachment_id', 'subpost', 'subpost_id', 'preview', 'robots');
 
 	var $private_query_vars = array('posts_per_page', 'posts_per_archive_page', 'what_to_show', 'showposts', 'nopaging', 'post_type');
 	var $extra_query_vars = array();
@@ -224,6 +224,8 @@ class WP {
 
 		if ( isset($error) )
 			$this->query_vars['error'] = $error;
+
+		do_action('parse_request', array(&$this));
 	}
 
 	function send_headers() {
@@ -263,6 +265,8 @@ class WP {
 				exit;
 			}
 		}
+
+		do_action('send_headers', array(&$this));
 	}
 
 	function build_query_string() {
@@ -333,6 +337,7 @@ class WP {
 		$this->query_posts();
 		$this->handle_404();
 		$this->register_globals();
+		do_action('wp', array(&$this));
 	}
 
 	function WP() {

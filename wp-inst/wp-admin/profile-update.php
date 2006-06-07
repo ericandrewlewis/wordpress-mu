@@ -1,18 +1,19 @@
 <?php
 
+$parent_file = 'profile.php';
+$submenu_file = 'profile.php';
 require_once('admin.php');
 
-check_admin_referer();
+check_admin_referer('update-profile_' . $user_ID);
 
 if ( !$_POST )
 	die( __('No post?') );
 
 $errors = edit_user($user_ID);
 
-if (count($errors) != 0) {
-	foreach ($errors as $id => $error) {
-		echo $error . '<br/>';
-	}
+if ( is_wp_error( $errors ) ) {
+	foreach( $errors->get_error_messages() as $message )
+		echo "$message<br />";
 	exit;
 }
 

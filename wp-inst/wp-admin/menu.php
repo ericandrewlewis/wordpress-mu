@@ -12,7 +12,7 @@ if( is_array( $menu_perms ) == false )
 $menu[0] = array(__('Dashboard'), 'read', 'index.php');
 $menu[5] = array(__('Write'), 'edit_posts', 'post-new.php');
 $menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
-$menu[20] = array(__('Links'), 'manage_links', 'link-manager.php');
+$menu[20] = array(__('Bookmarks'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
 if( $menu_perms[ 'plugins' ] == 1 )
 	$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
@@ -21,7 +21,6 @@ if ( current_user_can('edit_users') )
 else
 	$menu[35] = array(__('Profile'), 'read', 'profile.php');
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
-$menu[45] = array(__('Import'), 'import', 'import.php');
 
 $submenu['post-new.php'][5] = array(__('Write Post'), 'edit_posts', 'post-new.php');
 $submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
@@ -31,17 +30,17 @@ $submenu['edit.php'][10] = array(__('Pages'), 'edit_pages', 'edit-pages.php');
 $submenu['edit.php'][15] = array(__('Categories'), 'manage_categories', 'categories.php');
 $submenu['edit.php'][20] = array(__('Comments'), 'edit_posts', 'edit-comments.php');
 $awaiting_mod = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = '0'");
-$submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), $awaiting_mod), 'edit_posts', 'moderation.php');
+$submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), "<span id='awaitmod'>$awaiting_mod</span>"), 'edit_posts', 'moderation.php');
 #$submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
+$submenu['edit.php'][35] = array(__('Import'), 'import', 'import.php');
 /*
 $invites_left = get_usermeta( $user_ID, 'invites_left' );
 $submenu['edit.php'][35] = array(sprintf(__("Invites (%s)"), $invites_left ), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
 */
 
-$submenu['link-manager.php'][5] = array(__('Manage Links'), 'manage_links', 'link-manager.php');
-$submenu['link-manager.php'][10] = array(__('Add Link'), 'manage_links', 'link-add.php');
-$submenu['link-manager.php'][15] = array(__('Link Categories'), 'manage_links', 'link-categories.php');
-$submenu['link-manager.php'][20] = array(__('Import Links'), 'manage_links', 'link-import.php');
+$submenu['link-manager.php'][5] = array(__('Manage Bookmarks'), 'manage_links', 'link-manager.php');
+$submenu['link-manager.php'][10] = array(__('Add Bookmark'), 'manage_links', 'link-add.php');
+$submenu['link-manager.php'][20] = array(__('Import Bookmarks'), 'manage_links', 'link-import.php');
 
 $submenu['profile.php'][5] = array(__('Your Profile'), 'read', 'profile.php');
 $submenu['profile.php'][10] = array(__('Authors &amp; Users'), 'edit_users', 'users.php');
@@ -52,6 +51,13 @@ $submenu['options-general.php'][20] = array(__('Reading'), 'manage_options', 'op
 $submenu['options-general.php'][25] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
+
+// Create list of page plugin hook names.
+foreach ($menu as $menu_page) {
+	$admin_page_hooks[$menu_page[2]] = sanitize_title($menu_page[0]);
+}
+
+do_action('admin_menu', '');
 
 // Loop over submenus and remove pages for which the user does not have privs.
 foreach ($submenu as $parent => $sub) {
@@ -108,21 +114,13 @@ if( is_site_admin() ) {
 	$submenu[ 'wpmu-admin.php' ][25] = array( 'Options', '10', 'wpmu-options.php' );
 	$submenu[ 'wpmu-admin.php' ][30] = array( 'Upgrade', '10', 'wpmu-upgrade-site.php' );
 }
-
-// Create list of page plugin hook names.
-foreach ($menu as $menu_page) {
-	$admin_page_hooks[$menu_page[2]] = sanitize_title($menu_page[0]);
-}
-
-do_action('admin_menu', '');
 ksort($menu); // make it all pretty
 
 if (! user_can_access_admin_page()) {
 	global $wpdb;
 	// find the blog of this user first
 	$primary_blog = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '$user_ID' AND meta_key = 'primary_blog'" );
-	$url = $wpdb->get_row("SELECT domain, path FROM $wpdb->blogs WHERE 
-blog_id = $primary_blog");
+	$url = $wpdb->get_row("SELECT domain, path FROM $wpdb->blogs WHERE blog_id = $primary_blog");
 	header( 'Location: http://' . $url->domain . $url->path . 'wp-admin/' );
 	exit;
 	die( __('You do not have sufficient permissions to access this page.') );

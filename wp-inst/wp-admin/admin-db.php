@@ -92,8 +92,8 @@ function wp_insert_category($catarr) {
 	else
 		$update = false;
 
-	$cat_name = wp_specialchars($cat_name);
-
+	$cat_name = apply_filters('pre_category_name', $cat_name);
+	
 	if ( !$update && category_exists($cat_name) )
 		return 0;
 
@@ -101,10 +101,13 @@ function wp_insert_category($catarr) {
 		$category_nicename = sanitize_title($cat_name);
 	else
 		$category_nicename = sanitize_title($category_nicename);
+	$category_nicename = apply_filters('pre_category_nicename', $category_nicename);
 
 	if (empty ($category_description))
 		$category_description = '';
+	$category_description = apply_filters('pre_category_description', $category_description);
 
+	$category_parent = (int) $category_parent;
 	if (empty ($category_parent))
 		$category_parent = 0;
 
@@ -189,12 +192,12 @@ function wp_delete_category($cat_ID) {
 	$default_cat = get_option('default_category');
 	$posts = $wpdb->get_col("SELECT post_id FROM $wpdb->post2cat WHERE category_id='$cat_ID'");
 	if ( is_array($posts) ) foreach ($posts as $post_id) {
-		$cats = wp_get_post_cats('', $post_id);
+		$cats = wp_get_post_categories($post_id);
 		if ( 1 == count($cats) )
 			$cats = array($default_cat);
 		else
 			$cats = array_diff($cats, array($cat_ID));
-		wp_set_post_cats('', $post_id, $cats); 
+		wp_set_post_categories($post_id, $cats); 
 	}
 
 	$default_link_cat = get_option('default_link_category');
@@ -232,7 +235,7 @@ function wp_create_categories($categories, $post_id = '') {
 	}
 
 	if ($post_id)
-		wp_set_post_cats('', $post_id, $cat_ids);
+		wp_set_post_categories($post_id, $cat_ids);
 
 	return $cat_ids;
 }
@@ -283,23 +286,6 @@ function wp_revoke_user($id) {
 	
 	$user = new WP_User($id);
 	$user->remove_all_caps();	
-}
-
-function get_link($link_id, $output = OBJECT) {
-	global $wpdb;
-
-	$link = $wpdb->get_row("SELECT * FROM $wpdb->links WHERE link_id = '$link_id'");
-	$link->link_category = wp_get_link_cats($link_id);
-
-	if ( $output == OBJECT ) {
-		return $link;
-	} elseif ( $output == ARRAY_A ) {
-		return get_object_vars($link);
-	} elseif ( $output == ARRAY_N ) {
-		return array_values(get_object_vars($link));
-	} else {
-		return $link;
-	}
 }
 
 function wp_insert_link($linkdata) {

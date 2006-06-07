@@ -1,6 +1,11 @@
 <?php
 require_once('admin.php');
 
+$parent_file = 'edit.php';
+$submenu_file = 'edit-pages.php';
+
+$wp_rewrite->flush_rules();
+
 $wpvarstoreset = array('action');
 
 for ($i=0; $i<count($wpvarstoreset); $i += 1) {
@@ -24,7 +29,7 @@ $action = "delete";
 
 switch($action) {
 case 'post':
-
+	check_admin_referer('add-page');
 	$page_ID = write_post();
 
 	// Redirect.
@@ -53,12 +58,15 @@ case 'post':
 
 case 'edit':
 	$title = __('Edit');
-	$parent_file = 'edit.php';
-	$submenu_file = 'edit-pages.php';
 	$editing = true;
-	require_once('admin-header.php');
 
 	$page_ID = $post_ID = $p = (int) $_GET['post'];
+	$post = get_post($page_ID);
+	if( $post->post_type == 'post' ) {
+		header( "Location: " . str_replace( "page.php", "post.php", $_SERVER[ 'REQUEST_URI' ] ) );
+		die();
+	}
+	require_once('admin-header.php');
 
 	if ( !current_user_can('edit_page', $page_ID) )
 		die ( __('You are not allowed to edit this page.') );
@@ -76,6 +84,7 @@ case 'edit':
 
 case 'editattachment':
 	$page_id = $post_ID = (int) $_POST['post_ID'];
+	check_admin_referer('update-attachment_' . $page_id);
 
 	// Don't let these be changed
 	unset($_POST['guid']);
@@ -91,6 +100,9 @@ case 'editattachment':
 		add_post_meta($page_id, '_wp_attachment_metadata', $newmeta);
 
 case 'editpost':
+	$page_ID = (int) $_POST['post_ID'];
+	check_admin_referer('update-page_' . $page_ID);
+
 	$page_ID = edit_post();
 
 	if ($_POST['save']) {
@@ -114,9 +126,8 @@ case 'editpost':
 	break;
 
 case 'delete':
-	check_admin_referer();
-
 	$page_id = (isset($_GET['post']))  ? intval($_GET['post']) : intval($_POST['post_ID']);
+	check_admin_referer('delete-page_' .  $page_id);
 
 	$page = & get_post($page_id);
 
@@ -132,7 +143,7 @@ case 'delete':
 	}
 
 	$sendback = $_SERVER['HTTP_REFERER'];
-	if (strstr($sendback, 'page.php')) $sendback = get_settings('siteurl') .'/wp-admin/page-new.php';
+	if (strstr($sendback, 'page.php')) $sendback = get_settings('siteurl') .'/wp-admin/page.php';
 	elseif (strstr($sendback, 'attachments.php')) $sendback = get_settings('siteurl') .'/wp-admin/attachments.php';
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
 	header ('Location: ' . $sendback);
@@ -140,6 +151,8 @@ case 'delete':
 	break;
 
 default:
+	header('Location: edit-pages.php');
+	exit();
 	break;
 } // end switch
 include('admin-footer.php');

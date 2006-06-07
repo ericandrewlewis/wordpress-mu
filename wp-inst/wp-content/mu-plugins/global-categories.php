@@ -1,34 +1,31 @@
 <?php
 
 function global_categories( $cat_ID ) {
-    global $wpdb;
+	global $wpdb;
 
-    $cat_ID = intval( $cat_ID );
-    $details = $wpdb->get_row( "SELECT * FROM $wpdb->categories WHERE cat_ID = '$cat_ID'" );
-    if( $details == false ) { // this should *not* happen ever!
-	    return $cat_ID;
-    }
-    $global_cat = $wpdb->get_row( "SELECT * FROM $wpdb->sitecategories WHERE cat_name = '{$details->cat_name}'" );
-    if( $global_cat == false ) {
-	$res = $wpdb->query( "INSERT INTO $wpdb->sitecategories ( cat_ID, cat_name, category_nicename ) VALUES ( NULL, '" . $wpdb->escape( $details->cat_name ) . "', '" . $wpdb->escape( $details->category_nicename ) . "' )" );
-	$newcat_ID = $wpdb->insert_id;
-	if( $newcat_ID != 0 ) { // bad things happen when cat_id == 0
-		$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$newcat_ID' WHERE cat_ID = '$cat_ID'" );
-		$wpdb->query( "UPDATE $wpdb->post2cat   SET category_id = '$newcat_ID' WHERE category_id = '$cat_ID'" );
-		$cat_ID = $newcat_ID;
-		if( get_option( "default_category" ) == $cat_ID )
-			update_option( "default_category", $newcat_ID );
+	$cat_ID = intval( $cat_ID );
+	$c = $wpdb->get_row( "SELECT * FROM $wpdb->categories WHERE cat_ID = '$cat_ID'" );
+
+	$global_category = $wpdb->get_row( "SELECT * FROM $wpdb->sitecategories WHERE category_nicename = '" . $wpdb->escape( $c->category_nicename ) . "'" );
+
+	if ( $global_category ) {
+		$global_id = $global_category->cat_ID;
+	} else {
+		$wpdb->query( "INSERT INTO $wpdb->sitecategories ( cat_name, category_nicename ) VALUES ( '" . $wpdb->escape( $c->cat_name ) . "', '" . $wpdb->escape( $c->category_nicename ) . "' )" );
+		$global_id = $wpdb->insert_id;
 	}
-    } elseif( $global_cat->cat_ID != $cat_ID ) {
-	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '{$global_cat->cat_ID}' WHERE cat_ID = '$cat_ID'" );
-	$wpdb->query( "UPDATE $wpdb->post2cat   SET category_id = '{$global_cat->cat_ID}' WHERE category_id = '$cat_ID'" );
-	if( get_option( "default_category" ) == $cat_ID )
-		update_option( "default_category", $global_cat->cat_ID );
-	$cat_ID = $global_cat->cat_ID;
-    }
+	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$global_id' WHERE cat_id = '$cat_ID'" );
+	$wpdb->query( "UPDATE $wpdb->categories SET category_parent = '$global_id' WHERE category_parent = '$cat_ID'" );
+	$wpdb->query( "UPDATE $wpdb->post2cat SET category_id = '$global_id' WHERE category_id = '$cat_ID'" );
+	$wpdb->query( "UPDATE $wpdb->link2cat SET category_id = '$global_id' WHERE category_id = '$cat_ID'" );
+	wp_cache_delete($cat_ID, 'category');
+	wp_cache_delete($global_id, 'category');
+	wp_cache_delete('all_category_ids', 'category');
 
-    return $cat_ID;
+	do_action('update_cat_id', $global_id, $cat_ID);
+
+	return $global_id;
 }
-add_action( 'edit_category', 'global_categories' );
-add_action( 'add_category', 'global_categories' );
+
+add_filter( 'cat_id_filter', 'global_categories' );
 ?>

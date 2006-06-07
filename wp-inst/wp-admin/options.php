@@ -24,12 +24,22 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 if ( !current_user_can('manage_options') )
 	die ( __('Cheatin&#8217; uh?') );
 
+if( $_GET[ 'adminhash' ] ) {
+	$new_admin_details = get_option( 'new_admin_email' );
+	if( is_array( $new_admin_details ) && $new_admin_details[ 'hash' ] == $_GET[ 'adminhash' ] && $new_admin_details[ 'newemail' ] != '' ) {
+		update_option( "admin_email", $new_admin_details[ 'newemail' ] );
+		delete_option( "new_admin_email" );
+	}
+	wp_redirect( get_option( "siteurl" ) . "/wp-admin/options-general.php?updated=true" );
+	exit;
+}
+
 switch($action) {
 
 case 'update':
 	$any_changed = 0;
 
-	check_admin_referer();
+	check_admin_referer('update-options');
 
 	if (!$_POST['page_options']) {
 		foreach ($_POST as $key => $value) {
@@ -54,10 +64,41 @@ case 'update':
 				$value = 'closed';
 
 			if( $option == 'blogdescription' || $option == 'blogname' )
-				if (current_user_can('unfiltered_html') == false)
-					$value = wp_filter_post_kses( $value );
+				$value = wp_filter_post_kses( $value );
+			
+			if( $option == 'posts_per_page' && $value == '' )
+				$value = 10;
 
-			if (update_option($option, $value) ) {
+			if( $option == 'new_admin_email' && $value != get_option( 'admin_email' ) ) {
+				$hash = md5( $value.time().mt_rand() );
+				$newadminemail = array( 
+						"hash" => $hash,
+						"newemail" => $value
+						);
+				update_option( "new_admin_email", $newadminemail );
+				wp_mail( $value, "[ " . get_option( 'blogname' ) . " ] New Admin Email Address", "Dear User,
+
+You recently requested to have the administration email address on 
+your blog changed. 
+If this is correct, please click on the following link to change it:
+" . get_option( "siteurl" ) . "/adminemail/{$hash}/
+
+You can safely ignore and delete this email if you do not want to
+take this action.
+
+" );
+			} elseif (update_option($option, $value) ) {
+				$any_changed++;
+			}
+
+			if ( 'language' == $option ) {
+				$value = (int) $value;
+				update_blog_status( $wpdb->blogid, 'lang_id', $value );
+				$any_changed++;
+			}
+			if ( 'blog_public' == $option ) {
+				$value = (int) $value;
+				update_blog_status( $wpdb->blogid, 'public', $value );
 				$any_changed++;
 			}
 		}
@@ -68,8 +109,6 @@ case 'update':
 			if ( get_settings('siteurl') != $old_siteurl || get_settings('home') != $old_home ) {
 				// If home changed, write rewrite rules to new location.
 				$wp_rewrite->flush_rules();
-				// Get currently logged in user and password.
-				get_currentuserinfo();
 				// Clear cookies for old paths.
 				wp_clearcookie();
 				// Set cookies for new paths.
@@ -94,13 +133,14 @@ if (!is_site_admin())
 <div class="wrap">
   <h2><?php _e('All options'); ?></h2>
   <form name="form" action="options.php" method="post">
+  <?php wp_nonce_field('update-options') ?>
   <input type="hidden" name="action" value="update" />
   <table width="98%">
 <?php
 $options = $wpdb->get_results("SELECT * FROM $wpdb->options ORDER BY option_name");
 
 foreach ($options as $option) :
-	$value = wp_specialchars($option->option_value);
+	$value = wp_specialchars($option->option_value, 'single');
 	echo "
 <tr>
 	<th scope='row'><label for='$option->option_name'>$option->option_name</label></th>

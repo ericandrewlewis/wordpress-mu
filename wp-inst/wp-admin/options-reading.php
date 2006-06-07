@@ -9,7 +9,43 @@ include('admin-header.php');
 
 <div class="wrap"> 
 <h2><?php _e('Reading Options') ?></h2> 
-<form name="form1" method="post" action="options.php"> 
+<form name="form1" method="post" action="options.php">
+<?php wp_nonce_field('update-options') ?>
+
+<?php if ( get_pages() ): ?>
+<fieldset class="options"> 
+<legend><?php _e('Front Page') ?></legend> 
+<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
+<tr valign="top"> 
+<th width="33%" scope="row"><?php _e('Front page displays:')?></th> 
+<td>
+	<label>
+		<input name="show_on_front" type="radio" value="posts" class="tog" <?php checked('posts', get_option('show_on_front')); ?> /> 
+		<?php _e('The latest posts'); ?>
+	</label>
+	<br />
+	<label>
+		<input name="show_on_front" type="radio" value="page" class="tog" <?php checked('page', get_option('show_on_front')); ?> /> 
+		<?php printf(__('A static <a href="%s">page</a> (select below)'), 'edit-pages.php'); ?>
+	</label>
+<ul>
+	<li><?php printf(__('Show this page on the front page: %s'), wp_dropdown_pages("name=page_on_front&echo=0&selected=" . get_option('page_on_front'))); ?></li>
+	<li><?php printf(__('Show the latest posts on this page: %s'), wp_dropdown_pages("name=page_for_posts&echo=0&selected=" . get_option('page_for_posts'))); ?></li>
+</ul>
+<?php if ( 'page' == get_option('show_on_front') && get_option('page_for_posts') == get_option('page_on_front') ) : ?>
+<div id="front-page-warning" class="updated fade-ff0000">
+	<p>
+		<?php _e('<strong>Warning:</strong> these pages should not be the same!'); ?>
+	</p>
+</div>
+<?php endif; ?>
+</fieldset>
+</td> 
+</tr> 
+</table> 
+</fieldset>
+<?php endif; ?>
+
 <fieldset class="options"> 
 <legend><?php _e('Blog Pages') ?></legend> 
 <table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
@@ -36,7 +72,7 @@ include('admin-header.php');
 <tr valign="top">
 <th scope="row"><?php _e('For each article, show:') ?> </th>
 <td>
-<label><input name="rss_use_excerpt"  type="radio" value="0" <?php checked(0, get_settings('rss_use_excerpt')); ?>  /> <?php _e('Full text') ?></label><br />
+<label><input name="rss_use_excerpt"  type="radio" value="0" <?php checked(0, get_settings('rss_use_excerpt')); ?>	/> <?php _e('Full text') ?></label><br />
 <label><input name="rss_use_excerpt" type="radio" value="1" <?php checked(1, get_settings('rss_use_excerpt')); ?> /> <?php _e('Summary') ?></label>
 </td>
 </tr> 
@@ -51,7 +87,7 @@ include('admin-header.php');
 </table> 
 <p class="submit"> 
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="posts_per_page,what_to_show,posts_per_rss,rss_use_excerpt,blog_charset,gzipcompression " /> 
+<input type="hidden" name="page_options" value="posts_per_page,what_to_show,posts_per_rss,rss_use_excerpt,blog_charset,gzipcompression,show_on_front,page_on_front,page_for_posts" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /> 
 </p> 
 </form> 

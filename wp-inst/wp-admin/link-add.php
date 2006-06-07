@@ -25,8 +25,9 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
     }
 }
 
-$xfn_js = true;
-$editing = true;
+wp_enqueue_script( array('xfn', 'dbx-admin-key?pagenow=link.php') );
+if ( current_user_can( 'manage_categories' ) )
+	wp_enqueue_script( 'ajaxcat' );
 require('admin-header.php');
 ?>
 

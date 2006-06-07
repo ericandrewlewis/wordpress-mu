@@ -28,10 +28,6 @@ if ( ! empty($cat_ID) ) {
 		  <?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?></td>
 		</tr>
 		<tr>
-			<th scope="row" valign="top"><label for="category_nicename"><?php _e('Category slug:') ?></label></th>
-			<td><input name="category_nicename" id="category_nicename" type="text" value="<?php echo wp_specialchars($category->category_nicename); ?>" size="40" /></td>
-		</tr>
-		<tr>
 			<th scope="row" valign="top"><label for="category_parent"><?php _e('Category parent:') ?></label></th>
 			<td>        
 			<select name='category_parent' id='category_parent'>

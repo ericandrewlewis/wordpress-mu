@@ -50,17 +50,22 @@ function upload_is_user_over_quota( $ret ) {
 add_filter( "pre_upload_error", "upload_is_user_over_quota" );
 
 function upload_is_file_too_big( $ret ) {
-	$type = strtolower( substr( $_FILES[ 'image' ][ 'name' ], 1+strrpos( $_FILES[ 'image' ][ 'name' ], '.' ) ) );
-	$allowed_types = split( " ", get_site_option( "upload_filetypes" ) );
-	if( in_array( $type, $allowed_types ) == false ) {
-		$ret = "You cannot upload files of this type.<br />";
-	} elseif( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
+	if( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
 		$ret = "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.<br />";
-	}
 
 	return $ret;
 }
 add_filter( "check_uploaded_file", "upload_is_file_too_big" );
+
+function check_upload_mimes($mimes) {
+	$site_exts = explode( " ", get_site_option( "upload_filetypes" ) );
+	foreach ( $site_exts as $ext )
+		foreach ( $mimes as $ext_pattern => $mime )
+			if ( preg_match("/$ext_pattern/", $ext) )
+				$site_mimes[$ext_pattern] = $mime;
+	return $site_mimes;
+}
+add_filter('upload_mimes', 'check_upload_mimes');
 
 add_filter('the_title', 'wp_filter_kses');
 function update_posts_count( $post_id ) {
@@ -78,17 +83,13 @@ function update_pages_last_updated( $post_id ) {
 		update_option( "pages_last_updated", time() );
 }
 add_action( "save_post", "update_pages_last_updated" );
+add_action( "comment_post", "update_pages_last_updated" );
+add_action( "publish_post", "update_pages_last_updated" );
+add_action('delete_post', 'update_pages_last_updated');
+add_action('delete_comment', 'update_pages_last_updated');
+add_action('private_to_published', 'update_pages_last_updated');
+add_action('trackback_post', 'update_pages_last_updated');
+add_action('wp_set_comment_status', 'update_pages_last_updated');
 
-function remove_unfiltered_html() {
-		$role = get_role('administrator');
-		if( $role->capabilities[ 'unfiltered_html' ] ) {
-			$role->remove_cap('unfiltered_html');
-		}
-		$role = get_role('editor');
-		if( $role->capabilities[ 'unfiltered_html' ] ) {
-			$role->remove_cap('unfiltered_html');
-		}
-}
-add_action( "init", "remove_unfiltered_html" );
 
 ?>

@@ -647,7 +647,7 @@ function cat_rows($parent = 0, $level = 0, $categories = 0) {
 	global $wpdb, $class;
 
 	if (!$categories)
-		$categories = $wpdb->get_results("SELECT * FROM $wpdb->categories ORDER BY cat_name");
+		$categories = get_categories('hide_empty=0');
 
 	if ($categories) {
 		foreach ($categories as $category) {
@@ -664,7 +664,7 @@ function cat_rows($parent = 0, $level = 0, $categories = 0) {
 					$default_link_cat_id = get_option('default_link_category');
 
 					if ( ($category->cat_ID != $default_cat_id) && ($category->cat_ID != $default_link_cat_id) )
-						$edit .= "<td><a href='categories.php?action=delete&amp;cat_ID=$category->cat_ID' onclick=\"return deleteSomething( 'cat', $category->cat_ID, '".sprintf(__("You are about to delete the category &quot;%s&quot;.\\nAll of its posts will go into the default category of &quot;%s&quot;\\nAll of its bookmarks will go into the default category of &quot;%s&quot;.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), addslashes($category->cat_name), addslashes(wp_specialchars(get_catname($default_cat_id),'double')), addslashes(wp_specialchars(get_catname($default_link_cat_id),'double')))."' );\" class='delete'>".__('Delete')."</a>";
+						$edit .= "<td><a href='" . wp_nonce_url("categories.php?action=delete&amp;cat_ID=$category->cat_ID", 'delete-category_' . $category->cat_ID ) . "' onclick=\"return deleteSomething( 'cat', $category->cat_ID, '" . sprintf(__("You are about to delete the category &quot;%s&quot;.\\nAll of its posts will go into the default category of &quot;%s&quot;\\nAll of its bookmarks will go into the default category of &quot;%s&quot;.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), addslashes($category->cat_name), js_escape(get_catname($default_cat_id)), js_escape(get_catname($default_link_cat_id))) . "' );\" class='delete'>".__('Delete')."</a>";
 					else
 						$edit .= "<td style='text-align:center'>".__("Default");
 				}
@@ -693,7 +693,7 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
 	global $wpdb, $class, $post;
 
 	if (!$pages)
-		$pages = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type = 'page' ORDER BY menu_order");
+		$pages = get_pages('sort_column=menu_order');
 
 	if (! $pages)
 		return false;
@@ -717,7 +717,7 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
     <td><?php echo mysql2date('Y-m-d g:i a', $post->post_modified); ?></td> 
 	<td><a href="<?php the_permalink(); ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
     <td><?php if ( current_user_can('edit_page', $id) ) { echo "<a href='page.php?action=edit&amp;post=$id' class='edit'>" . __('Edit') . "</a>"; } ?></td> 
-    <td><?php if ( current_user_can('edit_page', $id) ) { echo "<a href='page.php?action=delete&amp;post=$id' class='delete' onclick=\"return deleteSomething( 'page', " . $id . ", '" . sprintf(__("You are about to delete the &quot;%s&quot; page.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), addslashes(wp_specialchars(get_the_title(),'double')) ) . "' );\">" . __('Delete') . "</a>"; } ?></td> 
+    <td><?php if ( current_user_can('edit_page', $id) ) { echo "<a href='" . wp_nonce_url("page.php?action=delete&amp;post=$id", 'delete-page_' . $id) .  "' class='delete' onclick=\"return deleteSomething( 'page', " . $id . ", '" . sprintf(__("You are about to delete the &quot;%s&quot; page.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), addslashes(wp_specialchars(get_the_title(),'double')) ) . "' );\">" . __('Delete') . "</a>"; } ?></td> 
   </tr> 
 
 <?php
@@ -726,9 +726,13 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
 }
 
 function user_row( $user_object, $style = '' ) {
+	global $current_user;
+
 	if ( !(is_object($user_object) && is_a($user_object, 'WP_User')) )
 		$user_object = new WP_User( (int) $user_object );
 	$email = $user_object->user_email;
+	if( $current_user->ID != $user_object->ID || is_site_admin() == false )
+		$email = "N/A";
 	$url = $user_object->user_url;
 	$short_url = str_replace('http://', '', $url);
 	$short_url = str_replace('www.', '', $short_url);
@@ -744,19 +748,19 @@ function user_row( $user_object, $style = '' ) {
 		<td><label for='user_{$user_object->ID}'>$user_object->first_name $user_object->last_name</label></td>
 		<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>
 		<td><a href='$url' title='website: $url'>$short_url</a></td>";
-	$r .= "\n\t\t<td align='right'>$numposts</td>";
+	$r .= "\n\t\t<td align='center'>$numposts</td>";
 	$r .= "\n\t\t<td>";
-	if (current_user_can('edit_users'))
+	if ( ( is_site_admin() || $current_user->ID == $user_object->ID ) && current_user_can('edit_user', $user_object->ID) )
 		$r .= "<a href='user-edit.php?user_id=$user_object->ID' class='edit'>".__('Edit')."</a>";
 	$r .= "</td>\n\t</tr>";
 	return $r;
 }
 
 function wp_dropdown_cats($currentcat = 0, $currentparent = 0, $parent = 0, $level = 0, $categories = 0) {
-	global $wpdb, $bgcolor;
-	if (!$categories) {
-		$categories = $wpdb->get_results("SELECT * FROM $wpdb->categories ORDER BY cat_name");
-	}
+	global $wpdb;
+	if (!$categories)
+		$categories = get_categories('hide_empty=0');
+
 	if ($categories) {
 		foreach ($categories as $category) {
 			if ($currentcat != $category->cat_ID && $parent == $category->category_parent) {
@@ -869,7 +873,6 @@ function wp_create_thumbnail($file, $max_side, $effect = '') {
 	if (!empty ($error)) {
 		return $error;
 	} else {
-		apply_filters( 'wp_create_thumbnail', $thumbpath );
 		return $thumbpath;
 	}
 }
@@ -1182,14 +1185,15 @@ function save_mod_rewrite_rules() {
 
 function the_quicktags() {
 	// Browser detection sucks, but until Safari supports the JS needed for this to work people just assume it's a bug in WP
-	if (!strstr($_SERVER['HTTP_USER_AGENT'], 'Safari'))
+	if (!strstr($_SERVER['HTTP_USER_AGENT'], 'Safari')) {
 		echo '
 		<div id="quicktags">
-			<script src="../wp-includes/js/quicktags.js" type="text/javascript"></script>
-			<script type="text/javascript">if ( typeof tinyMCE == "undefined" || tinyMCE.configs.length < 1 ) edToolbar();</script>
+			';
+		wp_print_scripts( 'quicktags' );
+		echo '			<script type="text/javascript">if ( typeof tinyMCE == "undefined" || tinyMCE.configs.length < 1 ) edToolbar();</script>
 		</div>
 ';
-	else echo '
+	} else echo '
 <script type="text/javascript">
 function edInsertContent(myField, myValue) {
 	//IE support
@@ -1568,8 +1572,8 @@ function get_file_description($file) {
 	if (isset ($wp_file_descriptions[basename($file)])) {
 		return $wp_file_descriptions[basename($file)];
 	}
-	elseif (file_exists(ABSPATH.$file)) {
-		$template_data = implode('', file(ABSPATH.$file));
+	elseif ( file_exists( ABSPATH . $file ) && is_file( ABSPATH . $file ) ) {
+		$template_data = implode('', file( ABSPATH . $file ));
 		if (preg_match("|Template Name:(.*)|i", $template_data, $name))
 			return $name[1];
 	}
@@ -1885,6 +1889,7 @@ function wp_handle_upload(&$file, $overrides = false) {
 			else
 				$filename = str_replace("$number$ext", ++$number . $ext, $filename);
 		}
+		$filename = preg_replace('#\.(?![^.]+$)#', '-', $filename);
 	}
 
 	// Move the file to the uploads dir
@@ -1920,21 +1925,14 @@ function wp_import_cleanup($id) {
 
 function wp_import_upload_form($action) {
 ?>
-<script type="text/javascript">
-function cancelUpload() {
-o = document.getElementById('uploadForm');
-o.method = 'GET';
-o.action.value = 'view';
-o.submit();
-}
-</script>
-<form enctype="multipart/form-data" id="uploadForm" method="POST" action="<?php echo $action ?>">
-<label for="upload"><?php _e('File:'); ?></label><input type="file" id="upload" name="import" />
+<form enctype="multipart/form-data" id="import-upload-form" method="POST" action="<?php echo $action ?>">
+<p>
+<label for="upload"><?php _e('Choose a file from your computer:'); ?></label> <input type="file" id="upload" name="import" size="25" />
 <input type="hidden" name="action" value="save" />
-<div id="buttons">
-<input type="submit" value="<?php _e('Import'); ?>" />
-<input type="button" value="<?php _e('Cancel'); ?>" onclick="cancelUpload()" />
-</div>
+</p>
+<p class="submit">
+<input type="submit" value="<?php _e('Upload file and import'); ?> &raquo;" />
+</p>
 </form>
 <?php
 }
@@ -1947,7 +1945,7 @@ function wp_import_handle_upload() {
 		return $file;
 
 	$url = $file['url'];
-	$file = $file['file'];
+	$file = addslashes( $file['file'] );
 	$filename = basename($file);
 
 	// Construct the object array

@@ -3,7 +3,7 @@
 
 global $wp_queries;
 
-$wp_queries = "CREATE TABLE $wpdb->categories (
+$wp_queries="CREATE TABLE $wpdb->categories (
   cat_ID bigint(20) NOT NULL auto_increment,
   cat_name varchar(55) NOT NULL default '',
   category_nicename varchar(200) NOT NULL default '',
@@ -133,6 +133,8 @@ CREATE TABLE $wpdb->users (
   user_activation_key varchar(60) NOT NULL default '',
   user_status int(11) NOT NULL default '0',
   display_name varchar(250) NOT NULL default '',
+  spam tinyint(2) NOT NULL default '0',
+  deleted tinyint(2) NOT NULL default '0',
   PRIMARY KEY  (ID),
   KEY user_login_key (user_login)
 );
@@ -159,8 +161,24 @@ CREATE TABLE $wpdb->blogs (
   deleted tinyint(2) NOT NULL default '0',
   lang_id int(11) NOT NULL default '0',
   PRIMARY KEY  (blog_id),
-  KEY site_id (site_id),
-  KEY domain (domain,path)
+  KEY domain (domain(50),path(5)),
+  KEY lang_id (lang_id)
+);
+CREATE TABLE wp_blog_versions (
+  blog_id bigint(20) NOT NULL default '0',
+  db_version varchar(20) NOT NULL default '',
+  last_updated datetime NOT NULL default '0000-00-00 00:00:00',
+  PRIMARY KEY  (blog_id),
+  KEY db_version (db_version)
+);
+CREATE TABLE wp_registration_log (
+  ID bigint(20) NOT NULL auto_increment,
+  email varchar(255) NOT NULL default '',
+  IP varchar(30) NOT NULL default '',
+  blog_id bigint(20) NOT NULL default '0',
+  t timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  PRIMARY KEY  (ID),
+  KEY IP (IP)
 );
 CREATE TABLE $wpdb->site (
   id bigint(20) NOT NULL auto_increment,
@@ -182,9 +200,10 @@ CREATE TABLE $wpdb->sitecategories (
   cat_ID bigint(20) NOT NULL auto_increment,
   cat_name varchar(55) NOT NULL default '',
   category_nicename varchar(200) NOT NULL default '',
-  category_description longtext NOT NULL,
+  last_updated timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
   PRIMARY KEY  (cat_ID),
-  KEY category_nicename (category_nicename)
+  KEY category_nicename (category_nicename),
+  KEY last_updated (last_updated)
 );
 CREATE TABLE $wpdb->signups (
   domain varchar(200) NOT NULL default '',
@@ -193,12 +212,12 @@ CREATE TABLE $wpdb->signups (
   user_login varchar(60) NOT NULL default '',
   user_email varchar(100) NOT NULL default '',
   registered datetime NOT NULL default '0000-00-00 00:00:00',
-  activation_key longtext NOT NULL,
-  meta longtext,
-  active bigint(20),
   activated datetime NOT NULL default '0000-00-00 00:00:00',
-  PRIMARY KEY (domain,path),
-  KEY user_login (user_login)
+  active tinyint(1) NOT NULL default '0',
+  activation_key varchar(50) NOT NULL default '',
+  meta longtext,
+  KEY activation_key (activation_key),
+  KEY domain (domain)
 );
 ";
 
@@ -282,8 +301,14 @@ function populate_options() {
 		add_option('uploads_use_yearmonth_folders', 1);
 		add_option('upload_path', 'wp-content/uploads');
 	}
+	
+	// 2.0.3
+	add_option('secret', md5(uniqid(microtime())));
+
 	// 2.1
 	add_option('blog_public', 1);
+	add_option('default_link_category', 2);
+	add_option('show_on_front', 'posts');
 
 	add_site_option( 'customizefeed1', '0' );
 	add_site_option( 'customizefeed2', '0' );
@@ -291,8 +316,6 @@ function populate_options() {
 	add_site_option( 'dashboardfeed2', 'http://planet.wordpress.org/feed/' );
 	add_site_option( 'dashboardfeed1name', 'WordPress Development Blog' );
 	add_site_option( 'dashboardfeed2name', 'Other WordPress News' );
-
-	populate_roles();
 
 	// Delete unused options
 	$unusedoptions = array ('blodotgsping_url', 'bodyterminator', 'emailtestonly', 'phoneemail_separator', 'smilies_directory', 'subjectprefix', 'use_bbcode', 'use_blodotgsping', 'use_phoneemail', 'use_quicktags', 'use_weblogsping', 'weblogs_cache_file', 'use_preview', 'use_htmltrans', 'smilies_directory', 'fileupload_allowedusers', 'use_phoneemail', 'default_post_status', 'default_post_category', 'archive_mode', 'time_difference', 'links_minadminlevel', 'links_use_adminlevels', 'links_rating_type', 'links_rating_char', 'links_rating_ignore_zero', 'links_rating_single_image', 'links_rating_image0', 'links_rating_image1', 'links_rating_image2', 'links_rating_image3', 'links_rating_image4', 'links_rating_image5', 'links_rating_image6', 'links_rating_image7', 'links_rating_image8', 'links_rating_image9', 'weblogs_cacheminutes', 'comment_allowed_tags', 'search_engine_friendly_urls', 'default_geourl_lat', 'default_geourl_lon', 'use_default_geourl', 'weblogs_xml_url', 'new_users_can_blog');
@@ -415,6 +438,18 @@ function populate_roles_210() {
 		$role->add_cap('delete_posts');
 		$role->add_cap('delete_others_posts');
 		$role->add_cap('delete_published_posts');
+		$role->add_cap('delete_private_posts');
+		$role->add_cap('edit_private_posts');
+		$role->add_cap('read_private_posts');
+		$role->add_cap('delete_private_pages');
+		$role->add_cap('edit_private_pages');
+		$role->add_cap('read_private_pages');
+	}
+
+	$role = get_role('administrator');
+	if ( ! empty($role) ) {
+		$role->add_cap('delete_users');
+		$role->add_cap('create_users');
 	}
 
 	$role = get_role('author');

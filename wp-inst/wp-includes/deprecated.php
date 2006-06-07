@@ -452,4 +452,22 @@ function dropdown_cats($optionall = 1, $all = 'All', $orderby = 'ID', $order = '
 	return wp_dropdown_categories($query);
 }
 
+// Deprecated.  Use wp_print_scripts() or WP_Scripts instead.
+function tinymce_include() {
+	wp_print_script( 'wp_tiny_mce' );
+}
+
+function list_authors($optioncount = false, $exclude_admin = true, $show_fullname = false, $hide_empty = true, $feed = '', $feed_image = '') {
+	$args = compact('optioncount', 'exclude_admin', 'show_fullname', 'hide_empty', 'feed', 'feed_image');
+	return wp_list_authors($args);
+}
+
+function wp_get_post_cats($blogid = '1', $post_ID = 0) {
+	return wp_get_post_categories($post_ID);
+}
+
+function wp_set_post_cats($blogid = '1', $post_ID = 0, $post_categories = array()) {
+	return wp_set_post_categories($post_ID, $post_categories);
+}
+
 ?>

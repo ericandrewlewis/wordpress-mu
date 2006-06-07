@@ -25,7 +25,7 @@ $errors = array();
 
 // Only allow site admins to edit every user.
 if( is_site_admin() == false ) 
-	if( $user_id != $current_user->ID ) $errors['head'] = __('You do not have permission to edit this user.');
+	if( $user_id != $current_user->ID ) $errors = new WP_Error('head', __('You do not have permission to edit this user.'));
 
 switch ($action) {
 case 'switchposts':
@@ -38,16 +38,14 @@ break;
 
 case 'update':
 
-check_admin_referer();
+check_admin_referer('update-user_' . $user_id);
 
-$errors = array();
-
-if (!current_user_can('edit_users'))
-	$errors['head'] = __('You do not have permission to edit this user.');
+if ( !current_user_can('edit_user', $user_id) )
+	$errors = new WP_Error('head', __('You do not have permission to edit this user.'));
 else
-	$errors = edit_user($user_id);
+	if( isset( $errors ) == false ) $errors = edit_user($user_id);
 
-if(count($errors) == 0) {
+if( !is_wp_error( $errors ) ) {
 	if( is_site_admin() )
 		update_usermeta( $user_id, 'invites_left', intval( $_POST[ 'invites_left' ] ) );
 	header("Location: user-edit.php?user_id=$user_id&updated=true");
@@ -59,7 +57,9 @@ include ('admin-header.php');
 
 $profileuser = new WP_User($user_id);
 
-if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permission to edit this user.');
+if ( !current_user_can('edit_user', $user_id) )
+	if ( !is_wp_error( $errors ) )
+		$errors = new WP_Error('head', __('You do not have permission to edit this user.'));
 ?>
 
 <?php if ( isset($_GET['updated']) ) : ?>
@@ -67,11 +67,12 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 	<p><strong><?php _e('User updated.') ?></strong></p>
 </div>
 <?php endif; ?>
-<?php if ( count($errors) != 0 ) { ?>
+<?php if ( is_wp_error( $errors ) ) { ?>
 <div class="error">
 	<ul>
 	<?php
-	foreach($errors as $error) echo "<li>$error</li>";
+	foreach( $errors->get_error_messages() as $message )
+		echo "<li>$message</li>";
 	?>
 	</ul>
 </div>
@@ -81,6 +82,7 @@ if (!current_user_can('edit_users')) $errors['head'] = __('You do not have permi
 <h2><?php _e('Edit User'); ?></h2>
 
 <form name="profile" id="your-profile" action="user-edit.php" method="post">
+<?php wp_nonce_field('update-user_' . $user_id) ?>
 <p>
 <input type="hidden" name="from" value="profile" />
 <input type="hidden" name="checkuser_id" value="<?php echo $user_ID ?>" />

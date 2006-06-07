@@ -63,14 +63,16 @@ function wp_login($username, $password, $already_md5 = false) {
 }
 
 function get_userdata( $user_id ) {
-	global $wpdb, $cache_userdata;
+	global $wpdb, $cache_userdata, $wpmuBaseTablePrefix;
 	$user_id = (int) $user_id;
 	if ( $user_id == 0 )
 		return false;
 
 	$user = wp_cache_get($user_id, 'users');
-	if( $user->user_level != '' ) {
+	$user_level = $wpmuBaseTablePrefix . $wpdb->blogid . '_user_level';
+	if( $user->$user_level != '' || $user->user_level != '' ) {
 		if( $user && is_site_admin( $user->user_login ) == true ) {
+			$user->$user_level = 10;
 			$user->user_level = 10;
 			$cap_key = $wpdb->prefix . 'capabilities';
 			$user->{$cap_key} = array( 'administrator' => '1' );

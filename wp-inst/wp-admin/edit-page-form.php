@@ -5,11 +5,13 @@
 <?php
 if (0 == $post_ID) {
 	$form_action = 'post';
+	$nonce_action = 'add-page';
 	$temp_ID = -1 * time();
-	$form_extra = "<input type='hidden' name='temp_ID' value='$temp_ID' />";
+	$form_extra = "<input type='hidden' id='post_ID' name='temp_ID' value='$temp_ID' />";
 } else {
 	$form_action = 'editpost';
-	$form_extra = "<input type='hidden' name='post_ID' value='$post_ID' />";
+	$nonce_action = 'update-page_' . $post_ID;
+	$form_extra = "<input type='hidden' id='post_ID' name='post_ID' value='$post_ID' />";
 }
 
 $sendto = $_SERVER['HTTP_REFERER'];
@@ -23,6 +25,8 @@ $sendto = wp_specialchars( $sendto );
 <form name="post" action="page.php" method="post" id="post">
 
 <?php
+wp_nonce_field($nonce_action);
+
 if (isset($mode) && 'bookmarklet' == $mode) {
     echo '<input type="hidden" name="mode" value="bookmarklet" />';
 }
@@ -57,7 +61,7 @@ addLoadEvent(focusit);
 
 <fieldset class="dbx-box">
 <h3 class="dbx-handle"><?php _e('Page Status') ?></h3> 
-<div class="dbx-content"><?php if ( current_user_can('publish_posts') ) : ?>
+<div class="dbx-content"><?php if ( current_user_can('publish_pages') ) : ?>
 <label for="post_status_publish" class="selectit"><input id="post_status_publish" name="post_status" type="radio" value="publish" <?php checked($post->post_status, 'publish'); checked($post->post_status, 'future'); ?> /> <?php _e('Published') ?></label>
 <?php endif; ?>
 	  <label for="post_status_draft" class="selectit"><input id="post_status_draft" name="post_status" type="radio" value="draft" <?php checked($post->post_status, 'draft'); ?> /> <?php _e('Draft') ?></label>
@@ -130,55 +134,8 @@ endforeach;
 
 <fieldset id="<?php echo user_can_richedit() ? 'postdivrich' : 'postdiv'; ?>">
     <legend><?php _e('Page Content') ?></legend>
-<?php
- $rows = get_settings('default_post_edit_rows');
- if (($rows < 3) || ($rows > 100)) {
-     $rows = 10;
- }
-?>
-<?php the_quicktags(); ?>
-
-<div><textarea title="true" rows="<?php echo $rows; ?>" cols="40" name="content" tabindex="4" id="content"><?php echo user_can_richedit() ? wp_richedit_pre($post->post_content) : $post->post_content; ?></textarea></div>
+	<?php the_editor($post->post_content); ?>
 </fieldset>
-
-<script type="text/javascript">
-<!--
-edCanvas = document.getElementById('content');
-<?php if ( user_can_richedit() ) : ?>
-// This code is meant to allow tabbing from Title to Post (TinyMCE).
-if ( tinyMCE.isMSIE )
-	document.getElementById('title').onkeydown = function (e)
-		{
-			e = e ? e : window.event;
-			if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
-				var i = tinyMCE.selectedInstance;
-				if(typeof i ==  'undefined')
-					return true;
-                                tinyMCE.execCommand("mceStartTyping");
-				this.blur();
-				i.contentWindow.focus();
-				e.returnValue = false;
-				return false;
-			}
-		}
-else
-	document.getElementById('title').onkeypress = function (e)
-		{
-			e = e ? e : window.event;
-			if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
-				var i = tinyMCE.selectedInstance;
-				if(typeof i ==  'undefined')
-					return true;
-                                tinyMCE.execCommand("mceStartTyping");
-				this.blur();
-				i.contentWindow.focus();
-				e.returnValue = false;
-				return false;
-			}
-		}
-<?php endif; ?>
-//-->
-</script>
 
 <p class="submit">
 <input name="save" type="submit" id="save" tabindex="3" value="<?php _e('Save and Continue Editing'); ?>" />
@@ -197,7 +154,7 @@ if ('publish' != $post->post_status || 0 == $post_ID):
 <?php
 if (current_user_can('upload_files')) {
 	$uploading_iframe_ID = (0 == $post_ID ? $temp_ID : $post_ID);
-	$uploading_iframe_src = "inline-uploading.php?action=view&amp;post=$uploading_iframe_ID";
+	$uploading_iframe_src = wp_nonce_url("inline-uploading.php?action=view&amp;post=$uploading_iframe_ID", 'inlineuploading');
 	$uploading_iframe_src = apply_filters('uploading_iframe_src', $uploading_iframe_src);
 	if ( false != $uploading_iframe_src )
 		echo '<iframe id="uploading" border="0" src="' . $uploading_iframe_src . '">' . __('This feature requires iframe support.') . '</iframe>';
@@ -209,14 +166,14 @@ if (current_user_can('upload_files')) {
 <fieldset id="postcustom" class="dbx-box">
 <h3 class="dbx-handle"><?php _e('Custom Fields') ?></h3>
 <div id="postcustomstuff" class="dbx-content">
+<table cellpadding="3">
 <?php 
-if($metadata = has_meta($post_ID)) {
+$metadata = has_meta($post_ID);
+list_meta($metadata); 
 ?>
+
+</table>
 <?php
-	list_meta($metadata); 
-?>
-<?php
-}
 	meta_form();
 ?>
 </div>

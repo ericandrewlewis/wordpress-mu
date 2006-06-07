@@ -10,6 +10,7 @@ include('./admin-header.php');
 <div class="wrap">
 <h2><?php _e('General Options') ?></h2>
 <form method="post" action="options.php"> 
+<?php wp_nonce_field('update-options') ?>
 <table class="optiontable"> 
 <tr valign="top"> 
 <th scope="row"><?php _e('Weblog title:') ?></th> 
@@ -22,15 +23,19 @@ include('./admin-header.php');
 <?php _e('In a few words, explain what this weblog is about.') ?></td> 
 </tr> 
 <tr valign="top"> 
-<th scope="row"><?php _e('Search Engines:') ?> </th> 
-<td><label><input type="checkbox" name="blog_public" value="1" <?php checked('1', get_option('blog_public')); ?> /> <?php _e('I would like my blog to appear in search engines like Google and Technorati.'); ?></label>
+<th scope="row"><?php _e('Language:') ?> </th> 
+<td><select name="language"><?php language_dropdown( get_option('language') ); ?></select>
+<br />
+<?php _e('Language this blog is primarily written in.') ?><br />
+<?php _e('In the future, you will be able to modify the interface language in your profile.') ?> 
 </td> 
 </tr>
-<th scope="row"><?php _e('E-mail address:') ?> </th> 
-<td><?php form_option('admin_email'); ?>
-<br />
-<?php _e('This address is used only for admin purposes.') ?></td> 
+<tr valign="top"> 
+<th scope="row"><?php _e('Search Engines:') ?> </th> 
+<td><label><input type="checkbox" name="blog_public" value="1" <?php checked('1', $current_blog->public); ?> /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around WordPress.com.'); ?></label> (<a href="http://wordpress.com/blog/2006/01/29/a-little-privacy/">more</a>)
+</td> 
 </tr>
+
 <tr valign="top"> 
 <th scope="row"><?php _e('Membership:') ?></th> 
 <td> <label for="comment_registration">
@@ -39,6 +44,14 @@ include('./admin-header.php');
 </label>
 </td> 
 </tr> 
+<tr valign="top"> 
+<th scope="row"><?php _e('E-mail address:') ?> </th> 
+<td><input name="new_admin_email" type="text" id="new_admin_email" value="<?php form_option('admin_email'); ?>" size="40" class="code" />
+<br />
+<p><?php _e('This address is used only for admin purposes.') ?> If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong></p>
+</td> 
+</tr>
+
 <?php
 $lang_files = glob( ABSPATH . WPINC . "/languages/*" );
 $lang = get_option( "WPLANG" );
@@ -47,7 +60,7 @@ if( $lang == false ) {
 	add_option( "WPLANG", $lang );
 }
 
-if( is_array( $lang_files ) ) {
+if( is_array( $lang_files ) && count($lang_files) > 1 ) {
 	?>
 		<tr valign="top"> 
 		<th width="33%" scope="row"><?php _e('Language:') ?></th> 
@@ -98,9 +111,8 @@ if( is_array( $lang_files ) ) {
 <td><select name="start_of_week" id="start_of_week">
 <?php
 for ($day_index = 0; $day_index <= 6; $day_index++) :
-if ($day_index == get_settings('start_of_week')) $selected = " selected='selected'";
-else $selected = '';
-echo "\n\t<option value='$day_index' $selected>$weekday[$day_index]</option>";
+	$selected = (get_settings('start_of_week') == $day_index) ? 'selected="selected"' : '';
+	echo "\n\t<option value='$day_index' $selected>" . $wp_locale->get_weekday($day_index) . '</option>';
 endfor;
 ?>
 </select></td>
@@ -110,7 +122,7 @@ endfor;
 
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="blogname,blogdescription,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,blog_public" /> 
+<input type="hidden" name="page_options" value="blogname,blogdescription,new_admin_email,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,language,blog_public" /> 
 </p>
 </form>
 

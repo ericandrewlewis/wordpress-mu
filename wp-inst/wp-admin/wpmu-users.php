@@ -4,10 +4,8 @@ require_once('admin.php');
 switch( $_GET[ 'action' ] ) {
 	case "delete":
 		$id = intval( $_GET[ 'id' ] );
-		if( $id != '0' && $id != '1' ) {
-			$wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE user_id = '" . $id . "'" );
-			$wpdb->query( "DELETE FROM " . $wpdb->users . " WHERE ID = '" . $id . "'" );
-		}
+		if( $id != '0' && $id != '1' )
+			wpmu_delete_user($id);
 		wpmu_admin_do_redirect( "wpmu-users.php" );
 		die();
 	break;
@@ -86,8 +84,7 @@ switch( $_GET[ 'action' ] ) {
 			if( $val != '' && $val != '0' && $val != '1' ) {
 				$user_details = get_userdata( $val );
 				if( $_POST[ 'userfunction' ] == 'delete' ) {
-					$wpdb->query( "DELETE FROM {$wpdb->users} WHERE ID = '$val'" );
-					$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '$val'" );
+					wpmu_delete_user($val);
 				} elseif( $_POST[ 'userfunction' ] == 'spam' ) {
 					$blogs = get_blogs_of_user( $val );
 					if( is_array( $blogs ) ) {

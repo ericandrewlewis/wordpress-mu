@@ -1,6 +1,8 @@
 <?php
 require_once('admin.php');
 
+$parent_file = 'edit.php';
+$submenu_file = 'edit.php';
 $wpvarstoreset = array('action', 'safe_mode', 'withcomments', 'posts', 'content', 'edited_post_title', 'comment_error', 'profile', 'trackback_url', 'excerpt', 'showcomments', 'commentstart', 'commentend', 'commentorder' );
 
 for ($i=0; $i<count($wpvarstoreset); $i += 1) {
@@ -18,14 +20,17 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 	}
 }
 
-if (isset($_POST['deletepost']))
-$action = "delete";
+if ( isset( $_POST['deletepost'] ) )
+	$action = 'delete';
 
 switch($action) {
+case 'postajaxpost':
 case 'post':
-	check_admin_referer();
+	$parent_file = 'post-new.php';
+	$submenu_file = 'post-new.php';
+	check_admin_referer('add-post');
 	
-	$post_ID = write_post();
+	$post_ID = 'post' == $action ? write_post() : edit_post();
 
 	// Redirect.
 	if (!empty($_POST['mode'])) {
@@ -53,14 +58,16 @@ case 'post':
 
 case 'edit':
 	$title = __('Edit');
-	$parent_file = 'edit.php';
-	$submenu_file = 'edit.php';
 	$editing = true;
-	require_once('admin-header.php');
 
 	$post_ID = $p = (int) $_GET['post'];
 
 	$post = get_post($post_ID);
+	if( $post->post_type == 'page' ) {
+		header( "Location: " . str_replace( "post.php", "page.php", $_SERVER[ 'REQUEST_URI' ] ) );
+		die();
+	}
+	require_once('admin-header.php');
 	if ( !current_user_can('edit_post', $post_ID) )
 		die ( __('You are not allowed to edit this post.') );
 
@@ -77,9 +84,9 @@ case 'edit':
 	break;
 
 case 'editattachment':
-	check_admin_referer();
-
 	$post_id = (int) $_POST['post_ID'];
+
+	check_admin_referer('update-attachment_' . $post_id);
 
 	// Don't let these be changed
 	unset($_POST['guid']);
@@ -95,7 +102,8 @@ case 'editattachment':
 		add_post_meta($post_id, '_wp_attachment_metadata', $newmeta);
 
 case 'editpost':
-	check_admin_referer();
+	$post_ID = (int) $_POST['post_ID'];
+	check_admin_referer('update-post_' . $post_ID);
 	
 	$post_ID = edit_post();
 
@@ -120,9 +128,8 @@ case 'editpost':
 	break;
 
 case 'delete':
-	check_admin_referer();
-
 	$post_id = (isset($_GET['post']))  ? intval($_GET['post']) : intval($_POST['post_ID']);
+	check_admin_referer('delete-post_' . $post_id);
 
 	$post = & get_post($post_id);
 
@@ -146,6 +153,8 @@ case 'delete':
 	break;
 
 default:
+	header('Location: edit.php');
+	exit();
 	break;
 } // end switch
 include('admin-footer.php');

@@ -10,6 +10,7 @@ include('admin-header.php');
 <div class="wrap"> 
 <h2><?php _e('Writing Options') ?></h2> 
 <form method="post" action="options.php"> 
+<?php wp_nonce_field('update-options') ?>
 <table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 <tr valign="top"> 
 <th width="33%" scope="row"> <?php _e('Size of the post box:') ?></th> 
@@ -38,13 +39,25 @@ endforeach;
 ?>
 </select></td>
 </tr>
+<tr valign="top">
+<th scope="row"><?php _e('Default bookmark category:') ?></th>
+<td><select name="default_link_category" id="default_link_category">
+<?php
+foreach ($categories as $category) :
+if ($category->cat_ID == get_settings('default_link_category')) $selected = " selected='selected'";
+else $selected = '';
+echo "\n\t<option value='$category->cat_ID' $selected>$category->cat_name</option>";
+endforeach;
+?>
+</select></td>
+</tr>
 </table>
 
 
 
 <p class="submit">
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="default_post_edit_rows,use_smilies,ping_sites,mailserver_url,mailserver_port,mailserver_login,mailserver_pass,default_category,default_email_category,use_balanceTags" /> 
+<input type="hidden" name="page_options" value="default_post_edit_rows,use_smilies,default_category,default_email_category,use_balanceTags,default_link_category" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /> 
 </p>
 </form> 

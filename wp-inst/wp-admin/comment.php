@@ -1,6 +1,8 @@
 <?php
 require_once('admin.php');
 
+$parent_file = 'edit.php';
+$submenu_file = 'edit-comments.php';
 $wpvarstoreset = array('action');
 
 for ($i=0; $i<count($wpvarstoreset); $i += 1) {
@@ -18,15 +20,15 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 	}
 }
 
+if ( isset( $_POST['deletecomment'] ) )
+	$action = 'deletecomment';
+
 switch($action) {
 case 'editcomment':
 	$title = __('Edit Comment');
-	$parent_file = 'edit.php';
-	$submenu_file = 'edit-comments.php';
-	$editing = true;
+	if ( user_can_richedit() )
+		wp_enqueue_script( 'wp_tiny_mce' );
 	require_once ('admin-header.php');
-
-	get_currentuserinfo();
 
 	$comment = (int) $_GET['comment'];
 
@@ -43,23 +45,29 @@ case 'editcomment':
 	break;
 
 case 'confirmdeletecomment':
+case 'mailapprovecomment':
 
 	require_once('./admin-header.php');
 
 	$comment = (int) $_GET['comment'];
 	$p = (int) $_GET['p'];
+	$formaction = 'confirmdeletecomment' == $action ? 'deletecomment' : 'approvecomment';
+	$nonce_action = 'confirmdeletecomment' == $action ? 'delete-comment_' : 'approve-comment_';
+	$nonce_action .= $comment;
 
 	if ( ! $comment = get_comment($comment) )
 		die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
 
 	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
-		die( __('You are not allowed to delete comments on this post.') );
+		die( 'confirmdeletecomment' == $action ? __('You are not allowed to delete comments on this post.') : __('You are not allowed to edit comments on this post, so you cannot approve this comment.') );
 
 	echo "<div class='wrap'>\n";
 	if ( 'spam' == $_GET['delete_type'] )
 		echo "<p>" . __('<strong>Caution:</strong> You are about to mark the following comment as spam:') . "</p>\n";
-	else
+	elseif ( 'confirmdeletecomment' == $action )
 		echo "<p>" . __('<strong>Caution:</strong> You are about to delete the following comment:') . "</p>\n";
+	else
+		echo "<p>" . __('<strong>Caution:</strong> You are about to approve the following comment:') . "</p>\n";
 	echo "<table border='0'>\n";
 	echo "<tr><td>" . __('Author:') . "</td><td>$comment->comment_author</td></tr>\n";
 	echo "<tr><td>" . __('E-mail:') . "</td><td>$comment->comment_author_email</td></tr>\n";
@@ -69,7 +77,8 @@ case 'confirmdeletecomment':
 	echo "<p>" . __('Are you sure you want to do that?') . "</p>\n";
 
 	echo "<form action='".get_settings('siteurl')."/wp-admin/comment.php' method='get'>\n";
-	echo "<input type='hidden' name='action' value='deletecomment' />\n";
+	wp_nonce_field($nonce_action);
+	echo "<input type='hidden' name='action' value='$formaction' />\n";
 	if ( 'spam' == $_GET['delete_type'] )
 		echo "<input type='hidden' name='delete_type' value='spam' />\n";
 	echo "<input type='hidden' name='p' value='$p' />\n";
@@ -77,25 +86,25 @@ case 'confirmdeletecomment':
 	echo "<input type='hidden' name='noredir' value='1' />\n";
 	echo "<input type='submit' value='" . __('Yes') . "' />";
 	echo "&nbsp;&nbsp;";
-	echo "<input type='button' value='" . __('No') . "' onclick=\"self.location='". get_settings('siteurl') ."/wp-admin/edit.php?p=$p&amp;c=1#comments';\" />\n";
+	echo "<input type='button' value='" . __('No') . "' onclick=\"self.location='". get_settings('siteurl') ."/wp-admin/edit-comments.php';\" />\n";
 	echo "</form>\n";
 	echo "</div>\n";
 
 	break;
 
 case 'deletecomment':
+	$comment = (int) $_REQUEST['comment'];
+	check_admin_referer('delete-comment_' . $comment);
 
-	check_admin_referer();
-
-	$comment = (int) $_GET['comment'];
-	$p = (int) $_GET['p'];
-	if (isset($_GET['noredir'])) {
+	$p = (int) $_REQUEST['p'];
+	if ( isset($_REQUEST['noredir']) ) {
 		$noredir = true;
 	} else {
 		$noredir = false;
 	}
 
-	$postdata = get_post($p) or die(sprintf(__('Oops, no post with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
+	$postdata = get_post($p) or 
+		die(sprintf(__('Oops, no post with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
 
 	if ( ! $comment = get_comment($comment) )
 			 die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit-comments.php'));
@@ -103,24 +112,23 @@ case 'deletecomment':
 	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
 		die( __('You are not allowed to edit comments on this post.') );
 
-	if ( 'spam' == $_GET['delete_type'] )
+	if ( 'spam' == $_REQUEST['delete_type'] )
 		wp_set_comment_status($comment->comment_ID, 'spam');
 	else
 		wp_delete_comment($comment->comment_ID);
 
-	if (($_SERVER['HTTP_REFERER'] != "") && (false == $noredir)) {
+	if (($_SERVER['HTTP_REFERER'] != '') && (false == $noredir)) {
 		header('Location: ' . $_SERVER['HTTP_REFERER']);
 	} else {
-		header('Location: '. get_settings('siteurl') .'/wp-admin/edit.php?p='.$p.'&c=1#comments');
+		header('Location: '. get_settings('siteurl') .'/wp-admin/edit-comments.php');
 	}
 	exit();
 	break;
 
 case 'unapprovecomment':
-
-	check_admin_referer();
-
 	$comment = (int) $_GET['comment'];
+	check_admin_referer('unapprove-comment_' . $comment);
+	
 	$p = (int) $_GET['p'];
 	if (isset($_GET['noredir'])) {
 		$noredir = true;
@@ -144,29 +152,10 @@ case 'unapprovecomment':
 	exit();
 	break;
 
-case 'mailapprovecomment':
-
-	$comment = (int) $_GET['comment'];
-
-	if ( ! $comment = get_comment($comment) )
-			 die(sprintf(__('Oops, no comment with this ID. <a href="%s">Go back</a>!'), 'edit.php'));
-
-	if ( !current_user_can('edit_post', $comment->comment_post_ID) )
-		die( __('You are not allowed to edit comments on this post, so you cannot approve this comment.') );
-
-	if ('1' != $comment->comment_approved) {
-		wp_set_comment_status($comment->comment_ID, 'approve');
-		if (true == get_option('comments_notify'))
-			wp_notify_postauthor($comment->comment_ID);
-	}
-
-	header('Location: ' . get_option('siteurl') . '/wp-admin/moderation.php?approved=1');
-	exit();
-	break;
-
 case 'approvecomment':
-
 	$comment = (int) $_GET['comment'];
+	check_admin_referer('approve-comment_' . $comment);
+
 	$p = (int) $_GET['p'];
 	if (isset($_GET['noredir'])) {
 		$noredir = true;
@@ -196,6 +185,11 @@ case 'approvecomment':
 
 case 'editedcomment':
 
+	$comment_ID = (int) $_POST['comment_ID'];
+	$comment_post_ID = (int) $_POST['comment_post_id'];
+
+	check_admin_referer('update-comment_' . $comment_ID);
+
 	edit_comment();
 
 	$referredby = $_POST['referredby'];
@@ -209,5 +203,7 @@ case 'editedcomment':
 default:
 	break;
 } // end switch
+
 include('admin-footer.php');
+
 ?>

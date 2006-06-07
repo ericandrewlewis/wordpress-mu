@@ -26,7 +26,7 @@ function wp_set_current_user($id, $name = '') {
 }
 endif;
 
-if ( !function_exists('current_user') ) :
+if ( !function_exists('wp_get_current_user') ) :
 function wp_get_current_user() {
 	global $current_user;
 
@@ -226,6 +226,7 @@ function auth_redirect() {
 				!wp_login($_COOKIE[USER_COOKIE], $_COOKIE[PASS_COOKIE], true)) ||
 			 (empty($_COOKIE[USER_COOKIE])) ) {
 		nocache_headers();
+
 		header('Location: ' . get_settings('siteurl') . '/wp-login.php?redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
 		exit();
 	}
@@ -233,18 +234,43 @@ function auth_redirect() {
 endif;
 
 if ( !function_exists('check_admin_referer') ) :
-function check_admin_referer() {
+function check_admin_referer($action = -1) {
+	global $pagenow, $menu, $submenu, $parent_file, $submenu_file;;
 	$adminurl = strtolower(get_settings('siteurl')).'/wp-admin';
 	$referer = strtolower($_SERVER['HTTP_REFERER']);
-	if (!strstr($referer, $adminurl))
-		die(__('Sorry, you need to <a href="http://codex.wordpress.org/Enable_Sending_Referrers">enable sending referrers</a> for this feature to work.'));
-	do_action('check_admin_referer');
-}
-endif;
+	if ( !wp_verify_nonce($_REQUEST['_wpnonce'], $action) &&
+		!(-1 == $action && strstr($referer, $adminurl)) ) {
+		if ( $referer ) 
+			$adminurl = $referer;
+		$title = __('WordPress Confirmation');
+		require_once(ABSPATH . '/wp-admin/admin-header.php');
+		// Remove extra layer of slashes.
+		$_POST   = stripslashes_deep($_POST  );
+		if ( $_POST ) {
+			$q = http_build_query($_POST);
+			$q = explode( ini_get('arg_separator.output'), $q);
+			$html .= "\t<form method='post' action='$pagenow'>\n";
+			foreach ( (array) $q as $a ) {
+				$v = substr(strstr($a, '='), 1);
+				$k = substr($a, 0, -(strlen($v)+1));
+				$html .= "\t\t<input type='hidden' name='" . wp_specialchars( urldecode($k), 1 ) . "' value='" . wp_specialchars( urldecode($v), 1 ) . "' />\n";
+			}
+			$html .= "\t\t<input type='hidden' name='_wpnonce' value='" . wp_create_nonce($action) . "' />\n";
+			$html .= "\t\t<div id='message' class='confirm fade'>\n\t\t<p>" . __('Are you sure you want to do this?') . "</p>\n\t\t<p><a href='$adminurl'>" . __('No') . "</a> <input type='submit' value='" . __('Yes') . "' /></p>\n\t\t</div>\n\t</form>\n";
+		} else {
+			$html .= "\t<div id='message' class='confirm fade'>\n\t<p>" . __('Are you sure you want to do this?') . "</p>\n\t<p><a href='$adminurl'>" . __('No') . "</a> <a href='" . add_query_arg( '_wpnonce', wp_create_nonce($action), $_SERVER['REQUEST_URI'] ) . "'>" . __('Yes') . "</a></p>\n\t</div>\n";
+		}
+		$html .= "</body>\n</html>";
+		echo $html;
+		include_once(ABSPATH . '/wp-admin/admin-footer.php');
+		die();
+	}
+	do_action('check_admin_referer', $action);
+}endif;
 
 if ( !function_exists('check_ajax_referer') ) :
 function check_ajax_referer() {
-	$cookie = explode(';', urldecode(empty($_POST['cookie']) ? $_GET['cookie'] : $_POST['cookie'])); // AJAX scripts must pass cookie=document.cookie
+	$cookie = explode('; ', urldecode(empty($_POST['cookie']) ? $_GET['cookie'] : $_POST['cookie'])); // AJAX scripts must pass cookie=document.cookie
 	foreach ( $cookie as $tasty ) {
 		if ( false !== strpos($tasty, USER_COOKIE) )
 			$user = substr(strstr($tasty, '='), 1);
@@ -462,6 +488,53 @@ function wp_new_user_notification($user_id, $plaintext_pass = '') {
 
 	wp_mail($user_email, sprintf(__('[%s] Your username and password'), get_settings('blogname')), $message);
 
+}
+endif;
+
+if ( !function_exists('wp_verify_nonce') ) :
+function wp_verify_nonce($nonce, $action = -1) {
+	$user = wp_get_current_user();
+	$uid = $user->id;
+
+	$i = ceil(time() / 43200);
+
+	//Allow for expanding range, but only do one check if we can
+	if( substr(wp_hash($i . $action . $uid), -12, 10) == $nonce || substr(wp_hash(($i - 1) . $action . $uid), -12, 10) == $nonce )
+		return true;
+	return false;
+}
+endif;
+
+if ( !function_exists('wp_create_nonce') ) :
+function wp_create_nonce($action = -1) {
+	$user = wp_get_current_user();
+	$uid = $user->id;
+
+	$i = ceil(time() / 43200);
+	
+	return substr(wp_hash($i . $action . $uid), -12, 10);
+}
+endif;
+
+if ( !function_exists('wp_salt') ) :
+function wp_salt() {
+	$salt = get_option('secret');
+	if ( empty($salt) )
+		$salt = DB_PASSWORD . DB_USER . DB_NAME . DB_HOST . ABSPATH;
+
+	return $salt;
+}
+endif;
+
+if ( !function_exists('wp_hash') ) :
+function wp_hash($data) {
+	$salt = wp_salt();
+
+	if ( function_exists('hash_hmac') ) {
+		return hash_hmac('md5', $data, $salt);
+	} else {
+		return md5($data . $salt);
+	}
 }
 endif;
 

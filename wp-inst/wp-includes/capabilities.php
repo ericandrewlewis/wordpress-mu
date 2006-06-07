@@ -272,6 +272,12 @@ function map_meta_cap($cap, $user_id) {
 	$caps = array();
 
 	switch ($cap) {
+	case 'delete_user':
+		$caps[] = 'delete_users';
+		break;
+	case 'edit_user':
+		$caps[] = 'edit_users';
+		break;
 	case 'delete_post':
 		$author_data = get_userdata($user_id);
 		//echo "post ID: {$args[0]}<br/>";
@@ -296,6 +302,8 @@ function map_meta_cap($cap, $user_id) {
 			// The post is published, extra cap required.
 			if ($post->post_status == 'publish')
 				$caps[] = 'delete_published_posts';
+			else if ($post->post_status == 'private')
+				$caps[] = 'delete_private_posts';
 		}
 		break;
 	case 'delete_page':
@@ -318,6 +326,8 @@ function map_meta_cap($cap, $user_id) {
 			// The page is published, extra cap required.
 			if ($page->post_status == 'publish')
 				$caps[] = 'delete_published_pages';
+			else if ($page->post_status == 'private')
+				$caps[] = 'delete_private_pages';
 		}
 		break;
 		// edit_post breaks down to edit_posts, edit_published_posts, or
@@ -346,6 +356,8 @@ function map_meta_cap($cap, $user_id) {
 			// The post is published, extra cap required.
 			if ($post->post_status == 'publish')
 				$caps[] = 'edit_published_posts';
+			else if ($post->post_status == 'private')
+				$caps[] = 'edit_private_posts';
 		}
 		break;
 	case 'edit_page':
@@ -368,6 +380,8 @@ function map_meta_cap($cap, $user_id) {
 			// The page is published, extra cap required.
 			if ($page->post_status == 'publish')
 				$caps[] = 'edit_published_pages';
+			else if ($page->post_status == 'private')
+				$caps[] = 'edit_private_pages';
 		}
 		break;
 	case 'read_post':
