@@ -176,7 +176,7 @@ CREATE TABLE wp_registration_log (
   email varchar(255) NOT NULL default '',
   IP varchar(30) NOT NULL default '',
   blog_id bigint(20) NOT NULL default '0',
-  t timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  t timestamp NOT NULL default,
   PRIMARY KEY  (ID),
   KEY IP (IP)
 );
@@ -200,7 +200,7 @@ CREATE TABLE $wpdb->sitecategories (
   cat_ID bigint(20) NOT NULL auto_increment,
   cat_name varchar(55) NOT NULL default '',
   category_nicename varchar(200) NOT NULL default '',
-  last_updated timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+  last_updated timestamp NOT NULL default,
   PRIMARY KEY  (cat_ID),
   KEY category_nicename (category_nicename),
   KEY last_updated (last_updated)
