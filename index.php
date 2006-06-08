@@ -383,6 +383,8 @@ We hope you enjoy your new weblog.
 	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array() );
 	update_blog_option( 1, 'template', 'home');
 	update_blog_option( 1, 'stylesheet', 'home');
+	$msg = "Your new WPMU site has been created at\nhttp://{$_SERVER[ 'HTTP_HOST' ]}/\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$_SERVER[ 'HTTP_HOST' ]}/wp-login.php\n";
+	wp_mail( $email, "Your new WPMU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
 	print "<p>Congrats! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
 }
 
