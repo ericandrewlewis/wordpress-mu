@@ -1176,6 +1176,7 @@ function install_blog($blog_id, $blog_title = '') {
 	// Set everything up
 	make_db_current_silent();
 	populate_options();
+	populate_roles();
 
 	// fix url.
 	update_option('siteurl', $url);
