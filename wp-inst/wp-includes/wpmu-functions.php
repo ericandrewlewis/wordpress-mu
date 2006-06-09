@@ -1054,7 +1054,7 @@ function wpmu_activate_signup($key) {
 	$user_id = username_exists($user_login);
 
 	if ( ! $user_id )
-		$user_id = wpmu_create_user($user_login, $user_email, $password);
+		$user_id = wpmu_create_user($user_login, $password, $user_email);
 
 	if ( ! $user_id )
 		return new WP_Error('create_user', __('Could not create user'));
@@ -1095,7 +1095,7 @@ function wpmu_create_user( $user_name, $password, $email) {
 		return false;
 	// Check email too?
 
-	$user_id = wp_create_user( $user_name, $email, $password);
+	$user_id = wp_create_user( $user_name, $password, $email );
 	$user = new WP_User($user_id);
 	// Newly created users have no roles or caps until they are added to a blog.
 	update_user_option($user_id, 'capabilities', '');
