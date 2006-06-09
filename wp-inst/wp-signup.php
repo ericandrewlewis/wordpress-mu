@@ -1,5 +1,24 @@
 <?php
+
+/*
+die('
+<div style="line-height: 1.6em; font-family:Verdana, Arial, Helvetica, sans-serif; width: 350px; margin: auto;">
+<p>Blog registration is temporarily disabled. Thanks for your patience. </p>
+
+<p align="right">&#8212; <em>Matt</em></p>
+
+</div>
+');
+
+
+
+
+die( 'Blog registration is disabled for a few minutes. Sorry for the interupption. Please try again later.'); // disabled for ibbackup
+*/
 require ('wp-config.php');
+
+//graceful_fail('Signups are disabled for a few minutes. Sorry! Please try again soon.');
+
 require_once( ABSPATH . WPINC . '/registration-functions.php');
 
 do_action("signup_header");
@@ -13,53 +32,27 @@ form { margin-top: 2em; }
 	width: 90%;
 	font-size: 24px;
 }
-#language {
-	margin-top: .5em;
-}
 .error {
 	background-color: #f66;
 }
 </style>
 <?php
-function show_signup_form($blog_id = '', $blog_title = '', $user_email = '', $errors = '') {
-	global $current_user, $current_site, $wpdb;
+function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
+	global $current_site;
 
-	if ( ! is_wp_error($errors) )
-		$errors = new WP_Error();
-
-	echo '<h2>' . __('Get your own WordPress MU blog in seconds') . '</h2>';
-
-	if ( $errors->get_error_code() ) {
-		print "<p>There was a problem, please correct the form below and try again.</p>";
-	}
-?>
-
-<form name="setupform" id="setupform" method="post" action="">
-<input type="hidden" name="stage" value="1">
-<table border="0" width="100%" cellpadding="9">
-<?php
 	// Blog name/Username
-	if ( $errors->get_error_message('blog_id') || $errors->get_error_message('user_name') ) {
+	if ( $errors->get_error_message('blog_id') )
 		print '<tr class="error">';
-	} else {
+	else
 		print '<tr>';
-	}
-	if ( !is_user_logged_in() )
-		echo '<th valign="top">' . __('Username:') . '</th><td>';
-	else
-		echo '<th valign="top">' . __('Blog Domain:') . '</th><td>';
 
-	if ( $errmsg = $errors->get_error_message('user_name') ) {
-?><p><strong><?php echo $errmsg ?></strong></p><?php
-	} else if ( $errmsg = $errors->get_error_message('blog_id') ) {
+	echo '<th valign="top">' . __('Blog Domain:') . '</th><td>';
+
+	if ( $errmsg = $errors->get_error_message('blog_id') ) {
 ?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
-	if ( constant( 'VHOST' ) == 'yes' )
-		echo '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">' .  $current_site->domain . '</span><br />';
-	else
-		echo '<span style="font-size: 30px">' .  $current_site->domain . '/</span><input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; font-size: 30px;" /><br />';
-
-	if ( !is_user_logged_in() ) print 'At least 4 letters and numbers only, please. It cannot be changed so choose carefully!)</td> </tr>';
+	print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.' . $current_site->domain . '</span><br />';
+	if ( !is_user_logged_in() ) print '(<strong>Your address will be domain.' . $current_site->domain . '.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
 
 	// Blog Title
 	if ( $errors->get_error_message('blog_title')) {
@@ -74,40 +67,244 @@ function show_signup_form($blog_id = '', $blog_title = '', $user_email = '', $er
 	}
 	print '<input name="blog_title" type="text" id="blog_title" value="'.wp_specialchars($blog_title, 1).'" /></td>
 		</tr>';
+?>
+<tr>
+<th scope="row"  valign="top">Privacy:</th>
+<td><label><input type="checkbox" name="blog_public" value="1" checked="checked" /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?></label></td>
+</tr>
+<?php
+}
+
+function validate_blog_form() {
+	if ( is_user_logged_in() )
+		$user = wp_get_current_user();
+	else
+		$user = '';
+
+	$result = wpmu_validate_blog_signup($_POST['blog_id'], $_POST['blog_title'], $user);	
+
+	return $result;
+}
+
+function show_user_form($user_name = '', $user_email = '', $errors = '') {
+	// Blog name/Username
+	if ( $errors->get_error_message('user_name') ) {
+		print '<tr class="error">';
+	} else {
+		print '<tr>';
+	}
+
+	echo '<th valign="top">' . __('Username:') . '</th><td>';
+
+	if ( $errmsg = $errors->get_error_message('user_name') ) {
+?><p><strong><?php echo $errmsg ?></strong></p><?php
+	}
+
+	print '<input name="user_name" type="text" id="user_name" value="'.$user_name.'" maxlength="50" style="width:50%; font-size: 30px;" /><br />';
+	print '(Must be at least 4 characters, letters and numbers only.)</td> </tr>';
 
 	// User Email
-	// Don't show email field if user is logged in.
-	if ( !is_user_logged_in() ) {
-		if ( $errors->get_error_message('user_email') ) {
-			print '<tr class="error">';
-		} else {
-			print '<tr>';
-		}
+	if ( $errors->get_error_message('user_email') ) {
+		print '<tr class="error">';
+	} else {
+		print '<tr>';
+	}
 ?><th valign="top">Email&nbsp;Address:</th><td><?php
 
-		if ( $errmsg = $errors->get_error_message('user_email') ) {
+	if ( $errmsg = $errors->get_error_message('user_email') ) {
 ?><p><strong><?php echo $errmsg ?></strong></p><?php
-		}
-		print '
-		<input name="user_email" type="text" id="user_email" value="'.wp_specialchars($user_email, 1).'" maxlength="200" /><br /> (We&#8217;ll send your password to this address, so double-check it.)</td>
-		</tr>';
 	}
+	print '
+	<input name="user_email" type="text" id="user_email" value="'.wp_specialchars($user_email, 1).'" maxlength="200" /><br /> (We&#8217;ll send your password to this address, so <strong>triple-check it</strong>.)</td>
+	</tr>';
 
 	if ( $errmsg = $errors->get_error_message('generic') )
 		print '<tr class="error"> <th colspan="2">'.$errmsg.'</th> </tr>';
+}
+
+function validate_user_form() {
+	$result = wpmu_validate_user_signup($_POST['user_name'], $_POST['user_email']);	
+
+	return $result;
+}
+
+function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
+	global $current_user, $wpdb, $domain, $current_site;
+
+	if ( ! is_wp_error($errors) )
+		$errors = new WP_Error();
+
+	echo '<h2>' . printf( __('Get <em>another</em> %s blog in seconds'), $current_site->site_name ) . '</h2>';
+
+	if ( $errors->get_error_code() ) {
+		print "<p>There was a problem, please correct the form below and try again.</p>";
+	}
+
+?>
+<p>Welcome back, <?php echo $current_user->display_name; ?>. By filling out the form below, you can <strong>add another blog to your account</strong>. There is no limit to the number of blogs you can have, so create to your heart's content, but blog responsibly.</p>
+<p>Here are the blogs you already have:</p>
+<ul>
+<?php 
+	$blogs = get_blogs_of_user($current_user->ID);
+
+	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
+		$display = str_replace(".$domain", '', $blog->domain);
+		echo "<li><a href='https://$blog->domain/'>$display</a></li>";
+	}
+?>
+</ul>
+<p><?php _e("If you&#8217;re not going to use a great blog domain, leave it for a new user. Now have at it!") ?></p>
+<form name="setupform" id="setupform" method="post" action="wp-signup.php">
+<input type="hidden" name="stage" value="gimmeanotherblog">
+<table border="0" width="100%" cellpadding="9">
+<?php
+	show_blog_form($blog_id, $blog_title, $errors);
 ?>
 <tr>
 <th scope="row"  valign="top">&nbsp;</th>
-<td><input id="submit" type="submit" name="Submit" class="submit" value="Sign Up &raquo;" /></td>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="Create Blog &raquo;" /></td>
 </tr>
+</table>
+</form>
 <?php
-	do_action('signup_form');
-	print '
-	</table>
-	</form>';
 }
 
-function show_signup_confirm_form($domain, $path, $blog_title, $user_name, $user_email, $meta) {
+function validate_another_blog_signup() {
+	global $current_user;
+
+	$result = validate_blog_form();
+	extract($result);
+	
+	if ( $errors->get_error_code() ) {
+		signup_another_blog($blog_id, $blog_title, $errors);
+		return;
+	}
+		
+	$public = (int) $_POST['blog_public'];
+	$meta = array ('lang_id' => 'en', 'public' => $public);
+
+	wpmu_create_blog($domain, $path, $blog_title, $current_user->id, $meta);
+	confirm_another_blog_signup($domain, $path, $blog_title, $current_user->user_login, $current_user->user_email, $meta);		
+}
+
+function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
+?>
+<h2><?php printf(__('%s Is Yours'), $domain) ?></h2>
+<p><?php printf(__('%1$s is your new blog.  <a href="%2$s">Login</a> as "%3$s" using your existing password.'), $domain, "http://${domain}${path}wp-login.php", $user_name) ?></p>
+<?php
+	do_action('signup_finished');
+}
+
+function signup_user($user_name = '', $user_email = '', $errors = '') {
+	global $current_site;
+
+	if ( ! is_wp_error($errors) )
+		$errors = new WP_Error();
+?>	
+<h2><?php printf( __('Get your own %s account in seconds'), $current_site->site_name ) ?></h2>
+<p>Fill out this one-step form and you'll be blogging seconds later!</p>
+<form name="setupform" id="setupform" method="post" action="wp-signup.php">
+<input type="hidden" name="stage" value="validate-user-signup">
+<table border="0" width="100%" cellpadding="9">
+<?php show_user_form($user_name, $user_email, $errors); ?>
+<th scope="row"  valign="top">&nbsp;</th>
+<td>
+<p>
+<input id="signupblog" type="radio" name="signup_for" value="blog" checked="checked" />
+<label for="signupblog">Gimme a blog! (Like username.<?php echo $current_site->domain ?>)</label>
+<br />
+<input id="signupuser" type="radio" name="signup_for" value="user" />
+<label for="signupuser">Just an username, please.</label>
+</p>
+</td>
+</tr>
+<tr>
+<th scope="row"  valign="top">&nbsp;</th>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="Next &raquo;" /></td>
+</tr>
+</table>
+</form>
+<?php
+
+}
+
+function validate_user_signup() {
+	$result = validate_user_form();
+	extract($result);
+	
+	if ( $errors->get_error_code() ) {
+		signup_user($user_name, $user_email, $errors);
+		return;	
+	}
+
+	if ( 'blog' == $_POST['signup_for'] ) {
+		signup_blog($user_name, $user_email);
+		return;
+	}
+
+	wpmu_signup_user($user_name, $user_email);
+
+	confirm_user_signup($user_name, $user_email);
+}
+
+function confirm_user_signup($user_name, $user_email) {
+?>
+<h2><?php printf(__('%s Is Your New Username'), $user_name) ?></h2>
+<p><?php _e('But, before you can start using your new username, <strong>you must activate it</strong>.') ?></p>
+<p><?php printf(__('Check your inbox at <strong>%1$s</strong> and click the link given.  '),  $user_email) ?></p>
+<p><?php _e('If you do not activate your username within two days, you will have to sign up again.'); ?></p>
+<?php
+}
+
+function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_title = '', $errors = '') {
+	if ( ! is_wp_error($errors) )
+		$errors = new WP_Error();
+
+	if ( empty($blog_id) )
+		$blog_id = $user_name;
+?>	
+<form name="setupform" id="setupform" method="post" action="wp-signup.php">
+<input type="hidden" name="stage" value="validate-blog-signup">
+<input type="hidden" name="user_name" value="<?php echo $user_name ?>">
+<input type="hidden" name="user_email" value="<?php echo $user_email ?>">
+<table border="0" width="100%" cellpadding="9">
+<?php show_blog_form($blog_id, $blog_title, $errors); ?>
+<tr>
+<th scope="row"  valign="top">&nbsp;</th>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="Signup &raquo;" /></td>
+</tr>
+</table>
+</form>
+<?php
+}
+
+function validate_blog_signup() {
+	// Re-validate user info.
+	$result = wpmu_validate_user_signup($_POST['user_name'], $_POST['user_email']);
+	extract($result);
+
+	if ( $errors->get_error_code() ) {
+		signup_user($user_name, $user_email, $errors);
+		return;
+	}
+	
+	$result = wpmu_validate_blog_signup($_POST['blog_id'], $_POST['blog_title']);
+	extract($result);
+
+	if ( $errors->get_error_code() ) {
+		signup_blog($user_name, $user_email, $blog_id, $blog_title, $errors);
+		return;
+	}
+
+	$public = (int) $_POST['blog_public'];
+	$meta = array ('lang_id' => 'en', 'public' => $public);
+         
+	wpmu_signup_blog($domain, $path, $blog_title, $user_name, $user_email, $meta);
+
+	confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta);
+}
+
+function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
 <h2><?php printf(__('%s Is Yours'), $domain) ?></h2>
 <p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
@@ -117,61 +314,28 @@ function show_signup_confirm_form($domain, $path, $blog_title, $user_name, $user
 	do_action('signup_finished');
 }
 
-function show_create_confirm_form($domain, $path, $blog_title, $user_name, $user_email, $meta) {
-?>
-<h2><?php printf(__('%s Is Yours'), $domain) ?></h2>
-<p><?php printf(__('%1$s is your new blog.  <a href="%2$s">Login</a> as "%3$s" using your existing password.'), $domain, "http://${domain}${path}wp-login.php", $user_name) ?></p>
-<?php
-	do_action('signup_finished');
-}
-
-function validate_signup_form() {
-	global $current_user;
-	if ( is_user_logged_in() )
-		$result = wpmu_validate_signup($_POST['blog_id'], $_POST['blog_title'], $current_user, $current_user->user_email);	
-	else
-		$result = wpmu_validate_signup($_POST['blog_id'], $_POST['blog_title'], $_POST['blog_id'], $_POST['user_email']);
-	extract($result);
-
-	if ( empty($errors) )
-		$errors = new WP_Error();
+// Main
+$blog_id = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
 	
-	if ( $errors->get_error_code() ) {
-		show_signup_form($blog_id, $blog_title, $user_email, $errors);
-		return;
-	}
-	$errors = new WP_Error();
-
-	if (empty ($blog_id)) {
-		$errors->add('blog_id', __("Sorry, your blog domain may only contain the characters a-z or 0-9!"));
-		show_signup_form($blog_id, $blog_title, $user_email, $errors);
-		return;
-	}
-
-	$public = (int) $_POST['blog_public'];
-	$meta = array ();
-
-	if ( is_user_logged_in() ) {
-		wpmu_create_blog($domain, $path, $blog_title, $current_user->id, $meta);
-		show_create_confirm_form($domain, $path, $blog_title, $current_user->user_login, $current_user->user_email, $meta);		
-	} else {
-		wpmu_signup($domain, $path, $blog_title, $blog_id, $user_email, $meta);
-		show_signup_confirm_form($domain, $path, $blog_title, $blog_id, $user_email, $meta);
-	}
-}
-
 switch ($_POST['stage']) {
-	case "1" :
-		validate_signup_form();
+	case 'validate-user-signup' :
+		validate_user_signup();
+		break;
+	case 'validate-blog-signup':
+		validate_blog_signup();
+		break;
+	case 'gimmeanotherblog':
+		validate_another_blog_signup();
 		break;
 	default :
-		$user_login = '';
-		$blog_title = '';
-		$email = '';
-		if ($_GET['new'])
-			$user_login = stripslashes($_GET['new']);
+		if ( is_user_logged_in() )
+			signup_another_blog($blog_id);
+		else
+			signup_user();
 
-		show_signup_form($user_login, $blog_title, $email);
+		if ($blog_id) {
+?><p><em>The blog you were looking for, <strong><?php echo $blog_id ?>.<?php echo $current_site->domain ?></strong> doesn't exist but you can create it now!</em></p><?php
+		}
 		break;
 }
 ?>
