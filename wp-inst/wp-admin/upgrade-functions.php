@@ -383,7 +383,7 @@ function upgrade_130() {
 }
 
 function upgrade_160_helper( $users ) {
-	global $wpdb, $wp_current_db_version;
+	global $wpdb;
 
 	populate_roles_160();
 
