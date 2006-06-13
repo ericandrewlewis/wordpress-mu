@@ -731,7 +731,7 @@ function user_row( $user_object, $style = '' ) {
 	if ( !(is_object($user_object) && is_a($user_object, 'WP_User')) )
 		$user_object = new WP_User( (int) $user_object );
 	$email = $user_object->user_email;
-	if( $current_user->ID != $user_object->ID || is_site_admin() == false )
+	if( $current_user->ID != $user_object->ID && is_site_admin() == false )
 		$email = "N/A";
 	$url = $user_object->user_url;
 	$short_url = str_replace('http://', '', $url);
@@ -748,10 +748,15 @@ function user_row( $user_object, $style = '' ) {
 		<td><label for='user_{$user_object->ID}'>$user_object->first_name $user_object->last_name</label></td>
 		<td><a href='mailto:$email' title='" . sprintf(__('e-mail: %s'), $email) . "'>$email</a></td>
 		<td><a href='$url' title='website: $url'>$short_url</a></td>";
-	$r .= "\n\t\t<td align='center'>$numposts</td>";
-	$r .= "\n\t\t<td>";
+	$r .= "\n\t\t<td align='center'>";
+	if ($numposts > 0) {
+		$r .= "<a href='edit.php?author=$user_object->ID' title='" . __('View posts by this author') . "' class='edit'>";
+		$r .= sprintf(__('View %1$s %2$s'), $numposts, __ngettext('post', 'posts', $numposts));
+	}
+	$r .= "</td>\n\t\t<td>";
+	$edit_link = add_query_arg('wp_http_referer', wp_specialchars(urlencode(stripslashes($_SERVER['REQUEST_URI']))), "user-edit.php?user_id=$user_object->ID");
 	if ( ( is_site_admin() || $current_user->ID == $user_object->ID ) && current_user_can('edit_user', $user_object->ID) )
-		$r .= "<a href='user-edit.php?user_id=$user_object->ID' class='edit'>".__('Edit')."</a>";
+		$r .= "<a href='$edit_link' class='edit'>".__('Edit')."</a>";
 	$r .= "</td>\n\t</tr>";
 	return $r;
 }
@@ -1889,7 +1894,8 @@ function wp_handle_upload(&$file, $overrides = false) {
 			else
 				$filename = str_replace("$number$ext", ++$number . $ext, $filename);
 		}
-		$filename = preg_replace('#\.(?![^.]+$)#', '-', $filename);
+		$filename = str_replace($ext, '', $filename);
+		$filename = sanitize_title($filename) . $ext;
 	}
 
 	// Move the file to the uploads dir

@@ -326,11 +326,7 @@ function get_archives($type='', $limit='', $format='html', $before = '', $after 
 	$add_minutes = intval(60 * (get_settings('gmt_offset') - $add_hours));
 
 	if ( 'monthly' == $type ) {
-		$arcresults = wp_cache_get( md5('archives' . $type . $limit), 'general');
-		if ( !$arcresults ) {
-			$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
-			wp_cache_set( md5('archives' . $type . $limit), $arcresults, 'general', 360 );
-		}
+		$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
 		if ( $arcresults ) {
 			$afterafter = $after;
 			foreach ( $arcresults as $arcresult ) {
@@ -698,14 +694,88 @@ function the_weekday_date($before='',$after='') {
 	echo $the_weekday_date;
 }
 
+function wp_head() {
+	do_action('wp_head');
+}
+
+function wp_footer() {
+	do_action('wp_footer');
+}
+
 function rsd_link() {
 	echo '<link rel="EditURI" type="application/rsd+xml" title="RSD" href="' . get_bloginfo('wpurl') . "/xmlrpc.php?rsd\" />\n";
 }
 
 function noindex() {
-	global $current_blog;
 	// If the blog is not public, tell robots to go away.
-	if ( 0 == $current_blog->public )
+	if ( ! get_option('blog_public') )
 		echo '<meta name="robots" content="noindex,nofollow" />' . "\n";
 }
+
+/**
+ * Places a textarea according to the current user's preferences, filled with $content.
+ * Also places a script block that enables tabbing between Title and Content.
+ *
+ * @param string Editor contents
+ * @param string (optional) Previous form field's ID (for tabbing support)
+ */
+function the_editor($content, $id = 'content', $prev_id = 'title') {
+	$rows = get_settings('default_post_edit_rows');
+	if (($rows < 3) || ($rows > 100))
+		$rows = 12;
+
+	$rows = "rows='$rows'";
+
+	the_quicktags();
+
+	if ( user_can_richedit() )
+		add_filter('the_editor_content', 'wp_richedit_pre');
+
+	$the_editor = apply_filters('the_editor', "<div><textarea class='mceEditor' $rows cols='40' name='$id' tabindex='2' id='$id'>%s</textarea></div>\n");
+	$the_editor_content = apply_filters('the_editor_content', $content);
+
+	printf($the_editor, $the_editor_content);
+
+	?>
+	<script type="text/javascript">
+	//<!--
+	edCanvas = document.getElementById('<?php echo $id; ?>');
+	<?php if ( user_can_richedit() ) : ?>
+	// This code is meant to allow tabbing from Title to Post (TinyMCE).
+	if ( tinyMCE.isMSIE )
+		document.getElementById('<?php echo $prev_id; ?>').onkeydown = function (e)
+			{
+				e = e ? e : window.event;
+				if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
+					var i = tinyMCE.selectedInstance;
+					if(typeof i ==  'undefined')
+						return true;
+	                                tinyMCE.execCommand("mceStartTyping");
+					this.blur();
+					i.contentWindow.focus();
+					e.returnValue = false;
+					return false;
+				}
+			}
+	else
+		document.getElementById('<?php echo $prev_id; ?>').onkeypress = function (e)
+			{
+				e = e ? e : window.event;
+				if (e.keyCode == 9 && !e.shiftKey && !e.controlKey && !e.altKey) {
+					var i = tinyMCE.selectedInstance;
+					if(typeof i ==  'undefined')
+						return true;
+	                                tinyMCE.execCommand("mceStartTyping");
+					this.blur();
+					i.contentWindow.focus();
+					e.returnValue = false;
+					return false;
+				}
+			}
+	<?php endif; ?>
+	//-->
+	</script>
+	<?php
+}
+
 ?>

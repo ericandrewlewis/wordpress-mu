@@ -19,7 +19,7 @@ require ('wp-config.php');
 
 //graceful_fail('Signups are disabled for a few minutes. Sorry! Please try again soon.');
 
-require_once( ABSPATH . WPINC . '/registration-functions.php');
+require_once( ABSPATH . WPINC . '/registration.php');
 
 do_action("signup_header");
 

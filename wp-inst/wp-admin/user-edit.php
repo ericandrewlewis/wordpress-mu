@@ -2,10 +2,13 @@
 require_once('admin.php');
 
 $title = __('Edit User');
-$parent_file = 'profile.php';
+if ( current_user_can('edit_users') )
+	$parent_file = 'users.php';
+else
+	$parent_file = 'profile.php';
 $submenu_file = 'users.php';
 
-$wpvarstoreset = array('action', 'redirect', 'profile', 'user_id');
+$wpvarstoreset = array('action', 'redirect', 'profile', 'user_id', 'wp_http_referer');
 for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 	$wpvar = $wpvarstoreset[$i];
 	if (!isset($$wpvar)) {
@@ -21,6 +24,7 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 	}
 }
 
+$wp_http_referer = remove_query_arg(array('update', 'delete_count'), stripslashes($wp_http_referer));
 $errors = array();
 
 // Only allow site admins to edit every user.
@@ -48,7 +52,9 @@ else
 if( !is_wp_error( $errors ) ) {
 	if( is_site_admin() )
 		update_usermeta( $user_id, 'invites_left', intval( $_POST[ 'invites_left' ] ) );
-	header("Location: user-edit.php?user_id=$user_id&updated=true");
+	$redirect = "user-edit.php?user_id=$user_id&updated=true";
+	$redirect = add_query_arg('wp_http_referer', urlencode($wp_http_referer), $redirect);
+	header("Location: $redirect");
 	exit;
 }
 
@@ -65,6 +71,9 @@ if ( !current_user_can('edit_user', $user_id) )
 <?php if ( isset($_GET['updated']) ) : ?>
 <div id="message" class="updated fade">
 	<p><strong><?php _e('User updated.') ?></strong></p>
+	<?php if ( $wp_http_referer ) : ?>
+	<p><a href="<?php echo wp_specialchars($wp_http_referer); ?>"><?php _e('&laquo; Back to Authors and Users'); ?></a></p>
+	<?php endif; ?>
 </div>
 <?php endif; ?>
 <?php if ( is_wp_error( $errors ) ) { ?>
@@ -83,6 +92,9 @@ if ( !current_user_can('edit_user', $user_id) )
 
 <form name="profile" id="your-profile" action="user-edit.php" method="post">
 <?php wp_nonce_field('update-user_' . $user_id) ?>
+<?php if ( $wp_http_referer ) : ?>
+	<input type="hidden" name="wp_http_referer" value="<?php echo wp_specialchars($wp_http_referer); ?>" />
+<?php endif; ?>
 <p>
 <input type="hidden" name="from" value="profile" />
 <input type="hidden" name="checkuser_id" value="<?php echo $user_ID ?>" />
@@ -99,6 +111,29 @@ if ( !current_user_can('edit_user', $user_id) )
 	<?php
 } // is_site_admin
 ?>
+
+<p><label><?php _e('Role:') ?><br />
+<?php
+// print_r($profileuser);
+echo '<select name="role">';
+$role_list = '';
+$user_has_role = false;
+foreach($wp_roles->role_names as $role => $name) {
+	if ( $profileuser->has_cap($role) ) {
+		$selected = ' selected="selected"';
+		$user_has_role = true;
+	} else {
+		$selected = '';
+	}
+	$role_list .= "<option value=\"{$role}\"{$selected}>{$name}</option>";
+}
+if ( $user_has_role )
+	$role_list .= '<option value="">' . __('&mdash; No role for this blog &mdash;') . '</option>';
+else
+	$role_list .= '<option value="" selected="selected">' . __('&mdash; No role for this blog &mdash;') . '</option>';
+echo $role_list . '</select>';
+?></label></p>
+
 <p><label><?php _e('First name:') ?><br />
 <input type="text" name="first_name" value="<?php echo $profileuser->first_name ?>" /></label></p>
 

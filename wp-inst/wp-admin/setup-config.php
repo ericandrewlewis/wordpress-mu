@@ -1,5 +1,5 @@
 <?php
-return;
+die();
 define('WP_INSTALLING', true);
 
 if (!file_exists('../wp-config-sample.php'))

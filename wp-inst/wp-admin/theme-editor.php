@@ -1,5 +1,5 @@
 <?php
-return;
+die();
 require_once('admin.php');
 
 $title = __("Edit Themes");

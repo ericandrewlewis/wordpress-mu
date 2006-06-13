@@ -84,6 +84,11 @@ function get_permalink($id = 0) {
 	}
 }
 
+// get permalink from post ID
+function post_permalink($post_id = 0, $mode = '') { // $mode legacy
+	return get_permalink($post_id);
+}
+
 function get_page_link($id = false) {
 	global $post, $wp_rewrite;
 
@@ -99,6 +104,9 @@ function get_page_link($id = false) {
 	} else {
 		$link = get_settings('home') . "/?page_id=$id";
 	}
+
+	if ( 'page' == get_option('show_on_front') && $id == get_option('page_on_front') )
+		$link = get_settings('home');
 
 	return apply_filters('page_link', $link, $id);
 }

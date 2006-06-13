@@ -367,7 +367,7 @@ class WP_Rewrite {
 		}
 
 		if (empty($this->category_base))
-			$this->category_structure = $this->front . 'tag/';
+			$this->category_structure = $this->front . 'category/';
 		else
 			$this->category_structure = $this->category_base . '/';
 

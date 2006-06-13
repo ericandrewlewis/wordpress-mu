@@ -28,6 +28,7 @@ class wpdb {
 	var $post2cat;
 	var $comments;
 	var $links;
+	var $link2cat;
 	var $linkcategories;
 	var $options;
 	var $optiontypes;
@@ -42,7 +43,7 @@ class wpdb {
 	function wpdb($dbuser, $dbpassword, $dbname, $dbhost) {
 
 		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true ) {
-			$this->db_connect( $query );
+			$this->db_connect();
 			return true;
 		}
 

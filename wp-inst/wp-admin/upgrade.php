@@ -76,10 +76,10 @@ switch($step) {
 
 	case 1:
 	wp_upgrade();
-	if( $wpdb->get_row( "SELECT * FROM wp_blogs WHERE blog_id = '{$wpdb->blogid}'" ) ) {
-		$wpdb->query( "UPDATE wp_blogs SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
+	if( $wpdb->get_row( "SELECT blog_id FROM wp_blog_versions WHERE blog_id = '{$wpdb->blogid}'" ) ) {
+		$wpdb->query( "UPDATE wp_blog_versions SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
 	} else {
-		$wpdb->query( "INSERT INTO `wp_blogs` ( `blog_id` , `db_version` , `last_updated` ) VALUES ( '{$wpdb->blogid}', '{$wp_db_version}', NOW());" );
+		$wpdb->query( "INSERT INTO wp_blog_versions ( `blog_id` , `db_version` , `last_updated` ) VALUES ( '{$wpdb->blogid}', '{$wp_db_version}', NOW());" );
 	}
 
 	if ( empty( $_GET['backto'] ) )

@@ -17,10 +17,11 @@ $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
 if( $menu_perms[ 'plugins' ] == 1 )
 	$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 if ( current_user_can('edit_users') )
-	$menu[35] = array(__('Users'), 'read', 'profile.php');
+	$menu[35] = array(__('Users'), 'edit_users', 'users.php');
 else
 	$menu[35] = array(__('Profile'), 'read', 'profile.php');
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
+
 
 $submenu['post-new.php'][5] = array(__('Write Post'), 'edit_posts', 'post-new.php');
 $submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
@@ -31,26 +32,36 @@ $submenu['edit.php'][15] = array(__('Categories'), 'manage_categories', 'categor
 $submenu['edit.php'][20] = array(__('Comments'), 'edit_posts', 'edit-comments.php');
 $awaiting_mod = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = '0'");
 $submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), "<span id='awaitmod'>$awaiting_mod</span>"), 'edit_posts', 'moderation.php');
-#$submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
+//$submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
 $submenu['edit.php'][35] = array(__('Import'), 'import', 'import.php');
-/*
-$invites_left = get_usermeta( $user_ID, 'invites_left' );
-$submenu['edit.php'][35] = array(sprintf(__("Invites (%s)"), $invites_left ), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
-*/
+$submenu['edit.php'][40] = array(__('Export'), 'import', 'export.php');
+//$invites_left = get_usermeta( $user_ID, 'invites_left' );
+//$submenu['edit.php'][45] = array(sprintf(__("Invites (%s)"), $invites_left ), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
 
 $submenu['link-manager.php'][5] = array(__('Manage Bookmarks'), 'manage_links', 'link-manager.php');
 $submenu['link-manager.php'][10] = array(__('Add Bookmark'), 'manage_links', 'link-add.php');
 $submenu['link-manager.php'][20] = array(__('Import Bookmarks'), 'manage_links', 'link-import.php');
 
-$submenu['profile.php'][5] = array(__('Your Profile'), 'read', 'profile.php');
-$submenu['profile.php'][10] = array(__('Authors &amp; Users'), 'edit_users', 'users.php');
+if ( current_user_can('edit_users') ) {
+	$submenu['users.php'][5] = array(__('Authors &amp; Users'), 'edit_users', 'users.php');
+	$submenu['users.php'][10] = array(__('Your Profile'), 'read', 'profile.php');
+} else {
+	$submenu['profile.php'][5] = array(__('Your Profile'), 'read', 'profile.php');
+}
 
 $submenu['options-general.php'][10] = array(__('General'), 'manage_options', 'options-general.php');
 $submenu['options-general.php'][15] = array(__('Writing'), 'manage_options', 'options-writing.php');
 $submenu['options-general.php'][20] = array(__('Reading'), 'manage_options', 'options-reading.php');
 $submenu['options-general.php'][25] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
+//$submenu['options-general.php'][30] = array(__('Privacy'), 'manage_options', 'options-privacy.php');
+//$submenu['options-general.php'][35] = array(__('Permalinks'), 'manage_options', 'options-permalink.php');
+//$submenu['options-general.php'][40] = array(__('Miscellaneous'), 'manage_options', 'options-misc.php');
+
+//$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+//$submenu['plugins.php'][10] = array(__('Plugin Editor'), 'edit_plugins', 'plugin-editor.php');
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
+//$submenu['themes.php'][10] = array(__('Theme Editor'), 'edit_themes', 'theme-editor.php');
 
 // Create list of page plugin hook names.
 foreach ($menu as $menu_page) {
@@ -120,9 +131,10 @@ if (! user_can_access_admin_page()) {
 	global $wpdb;
 	// find the blog of this user first
 	$primary_blog = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '$user_ID' AND meta_key = 'primary_blog'" );
-	$url = $wpdb->get_row("SELECT domain, path FROM $wpdb->blogs WHERE blog_id = $primary_blog");
-	header( 'Location: http://' . $url->domain . $url->path . 'wp-admin/' );
-	exit;
+	if( $primary_blog ) {
+		header( "Location: " . get_blog_option( $primary_blog, "siteurl" ) . "/wp-admin/" );
+		exit;
+	}
 	die( __('You do not have sufficient permissions to access this page.') );
 }
 

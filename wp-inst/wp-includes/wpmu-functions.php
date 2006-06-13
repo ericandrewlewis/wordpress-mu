@@ -166,7 +166,7 @@ function get_user_details( $username ) {
 	return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login = '$username'" );
 }
 
-function get_blog_details( $id ) {
+function get_blog_details( $id, $all = true ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
 	$details = wp_cache_get( $id, 'blog-details' );
@@ -179,13 +179,16 @@ function get_blog_details( $id ) {
 	if ( !$details )
 		return false;
 
-	$details->blogname = get_blog_option($id, 'blogname');
-	$details->siteurl  = get_blog_option($id, 'siteurl');
+	if( $all == true ) {
+		$details->blogname   = get_blog_option($id, 'blogname');
+		$details->siteurl    = get_blog_option($id, 'siteurl');
+		$details->post_count = get_blog_option($id, 'post_count');
 
-	wp_cache_set( $id, serialize( $details ), 'blog-details' );
+		wp_cache_set( $id, serialize( $details ), 'blog-details' );
 
-	$key = md5( $details->domain . $details->path );
-	wp_cache_set( $key, serialize( $details ), 'blog-lookup' );
+		$key = md5( $details->domain . $details->path );
+		wp_cache_set( $key, serialize( $details ), 'blog-lookup' );
+	}
 
 	return $details;
 }
@@ -890,8 +893,8 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 		$errors->add('user_name', __("Sorry, that username already exists!"));
 
 	// Check if the email address has been used already.
-	//if ( email_exists($user_email) )
-	//	$errors->add('user_email', __("Sorry, that email address is already used!"));
+	if ( email_exists($user_email) )
+		$errors->add('user_email', __("Sorry, that email address is already used!"));
 
 	// Has someone already signed up for this username?
 	// TODO: Check email too?
@@ -1093,7 +1096,11 @@ function generate_random_password() {
 function wpmu_create_user( $user_name, $password, $email) {
 	if ( username_exists($user_name) )
 		return false;
-	// Check email too?
+	
+	// Check if the email address has been used already.
+	if ( email_exists($email) )
+		return false;
+
 
 	$user_id = wp_create_user( $user_name, $password, $email );
 	$user = new WP_User($user_id);

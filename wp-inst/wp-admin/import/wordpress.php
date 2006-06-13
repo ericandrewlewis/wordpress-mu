@@ -37,7 +37,7 @@ class WP_Import {
 
 	function users_form($n) {
 		global $wpdb, $testing;
-		$users = $wpdb->get_results("SELECT * FROM $wpdb->users ORDER BY ID");
+		$users = get_users_of_blog($wpdb->blogid);
 ?><select name="userselect[<?php echo $n; ?>]">
 	<option value="#NONE#">- Select -</option>
 	<?php
@@ -54,24 +54,8 @@ class WP_Import {
 		global $wpdb;
 		//mtnames is an array with the names in the mt import file
 		$pass = 'changeme';
-		if (!(in_array($author, $this->mtnames))) { //a new mt author name is found
-			++ $this->j;
-			$this->mtnames[$this->j] = $author; //add that new mt author name to an array 
-			$user_id = username_exists($this->newauthornames[$this->j]); //check if the new author name defined by the user is a pre-existing wp user
-			if (!$user_id) { //banging my head against the desk now. 
-				if ($newauthornames[$this->j] == 'left_blank') { //check if the user does not want to change the authorname
-					$user_id = wp_create_user($author, $pass);
-					$this->newauthornames[$this->j] = $author; //now we have a name, in the place of left_blank.
-				} else {
-					$user_id = wp_create_user($this->newauthornames[$this->j], $pass);
-				}
-			} else {
-				return $user_id; // return pre-existing wp username if it exists
-			}
-		} else {
-			$key = array_search($author, $this->mtnames); //find the array key for $author in the $mtnames array
-			$user_id = username_exists($this->newauthornames[$key]); //use that key to get the value of the author's name from $newauthornames
-		}
+		$key = array_search($author, $this->mtnames); //find the array key for $author in the $mtnames array
+		$user_id = username_exists($this->newauthornames[$key]); //use that key to get the value of the author's name from $newauthornames
 
 		return $user_id;
 	}
@@ -112,13 +96,6 @@ class WP_Import {
 		$formnames = array ();
 		$selectnames = array ();
 
-		foreach ($_POST['user'] as $key => $line) {
-			$newname = trim(stripslashes($line));
-			if ($newname == '')
-				$newname = 'left_blank'; //passing author names from step 1 to step 2 is accomplished by using POST. left_blank denotes an empty entry in the form.
-			array_push($formnames, "$newname");
-		} // $formnames is the array with the form entered names
-
 		foreach ($_POST['userselect'] as $user => $key) {
 			$selected = trim(stripslashes($key));
 			array_push($selectnames, "$selected");
@@ -148,7 +125,7 @@ class WP_Import {
 		$j = -1;
 		foreach ($authors as $author) {
 			++ $j;
-			echo '<li>Current author: <strong>'.$author.'</strong><br />'.'Create user <input type="text" value="'.$author.'" name="'.'user[]'.'" maxlength="30"> <br /> or map to existing ';
+			echo '<li>Current author: <strong>'.$author.'</strong><br />'.'Map to existing: ';
 			$this->users_form($j);
 			echo '</li>';
 		}
