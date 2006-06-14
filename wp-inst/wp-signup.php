@@ -134,7 +134,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	if ( ! is_wp_error($errors) )
 		$errors = new WP_Error();
 
-	echo '<h2>' . printf( __('Get <em>another</em> %s blog in seconds'), $current_site->site_name ) . '</h2>';
+	echo '<h2>' . sprintf( __('Get <em>another</em> %s blog in seconds'), $current_site->site_name ) . '</h2>';
 
 	if ( $errors->get_error_code() ) {
 		print "<p>There was a problem, please correct the form below and try again.</p>";
