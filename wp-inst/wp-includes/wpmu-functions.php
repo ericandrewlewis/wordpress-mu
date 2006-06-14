@@ -82,7 +82,7 @@ if( defined( "WP_INSTALLING" ) == false ) {
 function get_blogaddress_by_id( $blog_id ) {
 	global $hostname, $domain, $base, $wpdb;
 
-	$bloginfo = get_blog_details( $blog_id );
+	$bloginfo = get_blog_details( $blog_id, false ); // only get bare details!
 
 	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 		return "http://" . $bloginfo->domain . $bloginfo->path;
@@ -377,7 +377,9 @@ function switch_to_blog( $new_blog ) {
 	//$wp_object_cache->cache_enabled = false;
 	wp_cache_flush();
 	wp_cache_close();
+	$wpdb->hide_errors();
 	$wp_roles->_init();
+	$wpdb->show_errors();
 	wp_cache_init();
 
 	do_action('switch_blog', $blog_id, $tmpoldblogdetails[ 'blog_id' ]);
@@ -1170,7 +1172,7 @@ function insert_blog($domain, $path, $site_id) {
 
 // Install an empty blog.  wpdb should already be switched.
 function install_blog($blog_id, $blog_title = '') {
-	global $wpdb, $table_prefix;
+	global $wpdb, $table_prefix, $wp_roles;
 	$wpdb->hide_errors();
 
 	require_once( ABSPATH . 'wp-admin/upgrade-functions.php');
@@ -1184,7 +1186,7 @@ function install_blog($blog_id, $blog_title = '') {
 	make_db_current_silent();
 	populate_options();
 	populate_roles();
-
+	$wp_roles->_init();
 	// fix url.
 	update_option('siteurl', $url);
 	update_option('home', $url);
