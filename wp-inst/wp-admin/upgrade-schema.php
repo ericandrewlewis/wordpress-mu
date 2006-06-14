@@ -121,7 +121,7 @@ CREATE TABLE $wpdb->posts (
   PRIMARY KEY  (ID),
   KEY post_name (post_name),
   KEY type_status_date (post_type, post_status, post_date, ID)
-) TYPE=MyISAM;";
+) TYPE=MyISAM;
 CREATE TABLE $wpdb->users (
   ID bigint(20) unsigned NOT NULL auto_increment,
   user_login varchar(60) NOT NULL default '',
