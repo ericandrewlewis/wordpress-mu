@@ -26,17 +26,6 @@ function newCatAddIn() {
 
 	ajaxcat.appendChild(newcat);
 	ajaxcat.appendChild(newcatSub);
-
-	var searchResult = document.createElement( 'div' );
-	searchResult.type = 'div';
-	searchResult.name = 'searchresults';
-	searchResult.id = 'searchresults';
-	searchResult.style.display = 'none';
-	searchResult.style.overflow = 'auto';
-	searchResult.style.border = '1px solid #ccc';
-	searchResult.style.background = '#eee';
-	ajaxcat.appendChild(searchResult);
-
 	document.getElementById('jaxcat').appendChild(ajaxcat);
 
 	howto = document.createElement('span');

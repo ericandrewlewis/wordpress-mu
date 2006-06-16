@@ -65,6 +65,7 @@ function focusit() {
 addLoadEvent(focusit);
 </script>
 <?php endif; ?>
+<?php autocomplete_css(); ?>
 <div id="poststuff">
 
 <div id="moremeta">
@@ -74,10 +75,12 @@ addLoadEvent(focusit);
 <h3 class="dbx-handle"><?php _e('Categories') ?></h3>
 <div class="dbx-content">
 <p id="jaxcat"></p>
-<ul id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></ul></div>
 <?php if ( current_user_can('manage_categories') ) : ?>
-<?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
+<div id="searchresults" class="autocomplete"></div>
+<?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
+<ul id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></ul>
+</div>
 </fieldset>
 
 <fieldset id="commentstatusdiv" class="dbx-box">
@@ -224,7 +227,7 @@ list_meta($metadata);
 </div>
 
 <?php if ('edit' == $action) : $delete_nonce = wp_create_nonce( 'delete-post_' . $post_ID ); ?>
-<input name="deletepost" class="button" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this post') ?>" <?php echo "onclick=\"if ( confirm('" . sprintf(__("You are about to delete this post \'%s\'\\n  \'Cancel\' to stop, \'OK\' to delete."), addslashes($post->post_title) ) . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true;}\""; ?> />
+<input name="deletepost" class="button" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this post') ?>" <?php echo "onclick=\"if ( confirm('" . sprintf(__("You are about to delete this post \'%s\'\\n  \'Cancel\' to stop, \'OK\' to delete."), addslashes($post->post_title) ) . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true;}return false;\""; ?> />
 <?php endif; ?>
 
 </div>

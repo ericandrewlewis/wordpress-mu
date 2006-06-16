@@ -34,18 +34,16 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "searchcategories":
-		$search = $_GET[ 'search' ];
-		$id = $_GET[ 'id' ];
+		$search = $_POST[ 'search' ];
 		$query = "SELECT cat_name FROM " . $wpdb->sitecategories . " WHERE cat_name LIKE '%" . $search . "%' limit 0,10";
 		$cats = $wpdb->get_results( $query );
 		if( is_array( $cats ) ) {
-			print "<table cellpadding=2 cellspacing=0 border=0>";
-			print "<tr><td style='padding: 5px; background: #dfe8f1' >ESC to cancel</td></tr>";
+			print "<ul>";
 			while( list( $key, $val ) = each( $cats ) ) 
 			{ 
-				print '<tr><td><span onclick="javascript:return update_AJAX_search_box(\'' . $val->cat_name . '\');"><a>' . $val->cat_name . '</a></span></td></tr>';
+				print "<li>{$val->cat_name}</li>";
 			}
-			print "</table>";
+			print "</ul>";
 		}
 		exit;
 	break;

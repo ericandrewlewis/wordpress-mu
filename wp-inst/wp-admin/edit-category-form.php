@@ -20,12 +20,11 @@ if ( ! empty($cat_ID) ) {
 <input type="hidden" name="action" value="<?php echo $action ?>" />
 <input type="hidden" name="cat_ID" value="<?php echo $category->cat_ID ?>" />
 <?php wp_nonce_field($nonce_action); ?>
+<?php autocomplete_css(); ?>
 	<table class="editform" width="100%" cellspacing="2" cellpadding="5">
 		<tr>
 		  <th width="33%" scope="row" valign="top"><label for="cat_name"><?php _e('Category name:') ?></label></th>
-		  <td width="67%"><input name="cat_name" id="cat_name" type="text" value="<?php echo wp_specialchars($category->cat_name); ?>" size="40" />
-		  <div style='display:none; height: 100px; width: 200px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div>
-		  <?php AJAX_search_box( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?></td>
+		  <td width="67%"><input type="text" id="cat_name" name="cat_name" value="<?php echo wp_specialchars($category->cat_name); ?>" size="40" /><div id="searchresults" class="autocomplete"></div></td>
 		</tr>
 		<tr>
 			<th scope="row" valign="top"><label for="category_parent"><?php _e('Category parent:') ?></label></th>
@@ -40,6 +39,7 @@ if ( ! empty($cat_ID) ) {
 			<td><textarea name="category_description" id="category_description" rows="5" cols="50" style="width: 97%;"><?php echo wp_specialchars($category->category_description, 1); ?></textarea></td>
 		</tr>
 	</table>
+<?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
 <p class="submit"><input type="submit" name="submit" value="<?php echo $submit_text ?>" /></p>
 <div id="ajax-response"></div>
 </form>

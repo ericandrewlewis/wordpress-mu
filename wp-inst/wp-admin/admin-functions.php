@@ -711,7 +711,8 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
   <tr id='page-<?php echo $id; ?>' class='<?php echo $class; ?>'> 
     <th scope="row"><?php echo $post->ID; ?></th> 
     <td>
-      <?php echo $pad; ?><?php the_title() ?> 
+      <?php echo $pad; ?><?php the_title() ?>
+      <?php if ('private' == $post->post_status) _e(' - <strong>Private</strong>'); ?></td>
     </td> 
     <td><?php the_author() ?></td>
     <td><?php echo mysql2date('Y-m-d g:i a', $post->post_modified); ?></td> 
@@ -741,7 +742,6 @@ function user_row( $user_object, $style = '' ) {
 	if (strlen($short_url) > 35)
 		$short_url =  substr($short_url, 0, 32).'...';
 	$numposts = get_usernumposts($user_object->ID);
-	if (0 < $numposts) $numposts = "<a href='edit.php?author=$user_object->ID' title='" . __('View posts') . "'>$numposts</a>";
 	$r = "<tr id='user-$user_object->ID'$style>
 		<td><input type='checkbox' name='users[]' id='user_{$user_object->ID}' value='{$user_object->ID}' /> <label for='user_{$user_object->ID}'>{$user_object->ID}</label></td>
 		<td><label for='user_{$user_object->ID}'><strong>$user_object->user_login</strong></label></td>
@@ -2010,119 +2010,44 @@ function get_udims($width, $height) {
 		return array((int) ($width / $height * 96), 96);
 }
 
-function AJAX_search_box( $get_url, $search_field = 'newvalue', $search_results_field = 'searchresults' ) {
+function autocomplete_css() {
 	?>
-	<script language="JavaScript">
-
-	function update_AJAX_search_box( username )
-	{
-		document.getElementById("<?php echo $search_field ?>").value=username;
-		document.getElementById("<?php echo $search_results_field ?>").style.display = 'none';
-		return false;
-	}
-
-	// from js_util.js by scottandrew.com/junkyard/js/
-	function addEvent(elm, evType, fn, useCapture)
-	{
-		if (elm.addEventListener){
-			elm.addEventListener(evType, fn, useCapture);
-			return true;
-		} else if (elm.attachEvent){
-			var r = elm.attachEvent("on"+evType, fn);
-			return r;
-		} else {
-			alert("Handler could not be removed");
-		}
-	}
-	// end from scottandrew.com/junkyard/js/
-
-	var valBox = false;
-	var displayBox = false;
-	var keyPressDelay = false;
-	var xmlhttp = false;
-
-	function init_ajax_searchbox() {
-		valBox = document.getElementById("<?php echo $search_field ?>");
-		displayBox = document.getElementById("<?php echo $search_results_field ?>");
-		addEvent(valBox, 'keyup', doTest, false);
-		addEvent(valBox, 'blur', onblurnewcat, false);
-		addEvent(valBox, 'focus', doTest, false);
-		keyPressDelay = '';
-
-		xmlhttp=false;
-		try {
-			xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-		} catch (e) {
-			try {
-				xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-			} catch (E) {
-				xmlhttp = false;
-			}
-		}
-
-		if (!xmlhttp && typeof XMLHttpRequest!='undefined') {
-			xmlhttp = new XMLHttpRequest();
-		}
-	}
-	addLoadEvent( init_ajax_searchbox );
-
-	function onblurnewcat() {
-		setTimeout('closeSearchResults()',2000);
-	}
-	function closeSearchResults() {
-		displayBox.style.display = 'none';
-	}
-
-	function doTest(e) {
-		if (!e) {
-			if (window.event) {
-				e = window.event;
-			} else {
-				return;
-			}
-		}
-		if (e.keyCode == 8) {
-			displayBox.style.display = 'none';
-		}
-		if (e.keyCode == 27) {
-			displayBox.style.display = 'none';
-			return;
-		}
-		if (keyPressDelay) {
-			window.clearTimeout(keyPressDelay);
-		}
-
-		if(valBox.value.length > 2) {
-			keyPressDelay = window.setTimeout('doSearch()',800);
-		} else {
-			displayBox.style.display = 'none';
-		}
-
-	}
-
-	function doSearch() {
-		if(valBox.value.length > 2 && displayBox.style.display == 'none' ) {
-			xmlhttp.open("GET","<?php echo $get_url ?>"+valBox.value,true);
-			xmlhttp.onreadystatechange=function() {
-				if (xmlhttp.readyState==4) {
-					if( xmlhttp.responseText != '' ) {
-						displayBox.style.display = 'block';
-						displayBox.innerHTML = xmlhttp.responseText;
-						if( displayBox.innerWidth )  {
-							displayBox.width=displayBox.innerWidth;
-							displayBox.height=displayBox.innerHeight;
-						}
-					} else {
-						valBox.focus();
-						displayBox.style.display = 'none';
-					}
-				}
-			}
-			xmlhttp.send(null);
-		}
-	}
-	</script>
-	<?php
+<style type='text/css'>
+    div.autocomplete {
+      position:absolute;
+      width:200px;
+      background-color:white;
+      border:1px solid #888;
+      margin:0px;
+      padding:0px;
+    }
+    div.autocomplete ul {
+      list-style-type:none;
+      margin:0px;
+      padding:0px;
+    }
+    div.autocomplete ul li.selected { background-color: #ffb;}
+    div.autocomplete ul li {
+      list-style-type:none;
+      display:block;
+      margin:0;
+      padding:2px;
+      height:32px;
+      cursor:pointer;
+    }
+</style>
+<?php
+}
+function autocomplete_textbox( $url, $search_field, $results_field ) {
+	?>
+<script src="<?php echo get_option( "siteurl" ) ?>/wp-includes/js/scriptaculous/scriptaculous.js" type="text/javascript"></script>
+<script type="text/javascript">
+function load_autocompleter() {
+	new Ajax.Autocompleter("<?php echo $search_field ?>", "<?php echo $results_field ?>", "<?php echo $url ?>", {paramName: "search", minChars: 3});
+}
+addLoadEvent( load_autocompleter );
+</script>
+<?php
 }
 
 ?>
