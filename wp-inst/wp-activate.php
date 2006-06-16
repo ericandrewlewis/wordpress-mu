@@ -1,7 +1,7 @@
 <?php
 define( "WP_INSTALLING", true );
 require ('wp-config.php');
-require_once( ABSPATH . WPINC . '/registration-functions.php');
+require_once( ABSPATH . WPINC . '/registration.php');
 
 
 do_action("activate_header");
