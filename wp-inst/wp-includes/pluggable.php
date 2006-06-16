@@ -168,7 +168,7 @@ if ( !function_exists('wp_mail') ) :
 function wp_mail($to, $subject, $message, $headers = '') {
 	if( $headers == '' ) {
 		$headers = "MIME-Version: 1.0\n" .
-			"From: wordpress@" . preg_replace('#^www\.#', '', strtolower($_SERVER['SERVER_NAME'])) . "\n" . 
+			"From: " . get_settings('admin_email') . "\n" . 
 			"Content-Type: text/plain; charset=\"" . get_settings('blog_charset') . "\"\n";
 	}
 
@@ -394,14 +394,14 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_settings('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
 	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_settings('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
 
-	$wp_email = 'wordpress@' . preg_replace('#^www\.#', '', strtolower($_SERVER['SERVER_NAME']));
+	$admin_email = get_settings('admin_email');
 
 	if ( '' == $comment->comment_author ) {
-		$from = "From: \"$blogname\" <$wp_email>";
+		$from = "From: \"$blogname\" <$admin_email>";
 		if ( '' != $comment->comment_author_email )
 			$reply_to = "Reply-To: $comment->comment_author_email";
  	} else {
-		$from = "From: \"$comment->comment_author\" <$wp_email>";
+		$from = "From: \"$comment->comment_author\" <$admin_email>";
 		if ( '' != $comment->comment_author_email )
 			$reply_to = "Reply-To: \"$comment->comment_author_email\" <$comment->comment_author_email>";
  	}

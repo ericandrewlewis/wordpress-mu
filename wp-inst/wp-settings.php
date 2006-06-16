@@ -132,7 +132,7 @@ define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files" );
 
 require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/default-filters.php');
-require_once (ABSPATH . WPINC . '/wp-l10n.php');
+require_once (ABSPATH . WPINC . '/l10n.php');
 
 $wpdb->hide_errors();
 $db_check = $wpdb->get_var("SELECT option_value FROM $wpdb->options WHERE option_name = 'siteurl'");
