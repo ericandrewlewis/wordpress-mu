@@ -228,7 +228,7 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     <input type='hidden' name='action' value='step2'>
     <h2>Blog Addresses</h2>
 	<p>Please choose whether you would like blogs for the MU install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
-    <p><label><input type='radio' name='vhost' value='yes' /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
+	<p><label><input type='radio' name='vhost' value='yes' /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
 	<label><input type='radio' name='vhost' value='no' /> Sub-directories (like <code>example.com/blog1</code></label></p>
 	
     <h2>Database</h2>
@@ -314,10 +314,14 @@ function step2() {
 }
 
 function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $email = '' ) {
+    $hostname = str_replace( "www.", "", $_SERVER[ 'HTTP_HOST' ] );
     print " 
 	<form method='post' action='index.php'> 
 	<input type='hidden' name='action' value='step3'>
 	<p>To finish setting up your blog, please fill in the folling form and click <q>Submit</q>.</p>
+	<h2>Server Address</h2>
+    	<p><label>What is the Internet address of your site?  <input type='text' name='basedomain' value='{$hostname}'><br />You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box above.</label></p>
+	<h2>Blog Details</h2>
 	<table width='100%'> 
 	<tr> 
 	<th scope='row'>Weblog&nbsp;Title</th> 
@@ -343,7 +347,7 @@ function step3() {
     {
            $base .= "/";
     } 
-    $domain = $_SERVER[ 'HTTP_HOST' ];
+    $domain =   $wpdb->escape( $_POST[ 'basedomain' ] );
     if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
 
@@ -351,10 +355,8 @@ function step3() {
     $weblog_title = $wpdb->escape( $_POST[ 'weblog_title' ] );
 
     // set up site tables
-    $query = "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_email', '".$email."')";
-    $wpdb->query( $query );
-    $query = "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_user_id', '1')";
-    $wpdb->query( $query );
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_email', '".$email."')" );
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_user_id', '1')" );
     $wpdb->query( "INSERT INTO ".$wpdb->site." ( id, domain, path ) VALUES ( NULL, '$domain', '$base' )" );
     $wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (1, 'Uncategorized', 'uncategorized', '')" );
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'upload_filetypes', 'jpg jpeg png gif mp3 mov avi wmv midi mid pdf' )" );
@@ -383,9 +385,11 @@ We hope you enjoy your new weblog.
 	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array() );
 	update_blog_option( 1, 'template', 'home');
 	update_blog_option( 1, 'stylesheet', 'home');
-	$msg = "Your new WPMU site has been created at\nhttp://{$_SERVER[ 'HTTP_HOST' ]}/\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$_SERVER[ 'HTTP_HOST' ]}/wp-login.php\n";
+	update_blog_option( 1, 'permalink_structure', '/blog/%year%/%monthnum%/%day%/%postname%/');
+	update_blog_option( 1, 'rewrite_rules', '');
+	$msg = "Your new WPMU site has been created at\nhttp://$domain/\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://$domain/wp-login.php\n";
 	wp_mail( $email, "Your new WPMU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
-	print "<p>Congrats! Your blog has been set up and you have been sent details of your login and password in an email.</p>";
+	print "<p>Congrats! Your <a href='http://$domain/'>WPMU site</a> has been set up and you have been sent details of your login and password in an email.</p>";
 }
 
 switch( $_POST[ 'action' ] ) {
