@@ -41,7 +41,6 @@ RewriteRule ^([_0-9a-zA-Z-]+)/b2rdf.php(.*)?				BASE/wp-inst/wp-feed.php?wpblog=
 
 # We want to pass these files straight through
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-comments-post.php(.*)  	BASE/wp-inst/wp-comments-post.php	   [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/go.php(.*) 			BASE/wp-inst/go.php$2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/pages/(.*)	 		BASE/wp-inst/pages/$2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-admin/(.*) 			BASE/wp-inst/wp-admin/$2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-atom.php(.*) 			BASE/wp-inst/wp-atom.php [L]
@@ -68,6 +67,7 @@ RewriteRule ^([_0-9a-zA-Z-]+)/favicon.ico 			BASE/wp-inst/favicon.ico [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-includes/images/(.*) 		BASE/wp-inst/wp-includes/images/$2 [L]
 RewriteRule ^([_0-9a-zA-Z-]+)/wp-includes/js/(.*) 		BASE/wp-inst/wp-includes/js/$2 [L]
 
+RewriteRule ^wp-comments-post.php  				BASE/wp-inst/wp-comments-post.php [L]
 RewriteRule ^wp-signup.php$ 					BASE/wp-inst/wp-signup.php [L]
 RewriteRule ^wp-activate.php$ 					BASE/wp-inst/wp-activate.php [L]
 RewriteRule ^wp-login.php 					BASE/wp-inst/wp-login.php [L]
