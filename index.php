@@ -341,7 +341,7 @@ function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $e
 }
 
 function step3() {
-    global $wpdb;
+    global $wpdb, $current_site;
     $base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
     if( $base != "/")
     {
@@ -382,6 +382,11 @@ We hope you enjoy your new weblog.
 
 	$pass = substr( md5( rand() ), 5, 12 );
 	$user_id = wpmu_create_user( 'admin', $pass, $email);
+
+	$current_site->domain = $domain;
+	$current_site->path = $base;
+	$current_site->site_name = ucfirst( $domain );
+	
 	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array() );
 	update_blog_option( 1, 'template', 'home');
 	update_blog_option( 1, 'stylesheet', 'home');
