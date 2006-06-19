@@ -694,13 +694,14 @@ function wp_footer() {
 }
 
 function rsd_link() {
-	echo '<link rel="EditURI" type="application/rsd+xml" title="RSD" href="' . get_bloginfo('wpurl') . "/xmlrpc.php?rsd\" />\n";
+	echo '	<link rel="EditURI" type="application/rsd+xml" title="RSD" href="' . get_bloginfo('wpurl') . "/xmlrpc.php?rsd\" />\n";
 }
 
 function noindex() {
+	global $current_blog;
 	// If the blog is not public, tell robots to go away.
-	if ( ! get_option('blog_public') )
-		echo '<meta name="robots" content="noindex,nofollow" />' . "\n";
+	if ( '0' == $current_blog->public )
+		echo "<meta name='robots' content='noindex,nofollow' />\n";
 }
 
 /**

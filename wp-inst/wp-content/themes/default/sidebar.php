@@ -46,14 +46,10 @@
 				</ul>
 			</li>
 
-			<li><h2>Categories</h2>
-				<ul>
-				<?php wp_list_cats('sort_column=name&optioncount=1&hierarchical=0'); ?>
-				</ul>
-			</li>
+			<?php wp_list_categories('sort_column=name&optioncount=1&hierarchical=0&title_li=<h2>Categories</h2>'); ?>
 
 			<?php /* If this is the frontpage */ if ( is_home() || is_page() ) { ?>
-				<?php get_links_list(); ?>
+				<?php wp_list_bookmarks(); ?>
 
 				<li><h2>Meta</h2>
 				<ul>

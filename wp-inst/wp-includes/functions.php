@@ -1048,7 +1048,9 @@ function do_feed_atom() {
 }
 
 function do_robots() {
-	if ( '1' != get_option('blog_public') ) {
+	global $current_blog;
+	do_action('do_robots');
+	if ( '0' == $current_blog->public ) {
 		echo "User-agent: *\n";
 		echo "Disallow: /\n";
 	} else {
