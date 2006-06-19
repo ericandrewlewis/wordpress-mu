@@ -200,7 +200,7 @@ if ( '1' == $current_blog->deleted )
 	graceful_fail('This user has elected to delete their account and the content is no longer available.');
 
 if ( '2' == $current_blog->deleted )
-		graceful_fail("This blog has not been activated yet. If you are having problems activating your blog, please contact <a href='mailto:support@wordpress.com'>support@wordpress.com</a>.");
+		graceful_fail("This blog has not been activated yet. If you are having problems activating your blog, please contact <a href='mailto:support@{$current_site->domain}'>support@{$current_site->domain}</a>.");
 
 if( $current_blog->archived == '1' )
     graceful_fail( 'This blog has been archived or suspended.' );
