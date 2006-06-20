@@ -34,7 +34,7 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "searchcategories":
-		$search = $_POST[ 'search' ];
+		$search = wp_specialchars( $_POST[ 'search' ] );
 		$query = "SELECT cat_name FROM " . $wpdb->sitecategories . " WHERE cat_name LIKE '%" . $search . "%' limit 0,10";
 		$cats = $wpdb->get_results( $query );
 		if( is_array( $cats ) ) {
@@ -48,15 +48,16 @@ switch( $_GET[ 'action' ] ) {
 		exit;
 	break;
 	case "searchusers":
-		$search = $_GET[ 'search' ];
-		$id = $_GET[ 'id' ];
-		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . ", " . $wpdb->usermeta . " WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND " . $wpdb->usermeta . ".meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'";
-		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '%" . $search . "%' limit 0,10";
+		$search = wp_specialchars( $_POST[ 'search' ] );
+		$query = "SELECT " . $wpdb->users . ".ID, " . $wpdb->users . ".user_login FROM " . $wpdb->users . " WHERE user_login LIKE '" . $search . "%' limit 0,10";
 		$users = $wpdb->get_results( $query );
 		if( is_array( $users ) ) {
-			while( list( $key, $val ) = each( $users ) ) { 
-				print '<span onclick="javascript:return update_AJAX_search_box(\'' . $val->user_login . '\');"><a>' . $val->user_login . '</a></span><br>';
+			print "<ul>";
+			while( list( $key, $val ) = each( $users ) ) 
+			{ 
+				print "<li>{$val->user_login}</li>";
 			}
+			print "</ul>";
 		} else {
 			print "No Users Found";
 		}

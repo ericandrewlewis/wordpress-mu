@@ -198,10 +198,11 @@ switch( $_GET[ 'action' ] ) {
     }
     print "<h3>Add a new user</h3>";
     ?>
+<?php autocomplete_css(); ?>
 <p>As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.</p>
 <table>
-<tr><th scope="row">User&nbsp;Login: </th><td><input type="text" name="newuser" id="newuser"></td><td><a href="javascript:doSearch();">Search</a></td></tr>
-<tr><td></td><td colspan='2'><div style='display:none; height: 60px; width: 100px; overflow: auto; border: 1px solid #ccc; background: #eee; margin: 5px; padding: 5px;' id="searchresults"><?php _e( 'Search Results' ) ?></div></td> </tr>
+<tr><th scope="row">User&nbsp;Login: </th><td><input type="text" name="newuser" id="newuser"></td></tr>
+<tr><td></td><td><div id="searchresults" class="autocomplete"></div></td> </tr>
 	<tr>
 		<th scope="row"><?php _e('Role:') ?></th>
 		<td><select name="new_role" id="new_role"><?php 
@@ -221,7 +222,7 @@ switch( $_GET[ 'action' ] ) {
 <p class="submit">
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
 </p> 
-<?php AJAX_search_box( "wpmu-edit.php?action=searchusers&search=", "newuser", "searchresults" ); ?>
+<?php autocomplete_textbox( "wpmu-edit.php?action=searchusers&search=", "newuser", "searchresults" ); ?>
 
     </td>
     </table>
