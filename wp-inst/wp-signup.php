@@ -36,10 +36,18 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 	echo '<th valign="top">' . __('Blog Domain:') . '</th><td>';
 
 	if ( $errmsg = $errors->get_error_message('blog_id') ) {
-?><p><strong><?php echo $errmsg ?></strong></p><?php
+		?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
-	print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.' . $current_site->domain . '</span><br />';
-	if ( !is_user_logged_in() ) print '(<strong>Your address will be domain.' . $current_site->domain . '.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
+	print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.' . $current_site->domain . $current_site->path . '</span><br />';
+	if ( !is_user_logged_in() ) {
+		print '(<strong>Your address will be ';
+		if( constant( "VHOST" == 'no' ) ) {
+			print $current_site->domain . $current_site->path . 'blogname';
+		} else {
+			print 'domain.' . $current_site->domain . $current_site->path;
+		}
+		print '.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
+	}
 
 	// Blog Title
 	if ( $errors->get_error_message('blog_title')) {
@@ -84,7 +92,7 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	echo '<th valign="top">' . __('Username:') . '</th><td>';
 
 	if ( $errmsg = $errors->get_error_message('user_name') ) {
-?><p><strong><?php echo $errmsg ?></strong></p><?php
+		?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
 
 	print '<input name="user_name" type="text" id="user_name" value="'.$user_name.'" maxlength="50" style="width:50%; font-size: 30px;" /><br />';
@@ -136,7 +144,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 
 	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
 		$display = str_replace(".$domain", '', $blog->domain);
-		echo "<li><a href='https://$blog->domain/'>$display</a></li>";
+		echo "<li><a href='http://$blog->domain'>$display</a></li>";
 	}
 ?>
 </ul>

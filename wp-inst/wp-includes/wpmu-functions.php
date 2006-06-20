@@ -1021,10 +1021,15 @@ function wpmu_signup_user($user, $user_email, $meta = '') {
 
 // Notify user of signup success.
 function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_email, $key, $meta = '') {
+	global $current_site;
 	// Send email with activation link.
+	if( constant( "VHOST" ) == 'no' ) {
+		$activate_url = "http://" . $current_site->domain . $current_site->path . "wp-activate.php?key=$key";
+	} else {
+		$activate_url = "http://{$domain}{$path}/wp-activate.php?key=$key";
+	}
 	$message_headers = 'From: ' . stripslashes($title) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), 
-		"http://$domain/wp-activate.php?key=$key", "http://$domain");
+	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, "http://$domain");
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $domain);
 	wp_mail($user_email, $subject, $message, $message_headers);
