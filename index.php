@@ -284,7 +284,7 @@ function step2() {
     $handle = fopen('wp-inst/wp-config.php', 'w');
 
     foreach ($configFile as $line_num => $line) {
-	switch (substr($line,0,16)) {
+	switch (trim( substr($line,0,16) )) {
 	    case "define('DB_NAME'":
 		fwrite($handle, str_replace("wordpress", $dbname, $line));
 	    break;
@@ -303,9 +303,13 @@ function step2() {
 	    case '$table_prefix  =':
 	    fwrite($handle, str_replace('wp_', $prefix, $line));
 	    break;
+	    case '$base = \'BASE\';':
+	    fwrite($handle, str_replace('BASE', $base, $line));
+	    break;
+	    default:
+	    fwrite($handle, $line);
+	    break;
 	}
-	$line = str_replace( "BASE", $base, $line );
-	fwrite($handle, $line);
     }
     fclose($handle);
     chmod('wp-inst/wp-config.php', 0666);
