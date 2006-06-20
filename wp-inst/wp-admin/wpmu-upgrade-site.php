@@ -1,6 +1,9 @@
 <?php
 require_once('admin.php');
 
+$http_fopen = ini_get("allow_url_fopen");
+if(!$http_fopen) require_once('../wp-includes/class-snoopy.php');
+
 $title = __('WPMU Admin');
 $parent_file = 'wpmu-admin.php';
 require_once('admin-header.php');
@@ -20,21 +23,26 @@ switch( $_GET[ 'action' ] ) {
 		}
 		$blogs = $wpdb->get_results( "SELECT * FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND spam = '0' AND deleted = '0' AND archived = '0' ORDER BY registered DESC LIMIT $n, 5", ARRAY_A );
 		if( is_array( $blogs ) ) {
+			print "<ul>";
 			foreach( $blogs as $details ) {
 				if( $details[ 'spam' ] == 0 && $details[ 'deleted' ] == 0 && $details[ 'archived' ] == 0 ) {
 					$siteurl = $wpdb->get_var( "SELECT option_value from {$wpmuBaseTablePrefix}{$details[ 'blog_id' ]}_options WHERE option_name = 'siteurl'" );
-					print "$siteurl<br>";
-					$fp = fopen( $siteurl . "wp-admin/upgrade.php?step=1", "r" );
-					if( $fp ) {
-						while( feof( $fp ) == false ) {
-							fgets($fp, 4096);
+					print "<li>$siteurl</li>";
+					if($http_fopen) {
+						$fp = fopen( $siteurl . "wp-admin/upgrade.php?step=1", "r" );
+						if( $fp ) {
+							while( feof( $fp ) == false ) {
+								fgets($fp, 4096);
+							}
+							fclose( $fp );
 						}
-						fclose( $fp );
+					} else {
+						$client = new Snoopy();
+						@$client->fetch($siteurl . "wp-admin/upgrade.php?step=1");
 					}
-				} else {
-					print "Not upgrading: {$details[ 'domain' ]}<br>";
 				}
 			}
+			print "</ul>";
 			?>
 			<p>If your browser doesn't start loading the next page automatically click this link: <a href="?action=upgrade&n=<?php echo ($n + 5) ?>">Next Blogs</a> </p>
 			<script language='javascript'>

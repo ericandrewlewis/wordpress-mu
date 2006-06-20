@@ -4,8 +4,17 @@ if ( defined('ABSPATH') )
 else
     require_once('../wp-config.php');
 
-if ( get_option('db_version') != $wp_db_version )
-	$out = @file( get_option( "siteurl" ) . "/wp-admin/upgrade.php?step=1" ); // upgrade the db!
+if ( get_option('db_version') != $wp_db_version ) {
+	$http_fopen = ini_get("allow_url_fopen");
+	if($http_fopen) {
+		$out = @file( get_option( "siteurl" ) . "/wp-admin/upgrade.php?step=1" ); // upgrade the db!
+	} else {
+		require_once('../wp-includes/class-snoopy.php');
+		$client = new Snoopy();
+		@$client->fetch( get_option( "siteurl" ) . "wp-admin/upgrade.php?step=1");
+	}
+}
+
 
 require_once(ABSPATH . 'wp-admin/admin-functions.php');
 require_once(ABSPATH . 'wp-admin/admin-db.php');
