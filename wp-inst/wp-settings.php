@@ -131,6 +131,7 @@ if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
 define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files" );
 
 require (ABSPATH . WPINC . '/functions.php');
+require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
 
