@@ -105,7 +105,7 @@ function filestats( $err ) {
 
 }
 
-function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
+function do_htaccess( $oldfilename, $newfilename, $base, $url )
 {
     // remove ending slash from $base and $url
     $htaccess = '';
@@ -146,7 +146,7 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
 
     if( $err != '' ) {
 	    print "<h1>Warning!</h1>";
-	    print "<p><strong>There was a problem creating the .htaccess file in $realpath.</strong> </p>";
+	    print "<p><strong>There was a problem creating the .htaccess file.</strong> </p>";
 	    print "<p style='color: #900'>Error: ";
 	    if( $err == "could not open $newfilename for writing" ) {
 		print "Could Not Write To $newfilename.";
@@ -162,7 +162,7 @@ function do_htaccess( $oldfilename, $newfilename, $realpath, $base, $url )
 	    print "<p>If you use Cpanel then read <a href='http://mu.wordpress.org/forums/topic/99'>this post</a>. Cpanel creates files that I need to overwrite and you have to fix that.</p>";
 	    print "<p>If all else fails then you'll have to create it by hand:";
 	    print "<ul><li> Download htaccess.dist to your computer and open it in your favourite text editor.</li>
-		<li> Replace the following text:<ul><li>REALPATH by '$realpath'</li><li>BASE by '$base'</li><li>HOST by '$url'</li></li>
+		<li> Replace the following text:<ul><li>BASE by '$base'</li><li>HOST by '$url'</li></li>
 		<li> Rename htaccess.dist to .htaccess and upload it back to the same directory.</li></ul>";
 	    die( "Installation Aborted!" );
     }
@@ -263,7 +263,7 @@ function step2() {
     $dbhost  = $_POST['dbhost'];
     $vhost   = $_POST['vhost' ]; 
     $prefix  = 'wp_';
-	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
+    $base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
 
     // Test the db connection.
     define('DB_NAME', $dbname);
@@ -303,10 +303,9 @@ function step2() {
 	    case '$table_prefix  =':
 	    fwrite($handle, str_replace('wp_', $prefix, $line));
 	    break;
-	    default:
-	    fwrite($handle, $line);
 	}
 	$line = str_replace( "BASE", $base, $line );
+	fwrite($handle, $line);
     }
     fclose($handle);
     chmod('wp-inst/wp-config.php', 0666);
@@ -392,9 +391,9 @@ We hope you enjoy your new weblog.
 	update_blog_option( 1, 'stylesheet', 'home');
 	update_blog_option( 1, 'permalink_structure', '/blog/%year%/%monthnum%/%day%/%postname%/');
 	update_blog_option( 1, 'rewrite_rules', '');
-	$msg = "Your new WPMU site has been created at\nhttp://$domain/\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://$domain/wp-login.php\n";
+	$msg = "Your new WPMU site has been created at\nhttp://{$domain}{$base}\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$domain}{$base}wp-login.php\n";
 	wp_mail( $email, "Your new WPMU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
-	print "<p>Congrats! Your <a href='http://$domain/'>WPMU site</a> has been set up and you have been sent details of your login and password in an email.</p>";
+	print "<p>Congrats! Your <a href='http://{$domain}{$base}'>WPMU site</a> has been set up and you have been sent details of your login and password in an email.</p>";
 }
 
 switch( $_POST[ 'action' ] ) {
@@ -412,7 +411,7 @@ switch( $_POST[ 'action' ] ) {
 		require_once('./wp-inst/wp-admin/upgrade-functions.php');
 		make_db_current_silent();
 		populate_options();
-		do_htaccess( 'htaccess.dist', '.htaccess', '/', '/', '');
+		do_htaccess( 'htaccess.dist', '.htaccess', $base, '');
 		printheader();
 		step3();
 	break;

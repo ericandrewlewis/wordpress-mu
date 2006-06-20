@@ -5,7 +5,7 @@ define('DB_USER', 'username');     // Your MySQL username
 define('DB_PASSWORD', 'password'); // ...and password
 define('DB_HOST', 'localhost');    // 99% chance you won't need to change this value
 define('VHOST', 'VHOSTSETTING'); 
-
+$base = 'BASE';
 
 // Change the prefix if you want to have multiple blogs in a single database.
 $table_prefix  = 'wp_';   // example: 'wp_' or 'b2' or 'mylogin_'
@@ -80,7 +80,6 @@ $global_db_list = array(
 			)
 			);
 
-$based = 'BASE';
 
 /* Stop editing */
 
