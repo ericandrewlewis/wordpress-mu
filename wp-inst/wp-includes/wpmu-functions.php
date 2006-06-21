@@ -84,11 +84,7 @@ function get_blogaddress_by_id( $blog_id ) {
 
 	$bloginfo = get_blog_details( $blog_id, false ); // only get bare details!
 
-	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
-		return "http://" . $bloginfo->domain . $bloginfo->path;
-	} else {
-		return get_blogaddress_by_domain($bloginfo->domain, $bloginfo->path);
-	}
+	return get_real_siteurl( $bloginfo->domain, $bloginfo->path );
 }
 
 function get_blogaddress_by_name( $blogname ) {
@@ -441,10 +437,8 @@ function get_blogs_of_user( $id ) {
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
-				$blogs[$match[1]]->domain = $blog->domain;
-			} else { // Temporary fix for people who don't get usermeta cleaned up when a blog is deleted
-				delete_usermeta( $id, "wp_{$match[1]}_capabilities" );
-				delete_usermeta( $id, "wp_{$match[1]}_user_level" );
+				$blogs[$match[1]]->domain      = $blog->domain;
+				$blogs[$match[1]]->path        = $blog->path;
 			}
 		}
 	}
@@ -1326,6 +1320,14 @@ SITE_NAME" );
 		$current_site->site_name = "WordPress MU";
 	$subject = sprintf(__('New %s User: %s'), $current_site->site_name, $user->user_login);
 	wp_mail($user->user_email, $subject, $message, $message_headers);	
+}
+
+function get_real_siteurl( $domain, $path ) {
+	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
+		return "http://" . $domain . $path;
+	} else {
+		return get_blogaddress_by_domain($domain, $path);
+	}
 }
 
 ?>

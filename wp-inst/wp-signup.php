@@ -33,15 +33,22 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 	else
 		print '<tr>';
 
-	echo '<th valign="top">' . __('Blog Domain:') . '</th><td>';
+	if( constant( "VHOST" ) == 'no' )
+		echo '<th valign="top">' . __('Blog Name:') . '</th><td>';
+	else
+		echo '<th valign="top">' . __('Blog Domain:') . '</th><td>';
 
 	if ( $errmsg = $errors->get_error_message('blog_id') ) {
 		?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
-	print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 30px;" /><span style="font-size: 30px">.' . $current_site->domain . $current_site->path . '</span><br />';
+	if( constant( "VHOST" ) == 'no' ) {
+		print '<span style="font-size: 20px">' . get_real_siteurl( $current_site->domain, $current_site->path ) . '</span><input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: left; font-size: 20px;" /><br />';
+	} else {
+		print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 20px;" /><span style="font-size: 20px">' . get_real_siteurl( $current_site->domain, $current_site->path ) . '</span><br />';
+	}
 	if ( !is_user_logged_in() ) {
 		print '(<strong>Your address will be ';
-		if( constant( "VHOST" == 'no' ) ) {
+		if( constant( "VHOST" ) == 'no' ) {
 			print $current_site->domain . $current_site->path . 'blogname';
 		} else {
 			print 'domain.' . $current_site->domain . $current_site->path;
@@ -144,7 +151,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 
 	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
 		$display = str_replace(".$domain", '', $blog->domain);
-		echo "<li><a href='http://$blog->domain'>$display</a></li>";
+		echo "<li><a href='" . get_real_siteurl( $blog->domain, $blog->path ) . "'>$display</a></li>";
 	}
 ?>
 </ul>
@@ -183,9 +190,10 @@ function validate_another_blog_signup() {
 }
 
 function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
+	$url = get_real_siteurl( $domain, $path );
 ?>
-<h2><?php printf(__('%s Is Yours'), $domain) ?></h2>
-<p><?php printf(__('<a href="%1$s">%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), "http://${domain}${path}", $domain, "http://${domain}${path}wp-login.php", $user_name) ?></p>
+<h2><?php printf(__('%s Is Yours'), $url ) ?></h2>
+<p><?php printf(__('<a href="%1$s">%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $url, $url, $url . "wp-login.php", $user_name) ?></p>
 <?php
 	do_action('signup_finished');
 }

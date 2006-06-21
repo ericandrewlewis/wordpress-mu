@@ -15,28 +15,42 @@ $path = preg_replace( '|(/[a-z0-9-]+?/).*|', '$1', $path );
 
 $wpdb->hide_errors();
 
-if( constant( 'VHOST' ) == 'yes' )
-	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");
-else
-	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
+// Get site and blog details
+if( defined( "WP_INSTALLING" ) == false ) {
+	if( constant( 'VHOST' ) == 'yes' ) {
+		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");
+		if( $current_blog != null )
+			$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='{$current_blog->site_id}'");
+	} else {
+		$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+		if( $current_site == null ) {
+			$path = '/';
+			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+			if( $current_site == null )
+				die( "No WPMU site defined on this host." );
+		}
+		$blogname = htmlspecialchars( str_replace( $path, '', $_SERVER[ 'REQUEST_URI' ] ) );
+		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
+		if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' ) {
+			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
+		} else {
+			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$blogname.$domain' AND path = '$path'");
+		}
+	}
 
-if( $current_blog == false )
-    is_installed();
+	if( $current_blog == false || $current_site == false )
+		is_installed();
 
-$blog_id = $current_blog->blog_id;
-$public  = $current_blog->public;
-$site_id = $current_blog->site_id;
+	$blog_id = $current_blog->blog_id;
+	$public  = $current_blog->public;
+	$site_id = $current_blog->site_id;
 
-if( $site_id == 0 )
-	$site_id = 1;
+	if( $site_id == 0 )
+		$site_id = 1;
 
-$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='$site_id'");
-
-if( $current_site == false )
-    is_installed();
-
-$current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = '$site_id' AND meta_key = 'site_name'" );
-
+	$current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = '$site_id' AND meta_key = 'site_name'" );
+}
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
     if ( defined('WP_INSTALLING') ) {
