@@ -15,11 +15,6 @@ if (have_posts()) : ?><?php while (have_posts()) : the_post(); ?>
 <?php endwhile; ?><?php endif; ?>
 </ul>
 
-	<?php if( constant( 'VHOST' ) == 'no' ) :?>
-		<h3>Virtual Hosts</h3>
-		<p>As you are not using virtual hosts, it is not possible to post anything to this primary blog because the URLs of your posts could potentially conflict with weblogs living at this site.</p>
-	<?php endif; ?>
-	
-	</div>
+</div>
 
 <?php get_footer(); ?>
