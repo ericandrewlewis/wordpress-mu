@@ -32,10 +32,10 @@ if( defined( "WP_INSTALLING" ) == false ) {
 		}
 		$blogname = htmlspecialchars( str_replace( $path, '', $_SERVER[ 'REQUEST_URI' ] ) );
 		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
-		if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' ) {
+		if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' || $blogname == 'files' ) {
 			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
 		} else {
-			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$blogname.$domain' AND path = '$path'");
+			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '{$path}{$blogname}/'");
 		}
 	}
 

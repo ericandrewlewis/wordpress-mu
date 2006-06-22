@@ -1,5 +1,3 @@
-#php_flag register_globals 0
-#php_flag display_errors 0
 RewriteEngine On
 RewriteBase BASE/
 
@@ -7,81 +5,12 @@ RewriteBase BASE/
 RewriteCond %{HTTP_HOST} ^www\.(.*)
 RewriteRule ^(.*)       http://%1/$1 [R,L]
 
-###
-#### blogs
-###
-RewriteRule ^([_0-9a-zA-Z-]+)/templates/(.*)			BASE/wp-inst/wp-content/blogs/$1/templates/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/files/(.*)                  	BASE/wp-inst/wp-content/blogs.php?file=$1 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-content/blogs/(.*)/files/(.*)	BASE/wp-inst/wp-content/blogs.php?file=$3 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-content/themes/(.*)		BASE/wp-inst/wp-content/themes/$2 [L]
-RewriteRule ^wp-content/themes/(.*)		BASE/wp-inst/wp-content/themes/$1 [L]
+#uploaded files
+RewriteRule ^files/(.*) wp-content/blogs.php?file=$1 [L]
 
-# rewrite these
-RewriteRule ^([_0-9a-zA-Z-]+)/category/(.*)/page/(.*)/			BASE/wp-inst/index.php?wpblog=$1&category_name=$2&paged=$3 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/category/(.*)/(feed|rdf|rss|rss2|atom)/?$ BASE/wp-inst/wp-feed.php?wpblog=$1&category_name=$2&feed=$3 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/category/?(.*)				BASE/wp-inst/index.php?wpblog=$1&category_name=$2 [L]
-
-RewriteRule ^([_0-9a-zA-Z-]+)/tag/(.*)/page/(.*)/			BASE/wp-inst/index.php?wpblog=$1&category_name=$2&paged=$3 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/tag/(.*)/(feed|rdf|rss|rss2|atom)/?$ 	BASE/wp-inst/wp-feed.php?wpblog=$1&category_name=$2&feed=$3 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/tag/?(.*)					BASE/wp-inst/index.php?wpblog=$1&category_name=$2 [L]
-
-RewriteRule ^([_0-9a-zA-Z-]+)/author/(.*)/(feed|rdf|rss|rss2|atom)/?$	BASE/wp-inst/wp-feed.php?wpblog=$1&author_name=$2&feed=$3 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/author/?(.*)				BASE/wp-inst/index.php?wpblog=$1&author_name=$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/([0-9]{4})/?([0-9]{1,2})?/?([0-9]{1,2})?/?([_0-9a-zA-Z-]+)?/?([0-9]+)?/?$	  		BASE/wp-inst/index.php?wpblog=$1&year=$2&monthnum=$3&day=$4&name=$5&page=$6 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/([0-9]{4})/?([0-9]{1,2})/([0-9]{1,2})/([_0-9a-zA-Z-]+)/(feed|rdf|rss|rss2|atom)/?$	BASE/wp-inst/wp-feed.php?wpblog=$1&year=$2&monthnum=$3&day=$4&name=$5&feed=$6 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/([0-9]{4})/?([0-9]{1,2})/([0-9]{1,2})/([_0-9a-zA-Z-]+)/trackback/?$			BASE/wp-inst/wp-trackback.php?wpblog=$1&year=$2&monthnum=$3&day=$4&name=$5 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/page/?([0-9]+)?/?$ 			BASE/wp-inst/index.php?paged=$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/feed/?([_0-9a-zA-Z-]+)?/?$		BASE/wp-inst/wp-feed.php?wpblog=$1&feed=$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/comments/feed/?([_0-9a-zA-Z-]+)?/?$	BASE/wp-inst/wp-feed.php?wpblog=$1&feed=$2&withcomments=1 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/archives/p/([0-9]+)/?(.*)?		BASE/wp-inst/index.php?wpblog=$1&redirect=yes&p=$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/archives/cat/([0-9]+)/?(.*)?		BASE/wp-inst/index.php?wpblog=$1&redirect=yes&cat=$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/archives/m/([0-9]+)\#?(.*)?		BASE/wp-inst/index.php?wpblog=$1&redirect=yes&m=$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/b2rss2.php(.*)?				BASE/wp-inst/wp-feed.php?wpblog=$1&feed=rss2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/b2rdf.php(.*)?				BASE/wp-inst/wp-feed.php?wpblog=$1&feed=rdf [L]
-
-# We want to pass these files straight through
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-comments-post.php(.*)  	BASE/wp-inst/wp-comments-post.php	   [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/pages/(.*)	 		BASE/wp-inst/pages/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-admin/(.*) 			BASE/wp-inst/wp-admin/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-atom.php(.*) 			BASE/wp-inst/wp-atom.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-comments-popup.php(.*) 	BASE/wp-inst/wp-comments-popup.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-comments-post.php(.*) 		BASE/wp-inst/wp-comments-post.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-commentsrss2.php(.*) 		BASE/wp-inst/wp-commentsrss2.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-counter.php(.+)? 		BASE/wp-inst/wp-counter.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-feed.php(.*) 			BASE/wp-inst/wp-feed.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-images/(.*) 			BASE/wp-inst/wp-images/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-links-opml.php(.*) 		BASE/wp-inst/wp-links-opml.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-login.php(.*) 			BASE/wp-inst/wp-login.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-mail.php(.*) 			BASE/wp-inst/wp-mail.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-pass.php(.*) 			BASE/wp-inst/wp-pass.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-rdf.php(.*) 			BASE/wp-inst/wp-rdf.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-register.php(.*) 		BASE/wp-inst/wp-register.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-rss.php(.*) 			BASE/wp-inst/wp-rss.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-rss2.php(.*) 			BASE/wp-inst/wp-rss2.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-sidebar.php(.*) 		BASE/wp-inst/wp-sidebar.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-trackback.php(.*) 		BASE/wp-inst/wp-trackback.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-cron.php(.*) 			BASE/wp-inst/wp-cron.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/xmlrpc.php(.*) 			BASE/wp-inst/xmlrpc.php [L]   
-RewriteRule ^([_0-9a-zA-Z-]+)/maintenance.php 			BASE/wp-inst/maintenance.php [L]   
-RewriteRule ^([_0-9a-zA-Z-]+)/favicon.ico 			BASE/wp-inst/favicon.ico [L]   
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-includes/images/(.*) 		BASE/wp-inst/wp-includes/images/$2 [L]
-RewriteRule ^([_0-9a-zA-Z-]+)/wp-includes/js/(.*) 		BASE/wp-inst/wp-includes/js/$2 [L]
-
-RewriteRule ^wp-comments-post.php  				BASE/wp-inst/wp-comments-post.php [L]
-RewriteRule ^wp-signup.php$ 					BASE/wp-inst/wp-signup.php [L]
-RewriteRule ^wp-activate.php$ 					BASE/wp-inst/wp-activate.php [L]
-RewriteRule ^wp-login.php 					BASE/wp-inst/wp-login.php [L]
-RewriteRule ^wp-admin/(.*) 					BASE/wp-inst/wp-admin/$1 [L]
-RewriteRule ^wp-includes/images/(.*) 				BASE/wp-inst/wp-includes/images/$1 [L]
-RewriteRule ^wp-includes/js/(.*) 				BASE/wp-inst/wp-includes/js/$1 [L]
-RewriteRule ^signup/						BASE/wp-inst/wp-newblog.php [L]
-RewriteRule ^invite/(.*)/?					BASE/wp-inst/wp-newblog.php?u=$1 [L]
-RewriteRule ^index.php						BASE/wp-inst/index.php [L]
-
-RewriteRule ^$ 							BASE/wp-inst/index.php [L]
-
-# catch all rules
-RewriteRule ^([_0-9a-zA-Z-]+)/					BASE/wp-inst/index.php [L]
-RewriteRule ^([_0-9a-zA-Z-]+)					$1/ [R,L]
-
-AddType text/css .css
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule . - [L]
+RewriteRule  ^([_0-9a-zA-Z-]+/)?(wp-.*) $2 [L]
+RewriteRule  ^([_0-9a-zA-Z-]+/)?(.*\.php)$ $2 [L]
+RewriteRule . index.php [L]

@@ -1086,6 +1086,7 @@ function touch_time($edit = 1, $for_post = 1) {
 // data.  Creates file if none exists.
 // Returns true on write success, false on failure.
 function insert_with_markers($filename, $marker, $insertion) {
+	return true;
 	if (!file_exists($filename) || is_writeable($filename)) {
 		if (!file_exists($filename)) {
 			$markerdata = '';

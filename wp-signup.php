@@ -171,7 +171,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 }
 
 function validate_another_blog_signup() {
-	global $current_user, $current_site;
+	global $current_user;
 
 	$result = validate_blog_form();
 	extract($result);
@@ -184,14 +184,14 @@ function validate_another_blog_signup() {
 	$public = (int) $_POST['blog_public'];
 	$meta = array ('lang_id' => 'en', 'public' => $public);
 
-	wpmu_create_blog($domain, $current_site->path, $blog_title, $current_user->id, $meta);
-	confirm_another_blog_signup($domain, $current_site->path, $blog_title, $current_user->user_login, $current_user->user_email, $meta);		
+	wpmu_create_blog($domain, $path, $blog_title, $current_user->id, $meta);
+	confirm_another_blog_signup($domain, $path, $blog_title, $current_user->user_login, $current_user->user_email, $meta);		
 }
 
 function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
 <h2><?php printf(__('%s Is Yours'), $domain.$path ) ?></h2>
-<p><?php printf(__('<a href="http://%1$s">http://%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $domain.$path, $domain.$path, $domain.$path . "wp-login.php", $user_name) ?></p>
+<p><?php printf(__('<a href="http://%1$s">http://%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $domain.$path, $domain.$path, "http://" . $domain.$path . "wp-login.php", $user_name) ?></p>
 <?php
 	do_action('signup_finished');
 }
