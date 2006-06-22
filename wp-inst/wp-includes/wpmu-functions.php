@@ -953,9 +953,15 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	if ( empty( $blog_title ) )
 	    $errors->add('blog_title', __("Please enter a blog title"));
 
-	// Check if the domain has been used already.
-	$mydomain = "$blog_id.$domain";
-	if ( domain_exists($mydomain, $base) )
+	// Check if the domain/path has been used already.
+	if( constant( "VHOST" ) == 'yes' ) {
+		$mydomain = "$blog_id.$domain";
+		$path = $base;
+	} else {
+		$mydomain = "$domain";
+		$path = $base.$blog_id.'/';
+	}
+	if ( domain_exists($mydomain, $path) )
 		$errors->add('blog_id', __("Sorry, that blog already exists!"));
 
 	if ( username_exists($blog_id) ) {
@@ -965,20 +971,20 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 
 	// Has someone already signed up for this domain?
 	// TODO: Check email too?
-	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE domain = '$mydomain'");
+	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE domain = '$mydomain' AND path = '$path'");
 	if ( ! empty($signup) ) {
 		$registered_at =  mysql2date('U', $signup->registered);
 		$now = current_time( 'timestamp', true );
 		$diff = $now - $registered_at;
 		// If registered more than two days ago, cancel registration and let this signup go through.
 		if ( $diff > 172800 ) {
-			$wpdb->query("DELETE FROM $wpdb->signups WHERE domain = '$mydomain'");
+			$wpdb->query("DELETE FROM $wpdb->signups WHERE domain = '$mydomain' AND path = '$path'");
 		} else {
 			$errors->add('blog_id', __("That blog is currently reserved but may be available in a couple days."));
 		}
 	}
 
-	$result = array('domain' => $mydomain, 'path' => $base, 'blog_id' => $blog_id, 'blog_title' => $blog_title,
+	$result = array('domain' => $mydomain, 'path' => $path, 'blog_id' => $blog_id, 'blog_title' => $blog_title,
 				'errors' => $errors);
 
 	return apply_filters('wpmu_validate_blog_signup', $result);
@@ -1023,9 +1029,9 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 		$activate_url = "http://{$domain}{$path}/wp-activate.php?key=$key";
 	}
 	$message_headers = 'From: ' . stripslashes($title) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
-	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, "http://$domain");
+	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, "http://$domain.$path");
 	// TODO: Don't hard code activation link.
-	$subject = sprintf(__('Activate %s'), $domain);
+	$subject = sprintf(__('Activate %s'), $domain.$path);
 	wp_mail($user_email, $subject, $message, $message_headers);
 }
 
@@ -1159,6 +1165,7 @@ function domain_exists($domain, $path, $site_id = 1) {
 
 function insert_blog($domain, $path, $site_id) {
 	global $wpdb;
+	$path = trailingslashit( $path );
 	$query = "INSERT INTO $wpdb->blogs ( blog_id, site_id, domain, path, registered ) VALUES ( NULL, '$site_id', '$domain', '$path', NOW( ))";
 	$result = $wpdb->query( $query );
 	if ( ! $result )

@@ -264,6 +264,9 @@ function step2() {
     $vhost   = $_POST['vhost' ]; 
     $prefix  = 'wp_';
     $base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
+    if( $base != "/") {
+           $base .= "/";
+    } 
 
     // Test the db connection.
     define('DB_NAME', $dbname);
@@ -297,7 +300,7 @@ function step2() {
 	    case "define('DB_HOST'":
 		fwrite($handle, str_replace("localhost", $dbhost, $line));
 	    break;
-	    case "define('VHOST', ":
+	    case "define('VHOST',":
 		fwrite($handle, str_replace("VHOSTSETTING", $vhost, $line));
 	    break;
 	    case '$table_prefix  =':
@@ -321,9 +324,9 @@ function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $e
     print " 
 	<form method='post' action='index.php'> 
 	<input type='hidden' name='action' value='step3'>
-	<p>To finish setting up your blog, please fill in the folling form and click <q>Submit</q>.</p>
+	<p>To finish setting up your blog, please fill in the following form and click <q>Submit</q>.</p>
 	<h2>Server Address</h2>
-    	<p><label>What is the Internet address of your site?  <input type='text' name='basedomain' value='{$hostname}'><br />You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box above.</label></p>
+    	<p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box above.<br /><b>Server Address:</b> <input type='text' name='basedomain' value='{$hostname}'></label></p>
 	<h2>Blog Details</h2>
 	<table width='100%'> 
 	<tr> 
@@ -346,8 +349,7 @@ function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $e
 function step3() {
     global $wpdb, $current_site;
     $base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
-    if( $base != "/")
-    {
+    if( $base != "/") {
            $base .= "/";
     } 
     $domain =   $wpdb->escape( $_POST[ 'basedomain' ] );
@@ -366,7 +368,7 @@ function step3() {
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'blog_upload_space', '10' )" );
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'fileupload_maxk', '1500' )" );
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'site_admins', '" . serialize( array( 'admin' ) ) . "' )" );
-
+    $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'illegal_names', '" . serialize( array(  "www", "web", "root", "admin", "main", "invite", "administrator" ) ) . "' )" );
     $wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'welcome_email', 'Dear User,
 
 Your new SITE_NAME blog has been successfully set up at:

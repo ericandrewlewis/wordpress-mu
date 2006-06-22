@@ -42,9 +42,9 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 		?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
 	if( constant( "VHOST" ) == 'no' ) {
-		print '<span style="font-size: 20px">' . get_real_siteurl( $current_site->domain, $current_site->path ) . '</span><input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: left; font-size: 20px;" /><br />';
+		print '<span style="font-size: 20px">' . $current_site->domain . $current_site->path . '</span><input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: left; font-size: 20px;" /><br />';
 	} else {
-		print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 20px;" /><span style="font-size: 20px">' . get_real_siteurl( $current_site->domain, $current_site->path ) . '</span><br />';
+		print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 20px;" /><span style="font-size: 20px">' . $current_site->domain . $current_site->path . '</span><br />';
 	}
 	if ( !is_user_logged_in() ) {
 		print '(<strong>Your address will be ';
@@ -150,8 +150,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	$blogs = get_blogs_of_user($current_user->ID);
 
 	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
-		$display = str_replace(".$domain", '', $blog->domain);
-		echo "<li><a href='" . get_real_siteurl( $blog->domain, $blog->path ) . "'>$display</a></li>";
+		echo "<li><a href='" . $blog->domain . $blog->path . "'>" . $blog->domain . $blog->path . "</a></li>";
 	}
 ?>
 </ul>
@@ -190,10 +189,9 @@ function validate_another_blog_signup() {
 }
 
 function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
-	$url = get_real_siteurl( $domain, $path );
 ?>
-<h2><?php printf(__('%s Is Yours'), $url ) ?></h2>
-<p><?php printf(__('<a href="%1$s">%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $url, $url, $url . "wp-login.php", $user_name) ?></p>
+<h2><?php printf(__('%s Is Yours'), $domain.$path ) ?></h2>
+<p><?php printf(__('<a href="http://%1$s">http://%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $domain.$path, $domain.$path, $domain.$path . "wp-login.php", $user_name) ?></p>
 <?php
 	do_action('signup_finished');
 }
@@ -217,7 +215,7 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <label for="signupblog">Gimme a blog! (Like username.<?php echo $current_site->domain ?>)</label>
 <br />
 <input id="signupuser" type="radio" name="signup_for" value="user" />
-<label for="signupuser">Just an username, please.</label>
+<label for="signupuser">Just a username, please.</label>
 </p>
 </td>
 </tr>
@@ -309,7 +307,7 @@ function validate_blog_signup() {
 
 function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
-<h2><?php printf(__('%s Is Yours'), $domain) ?></h2>
+<h2><?php printf(__('%s Is Yours'), $domain.$path) ?></h2>
 <p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
 <p><?php printf(__('Check your inbox at <strong>%1$s</strong> and click the link given.  '),  $user_email) ?></p>
 <p><?php _e('If you do not activate your blog within two days, you will have to sign up again.'); ?></p>
