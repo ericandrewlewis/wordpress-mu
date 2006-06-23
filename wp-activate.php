@@ -68,7 +68,7 @@ form { margin-top: 2em; }
 </td>
 </tr>
 </table>
-<h3 class="view"><?php printf(__('<a href="%1$s">View your site</a> or <a href="%2$s">Login</a>'), $url, 'http://' . $_SERVER[ 'SERVER_NAME' ] . '/' ); ?></h3>
+<h3 class="view"><?php printf(__('<a href="%1$s">View your site</a> or <a href="%2$s">Login</a>'), $url, 'http://' . $url . '/wp-login.php' ); ?></h3>
 <?php
 		}
 	}

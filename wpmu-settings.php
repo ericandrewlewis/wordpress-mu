@@ -15,6 +15,34 @@ $path = preg_replace( '|(/[a-z0-9-]+?/).*|', '$1', $path );
 
 $wpdb->hide_errors();
 
+#$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+#if( count( $sites ) == 1 ) {
+	#$current_site = $sites[0];
+#}
+	
+if( isset( $current_site ) == false ) {
+	$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
+	if( constant( 'VHOST' ) == 'yes' ) {
+		$sitedomain = substr( $domain, 1 + strpos( $domain, '.' ) );
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
+		if( $current_site == null ) {
+			$path = '/';
+			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
+			if( $current_site == null && defined( "WP_INSTALLING" ) == false )
+				die( "No WPMU site defined on this host." );
+		}
+	} else {
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+		if( $current_site == null ) {
+			$path = '/';
+			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+			if( $current_site == null && defined( "WP_INSTALLING" ) == false )
+				die( "No WPMU site defined on this host." );
+		}
+	}
+}
+
+
 // Get site and blog details
 if( defined( "WP_INSTALLING" ) == false ) {
 	if( constant( 'VHOST' ) == 'yes' ) {
@@ -22,17 +50,10 @@ if( defined( "WP_INSTALLING" ) == false ) {
 		if( $current_blog != null )
 			$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='{$current_blog->site_id}'");
 	} else {
-		$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
-		if( $current_site == null ) {
-			$path = '/';
-			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
-			if( $current_site == null )
-				die( "No WPMU site defined on this host." );
-		}
-		$blogname = htmlspecialchars( str_replace( $path, '', $_SERVER[ 'REQUEST_URI' ] ) );
-		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
-		if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' || $blogname == 'files' ) {
+		$blogname = htmlspecialchars( substr( $_SERVER[ 'REQUEST_URI' ], strlen( $path ) ) );
+		if( strpos( $blogname, '/' ) )
+			$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
+		if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' || $blogname == 'files' || $blogname == 'feed' ) {
 			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
 		} else {
 			$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '{$path}{$blogname}/'");
@@ -50,6 +71,8 @@ if( defined( "WP_INSTALLING" ) == false ) {
 		$site_id = 1;
 
 	$current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = '$site_id' AND meta_key = 'site_name'" );
+	if( $current_site->site_name == null )
+		$current_site->site_name = ucfirst( $current_site->domain );
 }
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
