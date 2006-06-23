@@ -73,7 +73,7 @@ if (!defined('CASE_UPPER')) {
  * @link        http://php.net/function.array_change_key_case
  * @author      Stephan Schmidt <schst@php.net>
  * @author      Aidan Lister <aidan@php.net>
- * @version     $Revision: 3862 $
+ * @version     $Revision: 3901 $
  * @since       PHP 4.2.0
  * @require     PHP 4.0.0 (user_error)
  */
@@ -111,4 +111,11 @@ if(!function_exists('http_build_query')) {
        return implode($separator, $res);
    }
 }
+
+if ( !function_exists('_') ) {
+	function _($string) {
+		return $string;
+	}
+}
+
 ?>
