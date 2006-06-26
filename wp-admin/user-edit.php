@@ -50,8 +50,6 @@ else
 	if( isset( $errors ) == false ) $errors = edit_user($user_id);
 
 if( !is_wp_error( $errors ) ) {
-	if( is_site_admin() )
-		update_usermeta( $user_id, 'invites_left', intval( $_POST[ 'invites_left' ] ) );
 	$redirect = "user-edit.php?user_id=$user_id&updated=true";
 	$redirect = add_query_arg('wp_http_referer', urlencode($wp_http_referer), $redirect);
 	header("Location: $redirect");
@@ -105,13 +103,6 @@ if ( !current_user_can('edit_user', $user_id) )
 <p><label><?php _e('Username: (no editing)'); ?><br />
 <input type="text" name="user_login" value="<?php echo $profileuser->user_login; ?>" disabled="disabled" />
 </label></p>
-<?php if( is_site_admin() ) {?>
-	<p><label><?php _e('Invites Left:') ?><br />
-	<input type="text" name="invites_left" id="invites_left" value="<?php echo get_usermeta( $user_id, 'invites_left' ) ?>" /></label></p>
-	<?php
-} // is_site_admin
-?>
-
 <p><label><?php _e('Role:') ?><br />
 <?php
 // print_r($profileuser);
@@ -238,40 +229,6 @@ if ( $show_password_fields ) :
 </form>
 </div>
 <?php
-$invites_list = get_usermeta( intval( $_GET[ 'user_id' ] ), "invites_list" );
-if( $invites_list != '' )
-{
-	if( strlen( $invites_list ) > 3 ) {
-		?><div class="wrap">
-		<h3>Invited Users</h3>
-		<table><?php
-		$invites = explode( " ", $invites_list );
-		reset( $invites );
-		while( list( $key, $val ) = each( $invites ) ) { 
-			if( $val != "" ) {
-				$id = $wpdb->get_row( "SELECT ID FROM {$wpdb->users} WHERE user_email = '$val'" );
-				if( $id ) {
-					$invited_user_id = $id->ID;
-				} else {
-					$invited_user_id = $wpdb->get_var( "SELECT user_id FROM {$wpdb->usermeta} WHERE meta_key = 'invite_hash' AND meta_value = '" . md5( $val ) . "'" );
-				}
-
-				if( $invited_user_id != 0 ) {
-					$invited_user_blog = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$invited_user_id' AND meta_key='source_domain'" );
-				} else {
-					$invited_user_blog = '';
-				}
-				$invited_user_login = $wpdb->get_var( "SELECT user_login FROM $wpdb->users WHERE ID = '$invited_user_id'" );
-				if( $invited_user_blog != '' ) {
-					print "<tr><td>$val</td><td>$invited_user_login</td><td><a href='http://{$invited_user_blog}'>http://$invited_user_blog</a></td></tr>";
-				} else {
-					print "<tr><td>$val</td><td>$invited_user_login</td><td><em>Invite Not Used Yet</em></td></tr>";
-				}
-			}
-		}
-		?></table></div><?php
-	}
-}
 }
 break;
 }

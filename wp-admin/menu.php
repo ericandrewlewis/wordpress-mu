@@ -35,8 +35,6 @@ $submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), "<span 
 //$submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
 $submenu['edit.php'][35] = array(__('Import'), 'import', 'import.php');
 $submenu['edit.php'][40] = array(__('Export'), 'import', 'export.php');
-//$invites_left = get_usermeta( $user_ID, 'invites_left' );
-//$submenu['edit.php'][45] = array(sprintf(__("Invites (%s)"), $invites_left ), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
 
 $submenu['link-manager.php'][5] = array(__('Manage Bookmarks'), 'manage_links', 'link-manager.php');
 $submenu['link-manager.php'][10] = array(__('Add Bookmark'), 'manage_links', 'link-add.php');
