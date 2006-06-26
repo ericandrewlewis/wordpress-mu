@@ -79,8 +79,7 @@ addLoadEvent(focusit);
 <div id="searchresults" class="autocomplete"></div>
 <?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
-<ul id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></ul>
-</div>
+<ul id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></ul></div>
 </fieldset>
 
 <fieldset id="commentstatusdiv" class="dbx-box">
@@ -170,10 +169,10 @@ if ('publish' != $post->post_status || 0 == $post_ID) {
 <input name="referredby" type="hidden" id="referredby" value="<?php 
 if ( !empty($_REQUEST['popupurl']) )
 	echo wp_specialchars($_REQUEST['popupurl']);
-else if ( url_to_postid($_SERVER['HTTP_REFERER']) == $post_ID )
+else if ( url_to_postid(wp_get_referer()) == $post_ID )
 	echo 'redo';
 else
-	echo wp_specialchars($_SERVER['HTTP_REFERER']);
+	echo wp_specialchars(wp_get_referer());
 ?>" /></p>
 
 <?php do_action('edit_form_advanced'); ?>
@@ -227,7 +226,7 @@ list_meta($metadata);
 </div>
 
 <?php if ('edit' == $action) : $delete_nonce = wp_create_nonce( 'delete-post_' . $post_ID ); ?>
-<input name="deletepost" class="button" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this post') ?>" <?php echo "onclick=\"if ( confirm('" . sprintf(__("You are about to delete this post \'%s\'\\n  \'Cancel\' to stop, \'OK\' to delete."), addslashes($post->post_title) ) . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true;}return false;\""; ?> />
+<input name="deletepost" class="button" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this post') ?>" <?php echo "onclick=\"if ( confirm('" . sprintf(__("You are about to delete this post \'%s\'\\n  \'Cancel\' to stop, \'OK\' to delete."), js_escape($post->post_title) ) . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true;}return false;\""; ?> />
 <?php endif; ?>
 
 </div>
