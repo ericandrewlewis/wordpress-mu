@@ -59,7 +59,7 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	$blogname = htmlspecialchars( substr( $_SERVER[ 'REQUEST_URI' ], strlen( $path ) ) );
 	if( strpos( $blogname, '/' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
-	if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' || $blogname == 'files' || $blogname == 'feed' ) {
+	if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' || $blogname == 'files' || $blogname == 'feed' || is_file( $blogname ) ) {
 		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
 	} else {
 		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '{$path}{$blogname}/'");
