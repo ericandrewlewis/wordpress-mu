@@ -780,25 +780,25 @@ function wpmu_get_cache( $key, $path ) {
 // wpmu admin functions
 
 function wpmu_admin_do_redirect( $url = '' ) {
+	$url = wpmu_admin_redirect_add_updated_param( $url );
 	if( isset( $_GET[ 'redirect' ] ) ) {
 		if( substr( $_GET[ 'redirect' ], 0, 2 ) == 's_' ) {
-			header( "Location: {$url}?updated=true&action=blogs&s=". wp_specialchars( substr( $_GET[ 'redirect' ], 2 ) ) );
-			die();
+			$url .= "&action=blogs&s=". wp_specialchars( substr( $_GET[ 'redirect' ], 2 ) );
 		}
 	} elseif( isset( $_POST[ 'redirect' ] ) ) {
-		$url = $_POST[ 'redirect' ];
-		if( strpos( $url, 'updated=true' ) === false ) {
-			if( strpos( $url, '?' ) === true ) {
-				$url .=  '&updated=true';
-			} else {
-				$url .=  '?updated=true';
-			}
+		$url = wpmu_admin_redirect_add_updated_param( $_POST[ 'redirect' ] );
+	}
+	header( "Location: {$url}" );
+	die();
+}
+function wpmu_admin_redirect_add_updated_param( $url = '' ) {
+	if( strpos( $url, 'updated=true' ) === false ) {
+		if( strpos( $url, '?' ) === false ) {
+			return $url . '?updated=true';
+		} else {
+			return $url . '&updated=true';
 		}
-		header( "Location: {$url}" );
-		die();
-	} else {
-		header( "Location: {$url}?updated=true" );
-		die();
+		return $url;
 	}
 }
 

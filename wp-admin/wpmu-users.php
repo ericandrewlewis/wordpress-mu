@@ -9,6 +9,30 @@ switch( $_GET[ 'action' ] ) {
 		wpmu_admin_do_redirect( "wpmu-users.php" );
 		die();
 	break;
+	case "allusers":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+	if( is_array( $_POST[ 'allusers' ] ) ) {
+		while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
+			if( $val != '' && $val != '0' && $val != '1' ) {
+				$user_details = get_userdata( $val );
+				if( $_POST[ 'userfunction' ] == 'delete' ) {
+					wpmu_delete_user($val);
+				} elseif( $_POST[ 'userfunction' ] == 'spam' ) {
+					$blogs = get_blogs_of_user( $val );
+					if( is_array( $blogs ) ) {
+						while( list( $key, $details ) = each( $blogs ) ) { 
+							update_blog_status( $details->userblog_id, "spam", '1' );
+							do_action( "make_spam_blog", $details->userblog_id );
+						}
+					}
+				}
+			}
+		}
+	}
+	wpmu_admin_do_redirect( "wpmu-users.php" );
+	break;
 }
 
 $title = __('WPMU Admin');
@@ -74,30 +98,6 @@ switch( $_GET[ 'action' ] ) {
       <input type="submit" name="Submit" value="<?php _e('Update User') ?> &raquo;" />
     </p>
     <?php
-    break;
-    case "allusers":
-	if( is_site_admin() == false ) {
-		die( __('<p>You do not have permission to access this page.</p>') );
-	}
-    	if( is_array( $_POST[ 'allusers' ] ) ) {
-		while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
-			if( $val != '' && $val != '0' && $val != '1' ) {
-				$user_details = get_userdata( $val );
-				if( $_POST[ 'userfunction' ] == 'delete' ) {
-					wpmu_delete_user($val);
-				} elseif( $_POST[ 'userfunction' ] == 'spam' ) {
-					$blogs = get_blogs_of_user( $val );
-					if( is_array( $blogs ) ) {
-						while( list( $key, $details ) = each( $blogs ) ) { 
-							update_blog_status( $details->userblog_id, "spam", '1' );
-							do_action( "make_spam_blog", $details->userblog_id );
-						}
-					}
-				}
-			}
-		}
-	}
-    header( "Location: wpmu-users.php?updated=true" );
     break;
     default:
 		if( isset( $_GET[ 'start' ] ) == false ) {

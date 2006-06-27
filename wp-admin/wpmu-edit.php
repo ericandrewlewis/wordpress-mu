@@ -30,7 +30,7 @@ switch( $_GET[ 'action' ] ) {
 		$site_admins = explode( ' ', $_POST['site_admins'] );
 		if ( is_array( $site_admins ) )
 			update_site_option( 'site_admins' , $site_admins );
-		header( "Location: wpmu-options.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-options.php" );
 		exit;
 	break;
 	case "searchcategories":
@@ -74,7 +74,7 @@ switch( $_GET[ 'action' ] ) {
 		update_site_option( "dashboardfeed2", $_POST[ 'dashboardfeed2' ] );
 		update_site_option( "dashboardfeed1name", $_POST[ 'dashboardfeed1name' ] );
 		update_site_option( "dashboardfeed2name", $_POST[ 'dashboardfeed2name' ] );
-		header( "Location: wpmu-feeds.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-feeds.php" );
 	break;
 	case "updateblog":
 		if( is_site_admin() == false ) {
@@ -142,7 +142,7 @@ switch( $_GET[ 'action' ] ) {
 					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpmuBaseTablePrefix . $id . "_capabilities', 'a:1:{s:" . strlen( $_POST[ 'new_role' ] ) . ":\"" . $_POST[ 'new_role' ] . "\";b:1;}')" );
 			}
 		}
-		header( "Location: wpmu-blogs.php?action=editblog&id=".$id."&updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php?action=editblog&id=".$id );
 	break;
 	case "deleteblog":
 		if( is_site_admin() == false ) {
@@ -172,7 +172,7 @@ switch( $_GET[ 'action' ] ) {
 		if( isset( $_POST[ 'redirect' ] ) ) {
 			wpmu_admin_do_redirect( $_POST[ 'redirect' ] );
 		} else {
-			header( "Location: wpmu-blogs.php?updated=true" );
+			wpmu_admin_do_redirect( "wpmu-blogs.php" );
 		}
 	break;
 	case "activateblog":
@@ -180,7 +180,7 @@ switch( $_GET[ 'action' ] ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
 		update_archived( $_GET[ 'id' ], '0' );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "deactivateblog":
 		if( is_site_admin() == false ) {
@@ -188,14 +188,14 @@ switch( $_GET[ 'action' ] ) {
 		}
 		do_action( "deactivate_blog", $_GET[ 'id' ] );
 		update_archived( $_GET[ 'id' ], '1' );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "unspamblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
 		update_blog_status( $_GET[ 'id' ], "spam", '0' );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "spamblog":
 		if( is_site_admin() == false ) {
@@ -203,17 +203,17 @@ switch( $_GET[ 'action' ] ) {
 		}
 		do_action( "make_spam_blog", $_GET[ 'id' ] );
 		update_blog_status( $_GET[ 'id' ], "spam", '1' );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "mature":
 		update_blog_status( $_GET[ 'id' ], 'mature', '1' );
 		do_action( 'mature_blog', $_GET[ 'id' ] );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "unmature":
 		update_blog_status( $_GET[ 'id' ], 'mature', '0' );
 		do_action( 'unmature_blog', $_GET[ 'id' ] );
-		header( "Location: wpmu-blogs.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
     	case "updateuser":
 		if( is_site_admin() == false ) {
@@ -238,7 +238,7 @@ switch( $_GET[ 'action' ] ) {
 				$wpdb->query( $query );
 			}
 		}
-		header( "Location: wpmu-users.php?action=edit&id=".$id."&updated=true" );
+		wpmu_admin_do_redirect( "wpmu-users.php?action=edit&id=".$id );
 	break;
     	case "updatethemes":
 		if( is_site_admin() == false ) {
@@ -254,10 +254,10 @@ switch( $_GET[ 'action' ] ) {
 			}
 			update_site_option( 'allowed_themes', $allowed_themes );
 		}
-		header( "Location: wpmu-themes.php?updated=true" );
+		wpmu_admin_do_redirect( "wpmu-themes.php" );
 	break;
 	default:
-		header( "Location: wpmu-admin.php" );
+		wpmu_admin_do_redirect( "wpmu-admin.php" );
 	break;
 }
 ?>

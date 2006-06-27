@@ -412,7 +412,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'blogname':
 		?>
-		<td valign='top'><label for='<?php echo $blog[ 'blog_id' ] ?>'><?php echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ) ?></label>
+		<td valign='top'><label for='<?php echo $blog[ 'blog_id' ] ?>'><?php if( constant( "VHOST" ) == 'yes' ) { echo str_replace( '.' . $current_site->domain, '', $blog[ 'domain' ] ); } else { echo $blog[ 'path' ]; } ?></label>
 		</td>
 		<?php
 		break;
