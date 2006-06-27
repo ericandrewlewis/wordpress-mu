@@ -332,7 +332,7 @@ switch ($_POST['stage']) {
 		if ( is_user_logged_in() )
 			signup_another_blog($blog_id);
 		else
-			signup_user();
+			signup_user( $blog_id );
 
 		if ($blog_id) {
 ?><p><em>The blog you were looking for, <strong><?php echo $blog_id ?>.<?php echo $current_site->domain ?></strong> doesn't exist but you can create it now!</em></p><?php

@@ -53,12 +53,17 @@ if( isset( $current_site ) == false ) {
 
 if( constant( 'VHOST' ) == 'yes' ) {
 	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");
-	if( $current_blog != null )
+	if( $current_blog != null ) {
 		$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='{$current_blog->site_id}'");
+	} else {
+		$blogname = substr( $domain, 0, strpos( $domain, '.' ) );
+	}
 } else {
 	$blogname = htmlspecialchars( substr( $_SERVER[ 'REQUEST_URI' ], strlen( $path ) ) );
 	if( strpos( $blogname, '/' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
+	if( strpos( $blogname, '?' ) )
+		$blogname = substr( $blogname, 0, strpos( $blogname, '?' ) );
 	if( $blogname == '' || $blogname == 'blog' || $blogname == 'wp-admin' || $blogname == 'files' || $blogname == 'feed' || is_file( $blogname ) ) {
 		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
 	} else {
@@ -67,6 +72,10 @@ if( constant( 'VHOST' ) == 'yes' ) {
 }
 
 if( defined( "WP_INSTALLING" ) == false ) {
+	if( $current_site && $current_blog == null ) {
+		header( "Location: http://{$current_site->domain}{$current_site->path}wp-signup.php?new=" . urlencode( $blogname ) );
+		die();
+	}
 	if( $current_blog == false || $current_site == false )
 		is_installed();
 }
