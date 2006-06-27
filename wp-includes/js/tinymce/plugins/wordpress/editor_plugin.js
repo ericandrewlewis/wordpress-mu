@@ -379,22 +379,3 @@ tinyMCE.execCommand = function (command, user_interface, value) {
 	}
 	return re;
 };
-
-tinyMCE.orgFixGeckoBaseHREFBug = tinyMCE.fixGeckoBaseHREFBug;
-tinyMCE.fixGeckoBaseHREFBug = function(m, e, h) {
-	if ( tinyMCE.isGecko && m == 1 )
-		h = h.replace(new RegExp('<((a|img|select|area|iframe|base|input|script|embed|object|link)\\s([^>]*\\s)?)(src|href)\\s*=', 'gi'), '<$1 x$4=');
-	else
-		h = tinyMCE.orgFixGeckoBaseHREFBug(m, e, h);
-
-	return h;
-};
-
-tinyMCE.orgStoreAwayURLs = tinyMCE.storeAwayURLs;
-tinyMCE.storeAwayURLs = function(s) {
-		// Remove all mce_src, mce_href and replace them with new ones
-		s = s.replace(new RegExp('mce_(href|src)\\s*=\\s*\"[^ >\"]*\"', 'gi'), '');
-		s = s.replace(new RegExp('<((a|img|select|area|iframe|base|input|script|embed|object|link)\\s([^>]*\\s)?)(src|href)\\s*=\\s*"([^"]*)"', 'gi'), '<$1 $4="$5" mce_$4="$5"');
-
-		return s;
-};

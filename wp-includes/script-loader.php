@@ -15,8 +15,8 @@ class WP_Scripts {
 		$this->add( 'sack', '/wp-includes/js/tw-sack.js', false, '1.6.1' );
 		$this->add( 'quicktags', '/wp-includes/js/quicktags.js', false, '3517' );
 		$this->add( 'colorpicker', '/wp-includes/js/colorpicker.js', false, '3517' );
-		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '04162006' );
-		$this->add( 'wp_tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('tiny_mce'), '04162006' );
+		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '06262006a' );
+		$this->add( 'wp_tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('tiny_mce'), '06262006a' );
 		if ( is_admin() ) {
 			$this->add( 'dbx-admin-key', '/wp-admin/dbx-admin-key-js.php', array('dbx'), '3651' );
 			$this->add( 'listman', '/wp-admin/list-manipulation-js.php', array('sack', 'fat'), '3850' ); // Make changeset # the correct one
@@ -62,7 +62,7 @@ class WP_Scripts {
 			if ( !in_array($handle, $this->printed) && isset($this->scripts[$handle]) ) {
 				$ver = $this->scripts[$handle]->ver ? $this->scripts[$handle]->ver : $wp_db_version;
 				if ( isset($this->args[$handle]) )
-					$ver .= '&' . $this->args[$handle];
+					$ver .= '&amp;' . $this->args[$handle];
 				$src = 0 === strpos($this->scripts[$handle]->src, 'http://') ? $this->scripts[$handle]->src : get_settings( 'siteurl' ) . $this->scripts[$handle]->src;
 				echo "<script type='text/javascript' src='$src?ver=$ver'></script>\n";
 				$this->printed[] = $handle;

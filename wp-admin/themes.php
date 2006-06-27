@@ -1,35 +1,6 @@
 <?php
 require_once('admin.php');
 
-if ( isset($_GET['action']) ) {
-	check_admin_referer('switch-theme_' . $_GET['template']);
-
-	if ('activate' == $_GET['action']) {
-		if ( isset($_GET['template']) )
-			update_option('template', $_GET['template']);
-
-		if ( isset($_GET['stylesheet']) )
-			update_option('stylesheet', $_GET['stylesheet']);
-
-		do_action('switch_theme', get_current_theme());
-
-		header('Location: themes.php?activated=true');
-		exit;
-	}
-}
-
-$title = __('Manage Themes');
-$parent_file = 'themes.php';
-require_once('admin-header.php');
-?>
-
-<?php if ( ! validate_current_theme() ) : ?>
-<div id="message1" class="updated fade"><p><?php _e('The active theme is broken.  Reverting to the default theme.'); ?></p></div>
-<?php elseif ( isset($_GET['activated']) ) : ?>
-<div id="message2" class="updated fade"><p><?php printf(__('New theme activated. <a href="%s">View site &raquo;</a>'), get_bloginfo('home') . '/'); ?></p></div>
-<?php endif; ?>
-
-<?php
 $themes = get_themes();
 $ct = current_theme_info();
 $allowed_themes = get_site_option( "allowed_themes" );
@@ -51,7 +22,46 @@ while( list( $key, $val ) = each( $themes ) ) {
     }
 }
 reset( $themes );
+
+if ( isset($_GET['action']) ) {
+	check_admin_referer('switch-theme_' . $_GET['template']);
+
+	if ('activate' == $_GET['action']) {
+		$found = false;
+		while( list( $key, $details ) = each( $themes ) ) { 
+			if( $details[ 'Template' ] == $_GET['template'] && $details[ 'Stylesheet' ] == $_GET['stylesheet'] ) {
+				$found = true;
+				break;
+			}
+		}
+		if( $found == true ) {
+			if ( isset($_GET['template']) )
+				update_option('template', $_GET['template']);
+
+			if ( isset($_GET['stylesheet']) )
+				update_option('stylesheet', $_GET['stylesheet']);
+
+			do_action('switch_theme', get_current_theme());
+
+			wp_redirect('themes.php?activated=true');
+		} else {
+			wp_redirect('themes.php');
+		}
+		exit;
+	}
+}
+
+$title = __('Manage Themes');
+$parent_file = 'themes.php';
+require_once('admin-header.php');
 ?>
+
+<?php if ( ! validate_current_theme() ) : ?>
+<div id="message1" class="updated fade"><p><?php _e('The active theme is broken.  Reverting to the default theme.'); ?></p></div>
+<?php elseif ( isset($_GET['activated']) ) : ?>
+<div id="message2" class="updated fade"><p><?php printf(__('New theme activated. <a href="%s">View site &raquo;</a>'), get_bloginfo('home') . '/'); ?></p></div>
+<?php endif; ?>
+
 
 <div class="wrap">
 <h2><?php _e('Current Theme'); ?></h2>

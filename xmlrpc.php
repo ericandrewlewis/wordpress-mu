@@ -1228,16 +1228,16 @@ class wp_xmlrpc_server extends IXR_Server {
 		$pagelinkedfrom = $wpdb->escape( $pagelinkedfrom );
 		$original_title = $title;
 
-		$comment_post_ID = $post_ID;
-		$comment_author = $title;
+		$comment_post_ID = (int) $post_ID;
+		$comment_author = $this->escape($title);
 		$comment_author_url = $pagelinkedfrom;
-		$comment_content = $context;
+		$comment_content = $this->escape($context);
 		$comment_type = 'pingback';
 
 		$commentdata = compact('comment_post_ID', 'comment_author', 'comment_author_url', 'comment_content', 'comment_type');
 
-		wp_new_comment($commentdata);
-		do_action('pingback_post', $wpdb->insert_id);
+		$comment_ID = wp_new_comment($commentdata);
+		do_action('pingback_post', $comment_ID);
 
 		return "Pingback from $pagelinkedfrom to $pagelinkedto registered. Keep the web talking! :-)";
 	}

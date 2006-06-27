@@ -52,7 +52,7 @@ case 'post':
 	if ( isset($_POST['save']) )
 		$location = "page.php?action=edit&post=$page_ID";
 
-	header("Location: $location");
+	wp_redirect($location);
 	exit();
 	break;
 
@@ -120,7 +120,7 @@ case 'editpost':
 	} else {
 		$location = 'page-new.php';
 	}
-	header ('Location: ' . $location); // Send user on their way while we keep working
+	wp_redirect($location); // Send user on their way while we keep working
 
 	exit();
 	break;
@@ -146,12 +146,12 @@ case 'delete':
 	if (strstr($sendback, 'page.php')) $sendback = get_settings('siteurl') .'/wp-admin/page.php';
 	elseif (strstr($sendback, 'attachments.php')) $sendback = get_settings('siteurl') .'/wp-admin/attachments.php';
 	$sendback = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $sendback);
-	header ('Location: ' . $sendback);
+	wp_redirect($sendback);
 	exit();
 	break;
 
 default:
-	header('Location: edit-pages.php');
+	wp_redirect('edit-pages.php');
 	exit();
 	break;
 } // end switch

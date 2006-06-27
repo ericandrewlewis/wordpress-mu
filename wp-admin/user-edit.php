@@ -25,11 +25,9 @@ for ($i=0; $i<count($wpvarstoreset); $i += 1) {
 }
 
 $wp_http_referer = remove_query_arg(array('update', 'delete_count'), stripslashes($wp_http_referer));
-$errors = array();
-
 // Only allow site admins to edit every user.
-if( is_site_admin() == false ) 
-	if( $user_id != $current_user->ID ) $errors = new WP_Error('head', __('You do not have permission to edit this user.'));
+if ( !is_site_admin() && ($user_id != $current_user->ID) )
+	$errors = new WP_Error('head', __('You do not have permission to edit this user.'));
 
 switch ($action) {
 case 'switchposts':
@@ -46,13 +44,14 @@ check_admin_referer('update-user_' . $user_id);
 
 if ( !current_user_can('edit_user', $user_id) )
 	$errors = new WP_Error('head', __('You do not have permission to edit this user.'));
-else
-	if( isset( $errors ) == false ) $errors = edit_user($user_id);
+
+if ( !isset($errors) )
+	$errors = edit_user($user_id);
 
 if( !is_wp_error( $errors ) ) {
 	$redirect = "user-edit.php?user_id=$user_id&updated=true";
 	$redirect = add_query_arg('wp_http_referer', urlencode($wp_http_referer), $redirect);
-	header("Location: $redirect");
+	wp_redirect($redirect);
 	exit;
 }
 

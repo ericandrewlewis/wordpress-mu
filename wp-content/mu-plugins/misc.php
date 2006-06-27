@@ -1,5 +1,10 @@
 <?php
 
+function kill_proxy_check( $option ) {
+	return 0;
+}
+add_filter('option_open_proxy_check', 'kill_proxy_check');
+
 function graceful_fail( $message ) {
 	die('
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
