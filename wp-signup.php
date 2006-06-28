@@ -317,6 +317,8 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_emai
 
 // Main
 $blog_id = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
+if( $_POST['blog_public'] != 1 )
+	$_POST['blog_public'] = 0;
 	
 switch ($_POST['stage']) {
 	case 'validate-user-signup' :

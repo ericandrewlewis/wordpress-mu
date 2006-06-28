@@ -1155,8 +1155,10 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	restore_current_blog();
 
-	if ( is_array($meta) ) foreach ($meta as $key => $value)
+	if ( is_array($meta) ) foreach ($meta as $key => $value) {
+		update_blog_status( $blog_id, $key, $value );
 		update_blog_option( $blog_id, $key, $value );
+	}
 
 	do_action( 'wpmu_new_blog', $blog_id, $user_id );
 
