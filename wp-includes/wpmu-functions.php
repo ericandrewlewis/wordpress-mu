@@ -373,9 +373,11 @@ function switch_to_blog( $new_blog ) {
 	//$wp_object_cache->cache_enabled = false;
 	wp_cache_flush();
 	wp_cache_close();
-	$wpdb->hide_errors();
-	$wp_roles->_init();
-	$wpdb->show_errors();
+	if( is_object( $wp_roles ) ) {
+		$wpdb->hide_errors();
+		$wp_roles->_init();
+		$wpdb->show_errors();
+	}
 	wp_cache_init();
 
 	do_action('switch_blog', $blog_id, $tmpoldblogdetails[ 'blog_id' ]);
