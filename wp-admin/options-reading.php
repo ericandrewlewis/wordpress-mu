@@ -87,7 +87,7 @@ include('admin-header.php');
 </table> 
 <p class="submit"> 
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="posts_per_page,what_to_show,posts_per_rss,rss_use_excerpt,blog_charset,gzipcompression,show_on_front,page_on_front,page_for_posts" /> 
+<input type="hidden" name="page_options" value="posts_per_page,what_to_show,posts_per_rss,rss_use_excerpt,blog_charset,show_on_front,page_on_front,page_for_posts" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /> 
 </p> 
 </form> 

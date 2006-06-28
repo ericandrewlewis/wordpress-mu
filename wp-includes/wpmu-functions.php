@@ -84,7 +84,11 @@ function get_blogaddress_by_id( $blog_id ) {
 
 	$bloginfo = get_blog_details( $blog_id, false ); // only get bare details!
 
-	return get_real_siteurl( $bloginfo->domain, $bloginfo->path );
+	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
+		return "http://" . $bloginfo->domain . $bloginfo->path;
+	} else {
+		return get_blogaddress_by_domain($bloginfo->domain, $bloginfo->path);
+	}
 }
 
 function get_blogaddress_by_name( $blogname ) {
@@ -1342,14 +1346,6 @@ SITE_NAME" );
 		$current_site->site_name = "WordPress MU";
 	$subject = sprintf(__('New %s User: %s'), $current_site->site_name, $user->user_login);
 	wp_mail($user->user_email, $subject, $message, $message_headers);	
-}
-
-function get_real_siteurl( $domain, $path ) {
-	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
-		return "http://" . $domain . $path;
-	} else {
-		return get_blogaddress_by_domain($domain, $path);
-	}
 }
 
 ?>
