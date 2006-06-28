@@ -414,7 +414,11 @@ function restore_current_blog() {
 	unset( $tmpoldblogdetails );
 	wp_cache_flush();
 	wp_cache_close();
-	$wp_roles->_init();
+	if( is_object( $wp_roles ) ) {
+		$wpdb->hide_errors();
+		$wp_roles->_init();
+		$wpdb->show_errors();
+	}
 	wp_cache_init();
 
 	do_action('switch_blog', $blog_id, $prev_blog_id);
