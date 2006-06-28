@@ -77,7 +77,6 @@ addLoadEvent(focusit);
 <p id="jaxcat"></p>
 <?php if ( current_user_can('manage_categories') ) : ?>
 <div id="searchresults" class="autocomplete"></div>
-<br clear='all' />
 <?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
 <ul id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></ul></div>

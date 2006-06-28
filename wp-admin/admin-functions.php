@@ -1996,7 +1996,8 @@ function autocomplete_css() {
 }
 function autocomplete_textbox( $url, $search_field, $results_field ) {
 	?>
-<script src="<?php echo get_option( "siteurl" ) ?>/wp-includes/js/scriptaculous/scriptaculous.js" type="text/javascript"></script>
+<script type="text/javascript" src="<?php echo get_option( "siteurl" ) ?>/wp-includes/js/scriptaculous/prototype.js"></script>
+<script type="text/javascript" src="<?php echo get_option( "siteurl" ) ?>/wp-includes/js/scriptaculous/scriptaculous.js"></script>
 <script type="text/javascript">
 function load_autocompleter() {
 	new Ajax.Autocompleter("<?php echo $search_field ?>", "<?php echo $results_field ?>", "<?php echo $url ?>", {paramName: "search", minChars: 3});
