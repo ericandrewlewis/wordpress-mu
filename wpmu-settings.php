@@ -131,27 +131,35 @@ if( $current_blog->spam == '1' ) {
 }
 
 function is_installed() {
-    global $wpdb, $domain, $path;
+	global $wpdb, $domain, $path;
 	$base = stripslashes( $base );
-    if( defined( "WP_INSTALLING" ) == false ) {
-	    $check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
-	    if( $check == false ) {
-		    $msg = '<strong>Database Tables Missing.</strong><br /> The table <em>' . DB_NAME . '::' . $wpdb->site . '</em> is missing. Delete the .htaccess file and run the installer again!<br />';
-	    } else {
-		    $msg = '<strong>Could Not Find Blog!</strong><br />';
-		    $msg .= "Searched for <em>" . $domain . $path . "</em> in " . DB_NAME . "::" . $wpdb->blogs . " table. Is that right?<br />";
-	    }
-	    $msg .= "Please check that your database contains the following tables:<ul>
-		    <li> $wpdb->blogs </li>
-		    <li> $wpdb->users </li>
-		    <li> $wpdb->usermeta </li>
-		    <li> $wpdb->site </li>
-		    <li> $wpdb->sitemeta </li>
-		    <li> $wpdb->sitecategories </li>
-		    </ul>";
-	    $msg .= "If you suspect a problem please report it to <a href='http://mu.wordpress.org/forums/'>support forums</a>!";
-	    die( "<h1>Fatal Error</h1> " . $msg );
-    }
+	if( defined( "WP_INSTALLING" ) == false ) {
+		$check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+		if( $check == false ) {
+			$msg = '<strong>Database Tables Missing.</strong><br /> The table <em>' . DB_NAME . '::' . $wpdb->site . '</em> is missing. Delete the .htaccess file and run the installer again!<br />';
+		} else {
+			$msg = '<strong>Could Not Find Blog!</strong><br />';
+			$msg .= "Searched for <em>" . $domain . $path . "</em> in " . DB_NAME . "::" . $wpdb->blogs . " table. Is that right?<br />";
+		}
+		$msg .= "<br />\n<h1>What do I do now?</h1>";
+		$msg .= "Read the <a target='_blank' href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>bug report</a> page. Some of the guidelines there may help you figure out what went wrong.<br />";
+		$msg .= "If you're still stuck with this message, then check that your database contains the following tables:<ul>
+			<li> $wpdb->blogs </li>
+			<li> $wpdb->users </li>
+			<li> $wpdb->usermeta </li>
+			<li> $wpdb->site </li>
+			<li> $wpdb->sitemeta </li>
+			<li> $wpdb->sitecategories </li>
+			</ul>";
+		$msg .= "If you suspect a problem please report it to <a href='http://mu.wordpress.org/forums/'>support forums</a> but follow the <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>guidelines</a>!<br /><br />";
+		if( is_file( 'release-info.txt' ) ) {
+			$msg .= 'Your bug report must include the following text: "';
+			$info = file( 'release-info.txt' );
+			$msg .= $info[ 4 ] . '"';
+		}
+
+		die( "<h1>Fatal Error</h1> " . $msg );
+	}
 }
 
 $table_prefix = $table_prefix . $blog_id . '_';
