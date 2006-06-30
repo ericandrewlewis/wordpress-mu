@@ -16,6 +16,8 @@ Unarchive into a web directory and call that directory through your
 browser and web server. Follow the instructions and links and all
 should work fine.
 
+If you're upgrading, skip to the end of this document.
+
 Apache
 ======
 Apache must be configured so that mod_rewrite works. Here are 
@@ -29,6 +31,24 @@ line
 "AllowOverride None"
 and change it to
 "AllowOverride FileInfo Options"
+
+3. In the <VirtualHost> section of the config file for your host there
+will be a line defining the hostname. You need to add the following 
+if you want virtual hosts to work properly:
+"ServerAlias *.domain.tld"
+Replace domain.tld with whatever your one is, and remove the quotes.
+
+
+DNS
+===
+If you want to host blogs of the form http://blog.domain.tld/ where 
+domain.tld is the domain name of your machine then you must add a 
+wildcard record to your DNS records.
+This usually means adding a "*" hostname record pointing at your 
+webserver in your DNS configuration tool.
+Matt has a more detailed explanation:
+http://photomatt.net/2003/10/10/wildcard-dns-and-sub-domains/
+
 
 PHP
 ===
@@ -80,8 +100,26 @@ register_globals = Off
 You'll have to restart Apache after you modify your php.ini for the 
 settings to be updated.
 
-Support Forum:
+
+UPGRADING
+=========
+Please see this page for instructions on upgrading your install:
+http://trac.mu.wordpress.org/wiki/UpgradingWpmu
+
+
+Support Forum and Bug Reports
+=============================
+Please read http://trac.mu.wordpress.org/wiki/DebuggingWpmu before
+asking any questions. Without all the information required there
+we'll just ask for it anyway or worse, your request will be ignored.
 
 http://mu.wordpress.org/forums/
+
+Trac is our bug tracking system. Again, please read the above link
+before submitting a bug report.
+http://trac.mu.wordpress.org/report/1
+
+You can login to both sites using your wordpress.org username and
+password.
 
 http://mu.wordpress.org/
