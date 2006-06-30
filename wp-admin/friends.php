@@ -16,6 +16,8 @@ if( is_array( $links ) ) {
 		// Create a new instance of the SimplePie object
 		$feed = new SimplePie();
 		$feed->cache_location = ABSPATH . 'wp-content/cache';
+		if( is_dir( ABSPATH . 'wp-content/cache' ) == false )
+			mkdir( ABSPATH . 'wp-content/cache', 0777 );
 
 		// Set these Configuration Options
 		$feed->bypass_image_hotlink();
