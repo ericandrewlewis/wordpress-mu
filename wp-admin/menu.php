@@ -22,10 +22,6 @@ else
 	$menu[35] = array(__('Profile'), 'read', 'profile.php');
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
 
-
-$submenu['index.php'][5] = array(__('Dashboard'), 'read', 'index.php');
-$submenu['index.php'][10] = array(__('Friends'), 'manage_links', 'friends.php');
-
 $submenu['post-new.php'][5] = array(__('Write Post'), 'edit_posts', 'post-new.php');
 $submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
 
