@@ -1,4 +1,9 @@
 <?php
+// don't ever call this file directly!
+if( strpos( $_SERVER["REQUEST_URI"], 'index-install.php' ) ) {
+	header( "Location: index.php" );
+	die();
+}
 define('WP_INSTALLING', true);
 
 function printheader() {
