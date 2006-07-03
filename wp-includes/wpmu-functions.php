@@ -35,7 +35,7 @@ function wpmu_checkAvailableSpace($action) {
 	global $wpblog, $blog_id;
 	
 	// Default space allowed is 10 MB 
-	$spaceAllowed = get_site_option("blog_upload_space" );
+	$spaceAllowed = get_site_option( "blog_upload_space" );
 	if( $spaceAllowed == false )
 		$spaceAllowed = 10;
 	
