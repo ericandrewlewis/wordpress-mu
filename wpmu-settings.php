@@ -65,7 +65,7 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	if( strpos( $blogname, '?' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '?' ) );
 	$blognames = array( 'blog', 'wp-admin', 'wp-includes', 'wp-content', 'files', 'feed' );
-	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) ) {
+	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) || is_blogname_page( $blogname ) ) {
 		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
 	} else {
 		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '{$path}{$blogname}/'");
@@ -79,6 +79,18 @@ if( defined( "WP_INSTALLING" ) == false ) {
 	}
 	if( $current_blog == false || $current_site == false )
 		is_installed();
+}
+
+function is_blogname_page( $blogname ) {
+	global $wpdb, $table_prefix;
+
+	// is the request for a page of the main blog? We need to cache this information somewhere to save a request
+	$pages = $wpdb->get_col( "SELECT post_name FROM {$table_prefix}1_posts WHERE post_type='page'" ); 
+	if( in_array( $blogname, $pages ) ) {
+		return true;
+	} else {
+		return false;
+	}
 }
 
 $blog_id = $current_blog->blog_id;
