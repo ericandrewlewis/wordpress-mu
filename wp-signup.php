@@ -150,7 +150,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	$blogs = get_blogs_of_user($current_user->ID);
 
 	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
-		echo "<li><a href='" . $blog->domain . $blog->path . "'>" . $blog->domain . $blog->path . "</a></li>";
+		echo "<li><a href='http://" . $blog->domain . $blog->path . "'>" . $blog->domain . $blog->path . "</a></li>";
 	}
 ?>
 </ul>
