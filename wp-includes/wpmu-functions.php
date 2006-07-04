@@ -290,13 +290,16 @@ function update_site_option( $key, $value ) {
 }
 
 function get_blog_option( $id, $key, $default='na' ) {
-	global $wpdb, $wpmuBaseTablePrefix, $blog_id;
+	global $wpdb, $wpmuBaseTablePrefix, $blog_id, $switched;
 
 	$current_blog_id = $blog_id;
 	$current_options_table = $wpdb->options;
 	$wpdb->options = $wpmuBaseTablePrefix . $id . "_options";
 	$blog_id = $id;
+	if ($id != $current_blog_id)
+		$switched = true;
 	$opt = get_option( $key );
+	$switched = false;
 	$blog_id = $current_blog_id;
 	$wpdb->options = $current_options_table;
 
