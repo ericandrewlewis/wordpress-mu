@@ -907,9 +907,8 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 		$errors->add('user_email', __("Sorry, that email address is already used!"));
 
 	// Has someone already signed up for this username?
-	// TODO: Check email too?
 	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE user_login = '$user_name'");
-	if ( ! empty($signup) ) {
+	if ( $signup != null ) {
 		$registered_at =  mysql2date('U', $signup->registered);
 		$now = current_time( 'timestamp', true );
 		$diff = $now - $registered_at;
@@ -917,7 +916,20 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 		if ( $diff > 172800 ) {
 			$wpdb->query("DELETE FROM $wpdb->signups WHERE user_login = '$user_name'");
 		} else {
-			$errors->add('user_name', __("That username is currently reserved but may be available in a couple days."));
+			$errors->add('user_name', __("That username is currently reserved but may be available in a couple of days."));
+		}
+	}
+
+	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE user_email = '$user_email'");
+	if ( $signup != null ) {
+		$registered_at =  mysql2date('U', $signup->registered);
+		$now = current_time( 'timestamp', true );
+		$diff = $now - $registered_at;
+		// If registered more than two days ago, cancel registration and let this signup go through.
+		if ( $diff > 172800 ) {
+			$wpdb->query("DELETE FROM $wpdb->signups WHERE user_email = '$user_email'");
+		} else {
+			$errors->add('user_email', __("That email address has already been used. Please check your inbox for an activation email. It will become available in a couple of days if you do nothing."));
 		}
 	}
 
