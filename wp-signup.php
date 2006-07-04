@@ -44,7 +44,7 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 	if( constant( "VHOST" ) == 'no' ) {
 		print '<span style="font-size: 20px">' . $current_site->domain . $current_site->path . '</span><input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: left; font-size: 20px;" /><br />';
 	} else {
-		print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 20px;" /><span style="font-size: 20px">' . $current_site->domain . $current_site->path . '</span><br />';
+		print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 20px;" /><span style="font-size: 20px">.' . $current_site->domain . $current_site->path . '</span><br />';
 	}
 	if ( !is_user_logged_in() ) {
 		print '(<strong>Your address will be ';
