@@ -201,9 +201,17 @@ function checkdirs() {
 }
 
 function step1() {
-    print "<h2>Installing WP&micro;</h2>";
-    print "<p>Please make sure <code>mod_rewrite</code> is installed as it will be activated at the end of this install.</p>
-	<p>If the <code>mod_rewrite</code> module is disabled ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.</p>";
+	print "<h2>Installing WP&micro;</h2>";
+	$mod_rewrite_msg = "<p>If the <code>mod_rewrite</code> module is disabled ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.</p>";
+    if( function_exists( "apache_get_modules" ) ) {
+	    $modules = apache_get_modules();
+		if( in_array( "mod_rewrite", $modules ) == false ) {
+			echo "<p><strong>Warning!</strong> It looks like mod_rewrite is not installed.</p>" . $mod_rewrite_msg;
+		}
+	} else {
+		?><p>Please make sure <code>mod_rewrite</code> is installed as it will be activated at the end of this install.</p><?php
+			echo $mod_rewrite_msg;
+    }
     if( checkdirs() == false ) {
 	return false;
     }
