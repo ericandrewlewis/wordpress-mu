@@ -4,14 +4,22 @@
 // Menu item name
 // The minimum level the user needs to access the item: between 0 and 10
 // The URL of the item's file
+$menu[0] = array(__('Dashboard'), 'read', 'index.php');
+
+if ( strstr($_SERVER['REQUEST_URI'], 'edit-pages.php') )
+	$menu[5] = array(__('Write'), 'edit_pages', 'page-new.php');
+else
+	$menu[5] = array(__('Write'), 'edit_posts', 'post-new.php');
+if ( strstr($_SERVER['REQUEST_URI'], 'page-new.php') )
+	$menu[10] = array(__('Manage'), 'edit_pages', 'edit-pages.php');
+else
+	$menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
+
 
 $menu_perms = get_site_option( "menu_items" );
 if( is_array( $menu_perms ) == false )
 	$menu_perms = array();
 
-$menu[0] = array(__('Dashboard'), 'read', 'index.php');
-$menu[5] = array(__('Write'), 'edit_posts', 'post-new.php');
-$menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
 $menu[20] = array(__('Bookmarks'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
 if( $menu_perms[ 'plugins' ] == 1 )
@@ -21,6 +29,7 @@ if ( current_user_can('edit_users') )
 else
 	$menu[35] = array(__('Profile'), 'read', 'profile.php');
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
+
 
 $submenu['post-new.php'][5] = array(__('Write Post'), 'edit_posts', 'post-new.php');
 $submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
@@ -117,7 +126,6 @@ if( is_site_admin() ) {
 	$menu[1] = array(__('Site Admin'), '10', 'wpmu-admin.php' );
 	$submenu[ 'wpmu-admin.php' ][5] = array( 'Blogs', '10', 'wpmu-blogs.php' );
 	$submenu[ 'wpmu-admin.php' ][10] = array( 'Users', '10', 'wpmu-users.php' );
-	$submenu[ 'wpmu-admin.php' ][15] = array( 'Feeds', '10', 'wpmu-feeds.php' );
 	$submenu[ 'wpmu-admin.php' ][20] = array( 'Themes', '10', 'wpmu-themes.php' );
 	$submenu[ 'wpmu-admin.php' ][25] = array( 'Options', '10', 'wpmu-options.php' );
 	$submenu[ 'wpmu-admin.php' ][30] = array( 'Upgrade', '10', 'wpmu-upgrade-site.php' );

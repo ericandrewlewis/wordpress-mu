@@ -5,21 +5,7 @@ require_once('admin.php');
 $title = __("Edit Themes");
 $parent_file = 'themes.php';
 
-$wpvarstoreset = array('action','redirect','profile','error','warning','a','file', 'theme');
-for ($i=0; $i<count($wpvarstoreset); $i += 1) {
-	$wpvar = $wpvarstoreset[$i];
-	if (!isset($$wpvar)) {
-		if (empty($_POST["$wpvar"])) {
-			if (empty($_GET["$wpvar"])) {
-				$$wpvar = '';
-			} else {
-				$$wpvar = $_GET["$wpvar"];
-			}
-		} else {
-			$$wpvar = $_POST["$wpvar"];
-		}
-	}
-}
+wp_reset_vars(array('action', 'redirect', 'profile', 'error', 'warning', 'a', 'file', 'theme'));
 
 $themes = get_themes();
 
@@ -51,7 +37,7 @@ case 'update':
 	check_admin_referer('edit-theme_' . $file . $theme);
 
 	if ( !current_user_can('edit_themes') )
-	die('<p>'.__('You have do not have sufficient permissions to edit templates for this blog.').'</p>');
+		die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
 
 	$newcontent = stripslashes($_POST['newcontent']);
 	$theme = urlencode($theme);
@@ -72,7 +58,7 @@ default:
 
 	require_once('admin-header.php');
 	if ( !current_user_can('edit_themes') )
-	die('<p>'.__('You have do not have sufficient permissions to edit themes for this blog.').'</p>');
+		die('<p>'.__('You do not have sufficient permissions to edit themes for this blog.').'</p>');
 
 	update_recently_edited($file);
 

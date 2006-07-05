@@ -55,7 +55,6 @@ foreach ($comments as $comment) {
 }
 ?>
 </ul>
-
 </div>
 <?php endif; ?>
 
@@ -112,6 +111,7 @@ if (0 < $numcats) $numcats = number_format($numcats);
 
 <?php do_action('activity_box_end'); ?>
 </div>
+
 <h3><?php _e('Welcome to WordPress MU'); ?></h3>
 
 <p><?php _e('Use these links to get started:'); ?></p>

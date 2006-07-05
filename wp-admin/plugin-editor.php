@@ -5,21 +5,7 @@ require_once('admin.php');
 $title = __("Edit Plugins");
 $parent_file = 'plugins.php';
 
-$wpvarstoreset = array('action','redirect','profile','error','warning','a','file');
-for ($i=0; $i<count($wpvarstoreset); $i += 1) {
-	$wpvar = $wpvarstoreset[$i];
-	if (!isset($$wpvar)) {
-		if (empty($_POST["$wpvar"])) {
-			if (empty($_GET["$wpvar"])) {
-				$$wpvar = '';
-			} else {
-				$$wpvar = $_GET["$wpvar"];
-			}
-		} else {
-			$$wpvar = $_POST["$wpvar"];
-		}
-	}
-}
+wp_reset_vars(array('action', 'redirect', 'profile', 'error', 'warning', 'a', 'file'));
 
 $plugins = get_plugins();
 $plugin_files = array_keys($plugins);
@@ -38,7 +24,7 @@ case 'update':
 	check_admin_referer('edit-plugin_' . $file);
 
 	if ( !current_user_can('edit_plugins') )
-	die('<p>'.__('You have do not have sufficient permissions to edit templates for this blog.').'</p>');
+		die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
 
 	$newcontent = stripslashes($_POST['newcontent']);
 	if (is_writeable($real_file)) {
@@ -58,7 +44,7 @@ default:
 
 	require_once('admin-header.php');
 	if ( !current_user_can('edit_plugins') )
-	die('<p>'.__('You have do not have sufficient permissions to edit plugins for this blog.').'</p>');
+		die('<p>'.__('You do not have sufficient permissions to edit plugins for this blog.').'</p>');
 
 	update_recently_edited("wp-content/plugins/$file");
 

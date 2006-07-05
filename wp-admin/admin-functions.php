@@ -413,7 +413,7 @@ function edit_user($user_id = 0) {
 		$pass2 = $_POST['pass2'];
 
 	if (isset ($_POST['role']) && current_user_can('edit_users')) {
-		if ($user_id != $current_user->id || $wp_roles->role_objects[$_POST['role']]->has_cap('edit_users'))
+		if($user_id != $current_user->id || $wp_roles->role_objects[$_POST['role']]->has_cap('edit_users'))
 			$user->role = $_POST['role'];
 	}
 
@@ -712,7 +712,7 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
     <th scope="row"><?php echo $post->ID; ?></th> 
     <td>
       <?php echo $pad; ?><?php the_title() ?>
-      <?php if ('private' == $post->post_status) _e(' - <strong>Private</strong>'); ?></td>
+      <?php if ('private' == $post->post_status) _e(' - <strong>Private</strong>'); ?>
     </td> 
     <td><?php the_author() ?></td>
     <td><?php echo mysql2date('Y-m-d g:i a', $post->post_modified); ?></td> 
@@ -1964,6 +1964,24 @@ function get_udims($width, $height) {
 		return array(128, (int) ($height / $width * 128));
 	else
 		return array((int) ($width / $height * 96), 96);
+}
+
+function wp_reset_vars($vars) {
+	for ($i=0; $i<count($vars); $i += 1) {
+		$var = $vars[$i];
+		global $$var;
+
+		if (!isset($$var)) {
+			if (empty($_POST["$var"])) {
+				if (empty($_GET["$var"]))
+					$$var = '';
+				else
+					$$var = $_GET["$var"];
+			} else {
+				$$var = $_POST["$var"];
+			}
+		}
+	}
 }
 
 function autocomplete_css() {

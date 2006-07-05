@@ -8,21 +8,7 @@ else
 	$parent_file = 'profile.php';
 $submenu_file = 'users.php';
 
-$wpvarstoreset = array('action', 'redirect', 'profile', 'user_id', 'wp_http_referer');
-for ($i=0; $i<count($wpvarstoreset); $i += 1) {
-	$wpvar = $wpvarstoreset[$i];
-	if (!isset($$wpvar)) {
-		if (empty($_POST["$wpvar"])) {
-			if (empty($_GET["$wpvar"])) {
-				$$wpvar = '';
-			} else {
-				$$wpvar = $_GET["$wpvar"];
-			}
-		} else {
-			$$wpvar = $_POST["$wpvar"];
-		}
-	}
-}
+wp_reset_vars(array('action', 'redirect', 'profile', 'user_id', 'wp_http_referer'));
 
 $wp_http_referer = remove_query_arg(array('update', 'delete_count'), stripslashes($wp_http_referer));
 // Only allow site admins to edit every user.
@@ -102,6 +88,7 @@ if ( !current_user_can('edit_user', $user_id) )
 <p><label><?php _e('Username: (no editing)'); ?><br />
 <input type="text" name="user_login" value="<?php echo $profileuser->user_login; ?>" disabled="disabled" />
 </label></p>
+
 <p><label><?php _e('Role:') ?><br />
 <?php
 // print_r($profileuser);

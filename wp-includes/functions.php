@@ -829,7 +829,7 @@ function is_blog_installed() {
 }
 
 function wp_nonce_url($actionurl, $action = -1) {
-	return add_query_arg('_wpnonce', wp_create_nonce($action), $actionurl);
+	return wp_specialchars(add_query_arg('_wpnonce', wp_create_nonce($action), $actionurl));
 }
 
 function wp_nonce_field($action = -1) {
@@ -1036,7 +1036,7 @@ function wp_check_filetype($filename, $mimes = null) {
 function wp_proxy_check($ipnum) {
 	if ( get_option('open_proxy_check') && isset($ipnum) ) {
 		$rev_ip = implode( '.', array_reverse( explode( '.', $ipnum ) ) );
-		$lookup = $rev_ip . '.opm.blitzed.org.';
+		$lookup = $rev_ip . '.sbl-xbl.spamhaus.org.';
 		if ( $lookup != gethostbyname( $lookup ) )
 			return true;
 	}

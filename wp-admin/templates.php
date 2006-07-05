@@ -4,21 +4,7 @@ require_once('admin.php');
 $title = __('Template &amp; File Editing');
 $parent_file = 	'edit.php';
 
-$wpvarstoreset = array('action','redirect','profile','error','warning','a','file');
-for ($i=0; $i<count($wpvarstoreset); $i += 1) {
-	$wpvar = $wpvarstoreset[$i];
-	if (!isset($$wpvar)) {
-		if (empty($_POST["$wpvar"])) {
-			if (empty($_GET["$wpvar"])) {
-				$$wpvar = '';
-			} else {
-				$$wpvar = $_GET["$wpvar"];
-			}
-		} else {
-			$$wpvar = $_POST["$wpvar"];
-		}
-	}
-}
+wp_reset_vars(array('action', 'redirect', 'profile', 'error', 'warning', 'a', 'file'));
 
 $recents = get_option('recently_edited');
 
@@ -65,7 +51,7 @@ default:
 	require_once('./admin-header.php');
 
 	if ( ! current_user_can('edit_files') )
-	die('<p>'.__('You have do not have sufficient permissions to edit templates for this blog.').'</p>');
+		die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
 
 	if ( strstr( $file, 'wp-config.php' ) )
 	die('<p>'.__('The config file cannot be edited or viewed through the web interface. Sorry!').'</p>');
