@@ -224,7 +224,7 @@ if ( !defined('COOKIEPATH') )
 if ( !defined('SITECOOKIEPATH') )
 	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('siteurl') . '/' ) );
 if ( !defined('COOKIE_DOMAIN') )
-	define('COOKIE_DOMAIN', false);
+	define('COOKIE_DOMAIN', '.' . $current_site->domain);
 
 require (ABSPATH . WPINC . '/vars.php');
 
