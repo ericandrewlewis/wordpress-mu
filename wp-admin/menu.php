@@ -135,8 +135,11 @@ if (! user_can_access_admin_page()) {
 	// find the blog of this user first
 	$primary_blog = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '$user_ID' AND meta_key = 'primary_blog'" );
 	if( $primary_blog ) {
-		header( "Location: " . get_blog_option( $primary_blog, "siteurl" ) . "/wp-admin/" );
-		exit;
+		$newblog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$primary_blog}'" );
+		if( $newblog != null ) {
+			header( "Location: http://" . $newblog->domain . $newblog->path . "wp-admin/" );
+			exit;
+		}
 	}
 	wp_die( __('You do not have sufficient permissions to access this page.') );
 }
