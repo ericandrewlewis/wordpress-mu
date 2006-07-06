@@ -345,7 +345,8 @@ case 'addexistinguser':
 	/* checking that username has been typed */
 	if ( !empty($new_user_email) ) {
 		if ( $user_id = email_exists( $new_user_email ) ) {
-			if ( array_key_exists($blog_id, get_blogs_of_user($user_id)) ) {
+			$username = $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE ID='$user_id'" );
+			if( ($username != null && is_site_admin( $username ) == false ) && ( array_key_exists($blog_id, get_blogs_of_user($user_id)) ) ) {
 				$location = 'users.php?update=add_existing';
 			} else {
 				add_user_to_blog('', $user_id, $_POST[ 'new_role' ]);
