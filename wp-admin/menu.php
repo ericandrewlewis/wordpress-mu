@@ -14,13 +14,11 @@ if ( strstr($_SERVER['REQUEST_URI'], 'page-new.php') )
 	$menu[10] = array(__('Manage'), 'edit_pages', 'edit-pages.php');
 else
 	$menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
-
-
 $menu_perms = get_site_option( "menu_items" );
 if( is_array( $menu_perms ) == false )
 	$menu_perms = array();
 
-$menu[20] = array(__('Bookmarks'), 'manage_links', 'link-manager.php');
+$menu[20] = array(__('Blogroll'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
 if( $menu_perms[ 'plugins' ] == 1 )
 	$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
@@ -44,9 +42,9 @@ $submenu['edit.php'][25] = array(sprintf(__("Awaiting Moderation (%s)"), "<span 
 $submenu['edit.php'][35] = array(__('Import'), 'import', 'import.php');
 $submenu['edit.php'][40] = array(__('Export'), 'import', 'export.php');
 
-$submenu['link-manager.php'][5] = array(__('Manage Bookmarks'), 'manage_links', 'link-manager.php');
-$submenu['link-manager.php'][10] = array(__('Add Bookmark'), 'manage_links', 'link-add.php');
-$submenu['link-manager.php'][20] = array(__('Import Bookmarks'), 'manage_links', 'link-import.php');
+$submenu['link-manager.php'][5] = array(__('Manage Blogroll'), 'manage_links', 'link-manager.php');
+$submenu['link-manager.php'][10] = array(__('Add Link'), 'manage_links', 'link-add.php');
+$submenu['link-manager.php'][20] = array(__('Import Links'), 'manage_links', 'link-import.php');
 
 if ( current_user_can('edit_users') ) {
 	$submenu['users.php'][5] = array(__('Authors &amp; Users'), 'edit_users', 'users.php');
@@ -140,7 +138,7 @@ if (! user_can_access_admin_page()) {
 		header( "Location: " . get_blog_option( $primary_blog, "siteurl" ) . "/wp-admin/" );
 		exit;
 	}
-	die( __('You do not have sufficient permissions to access this page.') );
+	wp_die( __('You do not have sufficient permissions to access this page.') );
 }
 
 ?>

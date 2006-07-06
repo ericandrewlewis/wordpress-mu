@@ -55,7 +55,7 @@ case 'update':
 			if( $option == 'posts_per_page' && $value == '' )
 				$value = 10;
 
-			if( $option == 'new_admin_email' && $value != get_option( 'admin_email' ) ) {
+			if( $option == 'new_admin_email' && $value != get_option( 'admin_email' ) && is_email( $val ) ) {
 				$hash = md5( $value.time().mt_rand() );
 				$newadminemail = array( 
 						"hash" => $hash,
@@ -72,12 +72,13 @@ If this is correct, please click on the following link to change it:
 You can safely ignore and delete this email if you do not want to
 take this action.
 
+This email has been sent to '{$email}'
 " );
 			} elseif (update_option($option, $value) ) {
 				$any_changed++;
 			}
 
-			if ( 'language' == $option ) {
+			if ( 'lang_id' == $option ) {
 				$value = (int) $value;
 				update_blog_status( $wpdb->blogid, 'lang_id', $value );
 				$any_changed++;

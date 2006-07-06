@@ -1,8 +1,8 @@
 <?php
 
 // Added wp_ prefix to avoid conflicts with existing kses users
-# kses 0.2.1 - HTML/XHTML filter that only allows some elements and attributes
-# Copyright (C) 2002, 2003  Ulf Harnhammar
+# kses 0.2.2 - HTML/XHTML filter that only allows some elements and attributes
+# Copyright (C) 2002, 2003, 2005  Ulf Harnhammar
 # *** CONTACT INFORMATION ***
 #
 # E-mail:      metaur at users dot sourceforge dot net
@@ -329,7 +329,7 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
 	$elem = $matches[2];
 	$attrlist = $matches[3];
 
-	if (!@ is_array($allowed_html[strtolower($elem)])) {
+	if (!@isset($allowed_html[strtolower($elem)])) {
 		wp_kses_reject(sprintf(__('Removed <code>&lt;%1$s%2$s&gt</code> tag'), $slash, $elem));
 		return '';
 	# They are using a not allowed HTML element
@@ -629,6 +629,7 @@ function wp_kses_bad_protocol($string, $allowed_protocols)
 ###############################################################################
 {
 	$string = wp_kses_no_null($string);
+	$string = preg_replace('/\xad+/', '', $string); # deals with Opera "feature"
 	$string2 = $string.'a';
 
 	while ($string != $string2) {
@@ -641,7 +642,7 @@ function wp_kses_bad_protocol($string, $allowed_protocols)
 
 function wp_kses_no_null($string)
 ###############################################################################
-# This function removes any NULL or chr(173) characters in $string.
+# This function removes any NULL characters in $string.
 ###############################################################################
 {
 	$string = preg_replace('/\0+/', '', $string);
@@ -717,6 +718,8 @@ function wp_kses_bad_protocol_once2($string, $allowed_protocols)
 	$string2 = wp_kses_decode_entities($string);
 	$string2 = preg_replace('/\s/', '', $string2);
 	$string2 = wp_kses_no_null($string2);
+	$string2 = preg_replace('/\xad+/', '', $string2);
+	# deals with Opera "feature"
 	$string2 = strtolower($string2);
 
 	$allowed = false;

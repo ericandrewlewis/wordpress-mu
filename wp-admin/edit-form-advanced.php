@@ -94,7 +94,7 @@ addLoadEvent(focusit);
 </fieldset>
 
 <fieldset id="passworddiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Password-Protect Post') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Post Password') ?></h3> 
 <div class="dbx-content"><input name="post_password" type="text" size="13" id="post_password" value="<?php echo $post->post_password ?>" /></div>
 </fieldset>
 
@@ -189,20 +189,32 @@ if (current_user_can('upload_files')) {
 
 <div id="advancedstuff" class="dbx-group" >
 
+<div class="dbx-box-wrapper">
 <fieldset id="postexcerpt" class="dbx-box">
+<div class="dbx-handle-wrapper">
 <h3 class="dbx-handle"><?php _e('Optional Excerpt') ?></h3>
+</div>
+<div class="dbx-content-wrapper">
 <div class="dbx-content"><textarea rows="1" cols="40" name="excerpt" tabindex="6" id="excerpt"><?php echo $post->post_excerpt ?></textarea></div>
+</div>
 </fieldset>
+</div>
 
+<div class="dbx-box-wrapper">
 <fieldset class="dbx-box">
+<div class="dbx-handle-wrapper">
 <h3 class="dbx-handle"><?php _e('Trackbacks') ?></h3>
+</div>
+<div class="dbx-content-wrapper">
 <div class="dbx-content"><?php _e('Send trackbacks to'); ?>: <?php echo $form_trackback; ?> (<?php _e('Separate multiple URIs with spaces'); ?>)
 <?php 
 if ( ! empty($pings) )
 	echo $pings;
 ?>
 </div>
+</div>
 </fieldset>
+</div>
 
 <fieldset id="postcustom" class="dbx-box">
 <h3 class="dbx-handle"><?php _e('Custom Fields') ?></h3>

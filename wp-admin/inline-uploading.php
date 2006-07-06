@@ -5,7 +5,7 @@ require_once('admin.php');
 header('Content-Type: text/html; charset=' . get_option('blog_charset'));
 
 if (!current_user_can('upload_files'))
-	die(__('You do not have permission to upload files.'));
+	wp_die(__('You do not have permission to upload files.'));
 
 wp_reset_vars(array('action', 'post', 'all', 'last', 'link', 'sort', 'start', 'imgtitle', 'descr', 'attachment'));
 
@@ -22,7 +22,7 @@ case 'delete':
 check_admin_referer('inlineuploading');
 
 if ( !current_user_can('edit_post', (int) $attachment) )
-	die(__('You are not allowed to delete this attachment.').' <a href="'.basename(__FILE__)."?post=$post&amp;all=$all&amp;action=upload\">".__('Go back').'</a>');
+	wp_die(__('You are not allowed to delete this attachment.').' <a href="'.basename(__FILE__)."?post=$post&amp;all=$all&amp;action=upload\">".__('Go back').'</a>');
 
 wp_delete_attachment($attachment);
 
@@ -41,7 +41,7 @@ if( isset( $file[ 'error' ] ) == false )
 	$file[ 'error' ] = apply_filters( "check_uploaded_file", $file[ 'error' ] );
 
 if ( isset($file['error']) )
-	die($file['error'] . '<br /><a href="' . basename(__FILE__) . '?action=upload&post=' . $post . '">'.__('Back to Image Uploading').'</a>');
+	wp_die($file['error'] . '<br /><a href="' . basename(__FILE__) . '?action=upload&post=' . $post . '">'.__('Back to Image Uploading').'</a>');
 
 $url = $file['url'];
 $type = $file['type'];
@@ -279,7 +279,7 @@ $images_width = $uwidth_sum + ( count($images) * 6 ) + 35;
 break;
 
 default:
-die(__('This script was not meant to be called directly.'));
+wp_die(__('This script was not meant to be called directly.'));
 }
 
 ?>
@@ -287,8 +287,10 @@ die(__('This script was not meant to be called directly.'));
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_settings('blog_charset'); ?>" />
+<title></title>
 <meta http-equiv="imagetoolbar" content="no" />
 <script type="text/javascript">
+// <![CDATA[
 /* Define any variables we'll need, such as alternate URLs. */
 <?php echo $script; ?>
 function htmldecode(st) {
@@ -426,6 +428,7 @@ function sendToEditor(n) {
 	else
 		win.edInsertContent(win.edCanvas, h);
 }
+// ]]>
 </script>
 <style type="text/css">
 <?php if ( $action == 'links' ) : ?>
@@ -670,7 +673,7 @@ th {
 		?><div class="center tip"><?php echo $upload_err ?></div><?php
 	} else { ?>
 <div class="tip"></div>
-<form enctype="multipart/form-data" id="uploadForm" method="POST" action="<?php echo basename(__FILE__); ?>">
+<form enctype="multipart/form-data" id="uploadForm" method="post" action="<?php echo basename(__FILE__); ?>">
 <table style="width:99%;">
 <tr>
 <th scope="row" align="right"><label for="upload"><?php _e('File:'); ?></label></th>

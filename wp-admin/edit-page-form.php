@@ -37,12 +37,12 @@ if (isset($mode) && 'bookmarklet' == $mode) {
 <input type="hidden" name="post_type" value="page" />
 
 <script type="text/javascript">
-<!--
+// <![CDATA[
 function focusit() { // focus on first input field
 	document.post.title.focus();
 }
 addLoadEvent(focusit);
-//-->
+// ]]>
 </script>
 <div id="poststuff">
 
@@ -69,7 +69,7 @@ addLoadEvent(focusit);
 </fieldset>
 
 <fieldset id="passworddiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Password-Protect Page') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page Password') ?></h3> 
 <div class="dbx-content"><input name="post_password" type="text" size="13" id="post_password" value="<?php echo $post->post_password ?>" /></div>
 </fieldset>
 
@@ -83,7 +83,7 @@ addLoadEvent(focusit);
 </fieldset>
 
 <?php if ( 0 != count( get_page_templates() ) ) { ?>
-<fieldset id="pageparent" class="dbx-box">
+<fieldset id="pagetemplate" class="dbx-box">
 <h3 class="dbx-handle"><?php _e('Page Template:') ?></h3> 
 <div class="dbx-content"><p><select name="page_template">
 		<option value='default'><?php _e('Default Template'); ?></option>

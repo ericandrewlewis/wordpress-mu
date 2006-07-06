@@ -1332,7 +1332,7 @@ SITE_NAME" ) );
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
-	$subject = sprintf(__('New %s Blog: %s'), $current_site->site_name, $title);
+	$subject = sprintf(__('New %1$s Blog: %2$s'), $current_site->site_name, $title);
 	wp_mail($user->user_email, $subject, $message, $message_headers);	
 }
 
@@ -1363,7 +1363,7 @@ SITE_NAME" );
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
-	$subject = sprintf(__('New %s User: %s'), $current_site->site_name, $user->user_login);
+	$subject = sprintf(__('New %1$s User: %2$s'), $current_site->site_name, $user->user_login);
 	wp_mail($user->user_email, $subject, $message, $message_headers);	
 }
 

@@ -128,13 +128,13 @@ case 'promote':
 	}
 
 	if ( !current_user_can('edit_users') )
-		die(__('You can&#8217;t edit users.'));
+		wp_die(__('You can&#8217;t edit users.'));
 
 	$userids = $_POST['users'];
 	$update = 'promote';
 	foreach($userids as $id) {
 		if ( ! current_user_can('edit_user', $id) )
-			die(__('You can&#8217;t edit that user.'));
+			wp_die(__('You can&#8217;t edit that user.'));
 		// The new role of the current user must also have edit_users caps
 		if($id == $current_user->id && !$wp_roles->role_objects[$_POST['new_role']]->has_cap('edit_users')) {
 			$update = 'err_admin_role';
@@ -150,7 +150,7 @@ case 'promote':
 break;
 
 case 'dodelete':
-	die( "This function is disabled." );
+	wp_die( "This function is disabled." );
 	check_admin_referer('delete-users');
 
 	if ( empty($_POST['users']) ) {
@@ -158,7 +158,7 @@ case 'dodelete':
 	}
 
 	if ( !current_user_can('delete_users') )
-		die(__('You can&#8217;t delete users.'));
+		wp_die(__('You can&#8217;t delete users.'));
 
 	$userids = $_POST['users'];
 	$update = 'del';
@@ -166,7 +166,7 @@ case 'dodelete':
 
 	foreach ( (array) $userids as $id) {
 		if ( ! current_user_can('delete_user', $id) )
-			die(__('You can&#8217;t delete that user.'));
+			wp_die(__('You can&#8217;t delete that user.'));
 
 		if($id == $current_user->id) {
 			$update = 'err_admin_del';
@@ -190,7 +190,7 @@ case 'dodelete':
 break;
 
 case 'delete':
-	die( "This function is disabled." );
+	wp_die( "This function is disabled." );
 	check_admin_referer('bulk-users');
 
 	if ( empty($_POST['users']) )
@@ -477,7 +477,7 @@ default:
 		<p><a href="users.php"><?php _e('&laquo; Back to All Users'); ?></a></p>
 	<?php endif; ?>
 
-	<h3><?php printf(__('Results %1$s - %2$s of %3$s shown below'), $wp_user_search->first_user + 1, min($wp_user_search->first_user + $wp_user_search->users_per_page, $wp_user_search->total_users_for_query), $wp_user_search->total_users_for_query); ?></h3>
+	<h3><?php printf(__('%1$s &#8211; %2$s of %3$s shown below'), $wp_user_search->first_user + 1, min($wp_user_search->first_user + $wp_user_search->users_per_page, $wp_user_search->total_users_for_query), $wp_user_search->total_users_for_query); ?></h3>
 
 	<?php if ( $wp_user_search->results_are_paged() ) : ?>
 		<div class="user-paging-text"><?php $wp_user_search->page_links(); ?></p></div>
@@ -528,12 +528,12 @@ foreach ( (array) $roleclass as $user_object ) {
 		<li><input type="radio" name="action" id="action0" value="removeuser" /> <label for="action0"><?php _e('Remove checked users.'); ?></label></li>
 		<li>
 			<input type="radio" name="action" id="action1" value="promote" /> <label for="action1"><?php _e('Set the Role of checked users to:'); ?></label>
-			<select name="new_role"><?php wp_dropdown_roles(); ?></select>
+			<select name="new_role" onchange="getElementById('action1').checked = 'true'"><?php wp_dropdown_roles(); ?></select>
 		</li>
 	</ul>
-	<p class="submit">
+	<p class="submit" style="width: 420px">
 		<?php echo $referer; ?>
-		<input type="submit" value="<?php _e('Update &raquo;'); ?>" />
+		<input type="submit" value="<?php _e('Bulk Update &raquo;'); ?>" />
 	</p>
 </form>
 <?php endif; ?>

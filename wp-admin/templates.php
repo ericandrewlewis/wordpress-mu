@@ -1,6 +1,6 @@
 <?php
-die();
 require_once('admin.php');
+wp_die( 'The template editor is disabled.' );
 $title = __('Template &amp; File Editing');
 $parent_file = 	'edit.php';
 
@@ -26,7 +26,7 @@ case 'update':
 	check_admin_referer('edit-file_' . $file);
 
 	if ( ! current_user_can('edit_files') )
-		die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
+		wp_die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
 
 	$newcontent = stripslashes($_POST['newcontent']);
 	if (is_writeable($real_file)) {
@@ -51,10 +51,10 @@ default:
 	require_once('./admin-header.php');
 
 	if ( ! current_user_can('edit_files') )
-		die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
+		wp_die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
 
 	if ( strstr( $file, 'wp-config.php' ) )
-	die('<p>'.__('The config file cannot be edited or viewed through the web interface. Sorry!').'</p>');
+	wp_die('<p>'.__('The config file cannot be edited or viewed through the web interface. Sorry!').'</p>');
 
 	update_recently_edited($file);
 
