@@ -164,10 +164,20 @@ function maybe_unserialize($original) {
 
 /* Options functions */
 
+function is_switched( $setting = 'N/A' ) {
+	global $switched;
+	if ( $switched == false && defined('WP_INSTALLING') == false && $_REQUEST['nomemcache'] != 'all' && $_REQUEST['nomemcache'] != $setting ) {
+		return false;
+	} else {
+		return true;
+	}
+
+}
+
 function get_settings($setting) {
 	global $wpdb, $switched, $current_blog;
 
-	if ( $switched == false && defined('WP_INSTALLING') == false && $_REQUEST['nomemcache'] != 'all' && $_REQUEST['nomemcache'] != $setting ) {
+	if ( is_switched() == false ) {
 		$value = wp_cache_get($setting, 'options');
 	} else {
 		$value = false;
@@ -194,7 +204,7 @@ function get_settings($setting) {
 			$value = $row->option_value;
 			wp_cache_set($setting, ($value=='')?'emptystringindb':$value, 'options');
 		} else {
-			wp_cache_set($setting, 'novalueindb', 'options');
+			wp_cache_set($setting, 'novalueindb', 'options', 5);
 			return false;
 		}
 	}
