@@ -8,7 +8,7 @@ $parent_file = 'options-general.php';
 wp_reset_vars(array('action'));
 
 if ( !current_user_can('manage_options') )
-	die ( __('Cheatin&#8217; uh?') );
+	wp_die(__('Cheatin&#8217; uh?'));
 
 if( $_GET[ 'adminhash' ] ) {
 	$new_admin_details = get_option( 'new_admin_email' );
