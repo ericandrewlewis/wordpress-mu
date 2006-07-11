@@ -437,7 +437,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_view':
 		?>
-		<td valign='top'><a href="http://<?php echo $blog[ 'domain' ]; ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
+		<td valign='top'><a href="http://<?php echo $blog[ 'domain' ]. $blog[ 'path' ]; ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
 		<?php
 		break;
 
@@ -449,7 +449,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_backend':
 		?>
-		<td valign='top'><?php echo "<a href='http://" . $blog[ 'domain' ] . $current_site->path . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
+		<td valign='top'><?php echo "<a href='http://" . $blog[ 'domain' ] . $blog[ 'path' ] . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?></td>
 		<?php
 		break;
 
