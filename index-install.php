@@ -5,7 +5,7 @@ if( strpos( $_SERVER["REQUEST_URI"], 'index-install.php' ) ) {
 	die();
 }
 if( $_SERVER[ 'HTTP_HOST' ] == 'localhost' ) {
-	die( "<h2>Warning!</h2> Installing to http://localhost/ is not supported. Please use <a href='http://localhost.localdomain/'>http://localhost.localdomain/</a> instead." )
+	die( "<h2>Warning!</h2> Installing to http://localhost/ is not supported. Please use <a href='http://localhost.localdomain/'>http://localhost.localdomain/</a> instead." );
 }
 define('WP_INSTALLING', true);
 
