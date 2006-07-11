@@ -67,7 +67,7 @@ case 'update':
 You recently requested to have the administration email address on 
 your blog changed. 
 If this is correct, please click on the following link to change it:
-" . get_option( "siteurl" ) . "/adminemail/{$hash}/
+" . get_option( "siteurl" ) . "/wp-admin/options.php?adminhash={$hash}/
 
 You can safely ignore and delete this email if you do not want to
 take this action.
