@@ -1236,7 +1236,7 @@ function install_blog($blog_id, $blog_title = '') {
 	$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename, category_count) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."', 1)");
 	$blogroll_id = $wpdb->get_var( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = 'blogroll'" );
 	if( $blogroll_id == null ) {
-		$wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (0, 'Blogroll', 'blogroll', '')" );
+		$wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " VALUES (0, 'Blogroll', 'blogroll', NOW())" );
 		$blogroll_id = $wpdb->insert_id;
 	}
 	$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename, link_count) VALUES ('{$blogroll_id}', '".addslashes(__('Blogroll'))."', '".sanitize_title(__('Blogroll'))."', 2)");
