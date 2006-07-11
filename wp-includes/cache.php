@@ -75,7 +75,23 @@ class WP_Object_Cache {
 		return true;
 	}
 
+	function key($key, $group) {
+		global $blog_id;
+
+		if ( empty($group) )
+			$group = 'default';
+
+		if (false !== array_search($group, $this->global_groups))
+			$prefix = '';
+		else
+			$prefix = $blog_id . ':';
+
+		return "$prefix$group:$key";
+	}
+
+
 	function add($id, $data, $group = 'default', $expire = '') {
+		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
@@ -86,6 +102,7 @@ class WP_Object_Cache {
 	}
 
 	function delete($id, $group = 'default', $force = false) {
+		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
@@ -116,6 +133,7 @@ class WP_Object_Cache {
 	}
 
 	function get($id, $group = 'default', $count_hits = true) {
+		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
@@ -272,6 +290,7 @@ class WP_Object_Cache {
 	}
 
 	function replace($id, $data, $group = 'default', $expire = '') {
+		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
@@ -282,6 +301,7 @@ class WP_Object_Cache {
 	}
 
 	function set($id, $data, $group = 'default', $expire = '') {
+		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
