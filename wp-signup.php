@@ -212,7 +212,7 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <td>
 <p>
 <input id="signupblog" type="radio" name="signup_for" value="blog" checked="checked" />
-<label for="signupblog">Gimme a blog! (Like username.<?php echo $current_site->domain ?>)</label>
+<label for="signupblog">Gimme a blog!</label>
 <br />
 <input id="signupuser" type="radio" name="signup_for" value="user" />
 <label for="signupuser">Just a username, please.</label>
