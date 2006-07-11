@@ -63,18 +63,66 @@ switch( $_GET[ 'action' ] ) {
 		}
 		exit;
 	break;
-	case "updatefeeds":
+	case "adduser":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
+		check_admin_referer('add-user');
+		
+		if( is_array( $_POST[ 'user' ] ) == true ) {
+			$user = $_POST['user'];
+			$password = generate_random_password();
+			$user_id = wpmu_create_user(wp_specialchars( $user['username'] ), $password, wp_specialchars( $user['email'] ) );
+			if(false == $user_id) {
+				die( __("<p>There was an error creating the user</p>") );
+			} else {
+				wp_new_user_notification($user_id, $password);
+			}
+			wpmu_admin_do_redirect( "wpmu-users.php" );
+		}
+	
+	break;
+	
+	case "addblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		
+		check_admin_referer('add-blog');
+		
+		if( is_array( $_POST[ 'blog' ] ) == true ) {
+			$blog = $_POST['blog'];
+			$domain = wp_specialchars( $blog['domain'] );
+			$email = wp_specialchars( $blog['email'] );
+			if( constant( "VHOST" ) == 'yes' ) {
+				$newdomain = $domain.".".$current_site->domain;
+				$path = $base;
+			} else {
+				$newdomain = $domain;
+				$path = $base.$domain.'/';
+			}
+			
+			$user_id = email_exists($email);
+			if( !$user_id ) { // I'm not sure what this check should be.
+				$password = generate_random_password();
+				$user_id = wpmu_create_user( $domain, $password, $email );
+				if(false == $user_id) {
+					die( __("<p>There was an error creating the user</p>") );
+				} else {
+					wp_new_user_notification($user_id, $password);
+				}
+			}
 
-		update_site_option( "customizefeed1", $_POST[ 'customizefeed1' ] );
-		update_site_option( "customizefeed2", $_POST[ 'customizefeed2' ] );
-		update_site_option( "dashboardfeed1", $_POST[ 'dashboardfeed1' ] );
-		update_site_option( "dashboardfeed2", $_POST[ 'dashboardfeed2' ] );
-		update_site_option( "dashboardfeed1name", $_POST[ 'dashboardfeed1name' ] );
-		update_site_option( "dashboardfeed2name", $_POST[ 'dashboardfeed2name' ] );
-		wpmu_admin_do_redirect( "wpmu-feeds.php" );
+			$wpdb->hide_errors();
+			$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
+			$wpdb->show_errors();
+			if( !is_wp_error($blog_id) ) {
+				wpmu_admin_do_redirect("wpmu-blogs.php");
+			} else {
+				die( $blog_id->get_error_message() );
+			}
+		}
+			
 	break;
 	case "updateblog":
 		if( is_site_admin() == false ) {

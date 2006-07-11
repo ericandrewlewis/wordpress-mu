@@ -333,7 +333,17 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 <?php
 }
-
 ?>
+</div>
+<form name="addform" action="wpmu-edit.php?action=adduser" method="post">
+<div class="wrap">
+<h2><?php _e('Add User') ?></h2>
+<?php wp_nonce_field('add-user') ?>
+<table>
+<tr><th scope='row'>Username</th><td><input type="text" name="user[username]" /></td></tr>
+<tr><th scope='row'>Email</th><td><input type="text" name="user[email]" /></td></tr>
+</table>
+<input type="submit" name="Add user" value="Add user" />
+</form>
 </div>
 <?php include('admin-footer.php'); ?>

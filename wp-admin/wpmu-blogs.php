@@ -517,6 +517,26 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <input type='hidden' name='redirect' value='<?php echo $_SERVER[ 'REQUEST_URI' ] ?>'>
 <input type='submit' value='Apply Changes'></p>
 </form>
+
+</div>
+<div class="wrap">
+<h2>Add Blog</h2>
+<form name="addform" method="post" action="wpmu-edit.php?action=addblog">
+<?php wp_nonce_field('add-blog') ?>
+<table>
+<tr><th scope='row'>Blog Address</th><td><?php
+if( constant( "VHOST" ) == 'yes' ) {
+	?><input name="blog[domain]" type="text" title="Domain"/>.<?php echo $current_site->domain;?></td></tr><?php
+} else {
+	echo $current_site->domain . $current_site->path ?><input name="blog[domain]" type="text" title="Domain"/></td></tr><?php
+} ?>
+<tr><th scope='row'>Blog Title</th><td><input name="blog[title]" type="text" title="Title"/></td></tr>
+<tr><th scope='row'>Admin Email</th><td><input name="blog[email]" type="text" title="Email"/></td></tr>
+<tr><td colspan='2'>A new user will be created if the above email address is not in the database.</td></tr>
+</table>
+<input type="submit" name="go" value="Add Blog" />
+</form>
+</div>
 <?php
 
 break;
