@@ -85,12 +85,12 @@ function is_blogname_page( $blogname ) {
 	global $wpdb, $table_prefix;
 
 	// is the request for a page of the main blog? We need to cache this information somewhere to save a request
-	$pages = $wpdb->get_col( "SELECT post_name FROM {$table_prefix}1_posts WHERE post_type='page'" ); 
+	$pages = $wpdb->get_col( "SELECT LOWER(post_name) FROM {$table_prefix}1_posts WHERE post_type='page'" ); 
 
 	if( is_array( $pages ) == false ) 
 		return false;
 
-	if( in_array( $blogname, $pages ) ) {
+	if( in_array( strtolower( $blogname ), $pages ) ) {
 		return true;
 	} else {
 		return false;
