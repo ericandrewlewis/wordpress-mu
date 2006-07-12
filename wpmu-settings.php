@@ -162,10 +162,11 @@ function is_installed() {
 	$base = stripslashes( $base );
 	if( defined( "WP_INSTALLING" ) == false ) {
 		$check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+		$msg = "If your blog does not display, please contact the owner of this site.<br /><br />If you are the owner of this site please check that MySQL is running properly and all tables are error free.<br /><br />";
 		if( $check == false ) {
-			$msg = '<strong>Database Tables Missing.</strong><br /> The table <em>' . DB_NAME . '::' . $wpdb->site . '</em> is missing. Delete the .htaccess file and run the installer again!<br />';
+			$msg .= "<strong>Database Tables Missing.</strong><br />Database tables are missing. This means that MySQL is either not running, WPMU was not installed properly, or someone deleted {$wpdb->site}. You really <em>should</em> look at your database now.<br />";
 		} else {
-			$msg = '<strong>Could Not Find Blog!</strong><br />';
+			$msg .= '<strong>Could Not Find Blog!</strong><br />';
 			$msg .= "Searched for <em>" . $domain . $path . "</em> in " . DB_NAME . "::" . $wpdb->blogs . " table. Is that right?<br />";
 		}
 		$msg .= "<br />\n<h1>What do I do now?</h1>";
@@ -178,7 +179,7 @@ function is_installed() {
 			<li> $wpdb->sitemeta </li>
 			<li> $wpdb->sitecategories </li>
 			</ul>";
-		$msg .= "If you suspect a problem please report it to <a href='http://mu.wordpress.org/forums/'>support forums</a> but follow the <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>guidelines</a>!<br /><br />";
+		$msg .= "If you suspect a problem please report it to the support forums but you must include the information asked for in the <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>WPMU bug reporting guidelines</a>!<br /><br />";
 		if( is_file( 'release-info.txt' ) ) {
 			$msg .= 'Your bug report must include the following text: "';
 			$info = file( 'release-info.txt' );
