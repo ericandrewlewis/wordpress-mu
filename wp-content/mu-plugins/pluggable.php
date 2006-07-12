@@ -3,6 +3,8 @@
 function wp_login($username, $password, $already_md5 = false) {
 	global $wpdb, $error, $current_user;
 
+	$username = strtolower($username);
+
 	if ( !$username )
 		return false;
 

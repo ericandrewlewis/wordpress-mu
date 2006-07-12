@@ -210,6 +210,9 @@ default:
 	} else if ( $user_login || $user_pass ) {
 		$error = __('<strong>Error</strong>: The password field is empty.');
 	}
+
+	if ( ! is_user_logged_in() )
+		wp_clearcookie(); // Start with a clean slate
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
