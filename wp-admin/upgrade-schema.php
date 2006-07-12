@@ -164,14 +164,14 @@ CREATE TABLE $wpdb->blogs (
   KEY domain (domain(50),path(5)),
   KEY lang_id (lang_id)
 );
-CREATE TABLE wp_blog_versions (
+CREATE TABLE $wpdb->blog_versions (
   blog_id bigint(20) NOT NULL default '0',
   db_version varchar(20) NOT NULL default '',
   last_updated datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (blog_id),
   KEY db_version (db_version)
 );
-CREATE TABLE wp_registration_log (
+CREATE TABLE $wpdb->registration_log (
   ID bigint(20) NOT NULL auto_increment,
   email varchar(255) NOT NULL default '',
   IP varchar(30) NOT NULL default '',

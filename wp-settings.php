@@ -82,6 +82,8 @@ $wpdb->site		= $table_prefix . 'site';
 $wpdb->sitemeta		= $table_prefix . 'sitemeta';
 $wpdb->sitecategories	= $table_prefix . 'sitecategories';
 $wpdb->signups		= $table_prefix . 'signups';
+$wpdb->registration_log	= $table_prefix . 'registration_log';
+$wpdb->blog_versions	= $table_prefix . 'blog_versions';
 
 require_once ( ABSPATH . 'wpmu-settings.php' );
 $wpdb->siteid           = $site_id;
