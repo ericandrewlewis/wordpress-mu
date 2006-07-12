@@ -15,10 +15,6 @@ $path = preg_replace( '|(/[a-z0-9-]+?/).*|', '$1', $path );
 
 $wpdb->hide_errors();
 
-#$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
-#if( count( $sites ) == 1 ) {
-	#$current_site = $sites[0];
-#}
 	
 if( isset( $current_site ) == false ) {
 	$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
@@ -32,8 +28,15 @@ if( isset( $current_site ) == false ) {
 				if( $current_site == null ) {
 					$path = '/';
 					$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
-					if( $current_site == null && defined( "WP_INSTALLING" ) == false )
-						die( "No WPMU site defined on this host." );
+					if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
+						$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+						if( count( $sites ) == 1 ) {
+							$current_site = $sites[0];
+							die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
+						} else {
+							die( "No WPMU site defined on this host." );
+						}
+					}
 				}
 			} else {
 				$path = '/';
@@ -44,8 +47,15 @@ if( isset( $current_site ) == false ) {
 		if( $current_site == null ) {
 			$path = '/';
 			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
-			if( $current_site == null && defined( "WP_INSTALLING" ) == false )
-				die( "No WPMU site defined on this host." );
+			if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
+				$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
+				if( count( $sites ) == 1 ) {
+					$current_site = $sites[0];
+					die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
+				} else {
+					die( "No WPMU site defined on this host." );
+				}
+			}
 		}
 	}
 }
