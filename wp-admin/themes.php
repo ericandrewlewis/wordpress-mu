@@ -5,7 +5,7 @@ $themes = get_themes();
 $ct = current_theme_info();
 $allowed_themes = get_site_option( "allowed_themes" );
 if( $allowed_themes == false ) {
-    $allowed_themes = $themes;
+    $allowed_themes = array();
     if( $blog_id != 1 )
 	    unset( $allowed_themes[ "WordPress MU Home Default" ] );
 }
