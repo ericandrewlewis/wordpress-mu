@@ -55,7 +55,7 @@ case 'update':
 			if( $option == 'posts_per_page' && $value == '' )
 				$value = 10;
 
-			if( $option == 'new_admin_email' && $value != get_option( 'admin_email' ) && is_email( $val ) ) {
+			if( $option == 'new_admin_email' && $value != get_option( 'admin_email' ) && is_email( $value ) ) {
 				$hash = md5( $value.time().mt_rand() );
 				$newadminemail = array( 
 						"hash" => $hash,
