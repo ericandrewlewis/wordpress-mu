@@ -72,7 +72,7 @@ If this is correct, please click on the following link to change it:
 You can safely ignore and delete this email if you do not want to
 take this action.
 
-This email has been sent to '{$email}'
+This email has been sent to '{$value}'
 " );
 			} elseif (update_option($option, $value) ) {
 				$any_changed++;
