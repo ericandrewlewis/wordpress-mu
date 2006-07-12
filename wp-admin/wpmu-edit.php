@@ -82,7 +82,6 @@ switch( $_GET[ 'action' ] ) {
 		}
 	
 	break;
-	
 	case "addblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
@@ -98,7 +97,7 @@ switch( $_GET[ 'action' ] ) {
 				$newdomain = $domain.".".$current_site->domain;
 				$path = $base;
 			} else {
-				$newdomain = $domain;
+				$newdomain = $current_site->domain;
 				$path = $base.$domain.'/';
 			}
 			
