@@ -1,5 +1,4 @@
 <?php
-die();
 require_once('admin.php');
 
 $title = __('Permalink Options');
@@ -65,6 +64,9 @@ if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 		$permalink_structure = $_POST['permalink_structure'];
 		if (! empty($permalink_structure) )
 			$permalink_structure = preg_replace('#/+#', '/', '/' . $_POST['permalink_structure']);
+		if( $permalink_structure != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
+			$permalink_structure = '/blog' . $permalink_structure;
+		}
 		$wp_rewrite->set_permalink_structure($permalink_structure);
 	}
 
@@ -72,6 +74,9 @@ if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 		$category_base = $_POST['category_base'];
 		if (! empty($category_base) )
 			$category_base = preg_replace('#/+#', '/', '/' . $_POST['category_base']);
+		if( $category_base != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
+			$category_base = '/blog' . $category_base;
+		}
 		$wp_rewrite->set_category_base($category_base);
 	}
 }
@@ -149,7 +154,7 @@ checked="checked"
 </label>
 <br />
 </p>
-<p id="customstructure"><?php _e('Custom structure'); ?>: <input name="permalink_structure" id="permalink_structure" type="text" class="code" style="width: 60%;" value="<?php echo $permalink_structure; ?>" size="50" /></p>
+<p id="customstructure"><?php _e('Custom structure'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $permalink_structure = str_replace( "/blog", "", $permalink_structure ); }?><input name="permalink_structure" id="permalink_structure" type="text" class="code" style="width: 60%;" value="<?php echo $permalink_structure; ?>" size="50" /></p>
 
 <h3><?php _e('Optional'); ?></h3>
 <?php if ($is_apache) : ?>
@@ -158,7 +163,7 @@ checked="checked"
 	<p><?php _e('If you like, you may enter a custom prefix for your category URIs here. For example, <code>/index.php/taxonomy/tags</code> would make your category links like <code>http://example.org/index.php/taxonomy/tags/uncategorized/</code>. If you leave this blank the default will be used.') ?></p>
 <?php endif; ?>
 	<p> 
-  <?php _e('Category base'); ?>: <input name="category_base" type="text" class="code"  value="<?php echo $category_base; ?>" size="30" /> 
+  <?php _e('Category base'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?><input name="category_base" type="text" class="code"  value="<?php echo $category_base; ?>" size="30" /> 
      </p> 
     <p class="submit"> 
       <input type="submit" name="submit" value="<?php _e('Update Permalink Structure &raquo;') ?>" /> 

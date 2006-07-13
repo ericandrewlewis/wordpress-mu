@@ -58,7 +58,7 @@ $submenu['options-general.php'][15] = array(__('Writing'), 'manage_options', 'op
 $submenu['options-general.php'][20] = array(__('Reading'), 'manage_options', 'options-reading.php');
 $submenu['options-general.php'][25] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
 //$submenu['options-general.php'][30] = array(__('Privacy'), 'manage_options', 'options-privacy.php');
-//$submenu['options-general.php'][35] = array(__('Permalinks'), 'manage_options', 'options-permalink.php');
+$submenu['options-general.php'][35] = array(__('Permalinks'), 'manage_options', 'options-permalink.php');
 //$submenu['options-general.php'][40] = array(__('Miscellaneous'), 'manage_options', 'options-misc.php');
 
 //$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
