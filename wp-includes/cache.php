@@ -91,7 +91,6 @@ class WP_Object_Cache {
 
 
 	function add($id, $data, $group = 'default', $expire = '') {
-		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
@@ -102,16 +101,16 @@ class WP_Object_Cache {
 	}
 
 	function delete($id, $group = 'default', $force = false) {
-		$id = $this->key($id, $group);
+		$hash = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
 		if (!$force && false === $this->get($id, $group, false))
 			return false;
 
-		unset ($this->cache[$group][$id]);
-		$this->non_existant_objects[$group][$id] = true;
-		$this->dirty_objects[$group][] = $id;
+		unset ($this->cache[$hash]);
+		$this->non_existant_objects[$hash] = true;
+		$this->dirty_objects[$this->key( '', $group )][] = $id;
 		return true;
 	}
 
@@ -133,37 +132,38 @@ class WP_Object_Cache {
 	}
 
 	function get($id, $group = 'default', $count_hits = true) {
-		$id = $this->key($id, $group);
+		$hash = $this->key($id, $group);
+		$group_key = $this->key( '', $group );
 		if (empty ($group))
 			$group = 'default';
 
-		if (isset ($this->cache[$group][$id])) {
+		if (isset ($this->cache[$hash])) {
 			if ($count_hits)
 				$this->warm_cache_hits += 1;
-			return $this->cache[$group][$id];
+			return $this->cache[$hash];
 		}
 
-		if (isset ($this->non_existant_objects[$group][$id]))
+		if (isset ($this->non_existant_objects[$hash]))
 			return false;
 
 		//  If caching is not enabled, we have to fall back to pulling from the DB.
 		if (!$this->cache_enabled) {
-			if (!isset ($this->cache[$group]))
-				$this->load_group_from_db($group);
+			if (!isset ($this->cache[$group_key]))
+				$this->load_group_from_db($group_key);
 
-			if (isset ($this->cache[$group][$id])) {
+			if (isset ($this->cache[$hash])) {
 				$this->cold_cache_hits += 1;
-				return $this->cache[$group][$id];
+				return $this->cache[$hash];
 			}
 
-			$this->non_existant_objects[$group][$id] = true;
+			$this->non_existant_objects[$hash] = true;
 			$this->cache_misses += 1;
 			return false;
 		}
 
-		$cache_file = $this->cache_dir.$this->get_group_dir($group)."/".$this->hash($id).'.php';
+		$cache_file = $this->cache_dir.$this->get_group_dir($group_key)."/".$this->hash($hash).'.php';
 		if (!file_exists($cache_file)) {
-			$this->non_existant_objects[$group][$id] = true;
+			$this->non_existant_objects[$hash] = true;
 			$this->cache_misses += 1;
 			return false;
 		}
@@ -177,12 +177,12 @@ class WP_Object_Cache {
 			return false;
 		}
 
-		$this->cache[$group][$id] = unserialize(base64_decode(substr(@ file_get_contents($cache_file), strlen(CACHE_SERIAL_HEADER), -strlen(CACHE_SERIAL_FOOTER))));
-		if (false === $this->cache[$group][$id])
-			$this->cache[$group][$id] = '';
+		$this->cache[$hash] = unserialize(base64_decode(substr(@ file_get_contents($cache_file), strlen(CACHE_SERIAL_HEADER), -strlen(CACHE_SERIAL_FOOTER))));
+		if (false === $this->cache[$hash])
+			$this->cache[$hash] = '';
 
 		$this->cold_cache_hits += 1;
-		return $this->cache[$group][$id];
+		return $this->cache[$hash];
 	}
 
 	function get_group_dir($group) {
@@ -206,8 +206,10 @@ class WP_Object_Cache {
 		if ('category' == $group) {
 			$this->cache['category'] = array ();
 			if ($dogs = $wpdb->get_results("SELECT * FROM $wpdb->categories")) {
-				foreach ($dogs as $catt)
+				foreach ($dogs as $catt) {
 					$this->cache['category'][$catt->cat_ID] = $catt;
+					$this->cache[$this->key( $catt->cat_ID, 'category' )] = $catt;
+				}
 			}
 		} else
 			if ('options' == $group) {
@@ -222,6 +224,7 @@ class WP_Object_Cache {
 
 				foreach ($options as $option) {
 					$this->cache['options'][$option->option_name] = $option->option_value;
+					$this->cache[$this->key( $option->option_name, 'options' )] = $option->option_value;
 				}
 			}
 	}
@@ -290,7 +293,6 @@ class WP_Object_Cache {
 	}
 
 	function replace($id, $data, $group = 'default', $expire = '') {
-		$id = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
@@ -301,16 +303,16 @@ class WP_Object_Cache {
 	}
 
 	function set($id, $data, $group = 'default', $expire = '') {
-		$id = $this->key($id, $group);
+		$hash = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
 
 		if (NULL == $data)
 			$data = '';
 
-		$this->cache[$group][$id] = $data;
-		unset ($this->non_existant_objects[$group][$id]);
-		$this->dirty_objects[$group][] = $id;
+		$this->cache[$hash] = $data;
+		unset ($this->non_existant_objects[$hash]);
+		$this->dirty_objects[$this->key( '', $group )][] = $id;
 
 		return true;
 	}
@@ -347,7 +349,8 @@ class WP_Object_Cache {
 		// Loop over dirty objects and save them.
 		$errors = 0;
 		foreach ($this->dirty_objects as $group => $ids) {
-			$group_dir = $this->make_group_dir($group, $dir_perms);
+			$group_key = $this->key( '', $group );
+			$group_dir = $this->make_group_dir($group_key, $dir_perms);
 
 			$ids = array_unique($ids);
 			foreach ($ids as $id) {
