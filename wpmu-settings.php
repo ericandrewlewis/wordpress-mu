@@ -72,7 +72,7 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	$blogname = htmlspecialchars( substr( $_SERVER[ 'REQUEST_URI' ], strlen( $path ) ) );
 	if( strpos( $blogname, '/' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
-	if( strpos( $blogname, '?' ) )
+	if( strpos( " ".$blogname, '?' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '?' ) );
 	$blognames = array( 'blog', 'wp-admin', 'wp-includes', 'wp-content', 'files', 'feed' );
 	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) || is_blogname_page( $blogname ) ) {
