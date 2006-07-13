@@ -433,7 +433,6 @@ switch( $_POST[ 'action' ] ) {
 		make_db_current_silent();
 		populate_options();
 		do_htaccess( 'htaccess.dist', '.htaccess', $base, '');
-		printheader();
 		step3();
 	break;
 	case "step3":
