@@ -34,7 +34,7 @@ if( isset( $current_site ) == false ) {
 							$current_site = $sites[0];
 							die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
 						} else {
-							die( "No WPMU site defined on this host." );
+							die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
 						}
 					}
 				}
@@ -53,7 +53,7 @@ if( isset( $current_site ) == false ) {
 					$current_site = $sites[0];
 					die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
 				} else {
-					die( "No WPMU site defined on this host." );
+					die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
 				}
 			}
 		}
