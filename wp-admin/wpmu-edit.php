@@ -116,6 +116,7 @@ switch( $_GET[ 'action' ] ) {
 			$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
 			$wpdb->show_errors();
 			if( !is_wp_error($blog_id) ) {
+				@wp_mail( get_settings('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->sitename), "New blog created by {$current_user->user_login}\n\nAddress: http://{$newdomain}{$path}\nName: ".wp_specialchars( $blog['title'] ) );
 				wpmu_admin_do_redirect("wpmu-blogs.php");
 			} else {
 				die( $blog_id->get_error_message() );
