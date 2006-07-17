@@ -72,7 +72,7 @@ switch( $_GET[ 'action' ] ) {
 		if( is_array( $_POST[ 'user' ] ) == true ) {
 			$user = $_POST['user'];
 			$password = generate_random_password();
-			$user_id = wpmu_create_user(wp_specialchars( $user['username'] ), $password, wp_specialchars( $user['email'] ) );
+			$user_id = wpmu_create_user(wp_specialchars( strtolower( $user['username'] ) ), $password, wp_specialchars( $user['email'] ) );
 			if(false == $user_id) {
 				die( __("<p>There was an error creating the user</p>") );
 			} else {
@@ -91,7 +91,7 @@ switch( $_GET[ 'action' ] ) {
 		
 		if( is_array( $_POST[ 'blog' ] ) == true ) {
 			$blog = $_POST['blog'];
-			$domain = wp_specialchars( $blog['domain'] );
+			$domain = strtolower( wp_specialchars( $blog['domain'] ) );
 			$email = wp_specialchars( $blog['email'] );
 			if( constant( "VHOST" ) == 'yes' ) {
 				$newdomain = $domain.".".$current_site->domain;
