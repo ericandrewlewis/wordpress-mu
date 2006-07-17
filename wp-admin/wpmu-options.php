@@ -17,6 +17,7 @@ if (isset($_GET['updated'])) {
 <div class="wrap"> 
 	<h2><?php _e('Site Options') ?></h2> 
 	<form name="form1" method="post" action="wpmu-edit.php?action=siteoptions"> 
+	<?php wp_nonce_field('siteoptions') ?>
 	<fieldset class="options">
 		<legend><?php _e('Operational Settings <em>(These settings cannot be modified by blog owners)</em>') ?></legend> 
 		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 

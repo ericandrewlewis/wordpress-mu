@@ -12,6 +12,7 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
+		check_admin_referer('siteoptions');
 
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
 		update_site_option( "illegal_names", split( ' ', $_POST[ 'illegal_names' ] ) );
@@ -28,8 +29,18 @@ switch( $_GET[ 'action' ] ) {
 		update_site_option( "welcome_email", $_POST[ 'welcome_email' ] );
 		update_site_option( "fileupload_maxk", $_POST[ 'fileupload_maxk' ] );
 		$site_admins = explode( ' ', $_POST['site_admins'] );
-		if ( is_array( $site_admins ) )
+		if ( is_array( $site_admins ) ) {
+			$mainblog_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain='{$current_site->domain}' AND path='{$current_site->path}'" );
+			if( $mainblog_id ) {
+				reset( $site_admins );
+				foreach( $site_admins as $site_admin ) {
+					$uid = $wpdb->get_var( "SELECT ID FROM {$wpdb->users} WHERE user_login='{$site_admin}'" );
+					if( $uid )
+						add_user_to_blog( $mainblog_id, $uid, 'Administrator' );
+				}
+			}
 			update_site_option( 'site_admins' , $site_admins );
+		}
 		wpmu_admin_do_redirect( "wpmu-options.php" );
 		exit;
 	break;
