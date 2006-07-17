@@ -598,19 +598,15 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 function get_blog_count( $id = 0 ) {
 	global $wpdb;
 
-/*
 	if( $id == 0 )
 		$id = $wpdb->siteid;
 	
 	$count_ts = get_site_option( "blog_count_ts" );
-	if( time() - $count_ts > 86400 ) {
+	if( time() - $count_ts > 3600 ) {
 		$count = $wpdb->get_var( "SELECT count(*) as c FROM $wpdb->blogs WHERE site_id = '$id' AND spam='0' AND deleted='0' and archived='0'" );
 		update_site_option( "blog_count", $count );
 		update_site_option( "blog_count_ts", time() );
-	} else {
-		
 	} 
-*/
 
 	$count = get_site_option( "blog_count" );
 
