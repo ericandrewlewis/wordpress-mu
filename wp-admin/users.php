@@ -150,7 +150,7 @@ case 'promote':
 break;
 
 case 'dodelete':
-	wp_die( "This function is disabled." );
+	wp_die(__('This function is disabled.'));
 	check_admin_referer('delete-users');
 
 	if ( empty($_POST['users']) ) {
@@ -190,7 +190,7 @@ case 'dodelete':
 break;
 
 case 'delete':
-	wp_die( "This function is disabled." );
+	wp_die(__('This function is disabled.'));
 	check_admin_referer('bulk-users');
 
 	if ( empty($_POST['users']) )
@@ -319,7 +319,7 @@ case 'removeuser':
 break;
 
 case 'adduser':
-	die( "This function is disabled. Add a user from your community." );
+	die(__('This function is disabled. Add a user from your community.'));
 	check_admin_referer('add-user');
 
 	if ( ! current_user_can('create_users') )
@@ -555,9 +555,9 @@ foreach ( (array) $roleclass as $user_object ) {
 <form action="" method="post" name="adduser" id="adduser">
   <?php wp_nonce_field('add-user') ?>
 <input type='hidden' name='action' value='addexistinguser'>
-<p>Type the e-mail address of another user to add them to your blog.</p>
+<p><?php _e('Type the e-mail address of another user to add them to your blog.')?></p>
 <table>
-<tr><th scope="row">User&nbsp;E-Mail: </th><td><input type="text" name="newuser" id="newuser"></td></tr>
+<tr><th scope="row"><?php _e('User&nbsp;E-Mail:')?> </th><td><input type="text" name="newuser" id="newuser"></td></tr>
 	<tr>
 		<th scope="row"><?php _e('Role:') ?></th>
 		<td><select name="new_role" id="new_role"><?php 
