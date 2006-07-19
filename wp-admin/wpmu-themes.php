@@ -16,10 +16,10 @@ $allowed_themes = get_site_option( "allowed_themes" );
 ?>
 
 <form action='wpmu-edit.php?action=updatethemes' method='POST'>
-<h3>Site Themes</h3>
+<h3><?php _e('Site Themes') ?></h3>
 <table border="0" cellspacing="5" cellpadding="5">
-<caption>Disable themes site-wide. You can enable themes on a blog by blog basis.</caption>
-<tr><th width="100">Active</th><th>Theme</th><th>Description</th></tr>
+<caption><?php _e('Disable themes site-wide. You can enable themes on a blog by blog basis.') ?></caption>
+<tr><th width="100"><?php _e('Active') ?></th><th><?php _e('Theme') ?></th><th><?php _e('Description') ?></th></tr>
 <?php
 while( list( $key, $val ) = each( $themes ) ) {
 	$i++;
@@ -34,9 +34,9 @@ while( list( $key, $val ) = each( $themes ) ) {
 
 <tr valign="top" style="<?php if ($i%2) echo 'background: #eee'; ?>">
 <td>
-<label><input name="theme[<?php echo $key ?>]" type="radio" id="<?php echo $key ?>" value="disabled" <?php echo $disabled ?>/>No</label>
+<label><input name="theme[<?php echo $key ?>]" type="radio" id="<?php echo $key ?>" value="disabled" <?php echo $disabled ?>/><?php _e('No') ?></label>
 &nbsp;&nbsp;&nbsp; 
-<label><input name="theme[<?php echo $key ?>]" type="radio" id="<?php echo $key ?>" value="enabled" <?php echo $enabled ?>/>Yes</label>
+<label><input name="theme[<?php echo $key ?>]" type="radio" id="<?php echo $key ?>" value="enabled" <?php echo $enabled ?>/><?php _e('Yes') ?></label>
 </td>
 <th scope="row" align="left"><?php echo $key ?></th> 
 <td><?php echo $val[ 'Description' ] ?></td>
@@ -46,7 +46,7 @@ while( list( $key, $val ) = each( $themes ) ) {
 ?>
 </table>
 <p class="submit">
-<input type='submit' value='Update Themes &raquo;' />
+<input type='submit' value='<?php _e('Update Themes &raquo;') ?>' />
 </p>
 </form>
 
