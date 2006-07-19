@@ -43,7 +43,7 @@ do_action('lost_password');
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>WordPress &raquo; <?php _e('Lost Password') ?></title>
+	<title><?php _e('WordPress &raquo;') ?> <?php _e('Lost Password') ?></title>
 	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php bloginfo('charset'); ?>" />
 	<link rel="stylesheet" href="<?php echo get_settings('siteurl'); ?>/wp-admin/wp-admin.css" type="text/css" />
 	<script type="text/javascript">
@@ -217,7 +217,7 @@ default:
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>WordPress &rsaquo; <?php _e('Login') ?></title>
+	<title><?php _e('WordPress &rsaquo;'); ?> <?php _e('Login') ?></title>
 	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php bloginfo('charset'); ?>" />
 	<link rel="stylesheet" href="<?php bloginfo('wpurl'); ?>/wp-admin/wp-admin.css" type="text/css" />
 	<script type="text/javascript">
@@ -234,7 +234,7 @@ default:
 <?php
 if ( $error ) {
 	echo "<div id='login_error'>$error</div>";
-	echo "<p align='center'><strong>Note:</strong> You must <a href='http://www.google.com/cookies.html'>enable cookies</a> to use WordPress.</p>";
+	echo '<p align="center">'.__('<strong>Note:</strong> You must <a href="http://www.google.com/cookies.html">enable cookies</a> to use WordPress.').'</p>';
 }
 ?>
 
