@@ -47,13 +47,13 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 		print '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" style="width:40%; text-align: right; font-size: 20px;" /><span style="font-size: 20px">.' . $current_site->domain . $current_site->path . '</span><br />';
 	}
 	if ( !is_user_logged_in() ) {
-		print '(<strong>Your address will be ';
+		print '(<strong>' . __( 'Your address will be ' );
 		if( constant( "VHOST" ) == 'no' ) {
-			print $current_site->domain . $current_site->path . 'blogname';
+			print $current_site->domain . $current_site->path . __( 'blogname' );
 		} else {
-			print 'domain.' . $current_site->domain . $current_site->path;
+			print __( 'domain.' ) . $current_site->domain . $current_site->path;
 		}
-		print '.</strong> Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)</td> </tr>';
+		print '.</strong>' . __( 'Must be at least 4 characters, letters and numbers only. It cannot be changed so choose carefully!)' ) . '</td> </tr>';
 	}
 
 	// Blog Title
@@ -62,7 +62,7 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 	} else {
 		print '<tr>';
 	}
-?><th valign="top" width="120">Blog Title:</th><td><?php
+?><th valign="top" width="120"><?php _e('Blog Title:') ?></th><td><?php
 
 	if ( $errmsg = $errors->get_error_message('blog_title') ) {
 ?><p><strong><?php echo $errmsg ?></strong></p><?php
@@ -71,7 +71,7 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 		</tr>';
 ?>
 <tr>
-<th scope="row"  valign="top">Privacy:</th>
+<th scope="row"  valign="top"><?php _e('Privacy:') ?></th>
 <td><label><input type="checkbox" name="blog_public" value="1" checked="checked" /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?></label></td>
 </tr>
 <?php
@@ -103,7 +103,7 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	}
 
 	print '<input name="user_name" type="text" id="user_name" value="'.$user_name.'" maxlength="50" style="width:50%; font-size: 30px;" /><br />';
-	print '(Must be at least 4 characters, letters and numbers only.)</td> </tr>';
+	print __('(Must be at least 4 characters, letters and numbers only.)') . '</td> </tr>';
 
 	// User Email
 	if ( $errors->get_error_message('user_email') ) {
@@ -111,13 +111,13 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	} else {
 		print '<tr>';
 	}
-?><th valign="top">Email&nbsp;Address:</th><td><?php
+?><th valign="top"><?php _e('Email&nbsp;Address:') ?></th><td><?php
 
 	if ( $errmsg = $errors->get_error_message('user_email') ) {
 ?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
 	print '
-	<input name="user_email" type="text" id="user_email" value="'.wp_specialchars($user_email, 1).'" maxlength="200" /><br /> (We&#8217;ll send your password to this address, so <strong>triple-check it</strong>.)</td>
+	<input name="user_email" type="text" id="user_email" value="'.wp_specialchars($user_email, 1).'" maxlength="200" /><br /> ' . __('(We&#8217;ll send your password to this address, so <strong>triple-check it</strong>.)') . '</td>
 	</tr>';
 
 	if ( $errmsg = $errors->get_error_message('generic') )
@@ -139,12 +139,12 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	echo '<h2>' . sprintf( __('Get <em>another</em> %s blog in seconds'), $current_site->site_name ) . '</h2>';
 
 	if ( $errors->get_error_code() ) {
-		print "<p>There was a problem, please correct the form below and try again.</p>";
+		print '<p>'.__('There was a problem, please correct the form below and try again.').'</p>';
 	}
 
 ?>
-<p>Welcome back, <?php echo $current_user->display_name; ?>. By filling out the form below, you can <strong>add another blog to your account</strong>. There is no limit to the number of blogs you can have, so create to your heart's content, but blog responsibly.</p>
-<p>Here are the blogs you already have:</p>
+<?php printf(__("<p>Welcome back, %s. By filling out the form below, you can <strong>add another blog to your account</strong>. There is no limit to the number of blogs you can have, so create to your heart's content, but blog responsibly.</p>"), $current_user->display_name) ?>
+<p><?php _e('Here are the blogs you already have:') ?></p>
 <ul>
 <?php 
 	$blogs = get_blogs_of_user($current_user->ID);
@@ -163,7 +163,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 ?>
 <tr>
 <th scope="row"  valign="top">&nbsp;</th>
-<td><input id="submit" type="submit" name="Submit" class="submit" value="Create Blog &raquo;" /></td>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="<?php _e('Create Blog &raquo;') ?>" /></td>
 </tr>
 </table>
 </form>
@@ -212,16 +212,16 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <td>
 <p>
 <input id="signupblog" type="radio" name="signup_for" value="blog" checked="checked" />
-<label for="signupblog">Gimme a blog!</label>
+<label for="signupblog"><?php _e('Gimme a blog!') ?></label>
 <br />
 <input id="signupuser" type="radio" name="signup_for" value="user" />
-<label for="signupuser">Just a username, please.</label>
+<label for="signupuser"><?php _e('Just a username, please.') ?></label>
 </p>
 </td>
 </tr>
 <tr>
 <th scope="row"  valign="top">&nbsp;</th>
-<td><input id="submit" type="submit" name="Submit" class="submit" value="Next &raquo;" /></td>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="<?php _e('Next &raquo;') ?>" /></td>
 </tr>
 </table>
 </form>
@@ -272,7 +272,7 @@ function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_tit
 <?php show_blog_form($blog_id, $blog_title, $errors); ?>
 <tr>
 <th scope="row"  valign="top">&nbsp;</th>
-<td><input id="submit" type="submit" name="Submit" class="submit" value="Signup &raquo;" /></td>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="<?php _e('Signup &raquo;') ?>" /></td>
 </tr>
 </table>
 </form>
@@ -309,7 +309,7 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_emai
 ?>
 <h2><?php printf(__('%s Is Yours'), $domain.$path) ?></h2>
 <p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
-<p><?php printf(__('Check your inbox at <strong>%1$s</strong> and click the link given.  '),  $user_email) ?></p>
+<p><?php printf(__('Check your inbox at <strong>%s</strong> and click the link given.  '),  $user_email) ?></p>
 <p><?php _e('If you do not activate your blog within two days, you will have to sign up again.'); ?></p>
 <?php
 	do_action('signup_finished');
@@ -337,7 +337,7 @@ switch ($_POST['stage']) {
 			signup_user( $blog_id );
 
 		if ($blog_id) {
-?><p><em>The blog you were looking for, <strong><?php echo $blog_id ?>.<?php echo $current_site->domain ?></strong> doesn't exist but you can create it now!</em></p><?php
+			printf(__("<p><em>The blog you were looking for, <strong> %1$s.%2$s</strong> doesn't exist but you can create it now!</em></p>"), $blog_id, $current_site->domain);
 		}
 		break;
 }
