@@ -51,10 +51,10 @@ if ( empty($PHP_SELF) )
 	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
 if ( !(phpversion() >= '4.1') )
-	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.1' );
+	die(sprintf(__('Your server is running PHP version %s but WordPress requires at least 4.1'), phpversion()));
 
 if ( !extension_loaded('mysql') )
-	die( 'Your PHP installation appears to be missing the MySQL which is required for WordPress.' );
+	die(__('Your PHP installation appears to be missing the MySQL which is required for WordPress.'));
 
 function timer_start() {
 	global $timestart;
@@ -200,16 +200,16 @@ if( is_array( $plugins ) ) {
 $wpdb->show_errors();
 
 if ( '1' == $current_blog->deleted )
-	graceful_fail('This user has elected to delete their account and the content is no longer available.');
+	graceful_fail(__('This user has elected to delete their account and the content is no longer available.'));
 
 if ( '2' == $current_blog->deleted )
-		graceful_fail("This blog has not been activated yet. If you are having problems activating your blog, please contact <a href='mailto:support@{$current_site->domain}'>support@{$current_site->domain}</a>.");
+		graceful_fail(sprintf(__('This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:support@{%1$s}">support@{%1$s}</a>.'), $current_site->domain));
 
 if( $current_blog->archived == '1' )
-    graceful_fail( 'This blog has been archived or suspended.' );
+    graceful_fail(__('This blog has been archived or suspended.'));
 
 if( $current_blog->spam == '1' )
-    graceful_fail( 'This blog has been archived or suspended.' );
+    graceful_fail(__('This blog has been archived or suspended.'));
 
 if (!strstr($_SERVER['PHP_SELF'], 'install.php') && !strstr($_SERVER['PHP_SELF'], 'wp-admin/import')) :
     // Used to guarantee unique hash cookies
