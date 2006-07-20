@@ -8,7 +8,7 @@ function unregister_GLOBALS() {
 		return;
 
 	if ( isset($_REQUEST['GLOBALS']) )
-		die('GLOBALS overwrite attempt detected');
+		wp_die('GLOBALS overwrite attempt detected');
 
 	// Variables that shouldn't be unset
 	$noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES', 'table_prefix');
@@ -21,7 +21,6 @@ function unregister_GLOBALS() {
 
 unregister_GLOBALS(); 
 
-$HTTP_USER_AGENT = $_SERVER[ 'HTTP_USER_AGENT' ];
 unset( $wp_filter, $cache_userdata, $cache_lastcommentmodified, $cache_lastpostdate, $cache_settings, $category_cache, $cache_categories );
 
 if ( ! isset($blog_id) )
