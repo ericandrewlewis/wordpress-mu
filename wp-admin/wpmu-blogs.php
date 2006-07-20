@@ -201,7 +201,7 @@ switch( $_GET[ 'action' ] ) {
 <?php autocomplete_css(); ?>
 <p><?php _e('As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.') ?></p>
 <table>
-<tr><th scope="row"><? php _e('User&nbsp;Login:') ?> </th><td><input type="text" name="newuser" id="newuser"></td></tr>
+<tr><th scope="row"><?php _e('User&nbsp;Login:') ?> </th><td><input type="text" name="newuser" id="newuser"></td></tr>
 <tr><td></td><td><div id="searchresults" class="autocomplete"></div></td> </tr>
 	<tr>
 		<th scope="row"><?php _e('Role:') ?></th>
