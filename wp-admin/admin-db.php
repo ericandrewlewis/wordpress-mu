@@ -512,6 +512,36 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 			$wpdb->query( "DROP TABLE IF EXISTS $val" );
 
 		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
+                $dir = ABSPATH . "wp-content/blogs.dir/{$blog_id}/files";
+                $dir = rtrim($dir, DIRECTORY_SEPARATOR);
+                $top_dir = $dir;
+                $stack = array($dir);
+                $index = 0;
+
+                while ($index < count($stack)) {
+                        # Get indexed directory from stack
+                        $dir = $stack[$index];
+
+			$dh = @ opendir($dir);
+			if ($dh) {
+				while (($file = @ readdir($dh)) !== false) {
+					if ($file == '.' or $file == '..')
+						continue;
+
+					if (@ is_dir($dir . DIRECTORY_SEPARATOR . $file))
+						$stack[] = $dir . DIRECTORY_SEPARATOR . $file;
+					else if (@ is_file($dir . DIRECTORY_SEPARATOR . $file))
+						@ unlink($dir . DIRECTORY_SEPARATOR . $file);
+				}
+			}
+			$index++;
+                }
+
+                $stack = array_reverse($stack);  // Last added dirs are deepest
+                foreach($stack as $dir) {
+                        if ( $dir != $top_dir)
+                                @ rmdir($dir);
+                }
 	}
 
 	if ( $switch )
