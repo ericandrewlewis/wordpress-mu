@@ -19,7 +19,7 @@ switch( $_GET[ 'action' ] ) {
 		if( isset( $_GET[ 'n' ] ) == false ) {
 			$n = 0;
 		} else {
-			$n = $_GET[ 'n' ];
+			$n = intval( $_GET[ 'n' ] );
 		}
 		$blogs = $wpdb->get_results( "SELECT * FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND spam = '0' AND deleted = '0' AND archived = '0' ORDER BY registered DESC LIMIT $n, 5", ARRAY_A );
 		if( is_array( $blogs ) ) {
