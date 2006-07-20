@@ -207,7 +207,8 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		$id = $_GET[ 'id' ];
+		check_admin_referer('deleteblog');
+		$id = intval( $_REQUEST[ 'id' ] );
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id, true );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
@@ -216,6 +217,7 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
+		check_admin_referer('allblogs');
 		if( is_array( $_POST[ 'allblogs' ] ) ) {
 			while( list( $key, $val ) = each( $_POST[ 'allblogs' ] ) ) {
 				if( $val != '0' && $val != '1' ) {
@@ -238,40 +240,58 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		update_archived( $_GET[ 'id' ], '0' );
+		check_admin_referer('activateblog');
+		$id = intval( $_REQUEST[ 'id' ] );
+		update_archived( $id, '0' );
+		do_action( "activate_blog", $id );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "deactivateblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		do_action( "deactivate_blog", $_GET[ 'id' ] );
-		update_archived( $_GET[ 'id' ], '1' );
+		check_admin_referer('deactivateblog');
+		$id = intval( $_REQUEST[ 'id' ] );
+		do_action( "deactivate_blog", $id );
+		update_archived( $id, '1' );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "unspamblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		update_blog_status( $_GET[ 'id' ], "spam", '0' );
+		check_admin_referer('unspamblog');
+		$id = intval( $_REQUEST[ 'id' ] );
+		update_blog_status( $id, "spam", '0' );
+		do_action( "unspam_blog", $id );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "spamblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
-		do_action( "make_spam_blog", $_GET[ 'id' ] );
-		update_blog_status( $_GET[ 'id' ], "spam", '1' );
+		check_admin_referer('spamblog');
+		$id = intval( $_REQUEST[ 'id' ] );
+		do_action( "make_spam_blog", $id );
+		update_blog_status( $id, "spam", '1' );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "mature":
-		update_blog_status( $_GET[ 'id' ], 'mature', '1' );
-		do_action( 'mature_blog', $_GET[ 'id' ] );
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		$id = intval( $_REQUEST[ 'id' ] );
+		update_blog_status( $id, 'mature', '1' );
+		do_action( 'mature_blog', $id );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "unmature":
-		update_blog_status( $_GET[ 'id' ], 'mature', '0' );
-		do_action( 'unmature_blog', $_GET[ 'id' ] );
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		$id = intval( $_REQUEST[ 'id' ] );
+		update_blog_status( $id, 'mature', '0' );
+		do_action( 'unmature_blog', $id );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
     	case "updateuser":

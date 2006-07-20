@@ -307,6 +307,10 @@ function check_all_rows() {
 		return "<?php _e('Check All') ?>"; 
 	}
 }
+
+function confirm_action( msg ) {
+	return confirm( msg );
+}
 //  -->
 </script>
 
@@ -456,11 +460,15 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	case 'control_spam':
 		if( get_blog_status( $blog[ 'blog_id' ], "spam" ) == '1' ) {
 			?>
-				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=unspamblog&amp;id=".$blog[ 'blog_id' ]."' class='edit' onclick=\"return confirm('" . sprintf(__("You are about to mark this blog as not spam?\\n  \'OK\' to activate, \'Cancel\' to stop.") ) . "')\">" . __('Not Spam') . "</a>"; ?></td>
+			<td valign='top'><form action='wpmu-edit.php?action=unspamblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to mark this blog as not spam.") ?>" )'>
+			<?php wp_nonce_field( "unspamblog" ); ?>
+			<input type='hidden' name='id' value='<?php echo $blog[ 'blog_id' ] ?>'><input type='submit' value='<?php _e('Not Spam') ?>'></form></td>
 			<?php
 		} else {
 			?>
-				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=spamblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to mark this blog as spam?\\n  \'OK\' to continue, \'Cancel\' to stop.") ) . "')\">" . __('Spam') . "</a>"; ?></td>
+			<td valign='top'><form action='wpmu-edit.php?action=spamblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to mark this blog as spam.") ?>" )'>
+			<?php wp_nonce_field( "spamblog" ); ?>
+			<input type='hidden' name='id' value='<?php echo $blog[ 'blog_id' ] ?>'><input type='submit' value='<?php _e('Spam') ?>'></form></td>
 			<?php
 		}
 		break;
@@ -468,18 +476,24 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	case 'control_deactivate':
 		if( is_archived( $blog[ 'blog_id' ] ) == '1' ) {
 			?>
-				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=activateblog&amp;id=".$blog[ 'blog_id' ]."' class='edit' onclick=\"return confirm('" . sprintf(__("You are about to activate this blog?\\n  \'OK\' to activate, \'Cancel\' to stop.") ) . "')\">" . __('Activate') . "</a>"; ?></td>
+			<td valign='top'><form action='wpmu-edit.php?action=activateblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to activate this blog.") ?>" )'>
+			<?php wp_nonce_field( "activateblog" ); ?>
+			<input type='hidden' name='id' value='<?php echo $blog[ 'blog_id' ] ?>'><input type='submit' value='<?php _e('Activate') ?>'></form></td>
 			<?php
 		} else {
 			?>
-				<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deactivateblog&amp;id=".$blog[ 'blog_id' ]."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to deactivate this blog?\\n  \'OK\' to deactivate, \'Cancel\' to stop.") ) . "')\">" . __('Deactivate') . "</a>"; ?></td>
+			<td valign='top'><form action='wpmu-edit.php?action=deactivateblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to deactivate this blog.") ?>" )'>
+			<?php wp_nonce_field( "deactivateblog" ); ?>
+			<input type='hidden' name='id' value='<?php echo $blog[ 'blog_id' ] ?>'><input type='submit' value='<?php _e('Deactivate') ?>'></form></td>
 			<?php
 		}
 		break;
 
 	case 'control_delete':
 		?>
-		<td valign='top'><?php echo "<a href='wpmu-edit.php?action=deleteblog&amp;id=".$blog[ 'blog_id' ]."&amp;redirect=".wpmu_admin_redirect_url()."' class='delete' onclick=\"return confirm('" . sprintf(__("You are about to delete this blog?\\n  \'OK\' to delete, \'Cancel\' to stop.") ) . "')\">" . __('Delete') . "</a>"; ?></td>
+		<td valign='top'><form action='wpmu-edit.php?action=deleteblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to completely delete this blog, it\'s database tables and uploaded files?\\n  \'OK\' to delete, \'Cancel\' to stop.") ?>" )'>
+		<?php wp_nonce_field( "deleteblog" ); ?>
+		<input type='hidden' name='id' value='<?php echo $blog[ 'blog_id' ] ?>'><input type='submit' value='<?php _e('Delete') ?>'></form></td>
 		<?php
 		break;
 
@@ -513,6 +527,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <p><?php _e('Selected Blogs:') ?><ul>
 <li><input type='radio' name='blogfunction' id='delete' value='delete'> <label for='delete'><?php _e('Delete') ?></label></li>
 <li><input type='radio' name='blogfunction' id='spam' value='spam'> <label for='spam'><?php _e('Mark as Spam') ?></label></li>
+<?php wp_nonce_field( "allblogs" ); ?>
 </ul>
 <input type='hidden' name='redirect' value='<?php echo $_SERVER[ 'REQUEST_URI' ] ?>'>
 <input type='submit' value='<?php _e('Apply Changes') ?>'></p>
