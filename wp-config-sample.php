@@ -7,6 +7,10 @@ define('DB_HOST', 'localhost');    // 99% chance you won't need to change this v
 define('VHOST', 'VHOSTSETTING'); 
 $base = 'BASE';
 
+// double check $base
+if( $base == 'BASE' )
+	die( 'Problem in wp-config.php - $base is set to BASE when it should be the path like "/" or "/blogs/"! Please fix it!' );
+
 // Change the prefix if you want to have multiple blogs in a single database.
 $table_prefix  = 'wp_';   // example: 'wp_' or 'b2' or 'mylogin_'
 
@@ -17,69 +21,6 @@ $table_prefix  = 'wp_';   // example: 'wp_' or 'b2' or 'mylogin_'
 define ('WPLANG', '');
 
 define( "WP_USE_MULTIPLE_DB", false );
-/*
-   All databases must use different usernames and passwords!
-*/
-$db_list = array( 
-	"write" => array( 
-			array(	"db_name"	=> "WRITE_DB_NAME1",
-				"db_user"	=> "WRITE_DB_USER1",
-				"db_password"	=> "WRITE_DB_PASS1",
-				"db_host"	=> "WRITE_DB_HOST1"
-			)
-		),
-	"read" => array(
-			array(	"db_name"	=> "READ_DB_NAME1",
-				"db_user"	=> "READ_DB_USER1",
-				"db_password"	=> "READ_DB_PASS1",
-				"db_host"	=> "READ_DB_HOST1"
-			),
-			array(	"db_name"	=> "READ_DB_NAME2",
-				"db_user"	=> "READ_DB_USER2",
-				"db_password"	=> "READ_DB_PASS2",
-				"db_host"	=> "READ_DB_HOST2"
-			),
-			array(	"db_name"	=> "READ_DB_NAME3",
-				"db_user"	=> "READ_DB_USER3",
-				"db_password"	=> "READ_DB_PASS3",
-				"db_host"	=> "READ_DB_HOST3"
-			),
-			array(	"db_name"	=> "READ_DB_NAME4",
-				"db_user"	=> "READ_DB_USER4",
-				"db_password"	=> "READ_DB_PASS4",
-				"db_host"	=> "READ_DB_HOST4"
-			),
-			array(	"db_name"	=> "READ_DB_NAME5",
-				"db_user"	=> "READ_DB_USER5",
-				"db_password"	=> "READ_DB_PASS5",
-				"db_host"	=> "READ_DB_HOST5"
-			),
-			array(	"db_name"	=> "READ_DB_NAME6",
-				"db_user"	=> "READ_DB_USER6",
-				"db_password"	=> "READ_DB_PASS6",
-				"db_host"	=> "READ_DB_HOST6"
-			)
-		)
-	);
-
-$global_db_list = array( 
-			array(	"db_name"	=> "GLOBAL_DB_NAME1",
-				"db_user"	=> "GLOBAL_DB_USER1",
-				"db_password"	=> "GLOBAL_DB_PASS1",
-				"db_host"	=> "GLOBAL_DB_HOST1"
-			),
-			array(	"db_name"	=> "GLOBAL_DB_NAME2",
-				"db_user"	=> "GLOBAL_DB_USER2",
-				"db_password"	=> "GLOBAL_DB_PASS2",
-				"db_host"	=> "GLOBAL_DB_HOST2"
-			),
-			array(	"db_name"	=> "GLOBAL_DB_NAME3",
-				"db_user"	=> "GLOBAL_DB_USER3",
-				"db_password"	=> "GLOBAL_DB_PASS3",
-				"db_host"	=> "GLOBAL_DB_HOST3"
-			)
-			);
-
 
 /* Stop editing */
 
