@@ -139,6 +139,7 @@ switch( $_GET[ 'action' ] ) {
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
+		check_admin_referer('editblog');
 		$options_table_name = $wpmuBaseTablePrefix . $id ."_options";
 
 		// themes

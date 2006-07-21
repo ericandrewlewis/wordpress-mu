@@ -28,6 +28,7 @@ switch( $_GET[ 'action' ] ) {
     print "<a href='http://{$details[ 'domain' ]}/'>{$details[ 'domain' ]}</a>";
     ?>
     <form name="form1" method="post" action="wpmu-edit.php?action=updateblog"> 
+    <?php wp_nonce_field( "editblog" ); ?>
     <input type="hidden" name="id" value="<?php echo $_GET[ 'id' ] ?>" /> 
     <table><td valign='top'>
     <div class="wrap">
