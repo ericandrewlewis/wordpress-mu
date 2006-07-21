@@ -491,7 +491,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_delete':
 		?>
-		<td valign='top'><form action='wpmu-edit.php?action=deleteblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to completely delete this blog, it\'s database tables and uploaded files?\\n  \'OK\' to delete, \'Cancel\' to stop.") ?>" )'>
+		<td valign='top'><form action='wpmu-edit.php?action=deleteblog' method='POST' onSubmit='return confirm_action( "<?php _e("You are about to completely delete this blog, its database tables and uploaded files.") ?>" )'>
 		<?php wp_nonce_field( "deleteblog" ); ?>
 		<input type='hidden' name='id' value='<?php echo $blog[ 'blog_id' ] ?>'><input type='submit' value='<?php _e('Delete') ?>'></form></td>
 		<?php
