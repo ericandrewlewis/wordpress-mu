@@ -270,7 +270,7 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     </tr>
   </table> 
   <h2>Server Address</h2>
-  <p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box above.<br /><b>Server Address:</b> <input type='text' name='basedomain' value='{$hostname}'></label></p>
+  <p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.<br /><b>Server Address:</b> <input type='text' name='basedomain' value='{$hostname}'></label></p>
   <h2>Blog Details</h2>
   <table width='100%'> 
   <tr> 
