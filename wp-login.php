@@ -81,7 +81,7 @@ if ($error)
 <ul>
 	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
 <?php if (get_settings('users_can_register')) : ?>
-	<li><a href="<?php bloginfo('wpurl'); ?>/wp-register.php"><?php _e('Register') ?></a></li>
+	<li><a href="<?php bloginfo('wpurl'); ?>/wp-signup.php"><?php _e('Register') ?></a></li>
 <?php endif; ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Login') ?></a></li>
 </ul>
@@ -252,7 +252,7 @@ if ( $error ) {
 <ul>
 	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
 <?php if (get_settings('users_can_register')) : ?>
-	<li><a href="<?php bloginfo('wpurl'); ?>/wp-register.php"><?php _e('Register') ?></a></li>
+	<li><a href="<?php bloginfo('wpurl'); ?>/wp-signup.php"><?php _e('Register') ?></a></li>
 <?php endif; ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a></li>
 </ul>
