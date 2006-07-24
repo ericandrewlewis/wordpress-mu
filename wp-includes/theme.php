@@ -50,24 +50,24 @@ function get_theme_data($theme_file) {
 	preg_match("|Author URI:(.*)|i", $theme_data, $author_uri);
 	preg_match("|Template:(.*)|i", $theme_data, $template);
 	if ( preg_match("|Version:(.*)|i", $theme_data, $version) )
-		$version = $version[1];
+		$version = trim($version[1]);
 	else
 		$version ='';
 	if ( preg_match("|Status:(.*)|i", $theme_data, $status) )
-		$status = $status[1];
+		$status = trim($status[1]);
 	else
-		$status ='publish';
+		$status = 'publish';
 
-	$description = wptexturize($description[1]);
+	$description = wptexturize(trim($description[1]));
 
 	$name = $theme_name[1];
 	$name = trim($name);
 	$theme = $name;
 
 	if ( '' == $author_uri[1] ) {
-		$author = $author_name[1];
+		$author = trim($author_name[1]);
 	} else {
-		$author = '<a href="' . $author_uri[1] . '" title="' . __('Visit author homepage') . '">' . $author_name[1] . '</a>';
+		$author = '<a href="' . trim($author_uri[1]) . '" title="' . __('Visit author homepage') . '">' . trim($author_name[1]) . '</a>';
 	}
 
 	return array('Name' => $name, 'Title' => $theme, 'Description' => $description, 'Author' => $author, 'Version' => $version, 'Template' => $template[1], 'Status' => $status);
@@ -371,6 +371,10 @@ function load_template($file) {
 }
 
 function validate_current_theme() {
+	// Don't validate during an install/upgrade.
+	if ( defined('WP_INSTALLING') )
+		return true;
+
 	if ((get_template() != 'default') && (!file_exists(get_template_directory() . '/index.php'))) {
 		update_option('template', 'default');
 		update_option('stylesheet', 'default');
