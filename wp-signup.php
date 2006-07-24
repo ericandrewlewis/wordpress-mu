@@ -337,7 +337,11 @@ switch ($_POST['stage']) {
 			signup_user( $blog_id );
 
 		if ($blog_id) {
-			printf(__("<p><em>The blog you were looking for, <strong> %1$s.%2$s</strong> doesn't exist but you can create it now!</em></p>"), $blog_id, $current_site->domain);
+			if( constant( "VHOST" ) == 'no' )
+				$newblog = 'http://' . $current_site->domain . $current_site->path . $blog_id . '/';
+			else
+				$newblog = 'http://' . $blog_id . '.' . $current_site->domain . $current_site->path;
+			printf(__("<p><em>The blog you were looking for, <strong>%s</strong> doesn't exist but you can create it now!</em></p>"), $newblog );
 		}
 		break;
 }
