@@ -67,12 +67,11 @@ function &get_categories($args = '') {
 	$exclusions = apply_filters('list_cats_exclusions', $exclusions, $r );
 	$where .= $exclusions;
 
-	$having = '';
 	if ( $hide_empty ) {
 		if ( 'link' == $type )
-			$having = 'HAVING link_count > 0';
+			$where .= ' AND link_count > 0';
 		else
-			$having = 'HAVING category_count > 0';
+			$where .= ' AND category_count > 0';
 	}
 
 	if ( !empty($number) )
@@ -80,7 +79,7 @@ function &get_categories($args = '') {
 	else
 		$number = '';
 
-	$categories = $wpdb->get_results("SELECT * FROM $wpdb->categories WHERE $where $having ORDER BY $orderby $order $number");
+	$categories = $wpdb->get_results("SELECT * FROM $wpdb->categories WHERE $where ORDER BY $orderby $order $number");
 
 	if ( empty($categories) )
 		return array();
