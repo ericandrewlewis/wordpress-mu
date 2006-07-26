@@ -15,11 +15,11 @@ class WP_Scripts {
 		$this->add( 'sack', '/wp-includes/js/tw-sack.js', false, '1.6.1' );
 		$this->add( 'quicktags', '/wp-includes/js/quicktags.js', false, '3517' );
 		$this->add( 'colorpicker', '/wp-includes/js/colorpicker.js', false, '3517' );
-		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '06262006a' );
-		$this->add( 'wp_tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('tiny_mce'), '06262006a' );
+		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '04162006' );
+		$this->add( 'wp_tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('tiny_mce'), '04162006' );
 		if ( is_admin() ) {
 			$this->add( 'dbx-admin-key', '/wp-admin/dbx-admin-key-js.php', array('dbx'), '3651' );
-			$this->add( 'listman', '/wp-admin/list-manipulation-js.php', array('sack', 'fat'), '3850' ); // Make changeset # the correct one
+			$this->add( 'listman', '/wp-admin/list-manipulation-js.php', array('sack', 'fat'), '4042' ); // Make changeset # the correct one
 			$this->add( 'ajaxcat', '/wp-admin/cat-js.php', array('listman'), '3684' );
 			$this->add( 'admin-categories', '/wp-admin/categories.js', array('listman'), '3684' );
 			$this->add( 'admin-custom-fields', '/wp-admin/custom-fields.js', array('listman'), '3733' );
