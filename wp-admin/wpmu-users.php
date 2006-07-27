@@ -328,7 +328,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <li><input type='radio' name='userfunction' id='delete' value='delete'> <label for='delete'><?php _e('Delete') ?></label></li>
 <li><input type='radio' name='userfunction' id='spam' value='spam'> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
 </ul>
-<input type='submit' value='<?php __('Apply Changes') ?>'></p>
+<input type='submit' value='<?php _e('Apply Changes') ?>'></p>
 </form>
 
 <?php
