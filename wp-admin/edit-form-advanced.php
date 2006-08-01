@@ -216,8 +216,12 @@ if ( ! empty($pings) )
 </fieldset>
 </div>
 
+<div class="dbx-box-wrapper">
 <fieldset id="postcustom" class="dbx-box">
+<div class="dbx-handle-wrapper">
 <h3 class="dbx-handle"><?php _e('Custom Fields') ?></h3>
+</div>
+<div class="dbx-content-wrapper">
 <div id="postcustomstuff" class="dbx-content">
 <table cellpadding="3">
 <?php
@@ -232,6 +236,7 @@ list_meta($metadata);
 <div id="ajax-response"></div>
 </div>
 </fieldset>
+</div>
 
 <?php do_action('dbx_post_advanced'); ?>
 

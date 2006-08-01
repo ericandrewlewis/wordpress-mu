@@ -502,13 +502,7 @@ function get_blog_status( $id, $pref ) {
 
 function get_last_updated( $display = false ) {
 	global $wpdb;
-	$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND last_updated != '0000-00-00 00:00:00' ORDER BY last_updated DESC limit 0,40", ARRAY_A );
-	if( is_array( $blogs ) ) {
-		while( list( $key, $details ) = each( $blogs ) ) { 
-			if( get_blog_status( $details[ 'blog_id' ], 'archived' ) == '1' )
-				unset( $blogs[ $key ] );
-		}
-	}
+	$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' AND last_updated != '0000-00-00 00:00:00' ORDER BY last_updated DESC limit 0,40", ARRAY_A );
 
 	return $blogs;
 }
@@ -1363,6 +1357,11 @@ SITE_NAME" );
 		$current_site->site_name = "WordPress MU";
 	$subject = sprintf(__('New %1$s User: %2$s'), $current_site->site_name, $user->user_login);
 	wp_mail($user->user_email, $subject, $message, $message_headers);	
+}
+
+function get_current_site() {
+	global $current_site;
+	return $current_site;
 }
 
 ?>
