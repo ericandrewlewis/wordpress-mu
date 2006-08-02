@@ -130,7 +130,7 @@ function wpmu_log_new_registrations( $blog_id, $user_id ) {
 	$user = new WP_User($user_id);
 	$email = $wpdb->escape($user->user_email);
 	$IP = preg_replace( '/[^0-9., ]/', '',$_SERVER['REMOTE_ADDR'] );
-	$wpdb->query( "INSERT INTO {$wpdb->registration_log} ( email , IP , blog_id, t ) VALUES ( '{$email}', '{$IP}', '{$blog_id}', NOW( ))" );
+	$wpdb->query( "INSERT INTO {$wpdb->registration_log} ( email , IP , blog_id, date_registered ) VALUES ( '{$email}', '{$IP}', '{$blog_id}', NOW( ))" );
 }
 
 add_action( "wpmu_new_blog" ,"wpmu_log_new_registrations", 10, 2 );

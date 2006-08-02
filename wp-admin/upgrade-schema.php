@@ -176,7 +176,7 @@ CREATE TABLE $wpdb->registration_log (
   email varchar(255) NOT NULL default '',
   IP varchar(30) NOT NULL default '',
   blog_id bigint(20) NOT NULL default '0',
-  t timestamp NOT NULL,
+  date_registered datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (ID),
   KEY IP (IP)
 );
