@@ -337,6 +337,10 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_emai
 }
 
 // Main
+if( in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
+	header( "Location: http://{$current_site->domain}{$current_site->path}" );
+	die();
+}
 $blog_id = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
 if( $_POST['blog_public'] != 1 )
 	$_POST['blog_public'] = 0;
