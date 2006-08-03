@@ -52,6 +52,12 @@ if (isset($_GET['updated'])) {
 		<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?></td> 
 		</tr> 
 		<tr valign="top"> 
+		<th scope="row"><?php _e('Ban Email Domains:') ?></th> 
+		<td><input name="banned_email_domains" type="text" id="banned_email_domains" style="width: 95%" value="<?php echo get_site_option('banned_email_domains') == '' ? '' : @implode( " ", get_site_option('banned_email_domains') ); ?>" size="45" />
+		<br />
+		<?php _e('If you want to ban certain email domains from blog registrations. Separate domains by spaces.') ?></td> 
+		</tr> 
+		<tr valign="top"> 
 		<th scope="row"><?php _e('Blog upload space:') ?></th> 
 		<td><input name="blog_upload_space" type="text" id="blog_upload_space" value="<?php echo get_site_option('blog_upload_space', 10) ?>" size="3" /> MB
 		</tr> 

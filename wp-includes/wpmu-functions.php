@@ -33,14 +33,14 @@ function wpmu_checkAvailableSpace($action) {
 	// Using the action.
 	// Set the action to 'not-writable' to block the upload
 	global $wpblog, $blog_id;
-	
-	// Default space allowed is 10 MB 
+
+	// Default space allowed is 10 MB
 	$spaceAllowed = get_site_option( "blog_upload_space" );
 	if( $spaceAllowed == false )
 		$spaceAllowed = 10;
-	
+
 	$dirName = ABSPATH."wp-content/blogs.dir/".$blog_id."/files/";
-	
+
   	$dir  = dir($dirName);
    	$size = 0;
 
@@ -55,16 +55,16 @@ function wpmu_checkAvailableSpace($action) {
 	}
 	$dir->close();
 	$size = $size / 1024 / 1024;
-	
-	?>	
+
+	?>
 	Space Available (<?php printf( "%2.2f", ( ($spaceAllowed-$size) ) ) ?><i>MB)</i>
 	<?php
-	
+
 	if (($spaceAllowed-$size)>0) {
 		return $action;
 	} else {
 		// No space left
-		return 'not-writable';	
+		return 'not-writable';
 	}
 }
 add_filter('fileupload_init','wpmu_checkAvailableSpace');
@@ -74,7 +74,7 @@ if( defined( "WP_INSTALLING" ) == false ) {
 	header( "X-rootblog: http://" . $current_site->domain . $current_site->path );
 	header( "X-created-on: " . $current_blog->registered );
 
-	if( empty( $WPMU_date ) == false ) 
+	if( empty( $WPMU_date ) == false )
 		header( "X-wpmu-date: $WPMU_date" );
 }
 
@@ -197,7 +197,7 @@ function get_blog_details( $id, $all = true ) {
 
 function refresh_blog_details( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
-	
+
 	$details = get_blog_details( $id );
 	wp_cache_delete( $id , 'blog-details' );
 
@@ -220,7 +220,7 @@ function is_site_admin( $user_login = false ) {
 
 	if ( $user_login )
 		$user_login = sanitize_user( $user_login );
-	else 
+	else
 		$user_login = $current_user->user_login;
 
 	$site_admins = get_site_option( 'site_admins', array('admin') );
@@ -260,7 +260,7 @@ function get_site_option( $option, $default = false, $use_cache = true ) {
 
 function add_site_option( $key, $value ) {
 	global $wpdb;
-	
+
 	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '$wpdb->siteid'");
 
 	if ( null !== $exists ) // If we already have it
@@ -279,7 +279,7 @@ function update_site_option( $key, $value ) {
 
 	if ( $value == get_site_option( $key ) )
 	 	return;
-	
+
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
 	$value = $wpdb->escape( $value );
@@ -335,7 +335,7 @@ function update_blog_option( $id, $key, $value ) {
 }
 
 function switch_to_blog( $new_blog ) {
-	global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $table_prefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched, $wp_roles;
+	global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $table_prefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched, $wp_roles, $current_user;
 
 	// backup
 	$tmpoldblogdetails[ 'blogid' ]         = $wpdb->blogid;
@@ -386,6 +386,9 @@ function switch_to_blog( $new_blog ) {
 		$wpdb->hide_errors();
 		$wp_roles->_init();
 		$wpdb->show_errors();
+	}
+	if ( is_object( $current_user ) ) {
+		$current_user->_init_caps();
 	}
 	wp_cache_init();
 
@@ -441,7 +444,7 @@ function get_users_of_blog( $id = '' ) {
 
 function get_blogs_of_user( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
-	
+
 	$user = get_userdata( $id );
 	$blogs = array();
 
@@ -477,7 +480,7 @@ function update_blog_status( $id, $pref, $value ) {
 	$wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}', last_updated = NOW() WHERE blog_id = '$id'" );
 
 	refresh_blog_details($id);
-	
+
 	if( $pref == 'spam' ) {
 		if( $value == 1 ) {
 			do_action( "make_spam_blog", $id );
@@ -524,13 +527,13 @@ function get_most_active_blogs( $num = 10, $display = true ) {
 		$blogs = get_blog_list( 0, 'all', false ); // $blog_id -> $details
 		if( is_array( $blogs ) ) {
 			reset( $blogs );
-			while( list( $key, $details ) = each( $blogs ) ) { 
+			while( list( $key, $details ) = each( $blogs ) ) {
 				$most_active[ $details[ 'blog_id' ] ] = $details[ 'postcount' ];
 				$blog_list[ $details[ 'blog_id' ] ] = $details; // array_slice() removes keys!!
 			}
 			arsort( $most_active );
 			reset( $most_active );
-			while( list( $key, $details ) = each( $most_active ) ) { 
+			while( list( $key, $details ) = each( $most_active ) ) {
 				$t[ $key ] = $blog_list[ $key ];
 			}
 			unset( $most_active );
@@ -542,7 +545,7 @@ function get_most_active_blogs( $num = 10, $display = true ) {
 	if( $display == true ) {
 		if( is_array( $most_active ) ) {
 			reset( $most_active );
-			while( list( $key, $details ) = each( $most_active ) ) { 
+			while( list( $key, $details ) = each( $most_active ) ) {
 				$url = "http://" . $details[ 'domain' ] . $details[ 'path' ];
 				print "<li>" . $details[ 'postcount' ] . " <a href='$url'>$url</a></li>";
 			}
@@ -569,7 +572,7 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 		unset( $blogs );
 		$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered DESC", ARRAY_A );
 		if( is_array( $blogs ) ) {
-			while( list( $key, $details ) = each( $blogs ) ) { 
+			while( list( $key, $details ) = each( $blogs ) ) {
 				if( is_archived( $details[ 'blog_id' ] ) == '1' )
 					unset( $blogs[ $key ] );
 
@@ -594,13 +597,13 @@ function get_blog_count( $id = 0 ) {
 
 	if( $id == 0 )
 		$id = $wpdb->siteid;
-	
+
 	$count_ts = get_site_option( "blog_count_ts" );
 	if( time() - $count_ts > 3600 ) {
 		$count = $wpdb->get_var( "SELECT count(*) as c FROM $wpdb->blogs WHERE site_id = '$id' AND spam='0' AND deleted='0' and archived='0'" );
 		update_site_option( "blog_count", $count );
 		update_site_option( "blog_count_ts", time() );
-	} 
+	}
 
 	$count = get_site_option( "blog_count" );
 
@@ -609,9 +612,9 @@ function get_blog_count( $id = 0 ) {
 
 function get_blog_post( $blog_id, $post_id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
-	
+
 	$cache = wpmu_get_cache( $blog_id."-".$post_id, "get_blog_post" );
-	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 10 ) { 
+	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 10 ) {
 		$post = $cache[ 'value' ];
 	} else {
 		$post = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
@@ -632,7 +635,7 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 
 	if ( $blog_id != $wpdb->blogid ) {
 		$switch = true;
-		switch_to_blog($blog_id);	
+		switch_to_blog($blog_id);
 	}
 
 	$user = new WP_User($user_id);
@@ -660,17 +663,17 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 	if ( $switch )
 		restore_current_blog();
 }
- 
+
 function remove_user_from_blog($user_id, $blog_id = '') {
 	global $wpdb;
-	if ( empty($blog_id) )	
+	if ( empty($blog_id) )
 		$blog_id = $wpdb->blogid;
 
 	$blog_id = (int) $blog_id;
 
 	if ( $blog_id != $wpdb->blogid ) {
 		$switch = true;
-		switch_to_blog($blog_id);	
+		switch_to_blog($blog_id);
 	}
 
 	$user_id = (int) $user_id;
@@ -684,7 +687,7 @@ function remove_user_from_blog($user_id, $blog_id = '') {
 		$new_id = '';
 		$new_domain = '';
 		$blogs = get_blogs_of_user($user_id);
-		if ( count($blogs) > 1 ) {		
+		if ( count($blogs) > 1 ) {
 			foreach ( $blogs as $blog ) {
 				if ( $blog->userblog_id == $blog_id )
 					continue;
@@ -740,7 +743,7 @@ function create_empty_blog( $domain, $path, $weblog_title, $site_id = 1 ) {
 
 function get_blog_permalink( $blog_id, $post_id ) {
 	global $wpdb, $cache_settings;
-	
+
 	$cache = wpmu_get_cache( $blog_id."-".$post_id, "permalink" );
 	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 30 ) { // cache for 30 seconds
 		$link = $cache[ 'value' ];
@@ -785,6 +788,12 @@ function wpmu_get_cache( $key, $path ) {
 // wpmu admin functions
 
 function wpmu_admin_do_redirect( $url = '' ) {
+	if( $_REQUEST[ 'ref' ] ) {
+		$ref = $_REQUEST[ 'ref' ];
+		$ref = wpmu_admin_redirect_add_updated_param( $_REQUEST[ 'ref' ] );
+		header( "Location: {$ref}" );
+		die();
+	}
 	$url = wpmu_admin_redirect_add_updated_param( $url );
 	if( isset( $_GET[ 'redirect' ] ) ) {
 		if( substr( $_GET[ 'redirect' ], 0, 2 ) == 's_' ) {
@@ -803,8 +812,8 @@ function wpmu_admin_redirect_add_updated_param( $url = '' ) {
 		} else {
 			return $url . '&updated=true';
 		}
-		return $url;
 	}
+	return $url;
 }
 
 function wpmu_admin_redirect_url() {
@@ -831,7 +840,7 @@ function validate_email( $email, $check_domain = true) {
     {
         if ($check_domain && function_exists('checkdnsrr')) {
             list (, $domain)  = explode('@', $email);
-        
+
             if (checkdnsrr($domain.'.', 'MX') || checkdnsrr($domain.'.', 'A')) {
                 return true;
             }
@@ -867,6 +876,12 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	    $errors->add('user_name',  __("That username is not allowed"));
 	}
 
+	$banned_names = get_site_option( "banned_email_domains" );
+	$email_domain = substr( $user_email, 1 + strpos( $user_email, '@' ) );
+	if( in_array( $email_domain, $banned_names ) == true ) {
+	    $errors->add('user_email',  __("You cannot use that email address to signup. Please use another provider."));
+	}
+
 	if( strlen( $user_name ) < 4 ) {
 	    $errors->add('user_name',  __("Username must be at least 4 characters"));
 	}
@@ -878,7 +893,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	preg_match( '/[0-9]*/', $user_name, $match );
 	if ( $match[0] == $user_name )
 		$errors->add('user_name', __("Sorry, usernames must have letters too!"));
-		
+
 	if ( !is_email( $user_email ) )
 	    $errors->add('user_email', __("Please enter a correct email address"));
 
@@ -1098,7 +1113,7 @@ function wpmu_activate_signup($key) {
 		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
 	}
 
-	$meta = unserialize($signup->meta);	
+	$meta = unserialize($signup->meta);
 	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta);
 
 	// TODO: What to do if we create a user but cannot create a blog?
@@ -1123,7 +1138,7 @@ function generate_random_password() {
 function wpmu_create_user( $user_name, $password, $email) {
 	if ( username_exists($user_name) )
 		return false;
-	
+
 	// Check if the email address has been used already.
 	if ( email_exists($email) )
 		return false;
@@ -1136,7 +1151,7 @@ function wpmu_create_user( $user_name, $password, $email) {
 	update_user_option($user_id, 'user_level', '');
 
 	do_action( 'wpmu_new_user', $user_id );
-	
+
 	return $user_id;
 }
 
@@ -1192,7 +1207,7 @@ function insert_blog($domain, $path, $site_id) {
 	$result = $wpdb->query( $query );
 	if ( ! $result )
 		return false;
-		
+
 	$id = $wpdb->insert_id;
 	refresh_blog_details($id);
 	return $id;
@@ -1239,7 +1254,7 @@ function install_blog($blog_id, $blog_title = '') {
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."user_level'" );
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."capabilities'" );
 
-	$wpdb->show_errors();	
+	$wpdb->show_errors();
 }
 
 function install_blog_defaults($blog_id, $user_id) {
@@ -1267,7 +1282,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
 	update_option( "post_count", 1 );
 
-	// First page	
+	// First page
 	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_excerpt, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status, post_type, to_ping, pinged, post_content_filtered) VALUES ('$user_id', '$now', '$now_gmt', '".$wpdb->escape(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '', '".$wpdb->escape(__('About'))."', '0', '".$wpdb->escape(__('about'))."', '$now', '$now_gmt', 'publish', 'page', '', '', '')");
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
 	// Flush rules to pick up the new page.
@@ -1294,9 +1309,9 @@ function wpmu_welcome_notification($blog_id, $user_id, $password, $title, $meta 
 	global $current_site;
 
 	$welcome_email = stripslashes( get_site_option( 'welcome_email' ) );
-	if( $welcome_email == false ) 
+	if( $welcome_email == false )
 		$welcome_email = stripslashes( __( "Dear User,
-		
+
 Your new SITE_NAME blog has been successfully set up at:
 BLOG_URL
 
@@ -1325,14 +1340,14 @@ SITE_NAME" ) );
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
 	$subject = sprintf(__('New %1$s Blog: %2$s'), $current_site->site_name, $title);
-	wp_mail($user->user_email, $subject, $message, $message_headers);	
+	wp_mail($user->user_email, $subject, $message, $message_headers);
 }
 
 function wpmu_welcome_user_notification($user_id, $password, $meta = '') {
 	global $current_site;
 
 	$welcome_email = __( "Dear User,
-		
+
 Your new account is setup.
 
 You can log in with the following information:
@@ -1356,7 +1371,7 @@ SITE_NAME" );
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
 	$subject = sprintf(__('New %1$s User: %2$s'), $current_site->site_name, $user->user_login);
-	wp_mail($user->user_email, $subject, $message, $message_headers);	
+	wp_mail($user->user_email, $subject, $message, $message_headers);
 }
 
 function get_current_site() {
