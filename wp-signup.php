@@ -138,7 +138,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 		$errors = new WP_Error();
 
 	// allow definition of default variables
-	$filtered_results = apply_filter('signup_another_blog_init', array('blog_id' => $blog_id, 'blog_title' => $blog_title, 'errors' => $errors ));
+	$filtered_results = apply_filters('signup_another_blog_init', array('blog_id' => $blog_id, 'blog_title' => $blog_title, 'errors' => $errors ));
 	$blog_id = $filtered_results['blog_id'];
 	$blog_title = $filtered_results['blog_title'];
 	$errors = $filtered_results['errors'];
@@ -189,7 +189,7 @@ function validate_another_blog_signup() {
 	}
 
 	$public = (int) $_POST['blog_public'];
-	$meta = apply_filter('signup_create_blog_meta', array ('lang_id' => 'en', 'public' => $public));
+	$meta = apply_filters('signup_create_blog_meta', array ('lang_id' => 'en', 'public' => $public));
 
 	wpmu_create_blog($domain, $path, $blog_title, $current_user->id, $meta);
 	confirm_another_blog_signup($domain, $path, $blog_title, $current_user->user_login, $current_user->user_email, $meta);
@@ -210,7 +210,7 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 		$errors = new WP_Error();
 
 	// allow definition of default variables
-	$filtered_results = apply_filter('signup_user_init', array('user_name' => $user_name, 'user_email' => $user_email, 'errors' => $errors ));
+	$filtered_results = apply_filters('signup_user_init', array('user_name' => $user_name, 'user_email' => $user_email, 'errors' => $errors ));
 	$user_name = $filtered_results['user_name'];
 	$user_email = $filtered_results['user_email'];
 	$errors = $filtered_results['errors'];
@@ -275,7 +275,7 @@ function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_tit
 		$errors = new WP_Error();
 
 	// allow definition of default variables
-	$filtered_results = apply_filter('signup_blog_init', array('user_name' => $user_name, 'user_email' => $user_email, 'blog_id' => $blog_id, 'blog_title' => $blog_title, 'errors' => $errors ));
+	$filtered_results = apply_filters('signup_blog_init', array('user_name' => $user_name, 'user_email' => $user_email, 'blog_id' => $blog_id, 'blog_title' => $blog_title, 'errors' => $errors ));
 	$user_name = $filtered_results['user_name'];
 	$user_email = $filtered_results['user_email'];
 	$blog_id = $filtered_results['blog_id'];
