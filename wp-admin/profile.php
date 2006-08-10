@@ -28,6 +28,13 @@ $bookmarklet_height= 440;
 <input type="hidden" name="checkuser_id" value="<?php echo $user_ID ?>" />
 </p>
 
+<h3><?php _e('Personal Options'); ?></h3>
+
+<p><label for="rich_editing"><input name="rich_editing" type="checkbox" id="rich_editing" value="true" <?php checked('true', get_user_option('rich_editing')); ?> />
+<?php _e('Use the visual rich editor when writing') ?></label></p>
+
+<?php do_action('profile_personal_options'); ?>
+
 <fieldset>
 <legend><?php _e('Name'); ?></legend>
 <p><label><?php _e('Username: (no editing)'); ?><br />
@@ -85,7 +92,7 @@ $bookmarklet_height= 440;
 </fieldset>
 <br clear="all" />
 <fieldset>
-<legend><?php _e('About yourself'); ?></legend>
+<legend><?php _e('About Yourself'); ?></legend>
 <p class="desc"><?php _e('Share a little biographical information to fill out your profile. This may be shown publicly.'); ?></p>
 <p><textarea name="description" rows="5" cols="30"><?php echo $profileuser->description ?></textarea></p>
 </fieldset>
@@ -109,13 +116,6 @@ if ( $show_password_fields ) :
 <?php do_action('show_user_profile'); ?>
 
 <br clear="all" />
-
-<h3><?php _e('Personal Options'); ?></h3>
-
-<p><label for="rich_editing"><input name="rich_editing" type="checkbox" id="rich_editing" value="true" <?php checked('true', get_user_option('rich_editing')); ?> />
-<?php _e('Use the visual rich editor when writing') ?></label></p>
-
-<?php do_action('profile_personal_options'); ?>
 
   <table width="99%"  border="0" cellspacing="2" cellpadding="3" class="editform">
     <?php

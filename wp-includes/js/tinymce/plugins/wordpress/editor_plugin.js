@@ -149,12 +149,14 @@ var TinyMCE_wordpressPlugin = {
 				var altPage = tinyMCE.getLang('lang_wordpress_page_alt');
 
 				// Parse all <!--more--> tags and replace them with images
-				while ((startPos = content.indexOf('<!--more-->', startPos)) != -1) {
+				while ((startPos = content.indexOf('<!--more', startPos)) != -1) {
+					var endPos = content.indexOf('-->', startPos) + 3;
 					// Insert image
-					var contentAfter = content.substring(startPos + 11);
+					var moreText = content.substring(startPos + 8, endPos - 3);
+					var contentAfter = content.substring(endPos);
 					content = content.substring(0, startPos);
 					content += '<img src="' + (tinyMCE.getParam("theme_href") + "/images/spacer.gif") + '" ';
-					content += ' width="100%" height="10px" ';
+					content += ' width="100%" height="10px" moretext="'+moreText+'" ';
 					content += 'alt="'+altMore+'" title="'+altMore+'" class="mce_plugin_wordpress_more" name="mce_plugin_wordpress_more" />';
 					content += contentAfter;
 
@@ -200,7 +202,8 @@ var TinyMCE_wordpressPlugin = {
 					if (attribs['class'] == "mce_plugin_wordpress_more" || attribs['name'] == "mce_plugin_wordpress_more") {
 						endPos += 2;
 
-						var embedHTML = '<!--more-->';
+						var moreText = attribs['moretext'] ? attribs['moretext'] : '';
+						var embedHTML = '<!--more'+moreText+'-->';
 
 						// Insert embed/object chunk
 						chunkBefore = content.substring(0, startPos);
@@ -342,7 +345,7 @@ var TinyMCE_wordpressPlugin = {
 				if (pos != -1)
 					attributeName = attributeName.substring(pos+1);
 
-				attributes[attributeName.toLowerCase()] = attributeValue.substring(1).toLowerCase();
+				attributes[attributeName.toLowerCase()] = attributeValue.substring(1);
 
 				attributeName = "";
 				attributeValue = "";
