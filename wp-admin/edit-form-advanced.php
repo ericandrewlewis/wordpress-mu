@@ -52,8 +52,9 @@ if (empty($post->post_status)) $post->post_status = 'draft';
 
 <input type="hidden" name="user_ID" value="<?php echo $user_ID ?>" />
 <input type="hidden" id="hiddenaction" name="action" value="<?php echo $form_action ?>" />
+<input type="hidden" id="originalaction" name="originalaction" value="<?php echo $form_action ?>" />
 <input type="hidden" name="post_author" value="<?php echo $post->post_author ?>" />
-<input type="hidden" name="post_type" value="post" />
+<input type="hidden" id="post_type" name="post_type" value="post" />
 
 <?php echo $form_extra ?>
 <?php if (isset($_GET['message']) && 2 > $_GET['message']) : ?>
@@ -151,12 +152,16 @@ endforeach;
 <legend><?php _e('Post') ?></legend>
 
 	<?php the_editor($post->post_content); ?>
+</fieldset>
 
 <?php echo $form_pingback ?>
 <?php echo $form_prevstatus ?>
 
 
-<p class="submit"><?php echo $saveasdraft; ?> <input type="submit" name="submit" value="<?php _e('Save') ?>" style="font-weight: bold;" tabindex="4" /> 
+<p class="submit">
+<span id="autosave"></span>
+<?php echo $saveasdraft; ?>
+<input type="submit" name="submit" value="<?php _e('Save') ?>" style="font-weight: bold;" tabindex="4" /> 
 <?php 
 if ('publish' != $post->post_status || 0 == $post_ID) {
 ?>
@@ -234,6 +239,7 @@ list_meta($metadata);
 	meta_form();
 ?>
 <div id="ajax-response"></div>
+</div>
 </div>
 </fieldset>
 </div>

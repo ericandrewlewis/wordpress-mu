@@ -45,15 +45,14 @@ case 'post':
 case 'edit':
 	$title = __('Edit');
 	$editing = true;
-
 	$post_ID = $p = (int) $_GET['post'];
-
 	$post = get_post($post_ID);
-	if( $post->post_type == 'page' ) {
-		header( "Location: " . str_replace( "post.php", "page.php", $_SERVER[ 'REQUEST_URI' ] ) );
-		die();
+	if($post->post_status == 'draft') {
+		wp_enqueue_script('prototype');
+		wp_enqueue_script('autosave');
 	}
 	require_once('admin-header.php');
+
 	if ( !current_user_can('edit_post', $post_ID) )
 		die ( __('You are not allowed to edit this post.') );
 
@@ -93,25 +92,46 @@ case 'editpost':
 	
 	$post_ID = edit_post();
 
-	$referredby = '';
-	if ( !empty($_POST['referredby']) )
-		$referredby = preg_replace('|https?://[^/]+|i', '', $_POST['referredby']);
-	$referer = preg_replace('|https?://[^/]+|i', '', wp_get_referer());
-	
-	if ($_POST['save']) {
-		$location = wp_get_referer();
-	} elseif ($_POST['updatemeta']) {
-		$location = wp_get_referer() . '&message=2#postcustom';
-	} elseif ($_POST['deletemeta']) {
-		$location = wp_get_referer() . '&message=3#postcustom';
-	} elseif (!empty($referredby) && $referredby != $referer) {
-		$location = $_POST['referredby'];
-		if ( $_POST['referredby'] == 'redo' )
-			$location = get_permalink( $post_ID );
-	} elseif ($action == 'editattachment') {
-		$location = 'attachments.php';
+	if ( 'post' == $_POST['originalaction'] ) {
+		if (!empty($_POST['mode'])) {
+		switch($_POST['mode']) {
+			case 'bookmarklet':
+				$location = $_POST['referredby'];
+				break;
+			case 'sidebar':
+				$location = 'sidebar.php?a=b';
+				break;
+			default:
+				$location = 'post-new.php';
+				break;
+			}
+		} else {
+			$location = 'post-new.php?posted=true';
+		}
+
+		if ( isset($_POST['save']) )
+			$location = "post.php?action=edit&post=$post_ID";
 	} else {
-		$location = 'post-new.php';
+		$referredby = '';
+		if ( !empty($_POST['referredby']) )
+			$referredby = preg_replace('|https?://[^/]+|i', '', $_POST['referredby']);
+		$referer = preg_replace('|https?://[^/]+|i', '', wp_get_referer());
+	
+		if ($_POST['save']) {
+			$location = "post.php?action=edit&post=$post_ID";
+		} elseif ($_POST['updatemeta']) {
+			$location = wp_get_referer() . '&message=2#postcustom';
+		} elseif ($_POST['deletemeta']) {
+			$location = wp_get_referer() . '&message=3#postcustom';
+		} elseif (!empty($referredby) && $referredby != $referer) {
+			$location = $_POST['referredby'];
+			if ( $_POST['referredby'] == 'redo' )
+				$location = get_permalink( $post_ID );
+		} elseif ($action == 'editattachment') {
+			$location = 'attachments.php';
+		} else {
+			$location = 'post-new.php';
+		}
 	}
 
 	wp_redirect($location); // Send user on their way while we keep working

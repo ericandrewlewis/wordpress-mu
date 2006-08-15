@@ -33,8 +33,9 @@ if (isset($mode) && 'bookmarklet' == $mode) {
 ?>
 <input type="hidden" name="user_ID" value="<?php echo $user_ID ?>" />
 <input type="hidden" id="hiddenaction" name="action" value='<?php echo $form_action ?>' />
+<input type="hidden" id="originalaction" name="originalaction" value="<?php echo $form_action ?>" />
 <?php echo $form_extra ?>
-<input type="hidden" name="post_type" value="page" />
+<input type="hidden" id="post_type" name="post_type" value="page" />
 
 <script type="text/javascript">
 // <![CDATA[
@@ -138,6 +139,7 @@ endforeach;
 </fieldset>
 
 <p class="submit">
+<span id="autosave"></span>
 <input name="save" type="submit" id="save" tabindex="3" value="<?php _e('Save and Continue Editing'); ?>" />
 <input type="submit" name="submit" value="<?php _e('Save') ?>" style="font-weight: bold;" tabindex="4" /> 
 <?php 

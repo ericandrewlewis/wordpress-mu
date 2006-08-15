@@ -820,7 +820,6 @@ function do_feed_atom() {
 function do_robots() {
 	global $current_blog;
 	do_action('do_robotstxt');
-
 	if ( '0' == $current_blog->public ) {
 		echo "User-agent: *\n";
 		echo "Disallow: /\n";
@@ -1045,7 +1044,7 @@ function wp_check_filetype($filename, $mimes = null) {
 
 function wp_proxy_check($ipnum) {
 	if ( get_option('open_proxy_check') && isset($ipnum) ) {
-		$ipnum = preg_replace( '/([0-9]{1,3})\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/', '$1', $ipnum );
+		$ipnum = preg_replace( '/([0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}).*/', '$1', $ipnum );
 		$rev_ip = implode( '.', array_reverse( explode( '.', $ipnum ) ) );
 		$lookup = $rev_ip . '.sbl-xbl.spamhaus.org.';
 		if ( $lookup != gethostbyname( $lookup ) )

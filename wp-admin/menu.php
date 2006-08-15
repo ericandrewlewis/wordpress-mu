@@ -72,8 +72,6 @@ foreach ($menu as $menu_page) {
 	$admin_page_hooks[$menu_page[2]] = sanitize_title($menu_page[0]);
 }
 
-do_action('admin_menu', '');
-
 // Loop over submenus and remove pages for which the user does not have privs.
 foreach ($submenu as $parent => $sub) {
 	foreach ($sub as $index => $data) {
@@ -88,9 +86,32 @@ foreach ($submenu as $parent => $sub) {
 }
 
 // Loop over the top-level menu.
-// Remove menus that have no accessible submenus and require privs that the user does not have.
 // Menus for which the original parent is not acessible due to lack of privs will have the next
 // submenu in line be assigned as the new menu parent. 
+foreach ( $menu as $id => $data ) {
+	if ( empty($submenu[$data[2]]) ) 
+		continue;
+	$subs = $submenu[$data[2]];
+	$first_sub = array_shift($subs);
+	$old_parent = $data[2];
+	$new_parent = $first_sub[2];
+	// If the first submenu is not the same as the assigned parent,
+	// make the first submenu the new parent.
+	if ( $new_parent != $old_parent ) {
+		$real_parent_file[$old_parent] = $new_parent;
+		$menu[$id][2] = $new_parent;
+		
+		foreach ($submenu[$old_parent] as $index => $data) {
+			$submenu[$new_parent][$index] = $submenu[$old_parent][$index];
+			unset($submenu[$old_parent][$index]);
+		}
+		unset($submenu[$old_parent]);	
+	}
+}
+
+do_action('admin_menu', '');
+
+// Remove menus that have no accessible submenus and require privs that the user does not have.
 foreach ( $menu as $id => $data ) {
 	// If submenu is empty...
 	if ( empty($submenu[$data[2]]) ) {
@@ -99,24 +120,7 @@ foreach ( $menu as $id => $data ) {
 			$menu_nopriv[$data[2]] = true;
 			unset($menu[$id]);
 		}
-	} else {
-		$subs = $submenu[$data[2]];
-		$first_sub = array_shift($subs);
-		$old_parent = $data[2];
-		$new_parent = $first_sub[2];
-		// If the first submenu is not the same as the assigned parent,
-		// make the first submenu the new parent.
-		if ( $new_parent != $old_parent ) {
-			$real_parent_file[$old_parent] = $new_parent;
-			$menu[$id][2] = $new_parent;
-			
-			foreach ($submenu[$old_parent] as $index => $data) {
-				$submenu[$new_parent][$index] = $submenu[$old_parent][$index];
-				unset($submenu[$old_parent][$index]);
-			}
-			unset($submenu[$old_parent]);	
-		}
-	}
+	} 
 }
 
 get_currentuserinfo();
