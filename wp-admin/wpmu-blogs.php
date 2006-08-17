@@ -169,7 +169,7 @@ switch( $_GET[ 'action' ] ) {
     print '<div class="wrap"><h3>' . __('Blog Users') . '</h3>';
     if( is_array( $blogusers ) ) {
 	    print '<table width="100%"><caption>' . __('Current Users') . '</caption>';
-	    print "<tr><th>" . __('User') . "</th><th>" . __('Role') . "</th><th>" . __('Remove') . "</th><th></th></tr>";
+	    print "<tr><th>" . __('User') . "</th><th>" . __('Role') . "</th><th>" . __('Password') . "</th><th>" . __('Remove') . "</th><th></th></tr>";
 	    reset( $blogusers );
 	    while( list( $key, $val ) = each( $blogusers ) ) 
 	    { 
@@ -188,10 +188,10 @@ switch( $_GET[ 'action' ] ) {
 						    $selected = 'selected="selected"';
 					    echo "<option {$selected} value=\"{$role}\">{$name}</option>";
 				    }
-			    ?></select></td> <?php
+			    ?></select></td><td><input type='text' name='user_password[<?php echo $val->user_id ?>]'></td><?php
 			    print '<td><input title="' . __('Click to remove user') . '" type="checkbox" name="blogusers[' . $val->user_id . ']"></td>';
 		    } else {
-			    print "<td><b>" . __ ('N/A') . "</b></td><td><b>" . __('N/A') . "</b></td>";
+			    print "<td><b>" . __ ('N/A') . "</b></td><td><b>" . __ ('N/A') . "</b></td><td><b>" . __('N/A') . "</b></td>";
 		    }
 		    print '<td><a href="user-edit.php?user_id=' . $val->user_id . '">' . __('Edit') . "</td></tr>";
 	    }
@@ -245,11 +245,11 @@ switch( $_GET[ 'action' ] ) {
 			FROM ".$wpdb->blogs." 
 			WHERE site_id = '".$wpdb->siteid."' ";
 		if( $_GET[ 's' ] != '' ) {
-			$query = "SELECT blog_id, {$wpdb->blogs}.domain, registered, last_updated
+			$query = "SELECT blog_id, {$wpdb->blogs}.domain, {$wpdb->blogs}.path, registered, last_updated
 				FROM $wpdb->blogs, $wpdb->site 
 				WHERE site_id = '$wpdb->siteid'
 				AND   {$wpdb->blogs}.site_id = {$wpdb->site}.id
-				AND   {$wpdb->blogs}.domain like '%". $_GET[ 's' ]."%'";
+				AND   {$wpdb->blogs}.domain like '%". trim( $_GET[ 's' ] )."%'";
 		} elseif( $_GET[ 'blog_id' ] != '' ) {
 			$query = "SELECT * 
 				FROM $wpdb->blogs 
@@ -371,7 +371,8 @@ $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 $posts_columns['control_view']      = '';
 $posts_columns['control_edit']      = '';
 $posts_columns['control_backend']   = '';
-$posts_columns['control_deactivate']    = '';
+$posts_columns['control_deactivate'] = '';
+$posts_columns['control_archive']    = '';
 $posts_columns['control_spam']    = '';
 $posts_columns['control_delete']    = '';
 
@@ -473,13 +474,25 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		break;
 
 	case 'control_deactivate':
-		if( is_archived( $blog[ 'blog_id' ] ) == '1' ) {
+		if( get_blog_status( $blog[ 'blog_id' ], "deleted" ) == '1' ) {
 			?>
-			<td valign='top'><a class='edit' href="wpmu-edit.php?action=confirm&action2=activateblog&id=<?php echo $blog[ 'blog_id' ] ?>&msg=<?php echo urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) ?>"><?php _e("Activate") ?></a></td>
+			<td valign='top'><a class='edit' href="wpmu-edit.php?action=confirm&action2=activateblog&ref=<?php echo urlencode( $_SERVER[ 'REQUEST_URI' ] ) ?>&id=<?php echo $blog[ 'blog_id' ] ?>&msg=<?php echo urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) ?>"><?php _e("Activate") ?></a></td>
 			<?php
 		} else {
 			?>
-			<td valign='top'><a class='edit' href="wpmu-edit.php?action=confirm&action2=deactivateblog&id=<?php echo $blog[ 'blog_id' ] ?>&msg=<?php echo urlencode( sprintf( __( "You are about to deactivate the blog %s" ), $blogname ) ) ?>"><?php _e("Deactivate") ?></a></td>
+			<td valign='top'><a class='edit' href="wpmu-edit.php?action=confirm&action2=deactivateblog&ref=<?php echo urlencode( $_SERVER[ 'REQUEST_URI' ] ) ?>&id=<?php echo $blog[ 'blog_id' ] ?>&msg=<?php echo urlencode( sprintf( __( "You are about to deactivate the blog %s" ), $blogname ) ) ?>"><?php _e("Deactivate") ?></a></td>
+			<?php
+		}
+		break;
+
+	case 'control_archive':
+		if( get_blog_status( $blog[ 'blog_id' ], "archived" ) == '1' ) {
+			?>
+			<td valign='top'><a class='edit' href="wpmu-edit.php?action=confirm&action2=unarchiveblog&id=<?php echo $blog[ 'blog_id' ] ?>&msg=<?php echo urlencode( sprintf( __( "You are about to unarchive the blog %s" ), $blogname ) ) ?>"><?php _e("Unarchive") ?></a></td>
+			<?php
+		} else {
+			?>
+			<td valign='top'><a class='edit' href="wpmu-edit.php?action=confirm&action2=archiveblog&id=<?php echo $blog[ 'blog_id' ] ?>&msg=<?php echo urlencode( sprintf( __( "You are about to archive the blog %s" ), $blogname ) ) ?>"><?php _e("Archive") ?></a></td>
 			<?php
 		}
 		break;

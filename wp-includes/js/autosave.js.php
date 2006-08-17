@@ -14,6 +14,8 @@ function autosave_timer() {
 }
 
 function autosave_start_timer() {
+	var form = $('post');
+	autosaveLast = form.post_title.value+form.content.value;
 	setTimeout("autosave_timer()", <?php echo apply_filters('autosave_start_delay', '60000') ?>);
 }
 addLoadEvent(autosave_start_timer)
@@ -41,7 +43,6 @@ function autosave_update_post_ID() {
 		message = "<?php _e('Saved at '); ?>" + autosave_cur_time();
 		$('post_ID').name = "post_ID";
 		$('post_ID').value = res;
-		$('hiddenaction').value = 'editpost';
 		// We need new nonces
 		nonceAjax = new sack();
 		nonceAjax.element = null;
@@ -53,7 +54,7 @@ function autosave_update_post_ID() {
 		nonceAjax.onCompletion = autosave_update_nonce;
 		nonceAjax.method = "POST";
 		nonceAjax.runAJAX();
-		
+		$('hiddenaction').value = 'editpost';
 	}
 	$('autosave').innerHTML = message;
 }
@@ -84,6 +85,7 @@ function autosave() {
 	if ( typeof tinyMCE == "undefined" || tinyMCE.configs.length < 1 ) {
 		autosaveAjax.setVar("content", form.content.value);
 	} else {
+		if(tinyMCE.selectedInstance.spellcheckerOn) return;
 		tinyMCE.wpTriggerSave();
 		autosaveAjax.setVar("content", form.content.value);
 	}

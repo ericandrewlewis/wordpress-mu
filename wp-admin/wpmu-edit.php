@@ -21,6 +21,11 @@ switch( $_REQUEST[ 'action' ] ) {
 		} else {
 			update_site_option( "limited_email_domains", '' );
 		}
+		if( $_POST[ 'banned_email_domains' ] != '' ) {
+			update_site_option( "banned_email_domains", split( ' ', $_POST[ 'banned_email_domains' ] ) );
+		} else {
+			update_site_option( "banned_email_domains", '' );
+		}
 		update_site_option( "menu_items", $_POST[ 'menu_items' ] );
 		update_site_option( "blog_upload_space", $_POST[ 'blog_upload_space' ] );
 		update_site_option( "upload_filetypes", $_POST[ 'upload_filetypes' ] );
@@ -191,6 +196,16 @@ switch( $_REQUEST[ 'action' ] ) {
 			}
 		}
 
+		// change password
+		if( is_array( $_POST[ 'user_password' ] ) ) {
+			reset( $_POST[ 'user_password' ] );
+			while( list( $userid, $pass ) = each( $_POST[ 'user_password' ] ) ) { 
+				$userdata = get_userdata($userid);
+				$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
+				$_POST[ 'email' ] = $userdata->user_email;
+				edit_user( $userid );
+			}
+		}
 
 		// add user?
 		if( $_POST[ 'newuser' ] != '' ) {
@@ -236,12 +251,30 @@ switch( $_REQUEST[ 'action' ] ) {
 			wpmu_admin_do_redirect( "wpmu-blogs.php" );
 		}
 	break;
+	case "archiveblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		check_admin_referer('archiveblog');
+		update_blog_status( $id, "archived", '1' );
+		do_action( "archive_blog", $id );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+	break;
+	case "unarchiveblog":
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
+		check_admin_referer('unarchiveblog');
+		do_action( "unarchive_blog", $id );
+		update_blog_status( $id, "archived", '0' );
+		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+	break;
 	case "activateblog":
 		if( is_site_admin() == false ) {
 			die( __('<p>You do not have permission to access this page.</p>') );
 		}
 		check_admin_referer('activateblog');
-		update_archived( $id, '0' );
+		update_blog_status( $id, "deleted", '0' );
 		do_action( "activate_blog", $id );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
@@ -251,7 +284,7 @@ switch( $_REQUEST[ 'action' ] ) {
 		}
 		check_admin_referer('deactivateblog');
 		do_action( "deactivate_blog", $id );
-		update_blog_status( $id, "archived", '1' );
+		update_blog_status( $id, "deleted", '1' );
 		wpmu_admin_do_redirect( "wpmu-blogs.php" );
 	break;
 	case "unspamblog":
@@ -338,7 +371,7 @@ switch( $_REQUEST[ 'action' ] ) {
 	break;
 	case "confirm":
 	?>
-		<form action='wpmu-edit.php'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
+		<form action='wpmu-edit.php' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><input type='hidden' name='ref' value='<?php echo wp_specialchars( $_GET[ 'ref' ] ) ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
 	<?php
 	break;
 	default:
