@@ -446,6 +446,10 @@ function get_blogs_of_user( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
 	$user = get_userdata( $id );
+
+	if ( !$user )
+		return false;
+
 	$blogs = array();
 
 	$i = 0;
@@ -877,9 +881,12 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	}
 
 	$banned_names = get_site_option( "banned_email_domains" );
-	$email_domain = substr( $user_email, 1 + strpos( $user_email, '@' ) );
-	if( in_array( $email_domain, $banned_names ) == true ) {
-	    $errors->add('user_email',  __("You cannot use that email address to signup. Please use another provider."));
+	if ( is_array( $banned_names ) && empty( $banned_names ) == false ) {
+		$email_domain = strtolower( substr( $user_email, 1 + strpos( $user_email, '@' ) ) );
+		foreach( $banned_names as $banned_domain ) {
+			if( strstr( $email_domain, $banned_domain ) ) 
+				$errors->add('user_email',  __("You cannot use that email address to signup. We are having problems with them blocking some of our email. Please use another email provider."));
+		}
 	}
 
 	if( strlen( $user_name ) < 4 ) {
