@@ -3,9 +3,9 @@ require_once('admin.php');
 
 do_action( "wpmuadminedit", "" );
 
-$_POST[ 'id' ] = intval( $_POST[ 'id' ] );
-$_GET[ 'id' ] = intval( $_GET[ 'id' ] );
 $id = intval( $_REQUEST[ 'id' ] );
+if( isset( $_POST[ 'ref' ] ) == false && empty( $_SERVER[ 'HTTP_REFERER' ] ) == false )
+	$_POST[ 'ref' ] = $_SERVER[ 'HTTP_REFERER' ];
 
 switch( $_REQUEST[ 'action' ] ) {
 	case "siteoptions":
@@ -46,8 +46,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			}
 			update_site_option( 'site_admins' , $site_admins );
 		}
-		wpmu_admin_do_redirect( "wpmu-options.php" );
-		exit;
+		wp_redirect( add_query_arg( "updated", "true", $_SERVER[ 'HTTP_REFERER' ] ) );
+		die();
 	break;
 	case "searchcategories":
 		$search = wp_specialchars( $_POST[ 'search' ] );
@@ -94,7 +94,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			} else {
 				wp_new_user_notification($user_id, $password);
 			}
-			wpmu_admin_do_redirect( "wpmu-users.php" );
+			wp_redirect( add_query_arg( "updated", "useradded", $_SERVER[ 'HTTP_REFERER' ] ) );
+			die();
 		}
 	
 	break;
@@ -133,7 +134,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			$wpdb->show_errors();
 			if( !is_wp_error($blog_id) ) {
 				@wp_mail( get_settings('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), "New blog created by {$current_user->user_login}\n\nAddress: http://{$newdomain}{$path}\nName: ".wp_specialchars( $blog['title'] ) );
-				wpmu_admin_do_redirect("wpmu-blogs.php");
+				wp_redirect( add_query_arg( "updated", "blogadded", $_SERVER[ 'HTTP_REFERER' ] ) );
+				die();
 			} else {
 				die( $blog_id->get_error_message() );
 			}
@@ -200,10 +202,15 @@ switch( $_REQUEST[ 'action' ] ) {
 		if( is_array( $_POST[ 'user_password' ] ) ) {
 			reset( $_POST[ 'user_password' ] );
 			while( list( $userid, $pass ) = each( $_POST[ 'user_password' ] ) ) { 
-				$userdata = get_userdata($userid);
-				$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
-				$_POST[ 'email' ] = $userdata->user_email;
-				edit_user( $userid );
+				if( $pass != '' ) {
+					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = ''" );
+					$userdata = get_userdata($userid);
+					$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
+					$_POST[ 'email' ] = $userdata->user_email;
+					edit_user( $userid );
+					if( $cap == null )
+						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = ''" );
+				}
 			}
 		}
 
@@ -226,7 +233,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('deleteblog');
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id, true );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
+		die();
 	break;
 	case "allblogs":
 		if( is_site_admin() == false ) {
@@ -245,11 +253,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			}
 		}
 
-		if( isset( $_POST[ 'redirect' ] ) ) {
-			wpmu_admin_do_redirect( $_POST[ 'redirect' ] );
-		} else {
-			wpmu_admin_do_redirect( "wpmu-blogs.php" );
-		}
+		wp_redirect( add_query_arg( "updated", "blogsupdated", $_SERVER[ 'HTTP_REFERER' ] ) );
+		die();
 	break;
 	case "archiveblog":
 		if( is_site_admin() == false ) {
@@ -258,7 +263,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('archiveblog');
 		update_blog_status( $id, "archived", '1' );
 		do_action( "archive_blog", $id );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogarchived", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "unarchiveblog":
 		if( is_site_admin() == false ) {
@@ -267,7 +273,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('unarchiveblog');
 		do_action( "unarchive_blog", $id );
 		update_blog_status( $id, "archived", '0' );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogunarchived", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "activateblog":
 		if( is_site_admin() == false ) {
@@ -276,7 +283,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('activateblog');
 		update_blog_status( $id, "deleted", '0' );
 		do_action( "activate_blog", $id );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogactivated", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "deactivateblog":
 		if( is_site_admin() == false ) {
@@ -285,7 +293,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('deactivateblog');
 		do_action( "deactivate_blog", $id );
 		update_blog_status( $id, "deleted", '1' );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogdeactivated", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "unspamblog":
 		if( is_site_admin() == false ) {
@@ -294,13 +303,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('unspamblog');
 		update_blog_status( $id, "spam", '0' );
 		do_action( "unspam_blog", $id );
-
-		if( get_blog_status( $wpdb->blogid, "spam" ) == 1 ) {
-			header( "Location: http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-admin.php?updated=true" );
-			die();
-		} else {
-			wpmu_admin_do_redirect( "wpmu-blogs.php" );
-		}
+		wp_redirect( add_query_arg( "updated", "blogunspam", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "spamblog":
 		if( is_site_admin() == false ) {
@@ -309,7 +313,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('spamblog');
 		do_action( "make_spam_blog", $id );
 		update_blog_status( $id, "spam", '1' );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogspam", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "mature":
 		if( is_site_admin() == false ) {
@@ -317,7 +322,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		}
 		update_blog_status( $id, 'mature', '1' );
 		do_action( 'mature_blog', $id );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogmature", $_POST[ 'ref' ] ) );
+		die();
 	break;
 	case "unmature":
 		if( is_site_admin() == false ) {
@@ -325,7 +331,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		}
 		update_blog_status( $id, 'mature', '0' );
 		do_action( 'unmature_blog', $id );
-		wpmu_admin_do_redirect( "wpmu-blogs.php" );
+		wp_redirect( add_query_arg( "updated", "blogunmature", $_POST[ 'ref' ] ) );
+		die();
 	break;
     	case "updateuser":
 		check_admin_referer('edituser');
@@ -351,7 +358,8 @@ switch( $_REQUEST[ 'action' ] ) {
 				$wpdb->query( $query );
 			}
 		}
-		wpmu_admin_do_redirect( "wpmu-users.php?action=edit&id=".$id );
+		wp_redirect( add_query_arg( "updated", "userupdated", $_SERVER[ 'HTTP_REFERER' ] ) );
+		die();
 	break;
     	case "updatethemes":
 		if( is_site_admin() == false ) {
@@ -367,11 +375,12 @@ switch( $_REQUEST[ 'action' ] ) {
 			}
 			update_site_option( 'allowed_themes', $allowed_themes );
 		}
-		wpmu_admin_do_redirect( "wpmu-themes.php" );
+		wp_redirect( add_query_arg( "updated", "themesupdated", $_SERVER[ 'HTTP_REFERER' ] ) );
+		die();
 	break;
 	case "confirm":
 	?>
-		<form action='wpmu-edit.php' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><input type='hidden' name='ref' value='<?php echo wp_specialchars( $_GET[ 'ref' ] ) ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
+		<form action='wpmu-edit.php' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ); ?>'><input type='hidden' name='ref' value='<?php if( isset( $_GET[ 'ref' ] ) ) {echo wp_specialchars( $_GET[ 'ref' ] ); } else { echo $_SERVER[ 'HTTP_REFERER' ]; } ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
 	<?php
 	break;
 	default:
