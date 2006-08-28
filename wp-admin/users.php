@@ -97,7 +97,7 @@ class WP_User_Search {
 	}
 
 	function get_results() {
-		return $this->results;
+		return (array) $this->results;
 	}
 
 	function page_links() {
@@ -451,13 +451,13 @@ default:
 <div class="wrap">
 
 	<?php if ( $wp_user_search->is_search() ) : ?>
-		<h2><?php printf(__('Users Matching "%s" by Role'), $wp_user_search->search_term); ?></h2>
+		<h2><?php printf(__('Users Matching "%s" by Role'), wp_specialchars($wp_user_search->search_term)); ?></h2>
 	<?php else : ?>
 		<h2><?php _e('User List by Role'); ?></h2>
 	<?php endif; ?>
 
 	<form action="" method="get" name="search" id="search">
-		<p><input type="text" name="usersearch" id="usersearch" value="<?php echo wp_specialchars($wp_user_search->search_term); ?>" /> <input type="submit" value="<?php _e('Search for users &raquo;'); ?>" /></p>
+		<p><input type="text" name="usersearch" id="usersearch" value="<?php echo wp_specialchars($wp_user_search->search_term, 1); ?>" /> <input type="submit" value="<?php _e('Search for users &raquo;'); ?>" /></p>
 	</form>
 
 	<?php if ( is_wp_error( $wp_user_search->search_errors ) ) : ?>
@@ -553,7 +553,7 @@ foreach ( (array) $roleclass as $user_object ) {
 <div class="wrap">
 <h2><?php _e('Add User From Community') ?></h2>
 <form action="" method="post" name="adduser" id="adduser">
-  <?php wp_nonce_field('add-user') ?>
+<?php wp_nonce_field('add-user') ?>
 <input type='hidden' name='action' value='addexistinguser'>
 <p><?php _e('Type the e-mail address of another user to add them to your blog.')?></p>
 <table>
