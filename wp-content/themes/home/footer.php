@@ -1,12 +1,13 @@
 
+<?php $current_site = get_current_site(); ?>
 <hr />
 <div id="footer">
 	<p>
 		<?php bloginfo('name'); ?> is proudly powered by 
-		<a href="http://wordpress.org">WordPress</a>
+		<a href="http://mu.wordpress.org/">WordPress MU</a> running on <a href="http://<?php echo $current_site->domain . $current_site->path ?>"><?php echo $current_site->site_name ?></a>. <a href="http://<?php echo $current_site->domain . $current_site->path ?>wp-signup.php" title="Create a new blog">Create a new blog</a> and join in the fun!
 		<br /><a href="feed:<?php bloginfo('rss2_url'); ?>">Entries (RSS)</a>
 		and <a href="feed:<?php bloginfo('comments_rss2_url'); ?>">Comments (RSS)</a>.
-		<!-- <?php echo $wpdb->num_queries; ?> queries. <?php timer_stop(1); ?> seconds. -->
+		<!-- <?php echo get_num_queries(); ?> queries. <?php timer_stop(1); ?> seconds. -->
 	</p>
 </div>
 </div>
@@ -15,6 +16,5 @@
 <?php /* "Just what do you think you're doing Dave?" */ ?>
 
 		<?php wp_footer(); ?>
-
 </body>
 </html>

@@ -24,17 +24,16 @@ foreach ($posts as $post) { start_wp();
 <p><a href="<?php echo get_option('siteurl'); ?>/wp-commentsrss2.php?p=<?php echo $post->ID; ?>"><abbr title="Really Simple Syndication">RSS</abbr> feed for comments on this post.</a></p>
 
 <?php if ('open' == $post->ping_status) { ?>
-<p>The <acronym title="Uniform Resource Identifier">URI</acronym> to TrackBack this entry is: <em><?php trackback_url() ?></em></p>
+<p>The <abbr title="Universal Resource Locator">URL</abbr> to TrackBack this entry is: <em><?php trackback_url() ?></em></p>
 <?php } ?>
 
 <?php
 // this line is WordPress' motor, do not delete it.
-$comment_author = (isset($_COOKIE['comment_author_' . COOKIEHASH])) ? trim($_COOKIE['comment_author_'. COOKIEHASH]) : '';
-$comment_author_email = (isset($_COOKIE['comment_author_email_'. COOKIEHASH])) ? trim($_COOKIE['comment_author_email_'. COOKIEHASH]) : '';
-$comment_author_url = (isset($_COOKIE['comment_author_url_'. COOKIEHASH])) ? trim($_COOKIE['comment_author_url_'. COOKIEHASH]) : '';
-$comments = $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_post_ID = $id AND comment_approved = '1' ORDER BY comment_date");
-$commentstatus = $wpdb->get_row("SELECT comment_status, post_password FROM $wpdb->posts WHERE ID = $id");
-if (!empty($commentstatus->post_password) && $_COOKIE['wp-postpass_'. COOKIEHASH] != $commentstatus->post_password) {  // and it doesn't match the cookie
+$commenter = wp_get_current_commenter();
+extract($commenter);
+$comments = get_approved_comments($id);
+$post = get_post($id);
+if (!empty($post->post_password) && $_COOKIE['wp-postpass_'. COOKIEHASH] != $post->post_password) {  // and it doesn't match the cookie
 	echo(get_the_password_form());
 } else { ?>
 
@@ -52,7 +51,7 @@ if (!empty($commentstatus->post_password) && $_COOKIE['wp-postpass_'. COOKIEHASH
 	<p>No comments yet.</p>
 <?php } ?>
 
-<?php if ('open' == $commentstatus->comment_status) { ?>
+<?php if ('open' == $post->comment_status) { ?>
 <h2>Leave a comment</h2>
 <p>Line and paragraph breaks automatic, e-mail address never displayed, <acronym title="Hypertext Markup Language">HTML</acronym> allowed: <code><?php echo allowed_tags(); ?></code></p>
 
@@ -71,7 +70,7 @@ if (!empty($commentstatus->post_password) && $_COOKIE['wp-postpass_'. COOKIEHASH
 
 	<p>
 	  <input type="text" name="url" id="url" value="<?php echo $comment_author_url; ?>" size="28" tabindex="3" />
-	   <label for="url"><acronym title="Uniform Resource Identifier">URI</acronym></label>
+	   <label for="url"><abbr title="Universal Resource Locator">URL</abbr></label>
 	</p>
 
 	<p>
@@ -99,11 +98,11 @@ if (!empty($commentstatus->post_password) && $_COOKIE['wp-postpass_'. COOKIEHASH
 
 <!-- // this is just the end of the motor - don't touch that line either :) -->
 <?php //} ?> 
-<p class="credit"><?php timer_stop(1); ?> <cite>Powered by <a href="http://wordpress.org" title="Powered by WordPress, state-of-the-art semantic personal publishing platform"><strong>Wordpress</strong></a></cite></p>
+<p class="credit"><?php timer_stop(1); ?> <cite>Powered by <a href="http://wordpress.org/" title="Powered by WordPress, state-of-the-art semantic personal publishing platform"><strong>Wordpress</strong></a></cite></p>
 <?php // Seen at http://www.mijnkopthee.nl/log2/archive/2003/05/28/esc(18) ?>
 <script type="text/javascript">
 <!--
-document.onkeypress = function esc(e) {	
+document.onkeypress = function esc(e) {
 	if(typeof(e) == "undefined") { e=event; }
 	if (e.keyCode == 27) { self.close(); }
 }
