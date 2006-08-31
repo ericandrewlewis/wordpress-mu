@@ -190,6 +190,12 @@ function is_single ($post = '') {
 	return false;
 }
 
+function is_singular() {
+	global $wp_query;
+
+	return $wp_query->is_singular;	
+}
+
 function is_time () {
 	global $wp_query;
 
@@ -278,6 +284,7 @@ class WP_Query {
 	var $is_comments_popup = false;
 	var $is_admin = false;
 	var $is_attachment = false;
+	var $is_singular = false;
 	var $is_robots = false;
 	var $is_posts_page = false;
 
@@ -300,6 +307,7 @@ class WP_Query {
 		$this->is_paged = false;
 		$this->is_admin = false;
 		$this->is_attachment = false;
+		$this->is_singular = false;
 		$this->is_robots = false;
 		$this->is_posts_page = false;
 	}
@@ -326,7 +334,10 @@ class WP_Query {
 	function parse_query ($query) {
 		if ( !empty($query) || !isset($this->query) ) {
 			$this->init();
-			parse_str($query, $qv);
+			if ( is_array($query) )
+				$qv = & $query;
+			else
+				parse_str($query, $qv);
 			$this->query = $query;
 			$this->query_vars = $qv;
 		}
@@ -364,7 +375,7 @@ class WP_Query {
 			// If year, month, day, hour, minute, and second are set, a single 
 			// post is being queried.        
 			$this->is_single = true;
-		} elseif ('' != $qv['static'] || '' != $qv['pagename'] || '' != $qv['page_id']) {
+		} elseif ('' != $qv['static'] || '' != $qv['pagename'] || (int) $qv['page_id']) {
 			$this->is_page = true;
 			$this->is_single = false;
 		} elseif (!empty($qv['s'])) {
@@ -479,7 +490,10 @@ class WP_Query {
 			$this->is_admin = true;
 		}
 
-		if ( ! ($this->is_attachment || $this->is_archive || $this->is_single || $this->is_page || $this->is_search || $this->is_feed || $this->is_trackback || $this->is_404 || $this->is_admin || $this->is_comments_popup)) {
+		if ( $this->is_single || $this->is_page || $this->is_attachment )
+			$this->is_singular = true;
+
+		if ( ! ($this->is_singular || $this->is_archive || $this->is_search || $this->is_feed || $this->is_trackback || $this->is_404 || $this->is_admin || $this->is_comments_popup)) {
 			$this->is_home = true;
 		}
 
@@ -531,9 +545,9 @@ class WP_Query {
 			$q['post_type'] = 'post';
 		$post_type = $q['post_type'];
 		if ( !isset($q['posts_per_page']) || $q['posts_per_page'] == 0 )
-			$q['posts_per_page'] = get_settings('posts_per_page');
+			$q['posts_per_page'] = get_option('posts_per_page');
 		if ( !isset($q['what_to_show']) )
-			$q['what_to_show'] = get_settings('what_to_show');
+			$q['what_to_show'] = get_option('what_to_show');
 		if ( isset($q['showposts']) && $q['showposts'] ) {
 			$q['showposts'] = (int) $q['showposts'];
 			$q['posts_per_page'] = $q['showposts'];
@@ -548,9 +562,14 @@ class WP_Query {
 			}
 		}
 		if ( $this->is_feed ) {
-			$q['posts_per_page'] = get_settings('posts_per_rss');
+			$q['posts_per_page'] = get_option('posts_per_rss');
 			$q['what_to_show'] = 'posts';
 		}
+		$q['posts_per_page'] = (int) $q['posts_per_page'];
+		if ( $q['posts_per_page'] < -1 )
+			$q['posts_per_page'] = abs($q['posts_per_page']);
+		else if ( $q['posts_per_page'] == 0 )
+			$q['posts_per_page'] = 1;
 
 		if ( $this->is_home && (empty($this->query) || $q['preview'] == 'true') && ( 'page' == get_option('show_on_front') ) && get_option('page_on_front') ) {
 			$this->is_page = true;
@@ -564,8 +583,8 @@ class WP_Query {
 			$q['page'] = abs($q['page']);
 		}
 
-		$add_hours = intval(get_settings('gmt_offset'));
-		$add_minutes = intval(60 * (get_settings('gmt_offset') - $add_hours));
+		$add_hours = intval(get_option('gmt_offset'));
+		$add_minutes = intval(60 * (get_option('gmt_offset') - $add_hours));
 		$wp_posts_post_date_field = "post_date"; // "DATE_ADD(post_date, INTERVAL '$add_hours:$add_minutes' HOUR_MINUTE)";
 
 		// If a month is specified in the querystring, load that month
@@ -745,7 +764,7 @@ class WP_Query {
 			$distinct = 'DISTINCT';
 		}
 
-		// Category stuff for nice URIs
+		// Category stuff for nice URLs
 
 		global $cache_categories;
 		if ('' != $q['category_name']) {
@@ -804,7 +823,7 @@ class WP_Query {
 			$whichauthor .= ')';
 		}
 
-		// Author stuff for nice URIs
+		// Author stuff for nice URLs
 
 		if ('' != $q['author_name']) {
 			if (stristr($q['author_name'],'/')) {

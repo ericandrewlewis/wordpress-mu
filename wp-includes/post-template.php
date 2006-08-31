@@ -127,70 +127,66 @@ function get_the_excerpt($fakeit = true) {
 
 
 function wp_link_pages($args = '') {
-	parse_str($args, $r);
-	if ( !isset($r['before']) )
-		$r['before'] = '<p>' . __('Pages:');
-	if ( !isset($r['after']) )
-		$r['after'] = '</p>';
-	if ( !isset($r['next_or_number']) )
-		$r['next_or_number'] = 'number';
-	if ( !isset($r['nextpagelink']) )
-		$r['nextpagelink'] = 'Next page';
-	if ( !isset($r['previouspagelink']) )
-		$r['previouspagelink'] = 'Previous page';
-	if ( !isset($r['pagelink']) )
-		$r['pagelink'] = '%';
-	if ( !isset($r['more_file']) )
-		$r['more_file'] = '';
+	if ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
 
-	link_pages($r['before'], $r['after'], $r['next_or_number'], $r['nextpagelink'], $r['previouspagelink'], $r['pagelink'], $r['more_file']);
-}
+	$defaults = array('before' => '<p>' . __('Pages:'), 'after' => '</p>', 'next_or_number' => 'number', 'nextpagelink' => __('Next page'),
+			'previouspagelink' => __('Previous page'), 'pagelink' => '%', 'more_file' => '', 'echo' => 1);
+	$r = array_merge($defaults, $r);
+	extract($r);
 
-
-function link_pages($before='<br />', $after='<br />', $next_or_number='number', $nextpagelink='next page', $previouspagelink='previous page', $pagelink='%', $more_file='') {
 	global $id, $page, $numpages, $multipage, $more, $pagenow;
 	if ( $more_file != '' )
 		$file = $more_file;
 	else
 		$file = $pagenow;
+
+	$output = '';
 	if ( $multipage ) {
 		if ( 'number' == $next_or_number ) {
-			echo $before;
+			$output .= $before;
 			for ( $i = 1; $i < ($numpages+1); $i = $i + 1 ) {
 				$j = str_replace('%',"$i",$pagelink);
-				echo ' ';
+				$output .= ' ';
 				if ( ($i != $page) || ((!$more) && ($page==1)) ) {
-					if ( '' == get_settings('permalink_structure') )
-						echo '<a href="' . get_permalink() . '&amp;page=' . $i . '">';
+					if ( '' == get_option('permalink_structure') )
+						$output .= '<a href="' . get_permalink() . '&amp;page=' . $i . '">';
 					else
-						echo '<a href="' . trailingslashit( get_permalink() ) . $i . '/">';
+						$output .= '<a href="' . trailingslashit( get_permalink() ) . $i . '/">';
 				}
-				echo $j;
+				$output .= $j;
 				if ( ($i != $page) || ((!$more) && ($page==1)) )
-					echo '</a>';
+					$output .= '</a>';
 			}
-			echo $after;
+			$output .= $after;
 		} else {
 			if ( $more ) {
-				echo $before;
+				$output .= $before;
 				$i = $page - 1;
 				if ( $i && $more ) {
-					if ( '' == get_settings('permalink_structure') )
-						echo '<a href="' . get_permalink() . '&amp;page=' . $i . '">'.$previouspagelink.'</a>';
+					if ( '' == get_option('permalink_structure') )
+						$output .= '<a href="' . get_permalink() . '&amp;page=' . $i . '">'.$previouspagelink.'</a>';
 					else
-						echo '<a href="' . get_permalink() . $i . '/">'.$previouspagelink.'</a>';
+						$output .= '<a href="' . get_permalink() . $i . '/">'.$previouspagelink.'</a>';
 				}
 				$i = $page + 1;
 				if ( $i <= $numpages && $more ) {
-					if ( '' == get_settings('permalink_structure') )
-						echo '<a href="'.get_permalink() . '&amp;page=' . $i . '">'.$nextpagelink.'</a>';
+					if ( '' == get_option('permalink_structure') )
+						$output .= '<a href="'.get_permalink() . '&amp;page=' . $i . '">'.$nextpagelink.'</a>';
 					else
-						echo '<a href="'.get_permalink().$i.'/">'.$nextpagelink.'</a>';
+						$output .= '<a href="'.get_permalink().$i.'/">'.$nextpagelink.'</a>';
 				}
-				echo $after;
+				$output .= $after;
 			}
 		}
 	}
+
+	if ( $echo )
+		echo $output;
+
+	return $output;
 }
 
 
@@ -268,7 +264,7 @@ function wp_list_pages($args = '') {
 	else
 		parse_str($args, $r);
 
-	$defaults = array('depth' => 0, 'show_date' => '', 'date_format' => get_settings('date_format'),
+	$defaults = array('depth' => 0, 'show_date' => '', 'date_format' => get_option('date_format'),
 		'child_of' => 0, 'title_li' => __('Pages'), 'echo' => 1);
 	$r = array_merge($defaults, $r);
 
@@ -444,7 +440,7 @@ function prepend_attachment($content) {
 //
 
 function get_the_password_form() {
-	$output = '<form action="' . get_settings('siteurl') . '/wp-pass.php" method="post">
+	$output = '<form action="' . get_option('siteurl') . '/wp-pass.php" method="post">
 	<p>' . __("This post is password protected. To view it please enter your password below:") . '</p>
 	<p><label>' . __("Password:") . ' <input name="post_password" type="password" size="20" /></label> <input type="submit" name="Submit" value="' . __("Submit") . '" /></p>
 	</form>

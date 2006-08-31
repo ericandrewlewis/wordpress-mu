@@ -39,7 +39,7 @@ if ('' != $post->pinged) {
 	$pings = '<p>'. __('Already pinged:') . '</p><ul>';
 	$already_pinged = explode("\n", trim($post->pinged));
 	foreach ($already_pinged as $pinged_url) {
-		$pings .= "\n\t<li>$pinged_url</li>";
+		$pings .= "\n\t<li>" . wp_specialchars($pinged_url) . "</li>";
 	}
 	$pings .= '</ul>';
 }
@@ -80,7 +80,7 @@ addLoadEvent(focusit);
 <div id="searchresults" class="autocomplete"></div>
 <?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
-<ul id="categorychecklist"><?php dropdown_categories(get_settings('default_category')); ?></ul></div>
+<ul id="categorychecklist"><?php dropdown_categories(get_option('default_category')); ?></ul></div>
 </fieldset>
 
 <fieldset id="commentstatusdiv" class="dbx-box">
@@ -100,7 +100,7 @@ addLoadEvent(focusit);
 </fieldset>
 
 <fieldset id="slugdiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Post slug') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Post Slug') ?></h3> 
 <div class="dbx-content"><input name="post_name" type="text" size="13" id="post_name" value="<?php echo $post->post_name ?>" /></div>
 </fieldset>
 
@@ -122,7 +122,7 @@ addLoadEvent(focusit);
 
 <?php if ( $authors = get_editable_authors( $current_user->id ) ) : // TODO: ROLE SYSTEM ?>
 <fieldset id="authordiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Post author'); ?>:</h3>
+<h3 class="dbx-handle"><?php _e('Post Author'); ?>:</h3>
 <div class="dbx-content">
 <select name="post_author_override" id="post_author_override">
 <?php 

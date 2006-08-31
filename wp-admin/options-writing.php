@@ -21,9 +21,9 @@ include('admin-header.php');
 <th scope="row"><?php _e('Formatting:') ?></th>
 <td>
 <label for="use_smilies">
-<input name="use_smilies" type="checkbox" id="use_smilies" value="1" <?php checked('1', get_settings('use_smilies')); ?> />
+<input name="use_smilies" type="checkbox" id="use_smilies" value="1" <?php checked('1', get_option('use_smilies')); ?> />
 <?php _e('Convert emoticons like <code>:-)</code> and <code>:-P</code> to graphics on display') ?></label><br />
-<label for="use_balanceTags"><input name="use_balanceTags" type="checkbox" id="use_balanceTags" value="1" <?php checked('1', get_settings('use_balanceTags')); ?> /> <?php _e('WordPress should correct invalidly nested XHTML automatically') ?></label>
+<label for="use_balanceTags"><input name="use_balanceTags" type="checkbox" id="use_balanceTags" value="1" <?php checked('1', get_option('use_balanceTags')); ?> /> <?php _e('WordPress should correct invalidly nested XHTML automatically') ?></label>
 </td>
 </tr>
 <tr valign="top">
@@ -32,7 +32,7 @@ include('admin-header.php');
 <?php
 $categories = $wpdb->get_results("SELECT * FROM $wpdb->categories ORDER BY cat_name");
 foreach ($categories as $category) :
-if ($category->cat_ID == get_settings('default_category')) $selected = " selected='selected'";
+if ($category->cat_ID == get_option('default_category')) $selected = " selected='selected'";
 else $selected = '';
 echo "\n\t<option value='$category->cat_ID' $selected>$category->cat_name</option>";
 endforeach;
@@ -44,7 +44,7 @@ endforeach;
 <td><select name="default_link_category" id="default_link_category">
 <?php
 foreach ($categories as $category) :
-if ($category->cat_ID == get_settings('default_link_category')) $selected = " selected='selected'";
+if ($category->cat_ID == get_option('default_link_category')) $selected = " selected='selected'";
 else $selected = '';
 echo "\n\t<option value='$category->cat_ID' $selected>$category->cat_name</option>";
 endforeach;

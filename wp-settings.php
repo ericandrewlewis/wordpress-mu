@@ -50,10 +50,10 @@ if ( empty($PHP_SELF) )
 	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
 if ( !(phpversion() >= '4.1') )
-	die(sprintf(__('Your server is running PHP version %s but WordPress requires at least 4.1'), phpversion()));
+	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.1' );
 
 if ( !extension_loaded('mysql') )
-	die(__('Your PHP installation appears to be missing the MySQL which is required for WordPress.'));
+	die( 'Your PHP installation appears to be missing the MySQL which is required for WordPress.' );
 
 function timer_start() {
 	global $timestart;
@@ -74,6 +74,7 @@ if ( defined('WP_CACHE') )
 define('WPINC', 'wp-includes');
 require_once (ABSPATH . WPINC . '/wp-db.php');
 
+// Table names
 $wpdb->blogs		= $table_prefix . 'blogs';
 $wpdb->users		= $table_prefix . 'users';
 $wpdb->usermeta		= $table_prefix . 'usermeta';
@@ -211,16 +212,16 @@ if ( !defined('USER_COOKIE') )
 if ( !defined('PASS_COOKIE') )
 	define('PASS_COOKIE', 'wordpresspass');
 if ( !defined('COOKIEPATH') )
-	define('COOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('home') . '/' ) );
+	define('COOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_option('home') . '/' ) );
 if ( !defined('SITECOOKIEPATH') )
-	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_settings('siteurl') . '/' ) );
+	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_option('siteurl') . '/' ) );
 if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', '.' . $current_site->domain);
 
 require (ABSPATH . WPINC . '/vars.php');
 
-if ( get_settings('active_plugins') ) {
-	$current_plugins = get_settings('active_plugins');
+if ( get_option('active_plugins') ) {
+	$current_plugins = get_option('active_plugins');
 	if ( is_array($current_plugins) ) {
 		foreach ($current_plugins as $plugin) {
 			if ('' != $plugin && file_exists(ABSPATH . 'wp-content/plugins/' . $plugin))
@@ -258,6 +259,7 @@ $wp         = new WP();
 if( defined( "WP_INSTALLING" ) == false )
 	validate_current_theme();
 define('TEMPLATEPATH', get_template_directory());
+define('STYLESHEETPATH', get_stylesheet_directory());
 
 // Load the default text localization domain.
 load_default_textdomain();
@@ -268,8 +270,10 @@ require_once(ABSPATH . WPINC . '/locale.php');
 $wp_locale = new WP_Locale();
 
 // Load functions for active theme.
-if ( file_exists(TEMPLATEPATH . "/functions.php") )
-	include(TEMPLATEPATH . "/functions.php");
+if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists(STYLESHEETPATH . '/functions.php') )
+	include(STYLESHEETPATH . '/functions.php');
+if ( file_exists(TEMPLATEPATH . '/functions.php') )
+	include(TEMPLATEPATH . '/functions.php');
 
 function shutdown_action_hook() {
 	do_action('shutdown');

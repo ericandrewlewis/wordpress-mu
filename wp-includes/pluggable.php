@@ -168,8 +168,8 @@ if ( !function_exists('wp_mail') ) :
 function wp_mail($to, $subject, $message, $headers = '') {
 	if( $headers == '' ) {
 		$headers = "MIME-Version: 1.0\n" .
-			"From: " . get_settings('admin_email') . "\n" . 
-			"Content-Type: text/plain; charset=\"" . get_settings('blog_charset') . "\"\n";
+			"From: " . get_option('admin_email') . "\n" . 
+			"Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 	}
 
 	return @mail($to, $subject, $message, $headers);
@@ -227,7 +227,7 @@ function auth_redirect() {
 			 (empty($_COOKIE[USER_COOKIE])) ) {
 		nocache_headers();
 
-		wp_redirect(get_settings('siteurl') . '/wp-login.php?redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
+		wp_redirect(get_option('siteurl') . '/wp-login.php?redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
 		exit();
 	}
 }
@@ -235,7 +235,7 @@ endif;
 
 if ( !function_exists('check_admin_referer') ) :
 function check_admin_referer($action = -1) {
-	$adminurl = strtolower(get_settings('siteurl')).'/wp-admin';
+	$adminurl = strtolower(get_option('siteurl')).'/wp-admin';
 	$referer = strtolower(wp_get_referer());
 	if ( !wp_verify_nonce($_REQUEST['_wpnonce'], $action) &&
 		!(-1 == $action && strstr($referer, $adminurl)) ) {
@@ -343,7 +343,7 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 
 	$comment_author_domain = gethostbyaddr($comment->comment_author_IP);
 
-	$blogname = get_settings('blogname');
+	$blogname = get_option('blogname');
 
 	if ( empty( $comment_type ) ) $comment_type = 'comment';
 
@@ -351,7 +351,7 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 		$notify_message  = sprintf( __('New comment on your post #%1$s "%2$s"'), $comment->comment_post_ID, $post->post_title ) . "\r\n";
 		$notify_message .= sprintf( __('Author : %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
 		$notify_message .= sprintf( __('E-mail : %s'), $comment->comment_author_email ) . "\r\n";
-		$notify_message .= sprintf( __('URI    : %s'), $comment->comment_author_url ) . "\r\n";
+		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= sprintf( __('Whois  : http://ws.arin.net/cgi-bin/whois.pl?queryinput=%s'), $comment->comment_author_IP ) . "\r\n";
 		$notify_message .= __('Comment: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
 		$notify_message .= __('You can see all comments on this post here: ') . "\r\n";
@@ -359,23 +359,23 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 	} elseif ('trackback' == $comment_type) {
 		$notify_message  = sprintf( __('New trackback on your post #%1$s "%2$s"'), $comment->comment_post_ID, $post->post_title ) . "\r\n";
 		$notify_message .= sprintf( __('Website: %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
-		$notify_message .= sprintf( __('URI    : %s'), $comment->comment_author_url ) . "\r\n";
+		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= __('Excerpt: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
 		$notify_message .= __('You can see all trackbacks on this post here: ') . "\r\n";
 		$subject = sprintf( __('[%1$s] Trackback: "%2$s"'), $blogname, $post->post_title );
 	} elseif ('pingback' == $comment_type) {
 		$notify_message  = sprintf( __('New pingback on your post #%1$s "%2$s"'), $comment->comment_post_ID, $post->post_title ) . "\r\n";
 		$notify_message .= sprintf( __('Website: %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
-		$notify_message .= sprintf( __('URI    : %s'), $comment->comment_author_url ) . "\r\n";
+		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= __('Excerpt: ') . "\r\n" . sprintf('[...] %s [...]', $comment->comment_content ) . "\r\n\r\n";
 		$notify_message .= __('You can see all pingbacks on this post here: ') . "\r\n";
 		$subject = sprintf( __('[%1$s] Pingback: "%2$s"'), $blogname, $post->post_title );
 	}
 	$notify_message .= get_permalink($comment->comment_post_ID) . "#comments\r\n\r\n";
-	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_settings('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
-	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_settings('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
 
-	$admin_email = get_settings('admin_email');
+	$admin_email = get_option('admin_email');
 
 	if ( '' == $comment->comment_author ) {
 		$from = "From: \"$blogname\" <$admin_email>";
@@ -389,7 +389,7 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 
 	$message_headers = "MIME-Version: 1.0\n"
 		. "$from\n"
-		. "Content-Type: text/plain; charset=\"" . get_settings('blog_charset') . "\"\n";
+		. "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 
 	if ( isset($reply_to) )
 		$message_headers .= $reply_to . "\n";
@@ -413,7 +413,7 @@ if ( !function_exists('wp_notify_moderator') ) :
 function wp_notify_moderator($comment_id) {
 	global $wpdb;
 
-	if( get_settings( "moderation_notify" ) == 0 )
+	if( get_option( "moderation_notify" ) == 0 )
 		return true; 
     
 	$comment = $wpdb->get_row("SELECT * FROM $wpdb->comments WHERE comment_ID='$comment_id' LIMIT 1");
@@ -426,17 +426,17 @@ function wp_notify_moderator($comment_id) {
 	$notify_message .= get_permalink($comment->comment_post_ID) . "\r\n\r\n";
 	$notify_message .= sprintf( __('Author : %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
 	$notify_message .= sprintf( __('E-mail : %s'), $comment->comment_author_email ) . "\r\n";
-	$notify_message .= sprintf( __('URI    : %s'), $comment->comment_author_url ) . "\r\n";
+	$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 	$notify_message .= sprintf( __('Whois  : http://ws.arin.net/cgi-bin/whois.pl?queryinput=%s'), $comment->comment_author_IP ) . "\r\n";
 	$notify_message .= __('Comment: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
-	$notify_message .= sprintf( __('To approve this comment, visit: %s'),  get_settings('siteurl').'/wp-admin/comment.php?action=mailapprovecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
-	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_settings('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
-	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_settings('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To approve this comment, visit: %s'),  get_option('siteurl').'/wp-admin/comment.php?action=mailapprovecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
 	$notify_message .= sprintf( __('Currently %s comments are waiting for approval. Please visit the moderation panel:'), $comments_waiting ) . "\r\n";
-	$notify_message .= get_settings('siteurl') . "/wp-admin/moderation.php\r\n";
+	$notify_message .= get_option('siteurl') . "/wp-admin/moderation.php\r\n";
 
-	$subject = sprintf( __('[%1$s] Please moderate: "%2$s"'), get_settings('blogname'), $post->post_title );
-	$admin_email = get_settings('admin_email');
+	$subject = sprintf( __('[%1$s] Please moderate: "%2$s"'), get_option('blogname'), $post->post_title );
+	$admin_email = get_option('admin_email');
 
 	$notify_message = apply_filters('comment_moderation_text', $notify_message, $comment_id);
 	$subject = apply_filters('comment_moderation_subject', $subject, $comment_id);
@@ -454,20 +454,20 @@ function wp_new_user_notification($user_id, $plaintext_pass = '') {
 	$user_login = stripslashes($user->user_login);
 	$user_email = stripslashes($user->user_email);
 
-	$message  = sprintf(__('New user registration on your blog %s:'), get_settings('blogname')) . "\r\n\r\n";
+	$message  = sprintf(__('New user registration on your blog %s:'), get_option('blogname')) . "\r\n\r\n";
 	$message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
 	$message .= sprintf(__('E-mail: %s'), $user_email) . "\r\n";
 
-	@wp_mail(get_settings('admin_email'), sprintf(__('[%s] New User Registration'), get_settings('blogname')), $message);
+	@wp_mail(get_option('admin_email'), sprintf(__('[%s] New User Registration'), get_option('blogname')), $message);
 
 	if ( empty($plaintext_pass) )
 		return;
 
 	$message  = sprintf(__('Username: %s'), $user_login) . "\r\n";
 	$message .= sprintf(__('Password: %s'), $plaintext_pass) . "\r\n";
-	$message .= get_settings('siteurl') . "/wp-login.php\r\n";
+	$message .= get_option('siteurl') . "/wp-login.php\r\n";
 
-	wp_mail($user_email, sprintf(__('[%s] Your username and password'), get_settings('blogname')), $message);
+	wp_mail($user_email, sprintf(__('[%s] Your username and password'), get_option('blogname')), $message);
 
 }
 endif;

@@ -28,10 +28,10 @@ update_category_cache();
 
 wp_get_current_user();
 
-$posts_per_page = get_settings('posts_per_page');
-$what_to_show = get_settings('what_to_show');
-$date_format = get_settings('date_format');
-$time_format = get_settings('time_format');
+$posts_per_page = get_option('posts_per_page');
+$what_to_show = get_option('what_to_show');
+$date_format = get_option('date_format');
+$time_format = get_option('time_format');
 
 wp_reset_vars(array('profile', 'redirect', 'redirect_url', 'a', 'popuptitle', 'popupurl', 'text', 'trackback', 'pingback'));
 
@@ -51,6 +51,7 @@ if (isset($plugin_page)) {
 	$page_hook = get_plugin_page_hook($plugin_page, $pagenow);
 
 	if ( $page_hook ) {
+		do_action('load-' . $page_hook);
 		if (! isset($_GET['noheader']))
 			require_once(ABSPATH . '/wp-admin/admin-header.php');
 
@@ -62,6 +63,8 @@ if (isset($plugin_page)) {
 
 		if (! file_exists(ABSPATH . "wp-content/plugins/$plugin_page") && ! file_exists(ABSPATH . "wp-content/mu-plugins/$plugin_page"))
 			wp_die(sprintf(__('Cannot load %s.'), htmlentities($plugin_page)));
+
+		do_action('load-' . $plugin_page);
 
 		if (! isset($_GET['noheader']))
 			require_once(ABSPATH . '/wp-admin/admin-header.php');

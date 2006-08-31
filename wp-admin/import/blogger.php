@@ -24,7 +24,7 @@ class Blogger_Import {
 
 	function reencode($text) {
 		return $text;
-		return mb_convert_encoding($text, get_setting('blog_charset'), $this->import['blogs'][$_GET['blog']]['options']['blog-formatting']['backup']['encoding']);
+		return mb_convert_encoding($text, get_option('blog_charset'), $this->import['blogs'][$_GET['blog']]['options']['blog-formatting']['backup']['encoding']);
 	}
 
 	// Deletes saved data and redirect.
@@ -609,7 +609,7 @@ class Blogger_Import {
 		if ( isset($_GET['noheader']) ) {
 			header('Content-Type: text/html; charset=utf-8');
 
-			$this->import = get_settings('import-blogger');
+			$this->import = get_option('import-blogger');
 
 			if ( false === $this->import ) {
 				$step = 0;

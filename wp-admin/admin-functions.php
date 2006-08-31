@@ -301,6 +301,8 @@ function get_post_to_edit($id) {
 	$post->post_title = format_to_edit($post->post_title);
 	$post->post_title = apply_filters('title_edit_pre', $post->post_title);
 
+	$post->post_password = format_to_edit($post->post_password);
+
 	if ($post->post_type == 'page')
 		$post->page_template = get_post_meta($id, '_wp_page_template', true);
 
@@ -333,10 +335,10 @@ function get_default_post_to_edit() {
 		$post_excerpt = '';
 
 	$post->post_status = 'draft';
-	$post->comment_status = get_settings('default_comment_status');
-	$post->ping_status = get_settings('default_ping_status');
-	$post->post_pingback = get_settings('default_pingback_flag');
-	$post->post_category = get_settings('default_category');
+	$post->comment_status = get_option('default_comment_status');
+	$post->ping_status = get_option('default_ping_status');
+	$post->post_pingback = get_option('default_pingback_flag');
+	$post->post_category = get_option('default_category');
 	$post->post_content = apply_filters('default_content', $post_content);
 	$post->post_title = apply_filters('default_title', $post_title);
 	$post->post_excerpt = apply_filters('default_excerpt', $post_excerpt);
@@ -380,6 +382,23 @@ function wp_dropdown_roles( $default = false ) {
 	echo $p . $r;
 }
 
+
+function get_user_to_edit($user_id) {
+	$user = new WP_User($user_id);
+	$user->user_login = wp_specialchars($user->user_login, 1);
+	$user->user_email = wp_specialchars($user->user_email, 1);
+	$user->user_url = wp_specialchars($user->user_url, 1);
+	$user->first_name = wp_specialchars($user->first_name, 1);
+	$user->last_name = wp_specialchars($user->last_name, 1);
+	$user->display_name = wp_specialchars($user->display_name, 1);
+	$user->nickname = wp_specialchars($user->nickname, 1);
+	$user->aim = wp_specialchars($user->aim, 1);
+	$user->yim = wp_specialchars($user->yim, 1);
+	$user->jabber = wp_specialchars($user->jabber, 1);
+	$user->description = wp_specialchars($user->description);
+
+	return $user;
+}
 
 // Creates a new user from the "Users" form using $_POST information.
 
@@ -441,7 +460,7 @@ function edit_user($user_id = 0) {
 	if (isset ($_POST['display_name']))
 		$user->display_name = wp_specialchars(trim($_POST['display_name']));
 	if (isset ($_POST['description']))
-		$user->description = wp_specialchars(trim($_POST['description']));
+		$user->description = trim($_POST['description']);
 	if (isset ($_POST['jabber']))
 		$user->jabber = wp_specialchars(trim($_POST['jabber']));
 	if (isset ($_POST['aim']))
@@ -509,9 +528,11 @@ function get_link_to_edit($link_id) {
 
 	$link->link_url = wp_specialchars($link->link_url, 1);
 	$link->link_name = wp_specialchars($link->link_name, 1);
-	$link->link_description = wp_specialchars($link->link_description);
+	$link->link_image = wp_specialchars($link->link_image, 1);
+	$link->link_description = wp_specialchars($link->link_description, 1);
 	$link->link_notes = wp_specialchars($link->link_notes);
-	$link->link_rss = wp_specialchars($link->link_rss);
+	$link->link_rss = wp_specialchars($link->link_rss, 1);
+	$link->link_rel = wp_specialchars($link->link_rel, 1);
 	$link->post_category = $link->link_category;
 
 	return $link;
@@ -973,7 +994,7 @@ function list_meta($meta) {
 			$style = '';
 		if ('_' == $entry['meta_key'] { 0 })
 			$style .= ' hidden';
-		$key_js = addslashes(wp_specialchars( $entry['meta_key'], 'double' ));
+		$key_js = js_escape($entry['meta_key']);
 		$entry['meta_key'] = wp_specialchars( $entry['meta_key'], true );
 		$entry['meta_value'] = wp_specialchars( $entry['meta_value'], true );
 		$r .= "\n\t<tr id='meta-{$entry['meta_id']}' class='$style'>";
@@ -1025,6 +1046,7 @@ function meta_form() {
 <?php
 
 	foreach ($keys as $key) {
+		$key = wp_specialchars($key, 1);
 		echo "\n\t<option value='$key'>$key</option>";
 	}
 ?>
@@ -1098,7 +1120,7 @@ function touch_time($edit = 1, $for_post = 1) {
  
 	echo '<fieldset><legend><input type="checkbox" class="checkbox" name="edit_date" value="1" id="timestamp" /> <label for="timestamp">'.__('Edit timestamp').'</label></legend>';
 
-	$time_adj = time() + (get_settings('gmt_offset') * 3600);
+	$time_adj = time() + (get_option('gmt_offset') * 3600);
 	$post_date = ($for_post) ? $post->post_date : $comment->comment_date;
 	$jj = ($edit) ? mysql2date('d', $post_date) : gmdate('d', $time_adj);
 	$mm = ($edit) ? mysql2date('m', $post_date) : gmdate('m', $time_adj);
@@ -1616,8 +1638,8 @@ function validate_file_to_edit($file, $allowed_files = '') {
 }
 
 function get_home_path() {
-	$home = get_settings('home');
-	if ($home != '' && $home != get_settings('siteurl')) {
+	$home = get_option('home');
+	if ($home != '' && $home != get_option('siteurl')) {
 		$home_path = parse_url($home);
 		$home_path = $home_path['path'];
 		$root = str_replace($_SERVER["PHP_SELF"], '', $_SERVER["SCRIPT_FILENAME"]);

@@ -8,7 +8,7 @@ if ( current_user_can('edit_users') )
 else
 	$parent_file = 'profile.php';
 include_once('admin-header.php');
-$profileuser = new WP_User($user_ID);
+$profileuser = get_user_to_edit($user_ID);
 
 $bookmarklet_height= 440;
 ?>
@@ -31,7 +31,7 @@ $bookmarklet_height= 440;
 <h3><?php _e('Personal Options'); ?></h3>
 
 <p><label for="rich_editing"><input name="rich_editing" type="checkbox" id="rich_editing" value="true" <?php checked('true', get_user_option('rich_editing')); ?> />
-<?php _e('Use the visual rich editor when writing') ?></label></p>
+<?php _e('Use the visual editor when writing') ?></label></p>
 
 <?php do_action('profile_personal_options'); ?>
 

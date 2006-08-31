@@ -102,14 +102,14 @@ function wp_insert_user($userdata) {
 	update_usermeta( $user_id, 'aim', $aim );
 	update_usermeta( $user_id, 'yim', $yim );
 
-	if ( $update && !empty($role) ) {
+	if ( $update && isset($role) ) {
 		$user = new WP_User($user_id);
 		$user->set_role($role);
 	}
 
 	if ( !$update ) {
 		$user = new WP_User($user_id);
-		$user->set_role(get_settings('default_role'));
+		$user->set_role(get_option('default_role'));
 	}
 
 	wp_cache_delete($user_id, 'users');

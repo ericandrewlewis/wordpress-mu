@@ -507,6 +507,9 @@ function wp_insert_post($postarr = array()) {
 		$ping_status     = apply_filters('ping_status_pre',    $ping_status);
 	}
 
+	if ( ('' == $post_content) && ('' == $post_title) )
+		return 0;
+
 	// Make sure we set a valid category
 	if (0 == count($post_category) || !is_array($post_category)) {
 		$post_category = array(get_option('default_category'));
@@ -557,10 +560,10 @@ function wp_insert_post($postarr = array()) {
 		if ( $update )
 			$comment_status = 'closed';
 		else
-			$comment_status = get_settings('default_comment_status');
+			$comment_status = get_option('default_comment_status');
 	}
 	if ( empty($ping_status) )
-		$ping_status = get_settings('default_ping_status');
+		$ping_status = get_option('default_ping_status');
 	if ( empty($post_pingback) )
 		$post_pingback = get_option('default_pingback_flag');
 
@@ -661,6 +664,8 @@ function wp_insert_post($postarr = array()) {
 
 	if ($post_status == 'publish' && $post_type == 'post') {
 		do_action('publish_post', $post_ID);
+		if ( defined('XMLRPC_REQUEST') )
+			do_action('xmlrpc_publish_post', $post_ID);
 
 		if ( !defined('WP_IMPORTING') ) {
 			if ( $post_pingback )
@@ -756,7 +761,7 @@ function wp_publish_post($post_id) {
 function wp_set_post_categories($post_ID = 0, $post_categories = array()) {
 	global $wpdb;
 	// If $post_categories isn't already an array, make it one:
-	if (!is_array($post_categories) || 0 == count($post_categories))
+	if (!is_array($post_categories) || 0 == count($post_categories) || empty($post_categories))
 		$post_categories = array(get_option('default_category'));
 
 	$post_categories = array_unique($post_categories);
@@ -791,9 +796,10 @@ function wp_set_post_categories($post_ID = 0, $post_categories = array()) {
 
 	if ($add_cats) {
 		foreach ($add_cats as $new_cat) {
-			$wpdb->query("
-				INSERT INTO $wpdb->post2cat (post_id, category_id) 
-				VALUES ($post_ID, $new_cat)");
+			if ( !empty($new_cat) )
+				$wpdb->query("
+					INSERT INTO $wpdb->post2cat (post_id, category_id) 
+					VALUES ($post_ID, $new_cat)");
 		}
 	}
 
@@ -810,7 +816,7 @@ function wp_set_post_categories($post_ID = 0, $post_categories = array()) {
 // Trackback and ping functions
 //
 
-function add_ping($post_id, $uri) { // Add a URI to those already pung
+function add_ping($post_id, $uri) { // Add a URL to those already pung
 	global $wpdb;
 	$pung = $wpdb->get_var("SELECT pinged FROM $wpdb->posts WHERE ID = $post_id");
 	$pung = trim($pung);
@@ -840,7 +846,7 @@ function get_enclosed($post_id) { // Get enclosures already enclosed for a post
 	return $pung;
 }
 
-function get_pung($post_id) { // Get URIs already pung for a post
+function get_pung($post_id) { // Get URLs already pung for a post
 	global $wpdb;
 	$pung = $wpdb->get_var("SELECT pinged FROM $wpdb->posts WHERE ID = $post_id");
 	$pung = trim($pung);
@@ -849,7 +855,7 @@ function get_pung($post_id) { // Get URIs already pung for a post
 	return $pung;
 }
 
-function get_to_ping($post_id) { // Get any URIs in the todo list
+function get_to_ping($post_id) { // Get any URLs in the todo list
 	global $wpdb;
 	$to_ping = $wpdb->get_var("SELECT to_ping FROM $wpdb->posts WHERE ID = $post_id");
 	$to_ping = trim($to_ping);
@@ -1105,7 +1111,7 @@ function generate_page_uri_index() {
 
 		foreach ($posts as $id => $post) {
 
-			// URI => page name
+			// URL => page name
 			$uri = get_page_uri($id);
 			$attachments = $wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = '$id'");
 			if ( $attachments ) {
@@ -1195,10 +1201,10 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 		if ( $update )
 			$comment_status = 'closed';
 		else
-			$comment_status = get_settings('default_comment_status');
+			$comment_status = get_option('default_comment_status');
 	}
 	if ( empty($ping_status) )
-		$ping_status = get_settings('default_ping_status');
+		$ping_status = get_option('default_ping_status');
 	if ( empty($post_pingback) )
 		$post_pingback = get_option('default_pingback_flag');
 

@@ -323,7 +323,7 @@ case 'adduser':
 	check_admin_referer('add-user');
 
 	if ( ! current_user_can('create_users') )
-		die(__('You can&#8217;t create users.'));
+		wp_die(__('You can&#8217;t create users.'));
 
 	$user_id = add_user();
 	$update = 'add';

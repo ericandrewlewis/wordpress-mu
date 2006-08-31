@@ -48,7 +48,7 @@ function xfn_check($class, $value = '', $type = 'check') {
 <div id="searchresults" class="autocomplete"></div>
 <?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
 <?php endif; ?>
-<ul id="categorychecklist"><?php dropdown_categories(get_settings('default_link_category')); ?></ul>
+<ul id="categorychecklist"><?php dropdown_categories(get_option('default_link_category')); ?></ul>
 </div>
 </fieldset>
 

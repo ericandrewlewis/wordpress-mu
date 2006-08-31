@@ -27,11 +27,10 @@ include('./admin-header.php');
 <td><label><input type="checkbox" name="blog_public" value="1" <?php checked('1', $current_blog->public); ?> /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around WordPress.com.'); ?></label> (<a href="http://wordpress.com/blog/2006/01/29/a-little-privacy/">more</a>)
 </td> 
 </tr>
-
 <tr valign="top"> 
 <th scope="row"><?php _e('Membership:') ?></th> 
 <td> <label for="comment_registration">
-<input name="comment_registration" type="checkbox" id="comment_registration" value="1" <?php checked('1', get_settings('comment_registration')); ?> /> 
+<input name="comment_registration" type="checkbox" id="comment_registration" value="1" <?php checked('1', get_option('comment_registration')); ?> /> 
 <?php _e('Users must be registered and logged in to comment') ?>
 </label>
 </td> 
@@ -87,12 +86,12 @@ if( is_array( $lang_files ) && count($lang_files) > 1 ) {
 <tr>
 <th scope="row"><?php _e('Default date format:') ?></th>
 <td><input name="date_format" type="text" id="date_format" size="30" value="<?php form_option('date_format'); ?>" /><br />
-<?php _e('Output:') ?> <strong><?php echo mysql2date(get_settings('date_format'), current_time('mysql')); ?></strong></td>
+<?php _e('Output:') ?> <strong><?php echo mysql2date(get_option('date_format'), current_time('mysql')); ?></strong></td>
 </tr>
 <tr>
 <th scope="row"><?php _e('Default time format:') ?></th>
 <td><input name="time_format" type="text" id="time_format" size="30" value="<?php form_option('time_format'); ?>" /><br />
-<?php _e('Output:') ?> <strong><?php echo gmdate(get_settings('time_format'), current_time('timestamp')); ?></strong></td>
+<?php _e('Output:') ?> <strong><?php echo gmdate(get_option('time_format'), current_time('timestamp')); ?></strong></td>
 </tr> 
 <tr>
 <th scope="row">&nbsp;</th>
@@ -103,7 +102,7 @@ if( is_array( $lang_files ) && count($lang_files) > 1 ) {
 <td><select name="start_of_week" id="start_of_week">
 <?php
 for ($day_index = 0; $day_index <= 6; $day_index++) :
-	$selected = (get_settings('start_of_week') == $day_index) ? 'selected="selected"' : '';
+	$selected = (get_option('start_of_week') == $day_index) ? 'selected="selected"' : '';
 	echo "\n\t<option value='$day_index' $selected>" . $wp_locale->get_weekday($day_index) . '</option>';
 endfor;
 ?>

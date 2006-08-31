@@ -1,11 +1,5 @@
 <?php @require_once('../../wp-config.php');
-$expiresOffset = 3600 * 24 * 10;		// 10 days util client cache expires
-
-header("Content-type: text/javascript; charset: UTF-8");
-header("Vary: Accept-Encoding"); // Handle proxies
-header("Expires: " . gmdate("D, d M Y H:i:s", time() + $expiresOffset) . " GMT");
-
-
+cache_javascript_headers();
 ?>
 var autosaveLast = '';
 function autosave_timer() {
@@ -50,7 +44,7 @@ function autosave_update_post_ID() {
 		nonceAjax.setVar("post_ID", res);
 		nonceAjax.setVar("cookie", document.cookie);
 		nonceAjax.setVar("post_type", $('post_type').value);
-		nonceAjax.requestFile = "<?php echo get_bloginfo('siteurl'); ?>/wp-admin/admin-ajax.php";
+		nonceAjax.requestFile = "<?php echo get_option('siteurl'); ?>/wp-admin/admin-ajax.php";
 		nonceAjax.onCompletion = autosave_update_nonce;
 		nonceAjax.method = "POST";
 		nonceAjax.runAJAX();
@@ -119,7 +113,7 @@ function autosave() {
 		autosaveAjax.setVar("content", form.content.value);
 	}
 		
-	autosaveAjax.requestFile = "<?php echo get_bloginfo('siteurl'); ?>/wp-admin/admin-ajax.php";
+	autosaveAjax.requestFile = "<?php echo get_option('siteurl'); ?>/wp-admin/admin-ajax.php";
 	autosaveAjax.method = "POST";
 	autosaveAjax.element = null;
 	autosaveAjax.onLoading = autosave_loading;
