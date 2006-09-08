@@ -62,6 +62,18 @@ function timer_start() {
 	$timestart = $mtime;
 	return true;
 }
+
+function timer_stop($display = 0, $precision = 3) { //if called like timer_stop(1), will echo $timetotal
+	global $timestart, $timeend;
+	$mtime = microtime();
+	$mtime = explode(' ',$mtime);
+	$mtime = $mtime[1] + $mtime[0];
+	$timeend = $mtime;
+	$timetotal = $timeend-$timestart;
+	if ( $display )
+		echo number_format($timetotal,$precision);
+	return $timetotal;
+}
 timer_start();
 
 // Change to E_ALL for development/debugging
@@ -72,7 +84,10 @@ if ( defined('WP_CACHE') )
 	require (ABSPATH . 'wp-content/advanced-cache.php');
 
 define('WPINC', 'wp-includes');
-require_once (ABSPATH . WPINC . '/wp-db.php');
+if ( file_exists(ABSPATH . 'wp-content/db.php') )
+	require (ABSPATH . 'wp-content/db.php');
+else
+	require_once (ABSPATH . WPINC . '/wp-db.php');
 
 // Table names
 $wpdb->blogs		= $table_prefix . 'blogs';
@@ -134,7 +149,7 @@ if ( !$db_check && (!strstr($_SERVER['PHP_SELF'], 'install.php') && !defined('WP
 		$link = 'install.php';
 	else
 		$link = 'wp-admin/install.php';
-	die(sprintf(__("It doesn't look like you've installed WP yet. Try running <a href='%s'>install.php</a>."), $link));
+	wp_die(sprintf(__("It doesn't look like you've installed WP yet. Try running <a href='%s'>install.php</a>."), $link));
 }
 $wpdb->show_errors();
 

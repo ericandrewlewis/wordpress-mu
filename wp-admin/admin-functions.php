@@ -972,7 +972,7 @@ function list_meta($meta) {
 	global $post_ID;
 	// Exit if no meta
 	if (!$meta) {
-		echo '<tbody id="the-list"></tbody>'; //TBODY needed for list-manipulation JS
+		echo '<tbody id="the-list"><tr style="display: none;"><td>&nbsp;</td></tr></tbody>'; //TBODY needed for list-manipulation JS
 		return;
 	}
 	$count = 0;
@@ -1265,16 +1265,18 @@ function save_mod_rewrite_rules() {
 }
 
 function the_quicktags() {
-	// Browser detection sucks, but until Safari supports the JS needed for this to work people just assume it's a bug in WP
-	if (!strstr($_SERVER['HTTP_USER_AGENT'], 'Safari')) {
 		echo '
 		<div id="quicktags">
 			';
 		wp_print_scripts( 'quicktags' );
-		echo '			<script type="text/javascript">if ( typeof tinyMCE == "undefined" || tinyMCE.configs.length < 1 ) edToolbar();</script>
+		echo '			<script type="text/javascript">
+				//<![CDATA[
+				if ( typeof tinyMCE == "undefined" || tinyMCE.configs.length < 1 ) edToolbar();
+				//]]>
+			</script>
 		</div>
 ';
-	} else echo '
+	echo '
 <script type="text/javascript">
 function edInsertContent(myField, myValue) {
 	//IE support

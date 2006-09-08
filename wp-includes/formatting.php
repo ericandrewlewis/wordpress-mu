@@ -76,7 +76,7 @@ function wpautop($pee, $br = 1) {
 		$pee = str_replace('<WPPreserveNewline />', "\n", $pee);
 	}
 	$pee = preg_replace('!(</?(?:table|thead|tfoot|caption|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|p|h[1-6])[^>]*>)\s*<br />!', "$1", $pee);
-	$pee = preg_replace('!<br />(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol)>)!', '$1', $pee);
+	$pee = preg_replace('!<br />(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol)[^>]*>)!', '$1', $pee);
 	$pee = preg_replace('!(<pre.*?>)(.*?)</pre>!ise', " stripslashes('$1') .  stripslashes(clean_pre('$2'))  . '</pre>' ", $pee);
 
 	return $pee; 
@@ -1037,7 +1037,9 @@ function wp_richedit_pre($text) {
 
 function clean_url( $url ) {
 	if ('' == $url) return $url;
-	$url = preg_replace('|[^a-z0-9-~+_.?#=&;,/:]|i', '', $url);
+	$url = preg_replace('|[^a-z0-9-~+_.?#=&;,/:%]|i', '', $url);
+	$strip = array('%0d', '%0a');
+	$url = str_replace($strip, '', $url);
 	$url = str_replace(';//', '://', $url);
 	$url = (!strstr($url, '://')) ? 'http://'.$url : $url;
 	$url = preg_replace('/&([^#])(?![a-z]{2,8};)/', '&#038;$1', $url);

@@ -47,7 +47,7 @@ function get_category_parents($id, $link = FALSE, $separator = '/', $nicename = 
 	else
 		$name = $parent->cat_name;
 
-	if ( $parent->category_parent )
+	if ( $parent->category_parent && ($parent->category_parent != $parent->cat_ID) )
 		$chain .= get_category_parents($parent->category_parent, $link, $separator, $nicename);
 
 	if ( $link )
@@ -169,6 +169,7 @@ function wp_dropdown_categories($args = '') {
 		'hide_empty' => 1, 'child_of' => 0, 'exclude' => '', 'echo' => 1,
 		'selected' => 0, 'hierarchical' => 0, 'name' => 'cat',
 		'class' => 'postform');
+	$defaults['selected'] = ( is_category() ) ? get_query_var('cat') : 0;
 	$r = array_merge($defaults, $r);
 	$r['include_last_update_time'] = $r['show_last_update'];
 	extract($r);
