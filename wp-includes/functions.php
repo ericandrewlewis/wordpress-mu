@@ -275,7 +275,7 @@ function update_option($option_name, $newvalue) {
 	$option_name = $wpdb->escape($option_name);
 	$wpdb->query("UPDATE $wpdb->options SET option_value = '$newvalue' WHERE option_name = '$option_name'");
 	if ( $wpdb->rows_affected == 1 ) {
-		do_action("update_option_{$option_name}", array('old'=>$oldvalue, 'new'=>$_newvalue));
+		do_action("update_option_{$option_name}", $oldvalue, $_newvalue);
 		return true;
 	}
 	return false;
@@ -1107,7 +1107,7 @@ function wp_explain_nonce($action) {
 		}
 	}
 
-	return __('Are you sure you want to do this?');
+	return apply_filters( 'explain_nonce_' . $verb . '-' . $noun, __('Are you sure you want to do this?'), $matches[4] );
 }
 
 function wp_nonce_ays($action) {
