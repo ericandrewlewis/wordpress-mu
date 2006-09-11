@@ -952,6 +952,7 @@ function wp_create_thumbnail($file, $max_side, $effect = '') {
 	if (!empty ($error)) {
 		return $error;
 	} else {
+		apply_filters( 'wp_create_thumbnail', $thumbpath );
 		return $thumbpath;
 	}
 }
@@ -1924,8 +1925,8 @@ function wp_handle_upload(&$file, $overrides = false) {
 			return $upload_error_handler($file, __('File type does not meet security guidelines. Try another.'));
 	}
 
-	// A writable uploads dir will pass this test. Again, there's no point overriding this one.
-	if ( ! ( ( $uploads = wp_upload_dir() ) && false === $uploads['error'] ) )
+	// A writable uploads dir will pass this test. Override with $uploads = array('path'=>$path, 'url'=>$url);
+	if ( ( empty( $uploads['path'] ) || empty( $uploads['url'] ) ) && ! ( ( $uploads = wp_upload_dir() ) && false === $uploads['error'] ) )
 		return $upload_error_handler($file, $uploads['error']);
 
 	// Increment the file number until we have a unique file to save in $dir. Use $override['unique_filename_callback'] if supplied.
@@ -2079,6 +2080,17 @@ function wp_reset_vars($vars) {
 	}
 }
 
+// If siteurl or home changed, reset cookies and flush rewrite rules.
+function update_home_siteurl($old_value, $value) {
+	global $wp_rewrite, $user_login, $user_pass_md5;
+	// If home changed, write rewrite rules to new location.
+	$wp_rewrite->flush_rules();
+	// Clear cookies for old paths.
+	wp_clearcookie();
+	// Set cookies for new paths.
+	wp_setcookie($user_login, $user_pass_md5, true, get_option('home'), get_option('siteurl'));	
+}
+
 function autocomplete_css() {
 	?>
 <style type='text/css'>
@@ -2108,9 +2120,9 @@ function autocomplete_css() {
 <?php
 }
 function autocomplete_textbox( $url, $search_field, $results_field ) {
+	wp_print_scripts('scriptaculous-controls');
 	?>
-<script type="text/javascript" src="<?php echo get_option( "siteurl" ) ?>/wp-includes/js/scriptaculous/prototype.js"></script>
-<script type="text/javascript" src="<?php echo get_option( "siteurl" ) ?>/wp-includes/js/scriptaculous/scriptaculous.js"></script>
+
 <script type="text/javascript">
 function load_autocompleter() {
 	new Ajax.Autocompleter("<?php echo $search_field ?>", "<?php echo $results_field ?>", "<?php echo $url ?>", {paramName: "search", minChars: 3});
@@ -2119,5 +2131,45 @@ addLoadEvent( load_autocompleter );
 </script>
 <?php
 }
+
+add_action('update_option_home', 'update_home_siteurl', 10, 2);
+add_action('update_option_siteurl', 'update_home_siteurl', 10, 2);
+
+function update_blog_public($old_value, $value) {
+	global $wpdb;
+	$value = (int) $value;
+	do_action('update_blog_public');
+	update_blog_status( $wpdb->blogid, 'public', $value );
+}
+
+add_action('update_option_blog_public', 'update_blog_public', 10, 2);
+
+function update_option_new_admin_email($old_value, $value) {
+	if ( $value == get_option( 'admin_email' ) || !is_email( $value ) )
+		return;
+
+	$hash = md5( $value.time().mt_rand() );
+	$newadminemail = array( 
+			"hash" => $hash,
+			"newemail" => $value
+	);
+	// TODO: gettext
+	wp_mail( $value, "[ " . get_option( 'blogname' ) . " ] New Admin Email Address", "Dear User,
+
+You recently requested to have the administration email address on 
+your blog changed. 
+If this is correct, please click on the following link to change it:
+" . get_option( "siteurl" ) . "/wp-admin/options.php?adminhash={$hash}
+
+You can safely ignore and delete this email if you do not want to
+take this action.
+
+This email has been sent to '{$value}'
+
+Regards,
+The Webmaster" );
+}			
+
+add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
 
 ?>
