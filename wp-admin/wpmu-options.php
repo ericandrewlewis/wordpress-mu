@@ -28,6 +28,12 @@ if (isset($_GET['updated'])) {
 		<?php _e('What you would like to call this website.') ?></td> 
 		</tr> 
 		<tr valign="top"> 
+		<th scope="row"><?php _e('Site Admin Email:') ?></th> 
+		<td><input name="admin_email" type="text" id="admin_email" style="width: 95%" value="<?php echo stripslashes( get_site_option('admin_email') ) ?>" size="45" />
+		<br />
+		<?php _e('Registration and support mails will come from this address. Make it generic like "support@' . echo $current_site->domain . '" or "info@' . echo $current_site->domain . '".') ?></td> 
+		</tr> 
+		<tr valign="top"> 
 		<th scope="row"><?php _e('Welcome Email:') ?></th> 
 		<td><textarea name="welcome_email" id="welcome_email" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('welcome_email') ) ?></textarea>
 		<br />

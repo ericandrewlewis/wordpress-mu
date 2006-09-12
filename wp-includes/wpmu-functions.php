@@ -1071,7 +1071,10 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 	} else {
 		$activate_url = "http://{$domain}{$path}wp-activate.php?key=$key";
 	}
-	$message_headers = 'From: ' . stripslashes($title) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$admin_email = get_site_option( "admin_email" );
+	if( $admin_email == '' )
+		$admin_email = 'support@' . $_SERVER[ 'SERVER_NAME' ];
+	$message_headers = 'From: ' . get_site_option( "site_name" ) . ' <'. $admin_email . '>';
 	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, "http://{$domain}{$path}");
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $domain.$path);
@@ -1080,7 +1083,10 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 
 function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 	// Send email with activation link.
-	$message_headers = 'From: ' . stripslashes($user) . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$admin_email = get_site_option( "admin_email" );
+	if( $admin_email == '' )
+		$admin_email = 'support@' . $_SERVER[ 'SERVER_NAME' ];
+	$message_headers = 'From: ' . get_site_option( "site_name" ) . ' <'. $admin_email . '>';
 	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), "http://{$_SERVER[ 'SERVER_NAME' ]}/wp-activate.php?key=$key" );
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $user);
@@ -1342,7 +1348,10 @@ SITE_NAME" ) );
 	$welcome_email = str_replace( "PASSWORD", $password, $welcome_email );
 
 	$welcome_email = apply_filters( "update_welcome_email", $welcome_email, $blog_id, $user_id, $password, $title, $meta);
-	$message_headers = 'From: ' . $title . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$admin_email = get_site_option( "admin_email" );
+	if( $admin_email == '' )
+		$admin_email = 'support@' . $_SERVER[ 'SERVER_NAME' ];
+	$message_headers = 'From: ' . get_site_option( "site_name" ) . ' <'. $admin_email . '>';
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
@@ -1373,7 +1382,10 @@ SITE_NAME" );
 	$welcome_email = str_replace( "USERNAME", $user->user_login, $welcome_email );
 	$welcome_email = str_replace( "PASSWORD", $password, $welcome_email );
 
-	$message_headers = 'From: ' . $title . ' <support@' . $_SERVER[ 'SERVER_NAME' ] . '>';
+	$admin_email = get_site_option( "admin_email" );
+	if( $admin_email == '' )
+		$admin_email = 'support@' . $_SERVER[ 'SERVER_NAME' ];
+	$message_headers = 'From: ' . get_site_option( "site_name" ) . ' <'. $admin_email . '>';
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
