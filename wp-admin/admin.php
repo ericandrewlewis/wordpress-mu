@@ -15,7 +15,6 @@ if ( get_option('db_version') != $wp_db_version ) {
 	}
 }
 
-
 require_once(ABSPATH . 'wp-admin/admin-functions.php');
 require_once(ABSPATH . 'wp-admin/admin-db.php');
 require_once(ABSPATH . WPINC . '/registration.php');
@@ -110,6 +109,8 @@ if (isset($plugin_page)) {
 	include(ABSPATH . 'wp-admin/admin-footer.php');
 
 	exit();
+} else {
+	do_action("load-$pagenow");
 }
 
 ?>

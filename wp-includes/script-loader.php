@@ -66,7 +66,8 @@ class WP_Scripts {
 				if ( isset($this->args[$handle]) )
 					$ver .= '&amp;' . $this->args[$handle];
 				$src = 0 === strpos($this->scripts[$handle]->src, 'http://') ? $this->scripts[$handle]->src : get_option( 'siteurl' ) . $this->scripts[$handle]->src;
-				echo "<script type='text/javascript' src='$src?ver=$ver'></script>\n";
+				$src = add_query_arg('ver', $ver, $src);
+				echo "<script type='text/javascript' src='$src'></script>\n";
 				$this->printed[] = $handle;
 			}
 		}
@@ -132,7 +133,10 @@ class WP_Scripts {
 		foreach ( (array) $handles as $handle ) {
 			$handle = explode('?', $handle);
 			if ( !in_array($handle[0], $this->queue) && isset($this->scripts[$handle[0]]) ) {
-				$this->queue[] = $handle[0];
+				if ( 'wp_tiny_mce' == $handle[0] ) // HACK: Put tinyMCE first.
+					array_unshift($this->queue, $handle[0]);
+				else
+					$this->queue[] = $handle[0];
 				if ( isset($handle[1]) )
 					$this->args[$handle[0]] = $handle[1];
 			}
