@@ -78,7 +78,7 @@ if (isset($_GET['updated'])) {
 		<th scope="row"><?php _e('Site Admins:') ?></th> 
 		<td><input name="site_admins" type="text" id="site_admins" style="width: 95%" value="<?php echo implode( " ", get_site_option( 'site_admins', array( 'admin' ) ) ) ?>" size="45" />
 		<br />
-		<?php _e('These users may login to the main blog and administer the site.') ?></td> 
+		<?php _e('These users may login to the main blog and administer the site. Space separated list of usernames.') ?></td> 
 		</tr> 
 		</table>
 	</fieldset>

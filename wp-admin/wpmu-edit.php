@@ -33,7 +33,7 @@ switch( $_REQUEST[ 'action' ] ) {
 		update_site_option( "first_post", $_POST[ 'first_post' ] );
 		update_site_option( "welcome_email", $_POST[ 'welcome_email' ] );
 		update_site_option( "fileupload_maxk", $_POST[ 'fileupload_maxk' ] );
-		$site_admins = explode( ' ', $_POST['site_admins'] );
+		$site_admins = explode( ' ', str_replace( ",", " ", $_POST['site_admins'] ) );
 		if ( is_array( $site_admins ) ) {
 			$mainblog_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain='{$current_site->domain}' AND path='{$current_site->path}'" );
 			if( $mainblog_id ) {
