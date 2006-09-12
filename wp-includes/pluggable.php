@@ -294,40 +294,22 @@ function wp_setcookie($username, $password, $already_md5 = false, $home = '', $s
 	if ( !$already_md5 )
 		$password = md5( md5($password) ); // Double hash the password in the cookie.
 
-	if ( empty($home) )
-		$cookiepath = COOKIEPATH;
-	else
-		$cookiepath = preg_replace('|https?://[^/]+|i', '', $home . '/' );
-
-	if ( empty($siteurl) ) {
-		$sitecookiepath = SITECOOKIEPATH;
-		$cookiehash = COOKIEHASH;
-	} else {
-		$sitecookiepath = preg_replace('|https?://[^/]+|i', '', $siteurl . '/' );
-		$cookiehash = md5($siteurl);
-	}
-
 	if ( $remember )
 		$expire = time() + 31536000;
 	else
 		$expire = 0;
 
-	setcookie(USER_COOKIE, $username, $expire, $cookiepath, COOKIE_DOMAIN);
-	setcookie(PASS_COOKIE, $password, $expire, $cookiepath, COOKIE_DOMAIN);
-
-	if ( $cookiepath != $sitecookiepath ) {
-		setcookie(USER_COOKIE, $username, $expire, $sitecookiepath, COOKIE_DOMAIN);
-		setcookie(PASS_COOKIE, $password, $expire, $sitecookiepath, COOKIE_DOMAIN);
-	}
+	global $base;
+	setcookie(USER_COOKIE, $username, $expire, $base, COOKIE_DOMAIN);
+	setcookie(PASS_COOKIE, $password, $expire, $base, COOKIE_DOMAIN);
 }
 endif;
 
 if ( !function_exists('wp_clearcookie') ) :
 function wp_clearcookie() {
-	setcookie(USER_COOKIE, ' ', time() - 31536000, COOKIEPATH, COOKIE_DOMAIN);
-	setcookie(PASS_COOKIE, ' ', time() - 31536000, COOKIEPATH, COOKIE_DOMAIN);
-	setcookie(USER_COOKIE, ' ', time() - 31536000, SITECOOKIEPATH, COOKIE_DOMAIN);
-	setcookie(PASS_COOKIE, ' ', time() - 31536000, SITECOOKIEPATH, COOKIE_DOMAIN);
+	global $base;
+	setcookie(USER_COOKIE, ' ', time() - 31536000, $base, COOKIE_DOMAIN);
+	setcookie(PASS_COOKIE, ' ', time() - 31536000, $base, COOKIE_DOMAIN);
 }
 endif;
 

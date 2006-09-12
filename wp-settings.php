@@ -227,9 +227,9 @@ if ( !defined('USER_COOKIE') )
 if ( !defined('PASS_COOKIE') )
 	define('PASS_COOKIE', 'wordpresspass');
 if ( !defined('COOKIEPATH') )
-	define('COOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_option('home') . '/' ) );
+	define('COOKIEPATH', $current_site->path );
 if ( !defined('SITECOOKIEPATH') )
-	define('SITECOOKIEPATH', preg_replace('|https?://[^/]+|i', '', get_option('siteurl') . '/' ) );
+	define('SITECOOKIEPATH', $current_site->path );
 if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', '.' . $current_site->domain);
 
