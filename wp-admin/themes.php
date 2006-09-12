@@ -115,7 +115,7 @@ foreach ($theme_names as $theme_name) {
 <?php
 // List broken themes, if any.
 $broken_themes = get_broken_themes();
-if ( count($broken_themes) ) {
+if ( is_site_admin() && count($broken_themes) ) {
 ?>
 
 <h2><?php _e('Broken Themes'); ?></h2>
