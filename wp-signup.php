@@ -151,16 +151,16 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 
 ?>
 <?php printf(__("<p>Welcome back, %s. By filling out the form below, you can <strong>add another blog to your account</strong>. There is no limit to the number of blogs you can have, so create to your heart's content, but blog responsibly.</p>"), $current_user->display_name) ?>
-<p><?php _e('Here are the blogs you already have:') ?></p>
-<ul>
 <?php
 	$blogs = get_blogs_of_user($current_user->ID);
 
-	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
-		echo "<li><a href='http://" . $blog->domain . $blog->path . "'>" . $blog->domain . $blog->path . "</a></li>";
+	if ( ! empty($blogs) ) {
+		?><p><?php _e('Here are the blogs you already have:') ?></p><ul><?php
+		foreach ( $blogs as $blog )
+			echo "<li><a href='http://" . $blog->domain . $blog->path . "'>" . $blog->domain . $blog->path . "</a></li>";
+		?></ul><?php
 	}
 ?>
-</ul>
 <p><?php _e("If you&#8217;re not going to use a great blog domain, leave it for a new user. Now have at it!") ?></p>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
 <input type="hidden" name="stage" value="gimmeanotherblog">
@@ -219,6 +219,7 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <p>Fill out this one-step form and you'll be blogging seconds later!</p>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
 <input type="hidden" name="stage" value="validate-user-signup">
+<?php do_action( "signup_hidden_fields" ); ?>
 <table border="0" width="100%" cellpadding="9">
 <?php show_user_form($user_name, $user_email, $errors); ?>
 <th scope="row"  valign="top">&nbsp;</th>
@@ -289,6 +290,7 @@ function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_tit
 <input type="hidden" name="stage" value="validate-blog-signup">
 <input type="hidden" name="user_name" value="<?php echo $user_name ?>">
 <input type="hidden" name="user_email" value="<?php echo $user_email ?>">
+<?php do_action( "signup_hidden_fields" ); ?>
 <table border="0" width="100%" cellpadding="9">
 <?php show_blog_form($blog_id, $blog_title, $errors); ?>
 <tr>
@@ -320,6 +322,7 @@ function validate_blog_signup() {
 
 	$public = (int) $_POST['blog_public'];
 	$meta = array ('lang_id' => 'en', 'public' => $public);
+	$meta = apply_filters( "add_signup_meta", $meta );
 
 	wpmu_signup_blog($domain, $path, $blog_title, $user_name, $user_email, $meta);
 
@@ -356,10 +359,12 @@ switch ($_POST['stage']) {
 		validate_another_blog_signup();
 		break;
 	default :
+		$user_email = $_POST[ 'user_email' ];
+		do_action( "preprocess_signup_form" ); // populate the form from invites, elsewhere?
 		if ( is_user_logged_in() )
 			signup_another_blog($blog_id);
 		else
-			signup_user( $blog_id );
+			signup_user( $blog_id, $user_email );
 
 		if ($blog_id) {
 			if( constant( "VHOST" ) == 'no' )
