@@ -335,18 +335,20 @@ function check_all_rows() {
 
   $url2 = "order=" . $_GET[ 'order' ] . "&sortby=" . $_GET[ 'sortby' ] . "&s=" . $_GET[ 's' ] . "&ip_address=" . $_GET[ 'ip_address' ];
 
+  $blog_navigation = '';
   if( $start == 0 ) { 
-	  _e('Previous&nbsp;Blogs');
+	  $blog_navigation .= __('Previous&nbsp;Blogs');
   } elseif( $start <= 30 ) { 
-	  echo '<a href="wpmu-blogs.php?start=0&' . $url2 . ' ">' . __('Previous&nbsp;Blogs') . '</a>';
+	  $blog_navigation .= '<a href="wpmu-blogs.php?start=0&' . $url2 . ' ">' . __('Previous&nbsp;Blogs') . '</a>';
   } else {
-	  echo '<a href="wpmu-blogs.php?start=' . ( $start - $num ) . '&' . $url2 . '">' . __('Previous&nbsp;Blogs') . '</a>';
+	  $blog_navigation .= '<a href="wpmu-blogs.php?start=' . ( $start - $num ) . '&' . $url2 . '">' . __('Previous&nbsp;Blogs') . '</a>';
   } 
   if ( $next ) {
-	  echo '&nbsp;||&nbsp;<a href="wpmu-blogs.php?start=' . ( $start + $num ) . '&' . $url2 . '">' . __('Next&nbsp;Blogs') . '</a>';
+	  $blog_navigation .= '&nbsp;||&nbsp;<a href="wpmu-blogs.php?start=' . ( $start + $num ) . '&' . $url2 . '">' . __('Next&nbsp;Blogs') . '</a>';
   } else {
-	  echo '&nbsp;||&nbsp;' . __('Next&nbsp;Blogs');
+	  $blog_navigation .= '&nbsp;||&nbsp;' . __('Next&nbsp;Blogs');
   }
+  echo $blog_navigation;
   ?>
   </fieldset>
   </td></table>
@@ -529,6 +531,8 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 } // end if ($blogs)
 ?>
 </table>
+<table width='100%'>
+<tr><td width='20%'>
 <input type=button value="<?php _e('Check All') ?>" onClick="this.value=check_all_rows()"> 
 <p><?php _e('Selected Blogs:') ?><ul>
 <li><input type='radio' name='blogfunction' id='delete' value='delete'> <label for='delete'><?php _e('Delete') ?></label></li>
@@ -538,7 +542,15 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <input type='hidden' name='redirect' value='<?php echo $_SERVER[ 'REQUEST_URI' ] ?>'>
 <input type='submit' value='<?php _e('Apply Changes') ?>'></p>
 </form>
-
+</td><td>
+<fieldset> 
+<legend><?php _e('Blog Navigation') ?></legend> 
+<?php 
+echo $blog_navigation;
+?>
+</fieldset>
+</td></tr>
+</table>
 </div>
 <div class="wrap">
 <h2><?php _e('Add Blog') ?></h2>
