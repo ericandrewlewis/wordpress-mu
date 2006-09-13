@@ -355,6 +355,9 @@ case 'addexistinguser':
 			}
 			header("Location: $location");
 			die();
+		} else {
+			header('Location: users.php?update=notfound' );
+			die();
 		}
 	}
 	header('Location: users.php');
@@ -426,6 +429,11 @@ default:
 		case 'add_existing':
 		?>
 			<div id="message" class="updated fade"><p><?php _e('User not added. User is already registered.'); ?></p></div>
+		<?php
+			break;
+		case 'notfound':
+		?>
+			<div id="message" class="updated fade"><p><?php _e('User not found. Please ask them to signup here first.'); ?></p></div>
 		<?php
 			break;
 		}
