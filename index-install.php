@@ -348,7 +348,7 @@ function step2() {
 	}
     }
     fclose($handle);
-    chmod('wp-config.php', 0666);
+    chmod('wp-config.php', 0644);
     print "<b style='color: #00aa00; font-weight: bold'>DONE</b><br />";
 }
 
