@@ -83,6 +83,16 @@ function upload_is_user_over_quota( $ret ) {
 }
 add_filter( "pre_upload_error", "upload_is_user_over_quota" );
 
+// Use wporg wp_upload_dir() filter
+function filter_upload_dir_size( $uploads ) { 
+	if( upload_is_user_over_quota( 1 ) ) {
+		$uploads[ 'error' ] = true;
+	}
+
+	return $uploads;
+}
+add_filter( 'upload_dir', 'filter_upload_dir_size' );
+
 function upload_is_file_too_big( $ret ) {
 	if( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
 		$ret = "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.<br />";
