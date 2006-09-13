@@ -39,7 +39,7 @@ include('./admin-header.php');
 <th scope="row"><?php _e('E-mail address:') ?> </th> 
 <td><input name="new_admin_email" type="text" id="new_admin_email" value="<?php form_option('admin_email'); ?>" size="40" class="code" />
 <br />
-<p><?php _e('This address is used only for admin purposes.') ?> If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong></p>
+<p><?php _e('This address is used only for admin purposes.') ?> <?php _e('If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong>') ?></p>
 </td> 
 </tr>
 
