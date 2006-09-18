@@ -208,13 +208,13 @@ switch( $_REQUEST[ 'action' ] ) {
 				unset( $_POST[ 'role' ] );
 				$_POST[ 'role' ] = $newroles[ $userid ];
 				if( $pass != '' ) {
-					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = ''" );
+					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 					$userdata = get_userdata($userid);
 					$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
 					$_POST[ 'email' ] = $userdata->user_email;
 					edit_user( $userid );
 					if( $cap == null )
-						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = ''" );
+						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 				}
 			}
 			unset( $_POST[ 'role' ] );
