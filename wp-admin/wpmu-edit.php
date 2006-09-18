@@ -203,7 +203,10 @@ switch( $_REQUEST[ 'action' ] ) {
 		// change password
 		if( is_array( $_POST[ 'user_password' ] ) ) {
 			reset( $_POST[ 'user_password' ] );
+			$newroles = $_POST[ 'role' ];
 			while( list( $userid, $pass ) = each( $_POST[ 'user_password' ] ) ) { 
+				unset( $_POST[ 'role' ] );
+				$_POST[ 'role' ] = $newroles[ $userid ];
 				if( $pass != '' ) {
 					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = ''" );
 					$userdata = get_userdata($userid);
@@ -214,6 +217,8 @@ switch( $_REQUEST[ 'action' ] ) {
 						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = ''" );
 				}
 			}
+			unset( $_POST[ 'role' ] );
+			$_POST[ 'role' ] = $newroles;
 		}
 
 		// add user?
