@@ -120,21 +120,6 @@ function update_posts_count( $post_id ) {
 }
 add_action( "publish_post", "update_posts_count" );
 
-function update_pages_last_updated( $post_id ) {
-	global $wpdb;
-	$post_id = intval( $post_id );
-	if( $wpdb->get_var( "SELECT post_type FROM {$wpdb->posts} WHERE post_status = 'publish' and ID = '$post_id'" ) == 'page' )
-		update_option( "pages_last_updated", time() );
-}
-add_action( "save_post", "update_pages_last_updated" );
-add_action( "comment_post", "update_pages_last_updated" );
-add_action( "publish_post", "update_pages_last_updated" );
-add_action('delete_post', 'update_pages_last_updated');
-add_action('delete_comment', 'update_pages_last_updated');
-add_action('private_to_published', 'update_pages_last_updated');
-add_action('trackback_post', 'update_pages_last_updated');
-add_action('wp_set_comment_status', 'update_pages_last_updated');
-
 function wpmu_log_new_registrations( $blog_id, $user_id ) {
 	global $wpdb;
 	$user = new WP_User($user_id);
