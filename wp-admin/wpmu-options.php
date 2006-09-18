@@ -16,7 +16,8 @@ if (isset($_GET['updated'])) {
 ?>
 <div class="wrap"> 
 	<h2><?php _e('Site Options') ?></h2> 
-	<form name="form1" method="post" action="wpmu-edit.php?action=siteoptions"> 
+	<form name="form1" method="POST" action="wpmu-edit.php"> 
+	<input type='hidden' name='action' value='siteoptions'>
 	<?php wp_nonce_field( "siteoptions" ); ?>
 	<fieldset class="options">
 		<legend><?php _e('Operational Settings <em>(These settings cannot be modified by blog owners)</em>') ?></legend> 
@@ -58,7 +59,7 @@ if (isset($_GET['updated'])) {
 		<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?></td> 
 		</tr> 
 		<tr valign="top"> 
-		<th scope="row"><?php _e('Ban Email Domains:') ?></th> 
+		<th scope="row"><?php _e('Banned Email Domains:') ?></th> 
 		<td><input name="banned_email_domains" type="text" id="banned_email_domains" style="width: 95%" value="<?php echo get_site_option('banned_email_domains') == '' ? '' : @implode( " ", get_site_option('banned_email_domains') ); ?>" size="45" />
 		<br />
 		<?php _e('If you want to ban certain email domains from blog registrations. Separate domains by spaces.') ?></td> 
