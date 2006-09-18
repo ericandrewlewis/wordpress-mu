@@ -11,14 +11,10 @@ function wpmu_update_blogs_date() {
 	refresh_blog_details( $wpdb->blogid );
 }
 
-add_action('comment_post', 'wpmu_update_blogs_date');
 add_action('delete_post', 'wpmu_update_blogs_date');
-add_action('delete_comment', 'wpmu_update_blogs_date');
 add_action('private_to_published', 'wpmu_update_blogs_date');
 add_action('publish_phone', 'wpmu_update_blogs_date');
 add_action('publish_post', 'wpmu_update_blogs_date');
-add_action('trackback_post', 'wpmu_update_blogs_date');
-add_action('wp_set_comment_status', 'wpmu_update_blogs_date');
 
 /*
   Determines if the available space defined by the admin has been exceeded by the user
