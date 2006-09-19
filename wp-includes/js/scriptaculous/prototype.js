@@ -1765,7 +1765,9 @@ Object.extend(Event, {
     if (element.removeEventListener) {
       element.removeEventListener(name, observer, useCapture);
     } else if (element.detachEvent) {
-      element.detachEvent('on' + name, observer);
+      try {
+        element.detachEvent('on' + name, observer);
+      } catch (e) {}
     }
   }
 });

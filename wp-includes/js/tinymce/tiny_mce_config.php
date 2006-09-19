@@ -21,7 +21,7 @@
 	}
 
 	// Set up init variables
-	$valid_elements = 'p/-div[*],-b[*],-font[*],-ul[*],-ol[*],-li[*],*[*]';
+	$valid_elements = 'p/-div[*],-strong/-b[*],-em/-i[*],-font[*],-ul[*],-ol[*],-li[*],*[*]';
 	$valid_elements = apply_filters('mce_valid_elements', $valid_elements);
 
 	$plugins = array('inlinepopups', 'autosave', 'spellchecker', 'paste', 'wordpress');
