@@ -263,7 +263,7 @@ endif;
 // Cookie safe redirect.  Works around IIS Set-Cookie bug.
 // http://support.microsoft.com/kb/q176113/
 if ( !function_exists('wp_redirect') ) :
-function wp_redirect($location) {
+function wp_redirect($location, $status = 302) {
 	global $is_IIS;
 
 	$location = preg_replace('|[^a-z0-9-~+_.?#=&;,/:%]|i', '', $location);
@@ -271,6 +271,8 @@ function wp_redirect($location) {
 
 	$strip = array('%0d', '%0a');
 	$location = str_replace($strip, '', $location);
+
+	status_header($status);
 
 	if ($is_IIS)
 		header("Refresh: 0;url=$location");
@@ -294,22 +296,40 @@ function wp_setcookie($username, $password, $already_md5 = false, $home = '', $s
 	if ( !$already_md5 )
 		$password = md5( md5($password) ); // Double hash the password in the cookie.
 
+	if ( empty($home) )
+		$cookiepath = COOKIEPATH;
+	else
+		$cookiepath = preg_replace('|https?://[^/]+|i', '', $home . '/' );
+
+	if ( empty($siteurl) ) {
+		$sitecookiepath = SITECOOKIEPATH;
+		$cookiehash = COOKIEHASH;
+	} else {
+		$sitecookiepath = preg_replace('|https?://[^/]+|i', '', $siteurl . '/' );
+		$cookiehash = md5($siteurl);
+	}
+
 	if ( $remember )
 		$expire = time() + 31536000;
 	else
 		$expire = 0;
 
-	global $base;
-	setcookie(USER_COOKIE, $username, $expire, $base, COOKIE_DOMAIN);
-	setcookie(PASS_COOKIE, $password, $expire, $base, COOKIE_DOMAIN);
+	setcookie(USER_COOKIE, $username, $expire, $cookiepath, COOKIE_DOMAIN);
+	setcookie(PASS_COOKIE, $password, $expire, $cookiepath, COOKIE_DOMAIN);
+
+	if ( $cookiepath != $sitecookiepath ) {
+		setcookie(USER_COOKIE, $username, $expire, $sitecookiepath, COOKIE_DOMAIN);
+		setcookie(PASS_COOKIE, $password, $expire, $sitecookiepath, COOKIE_DOMAIN);
+	}
 }
 endif;
 
 if ( !function_exists('wp_clearcookie') ) :
 function wp_clearcookie() {
-	global $base;
-	setcookie(USER_COOKIE, ' ', time() - 31536000, $base, COOKIE_DOMAIN);
-	setcookie(PASS_COOKIE, ' ', time() - 31536000, $base, COOKIE_DOMAIN);
+	setcookie(USER_COOKIE, ' ', time() - 31536000, COOKIEPATH, COOKIE_DOMAIN);
+	setcookie(PASS_COOKIE, ' ', time() - 31536000, COOKIEPATH, COOKIE_DOMAIN);
+	setcookie(USER_COOKIE, ' ', time() - 31536000, SITECOOKIEPATH, COOKIE_DOMAIN);
+	setcookie(PASS_COOKIE, ' ', time() - 31536000, SITECOOKIEPATH, COOKIE_DOMAIN);
 }
 endif;
 

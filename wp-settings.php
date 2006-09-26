@@ -3,7 +3,7 @@ if( defined( 'ABSPATH' ) == false )
 	die();
 
 // Turn register globals off
-function unregister_GLOBALS() {
+function wp_unregister_GLOBALS() {
 	if ( !ini_get('register_globals') )
 		return;
 
@@ -19,7 +19,7 @@ function unregister_GLOBALS() {
 			unset($GLOBALS[$k]);
 }
 
-unregister_GLOBALS(); 
+wp_unregister_GLOBALS(); 
 
 unset( $wp_filter, $cache_userdata, $cache_lastcommentmodified, $cache_lastpostdate, $cache_settings, $category_cache, $cache_categories );
 
@@ -84,6 +84,10 @@ if ( defined('WP_CACHE') )
 	require (ABSPATH . 'wp-content/advanced-cache.php');
 
 define('WPINC', 'wp-includes');
+if ( !defined('LANGDIR') )
+	define('LANGDIR', WPINC . '/languages');   // no leading slash, no trailing slash
+if ( !defined('PLUGINDIR') )
+	define('PLUGINDIR', 'wp-content/plugins'); // no leading slash, no trailing slash
 if ( file_exists(ABSPATH . 'wp-content/db.php') )
 	require (ABSPATH . 'wp-content/db.php');
 else

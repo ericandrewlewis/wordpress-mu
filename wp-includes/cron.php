@@ -102,7 +102,7 @@ function wp_cron() {
 		return;
 
 	$keys = array_keys( $crons );
-	if ( $keys[0] > time() )
+	if ( isset($keys[0]) && $keys[0] > time() )
 		return;
 
 	$schedules = wp_get_schedules();
@@ -123,6 +123,18 @@ function wp_get_schedules() {
 		'daily' => array( 'interval' => 86400, 'display' => __('Once Daily') ),
 	);
 	return array_merge( apply_filters( 'cron_schedules', array() ), $schedules );
+}
+
+function wp_get_schedule($hook, $args = array()) {
+	$crons = _get_cron_array();
+	$key = md5(serialize($args));
+	if ( empty($crons) )
+		return false;
+	foreach ( $crons as $timestamp => $cron ) {
+		if ( isset( $cron[$hook][$key] ) )
+			return $cron[$hook][$key]['schedule'];
+	}
+	return false;
 }
 
 //

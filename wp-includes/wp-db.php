@@ -283,6 +283,9 @@ class wpdb {
 		$this->func_call = "\$db->get_row(\"$query\",$output,$y)";
 		if ( $query )
 			$this->query($query);
+		
+		if ( !isset($this->last_result[$y]) )
+			return null;
 
 		if ( $output == OBJECT ) {
 			return $this->last_result[$y] ? $this->last_result[$y] : null;
@@ -433,5 +436,6 @@ class wpdb {
 	}
 }
 
-$wpdb = new wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
+if ( ! isset($wpdb) )
+	$wpdb = new wpdb(DB_USER, DB_PASSWORD, DB_NAME, DB_HOST);
 ?>

@@ -797,7 +797,7 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
     <td><?php echo mysql2date('Y-m-d g:i a', $post->post_modified); ?></td> 
 	<td><a href="<?php the_permalink(); ?>" rel="permalink" class="edit"><?php _e('View'); ?></a></td>
     <td><?php if ( current_user_can('edit_page', $id) ) { echo "<a href='page.php?action=edit&amp;post=$id' class='edit'>" . __('Edit') . "</a>"; } ?></td> 
-    <td><?php if ( current_user_can('edit_page', $id) ) { echo "<a href='" . wp_nonce_url("page.php?action=delete&amp;post=$id", 'delete-page_' . $id) .  "' class='delete' onclick=\"return deleteSomething( 'page', " . $id . ", '" . sprintf(__("You are about to delete the &quot;%s&quot; page.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), js_escape(get_the_title()) ) . "' );\">" . __('Delete') . "</a>"; } ?></td> 
+    <td><?php if ( current_user_can('delete_page', $id) ) { echo "<a href='" . wp_nonce_url("page.php?action=delete&amp;post=$id", 'delete-page_' . $id) .  "' class='delete' onclick=\"return deleteSomething( 'page', " . $id . ", '" . sprintf(__("You are about to delete the &quot;%s&quot; page.\\n&quot;OK&quot; to delete, &quot;Cancel&quot; to stop."), js_escape(get_the_title()) ) . "' );\">" . __('Delete') . "</a>"; } ?></td> 
   </tr> 
 
 <?php
@@ -1265,47 +1265,6 @@ function save_mod_rewrite_rules() {
 	insert_with_markers($home_path.'.htaccess', 'WordPress', $rules);
 }
 
-function the_quicktags() {
-		echo '
-		<div id="quicktags">
-			';
-		wp_print_scripts( 'quicktags' );
-		echo '			<script type="text/javascript">
-				//<![CDATA[
-				if ( typeof tinyMCE == "undefined" || tinyMCE.configs.length < 1 ) edToolbar();
-				//]]>
-			</script>
-		</div>
-';
-	echo '
-<script type="text/javascript">
-function edInsertContent(myField, myValue) {
-	//IE support
-	if (document.selection) {
-		myField.focus();
-		sel = document.selection.createRange();
-		sel.text = myValue;
-		myField.focus();
-	}
-	//MOZILLA/NETSCAPE support
-	else if (myField.selectionStart || myField.selectionStart == "0") {
-		var startPos = myField.selectionStart;
-		var endPos = myField.selectionEnd;
-		myField.value = myField.value.substring(0, startPos)
-		              + myValue 
-                      + myField.value.substring(endPos, myField.value.length);
-		myField.focus();
-		myField.selectionStart = startPos + myValue.length;
-		myField.selectionEnd = startPos + myValue.length;
-	} else {
-		myField.value += myValue;
-		myField.focus();
-	}
-}
-</script>
-';
-}
-
 function get_broken_themes() {
 	global $wp_broken_themes;
 
@@ -1736,8 +1695,7 @@ function get_plugins() {
 	}
 
 	$wp_plugins = array ();
-	$plugin_loc = 'wp-content/plugins';
-	$plugin_root = ABSPATH.$plugin_loc;
+	$plugin_root = ABSPATH . PLUGINDIR;
 
 	// Files in wp-content/plugins directory
 	$plugins_dir = @ dir($plugin_root);
@@ -2020,16 +1978,6 @@ function wp_import_handle_upload() {
 	return array('file' => $file, 'id' => $id);
 }
 
-function user_can_richedit() {
-	if ( 'true' != get_user_option('rich_editing') )
-		return false;
-
-	if ( preg_match('!opera[ /][2-8]|konqueror|safari!i', $_SERVER['HTTP_USER_AGENT']) )
-		return false;
-
-	return true; // Best guess
-}
-
 function the_attachment_links($id = false) {
 	$id = (int) $id;
 	$post = & get_post($id);
@@ -2083,6 +2031,10 @@ function wp_reset_vars($vars) {
 // If siteurl or home changed, reset cookies and flush rewrite rules.
 function update_home_siteurl($old_value, $value) {
 	global $wp_rewrite, $user_login, $user_pass_md5;
+
+	if ( defined("WP_INSTALLING") )
+		return;
+
 	// If home changed, write rewrite rules to new location.
 	$wp_rewrite->flush_rules();
 	// Clear cookies for old paths.
