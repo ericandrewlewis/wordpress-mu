@@ -8,7 +8,7 @@ $id = intval( $_REQUEST[ 'id' ] );
 switch( $_REQUEST[ 'action' ] ) {
 	case "confirm":
 	?>
-		<form action='wpmu-users.php'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
+		<form action='wpmu-users.php' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><input type='hidden' name='ref' value='<?php if( isset( $_GET[ 'ref' ] ) ) {echo wp_specialchars( $_GET[ 'ref' ] ); } else { echo $_SERVER[ 'HTTP_REFERER' ]; } ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
 	<?php
 		die();
 	break;
@@ -16,7 +16,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('deleteuser');
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_user($id);
-		wpmu_admin_do_redirect( "wpmu-users.php" );
+
+		wp_redirect( add_query_arg( "update", "userdeleted", $_POST[ 'ref' ] ) );
 		die();
 	break;
 	case "allusers":
@@ -42,7 +43,7 @@ switch( $_REQUEST[ 'action' ] ) {
 				}
 			}
 		}
-		wpmu_admin_do_redirect( "wpmu-users.php" );
+		wpmu_admin_do_redirect( $_SERVER['HTTP_REFERER'] );
 		die();
 	break;
 }
@@ -71,6 +72,7 @@ switch( $_GET[ 'action' ] ) {
 	      WHERE  user_id = '".$_GET[ 'id' ]."'";
     $usermetadetails= $wpdb->get_results( $query, ARRAY_A );
     ?>
+
     <table><td valign='top'>
     <form name="form1" method="post" action="wpmu-edit.php?action=updateuser"> 
     <input type="hidden" name="action" value="updateuser" /> 
@@ -159,10 +161,10 @@ switch( $_GET[ 'action' ] ) {
 ?>
 <h2>Users</h2>
 <form name="searchform" action="wpmu-users.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
-  <table><td>
+  <table><tr><td>
   <fieldset> 
   <legend><?php _e('Search Users&hellip;') ?></legend> 
-  <input type='hidden' name='action' value='users'>
+  <input type='hidden' name='action' value='users' />
   <input type="text" name="s" value="<?php if (isset($_GET[ 's' ])) echo wp_specialchars($_GET[ 's' ], 1); ?>" size="17" /> 
   <input type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
   </fieldset>
@@ -192,7 +194,7 @@ switch( $_GET[ 'action' ] ) {
   }
   ?>
   </fieldset>
-  </td></table>
+  </td></tr></table>
 </form>
 
 <br style="clear:both;" />
@@ -238,7 +240,6 @@ function check_all_rows() {
 </script>
 
 <form name='formlist' action='wpmu-users.php' method='POST'>
-<input type=button value="<?php _e('Check All') ?>" onClick="this.value=check_all_rows()"> 
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
@@ -263,7 +264,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	
 	case 'ID':
 		?>
-		<th scope="row"><input type='checkbox' id='<?php echo $user[ 'ID' ] ?>' name='allusers[]' value='<?php echo $user[ 'ID' ] ?>'> <label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'ID' ] ?></label></th>
+		<th scope="row"><input type='checkbox' id='<?php echo $user[ 'ID' ] ?>' name='allusers[]' value='<?php echo $user[ 'ID' ] ?>' /> <label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'ID' ] ?></label></th>
 		<?php
 		break;
 
@@ -337,12 +338,14 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 } // end if ($users)
 ?> 
 </table> 
-<p><?php _e('Selected Users:') ?><ul>
-<li><input type='radio' name='userfunction' id='delete' value='delete'> <label for='delete'><?php _e('Delete') ?></label></li>
-<li><input type='radio' name='userfunction' id='spam' value='spam'> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
+<p><input type=button value="<?php _e('Check All') ?>" onClick="this.value=check_all_rows()" /> </p>
+<p><?php _e('Selected Users:') ?></p>
+<ul>
+<li><input type='radio' name='userfunction' id='delete' value='delete' /> <label for='delete'><?php _e('Delete') ?></label></li>
+<li><input type='radio' name='userfunction' id='spam' value='spam' /> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
 </ul>
 <input type='hidden' name='action' value='allusers'>
-<input type='submit' value='<?php _e('Apply Changes') ?>'></p>
+<p><input type='submit' value='<?php _e('Apply Changes') ?>'></p>
 </form>
 
 <?php
