@@ -313,7 +313,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'control_delete':
 		?>
-		<td><?php echo "<a href='wpmu-users.php?action=confirm&action2=deleteuser&amp;msg=" . urlencode( __("You are about to delete this user.") ) . "&amp;id=".$user[ 'ID' ]."&amp;redirect=".wpmu_admin_redirect_url()."' class='delete')\">" . __('Delete') . "</a>"; ?></td>
+		<td><?php echo "<a href='wpmu-users.php?action=confirm&action2=deleteuser&amp;msg=" . urlencode( __("You are about to delete this user.") ) . "&amp;id=".$user[ 'ID' ]."&amp;redirect=".wpmu_admin_redirect_url()."' class='delete'\">" . __('Delete') . "</a>"; ?></td>
 		<?php
 		break;
 
@@ -341,6 +341,8 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <li><input type='radio' name='userfunction' id='delete' value='delete'> <label for='delete'><?php _e('Delete') ?></label></li>
 <li><input type='radio' name='userfunction' id='spam' value='spam'> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
 </ul>
+<?php wp_nonce_field('allusers') ?>
+<input type='hidden' name='action' value='allusers'>
 <input type='submit' value='<?php _e('Apply Changes') ?>'></p>
 </form>
 
