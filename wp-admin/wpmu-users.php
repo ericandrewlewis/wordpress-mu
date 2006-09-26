@@ -237,7 +237,7 @@ function check_all_rows() {
 //  -->
 </script>
 
-<form name='formlist' action='wpmu-users.php?action=allusers' method='POST'>
+<form name='formlist' action='wpmu-users.php' method='POST'>
 <input type=button value="<?php _e('Check All') ?>" onClick="this.value=check_all_rows()"> 
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
@@ -341,7 +341,6 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <li><input type='radio' name='userfunction' id='delete' value='delete'> <label for='delete'><?php _e('Delete') ?></label></li>
 <li><input type='radio' name='userfunction' id='spam' value='spam'> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
 </ul>
-<?php wp_nonce_field('allusers') ?>
 <input type='hidden' name='action' value='allusers'>
 <input type='submit' value='<?php _e('Apply Changes') ?>'></p>
 </form>
