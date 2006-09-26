@@ -68,7 +68,7 @@ if (!CUSTOM_TAGS) {
 		'div' => array (
 			'align' => array (),
 			'class' => array (),
-			'dir' => array (),
+			'dir' => array ()),
 		'dl' => array (),
 		'dt' => array (),
 		'em' => array (),
@@ -147,7 +147,7 @@ if (!CUSTOM_TAGS) {
 		'p' => array (
 			'class' => array (),
 			'align' => array (),
-			'dir' => array(),
+			'dir' => array()),
 		'pre' => array (
 			'width' => array ()),
 		'q' => array (
@@ -156,7 +156,7 @@ if (!CUSTOM_TAGS) {
 		'span' => array (
 			'class' => array (),
 			'dir' => array (),
-			'align' => array (),
+			'align' => array ()),
 		'strike' => array (),
 		'strong' => array (),
 		'sub' => array (),
