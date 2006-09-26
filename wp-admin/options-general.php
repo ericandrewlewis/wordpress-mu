@@ -24,11 +24,6 @@ include('./admin-header.php');
 <?php _e('In a few words, explain what this weblog is about.') ?></td> 
 </tr> 
 <tr valign="top"> 
-<th scope="row"><?php _e('Search Engines:') ?> </th> 
-<td><label><input type="checkbox" name="blog_public" value="1" <?php checked('1', $current_blog->public); ?> /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around WordPress.com.'); ?></label> (<a href="http://wordpress.com/blog/2006/01/29/a-little-privacy/">more</a>)
-</td> 
-</tr>
-<tr valign="top"> 
 <th scope="row"><?php _e('Membership:') ?></th> 
 <td> <label for="comment_registration">
 <input name="comment_registration" type="checkbox" id="comment_registration" value="1" <?php checked('1', get_option('comment_registration')); ?> /> 
