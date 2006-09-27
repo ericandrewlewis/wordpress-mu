@@ -760,7 +760,7 @@ function _cat_row( $category, $level, $name_override = false ) {
 	$category->category_count = number_format( $category->category_count );
 	$category->link_count = number_format( $category->link_count );
 	return "<tr id='cat-$category->cat_ID'$class>
-		<th scope='row'>$category->cat_ID</th>
+		<th scope='row' style='text-align: center'>$category->cat_ID</th>
 		<td>" . ( $name_override ? $name_override : $pad . ' ' . $category->cat_name ) . "</td>
 		<td>$category->category_description</td>
 		<td align='center'>$category->category_count</td>
@@ -788,7 +788,7 @@ function page_rows($parent = 0, $level = 0, $pages = 0, $hierarchy = true) {
 		$class = ('alternate' == $class) ? '' : 'alternate';
 ?>
   <tr id='page-<?php echo $id; ?>' class='<?php echo $class; ?>'> 
-    <th scope="row"><?php echo $post->ID; ?></th> 
+    <th scope="row" style="text-align: center"><?php echo $post->ID; ?></th> 
     <td>
       <?php echo $pad; ?><?php the_title() ?>
       <?php if ('private' == $post->post_status) _e(' - <strong>Private</strong>'); ?>
@@ -2043,6 +2043,9 @@ function update_home_siteurl($old_value, $value) {
 	wp_setcookie($user_login, $user_pass_md5, true, get_option('home'), get_option('siteurl'));	
 }
 
+add_action('update_option_home', 'update_home_siteurl', 10, 2);
+add_action('update_option_siteurl', 'update_home_siteurl', 10, 2);
+
 function autocomplete_css() {
 	?>
 <style type='text/css'>
@@ -2084,9 +2087,6 @@ addLoadEvent( load_autocompleter );
 <?php
 }
 
-add_action('update_option_home', 'update_home_siteurl', 10, 2);
-add_action('update_option_siteurl', 'update_home_siteurl', 10, 2);
-
 function update_blog_public($old_value, $value) {
 	global $wpdb;
 	$value = (int) $value;
@@ -2123,5 +2123,4 @@ The Webmaster" );
 }			
 
 add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
-
 ?>
