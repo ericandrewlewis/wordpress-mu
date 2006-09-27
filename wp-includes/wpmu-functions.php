@@ -1188,7 +1188,9 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 	if ( ! $blog_id = insert_blog($domain, $path, $site_id) )
 		return new WP_Error('insert_blog', __('Could not create blog.'));
 
-	//define( "WP_INSTALLING", true );
+	if ( !defined("WP_INSTALLING") )
+		define( "WP_INSTALLING", true );
+
 	switch_to_blog($blog_id);
 
 	install_blog($blog_id, $title);
