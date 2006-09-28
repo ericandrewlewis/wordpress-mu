@@ -117,7 +117,7 @@ switch( $_GET[ 'action' ] ) {
 	    	?>
 		<tr valign="top"> 
 		<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
-		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo stripslashes( $val[ 'option_value' ] ) ?>" size="40" /></td> 
+		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo wp_specialchars( stripslashes( $val[ 'option_value' ] ), 1 ) ?>" size="40" /></td> 
 		</tr> 
 		<?php
 	}
