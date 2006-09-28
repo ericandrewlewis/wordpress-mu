@@ -378,6 +378,7 @@ $posts_columns['control_archive']    = '';
 $posts_columns['control_spam']    = '';
 $posts_columns['control_delete']    = '';
 
+$sortby_url = "s=" . $_GET[ 's' ] . "&ip_address=" . $_GET[ 'ip_address' ];
 ?>
 
 <form name='formlist' action='wpmu-edit.php?action=allblogs' method='POST'>
@@ -386,7 +387,7 @@ $posts_columns['control_delete']    = '';
 	<tr>
 
 <?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><a href="wpmu-blogs.php?sortby=<?php echo urlencode( $column_display_name ) ?>&<?php if( $_GET[ 'sortby' ] == $column_display_name ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
+	<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&sortby=<?php echo urlencode( $column_display_name ) ?>&<?php if( $_GET[ 'sortby' ] == $column_display_name ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
 <?php } ?>
 
 	</tr>
