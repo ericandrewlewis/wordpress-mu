@@ -21,6 +21,11 @@ function wp_unregister_GLOBALS() {
 
 wp_unregister_GLOBALS(); 
 
+if( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
+	$HTTP_USER_AGENT = $_SERVER[ 'HTTP_USER_AGENT' ];
+} else {
+	$HTTP_USER_AGENT = '';
+}
 unset( $wp_filter, $cache_userdata, $cache_lastcommentmodified, $cache_lastpostdate, $cache_settings, $category_cache, $cache_categories );
 
 if ( ! isset($blog_id) )
@@ -136,10 +141,10 @@ else
 
 wp_cache_init();
 
+define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files" );
 if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
 	return;
 
-define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files" );
 
 require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/plugin.php');

@@ -35,7 +35,7 @@ function wpmu_checkAvailableSpace($action) {
 	if( $spaceAllowed == false )
 		$spaceAllowed = 10;
 
-	$dirName = ABSPATH."wp-content/blogs.dir/".$blog_id."/files/";
+	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
 
   	$dir  = dir($dirName);
    	$size = 0;

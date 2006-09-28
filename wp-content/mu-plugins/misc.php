@@ -72,7 +72,7 @@ function upload_is_user_over_quota( $ret ) {
 	$spaceAllowed = get_site_option("blog_upload_space");
 	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 10;
 	
-	$dirName = ABSPATH."wp-content/blogs.dir/" . $wpdb->blogid . "/files/";
+	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
 	$size = get_dirsize($dirName) / 1024 / 1024;
 	
 	if( ($spaceAllowed-$size) < 0 ) { 

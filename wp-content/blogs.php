@@ -1,6 +1,15 @@
 <?php
-define( "BLOGDEFINITION", true );
-require_once( "../wp-config.php" );
+define( 'BLOGDEFINITION', true ); // this prevents most of WP from being loaded
+require_once( dirname( dirname( __FILE__) ) . '/wp-config.php' ); // absolute includes are faster
+
+if ( 
+	$current_blog->archived == '1' || 
+	$current_blog->spam == '1' ||
+	$current_blog->deleted == '1' 
+) {
+	header("HTTP/1.1 404 Not Found");
+	graceful_fail('404 &#8212; File not found.');
+}
 
 if ( !function_exists('wp_check_filetype') ) :
 function wp_check_filetype($filename, $mimes = null) {
@@ -59,49 +68,61 @@ function wp_check_filetype($filename, $mimes = null) {
 }
 endif;
 
-// Referrer protection
-if( $_SERVER["HTTP_REFERER"] ) {
-	if( strpos( $_SERVER["HTTP_REFERER"], $current_blog->domain ) == false ) {
-		// do something against hot linking sites!
-	}
-}
+
 $file = $_GET[ 'file' ];
-$file = ABSPATH . "wp-content/blogs.dir/" . $blog_id . '/files/' . $file;
+$file = constant( "ABSPATH" ) . constant( "UPLOADS" ) . $file;
 
-if( is_file( $file ) ) {
-	$etag = md5( $file . filemtime( $file ) );
-	$lastModified = date( "D, j M Y H:i:s ", filemtime( $file ) ) . "GMT";
-	#$headers = apache_request_headers();
-	// get mime type
-	$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
-	if( $mime[ 'type' ] != false ) {
-		$mimetype = $mime[ 'type' ];
-	} else {
-		$ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
-		$mimetype = "image/$ext";
-	}
-
-	// from http://blog.rd2inc.com/archives/2005/03/24/making-dynamic-php-pages-cacheable/
-	if( $_SERVER[ 'HTTP_IF_NONE_MATCH' ] == '"' . $etag . '"' || $lastModified == $_SERVER['HTTP_IF_MODIFIED_SINCE']) {
-		// They already have an up to date copy so tell them 
-		header('HTTP/1.1 304 Not Modified'); 
-		header('Cache-Control: private'); 
-		header('Content-Type: $mimetype'); 
-		header('ETag: "'.$etag.'"'); 
-	} else {
-		header("Content-type: $mimetype" );
-		header( "Last-Modified: " . $lastModified );
-		header( 'Accept-Ranges: bytes' );
-		header( "Content-Length: " . filesize( $file ) );
-		header( 'ETag: "' . $etag . '"' );
-		readfile( $file );
-	}
-} else {
-	// 404
+if ( !is_file( $file ) ) {
 	header("HTTP/1.1 404 Not Found");
-	print "<html><head><title>Error 404! File Not Found!</title></head>";
-	print "<body>";
-	print "<h1>File Not Found!</h1>";
-	print "</body></html>";
+	graceful_fail('404 &#8212; File not found.');
 }
+
+// These should never, ever be served
+$never = array( 'js', 'exe', 'swf', 'class', 'tar', 'zip', 'rar' );
+if ( in_array( preg_replace( '|.*\.(.*)$|', '$1', $file ), $never ) ) {
+	header("HTTP/1.1 404 Not Found");
+	graceful_fail('404 &#8212; File not found.');
+}
+
+$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
+if( $mime[ 'type' ] != false ) {
+	$mimetype = $mime[ 'type' ];
+} else {
+	$ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
+	$mimetype = "image/$ext";
+}
+header( 'Content-type: ' . $mimetype ); // always send this
+
+$timestamp = filemtime( $file );
+
+$last_modified = gmdate('D, d M Y H:i:s', $timestamp);
+$etag = '"' . md5($last_modified) . '"';
+@header( "Last-Modified: $last_modified GMT" );
+@header( 'ETag: ' . $etag );
+
+$expire = gmdate('D, d M Y H:i:s', time() + 100000000);
+@header( "Expires: $expire GMT" );
+
+// Support for Conditional GET
+if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) $client_etag = stripslashes($_SERVER['HTTP_IF_NONE_MATCH']);
+else $client_etag = false;
+
+$client_last_modified = trim( $_SERVER['HTTP_IF_MODIFIED_SINCE']);
+// If string is empty, return 0. If not, attempt to parse into a timestamp
+$client_modified_timestamp = $client_last_modified ? strtotime($client_last_modified) : 0;
+
+// Make a timestamp for our most recent modification...	
+$modified_timestamp = strtotime($last_modified);
+
+if ( ($client_last_modified && $client_etag) ?
+	 (($client_modified_timestamp >= $modified_timestamp) && ($client_etag == $etag)) :
+	 (($client_modified_timestamp >= $modified_timestamp) || ($client_etag == $etag)) ) {
+	header('HTTP/1.1 304 Not Modified');
+	exit;
+}
+
+// If we made it this far, just serve the file
+
+readfile( $file );
+
 ?>
