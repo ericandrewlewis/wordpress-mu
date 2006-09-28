@@ -570,12 +570,9 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 
 	if( $update == true ) {
 		unset( $blogs );
-		$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' ORDER BY registered DESC", ARRAY_A );
+		$blogs = $wpdb->get_results( "SELECT blog_id, domain, path FROM $wpdb->blogs WHERE site_id = '$wpdb->siteid' AND public = '1' AND archived = '0' AND mature = '0' AND spam = '0' AND deleted = '0' ORDER BY registered DESC", ARRAY_A );
 		if( is_array( $blogs ) ) {
 			while( list( $key, $details ) = each( $blogs ) ) {
-				if( is_archived( $details[ 'blog_id' ] ) == '1' )
-					unset( $blogs[ $key ] );
-
 				$blog_list[ $details[ 'blog_id' ] ] = $details;
 				$blog_list[ $details[ 'blog_id' ] ][ 'postcount' ] = $wpdb->get_var( "SELECT count(*) FROM " . $wpmuBaseTablePrefix . $details[ 'blog_id' ] . "_posts WHERE post_status='publish' AND post_type='post'" );
 			}
