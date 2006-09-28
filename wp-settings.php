@@ -141,7 +141,7 @@ else
 
 wp_cache_init();
 
-define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files" );
+define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files/" );
 if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
 	return;
 
