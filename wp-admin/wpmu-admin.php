@@ -18,32 +18,23 @@ do_action( "wpmuadminresult", "" );
 
 switch( $_GET[ 'action' ] ) {
     default:
-    /*
-    // print some global stats.
-    $stats = get_sitestats();
-    print "<h2>Site Stats</h2>
-    There are currently ".$stats[ 'blogs' ]." <a href='wpmu-blogs.php'>blogs</a> running on this server and ".$stats[ 'users' ]." <a href='wpmu-users.php'>users</a>.</p><br /><br />
-    ";
+    ?>
+<form name="searchform" action="wpmu-users.php" method="get">
+<p>
+<input name="action" value="users" type="hidden" />
+<input name="s" value="" size="17" type="text" /> 
+<input name="submit" value="Search Users &raquo;" type="submit" />
+</p> 
+</form>
 
-    print "<table>";
-    #$blogs = get_blog_list();
-    #print "<br>blogs: <br>";
-    #print_r( $blogs );
-
-    $most_active = get_most_active_blogs( 10, false );
-    if( is_array( $most_active ) ) {
-	print "<caption>Most Active Blogs</caption>";
-	print "<tr><th scope='col'>ID</th><th scope='col'>Address</th><th scope='col'>Posts</th></tr>";
-	while( list( $key, $details ) = each( $most_active ) ) { 
-	    $class = ('alternate' == $class) ? '' : 'alternate';
-	    $url = "http://" . $details[ 'domain' ] . $details[ 'path' ];
-	    print "<tr class='$class'><td>" . $details[ 'blog_id' ] . "</td><td><a href='$url'>$url</a></td><td>" . $details[ 'postcount' ] . "</td></tr>";
-	}
-    }
-    print "</table>";
-
-    do_action( "wpmuadmindefaultpage", "" );
-    */
+<form name="searchform" action="wpmu-blogs.php" method="get">
+<p>
+<input type='hidden' name='action' value='blogs' />
+<input type="text" name="s" value="" size="17" />
+<input type="submit" name="submit" value="Search Blogs &raquo;" />
+</p>
+</form>
+<?php
     break;
 }
 
