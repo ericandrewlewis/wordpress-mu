@@ -610,12 +610,11 @@ function get_blog_count( $id = 0 ) {
 function get_blog_post( $blog_id, $post_id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
-	$cache = wpmu_get_cache( $blog_id."-".$post_id, "get_blog_post" );
-	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 10 ) {
-		$post = $cache[ 'value' ];
-	} else {
+	$key = $blog_id."-".$post_id."-blog_post";
+	$post = wp_cache_get( $key, "site-options" );
+	if( $post == false ) {
 		$post = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
-		wpmu_update_cache( $blog_id."-".$post_id, $post, "get_blog_post" );
+		wp_cache_set( $key, $post, "site-options", 30 );
 	}
 
 	return $post;
@@ -741,45 +740,15 @@ function create_empty_blog( $domain, $path, $weblog_title, $site_id = 1 ) {
 function get_blog_permalink( $blog_id, $post_id ) {
 	global $wpdb, $cache_settings;
 
-	$cache = wpmu_get_cache( $blog_id."-".$post_id, "permalink" );
-	if( is_array( $cache ) && ( time() - $cache[ 'time' ] ) < 30 ) { // cache for 30 seconds
-		$link = $cache[ 'value' ];
-	} else {
+	$key = "{$blog_id}-{$post_id}-blog_permalink";
+	$link = wp_cache_get( $key, 'site-options' );
+	if( $link == false ) {
 		switch_to_blog( $blog_id );
 		$link = get_permalink( $post_id );
 		restore_current_blog();
-		wpmu_update_cache( $blog_id."-".$post_id, $link, "permalink" );
+		wp_cache_set( $key, $link, "site-options", 30 );
 	}
 	return $link;
-}
-function wpmu_update_cache( $key, $value, $path ) {
-	if( defined( "WPMU_CACHE_PATH" ) ) {
-		@mkdir( CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/", 0700 );
-		@mkdir( CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/temp/", 0700 );
-		$cache_path = CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/" . md5( $key );
-		$tmpfname = tempnam( CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/temp/", "tempname");
-		$handle = fopen($tmpfname, "w");
-		$cache = array( "value" => $value, "time" => time() );
-		fwrite( $handle, serialize( $cache ) );
-		fclose($handle);
-		if( file_exists( $cache_path ) )
-			@unlink( $cache_path );
-		rename( $tmpfname, $cache_path );
-	}
-}
-
-function wpmu_get_cache( $key, $path ) {
-	if( defined( "WPMU_CACHE_PATH" ) ) {
-		$cache_path = CONSTANT( "WPMU_CACHE_PATH" ) . "/$path/" . md5( $key );
-		if ( @file_exists( $cache_path ) ) {
-			$cache = unserialize( @file_get_contents( $cache_path ) );
-			return $cache;
-		} else {
-			return false;
-		}
-	} else {
-		return false;
-	}
 }
 
 // wpmu admin functions
