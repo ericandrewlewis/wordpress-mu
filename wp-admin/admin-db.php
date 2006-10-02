@@ -52,11 +52,12 @@ function get_editable_user_ids( $user_id, $exclude_zeros = true ) {
 			return false;
 	}
 
-	$level_key = $wpdb->prefix . 'user_level';
+	// wpmu site admins don't have user_levels
+	$level_key = $wpdb->prefix . 'capabilities';
 
 	$query = "SELECT user_id FROM $wpdb->usermeta WHERE meta_key = '$level_key'";
 	if ( $exclude_zeros )
-		$query .= " AND meta_value != '0'";
+		$query .= " AND meta_value != 'a:1:{s:10:\"subscriber\";b:1;}'";
 
 	return $wpdb->get_col( $query );
 }
