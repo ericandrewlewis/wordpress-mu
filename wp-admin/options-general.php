@@ -109,7 +109,7 @@ endfor;
 
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="blogname,blogdescription,new_admin_email,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,language,blog_public" /> 
+<input type="hidden" name="page_options" value="blogname,blogdescription,new_admin_email,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,language" /> 
 </p>
 </form>
 
