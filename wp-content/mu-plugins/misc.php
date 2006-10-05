@@ -86,7 +86,7 @@ add_filter( "pre_upload_error", "upload_is_user_over_quota" );
 // Use wporg wp_upload_dir() filter
 function filter_upload_dir_size( $uploads ) { 
 	if( upload_is_user_over_quota( 1 ) ) {
-		$uploads[ 'error' ] = true;
+		$uploads[ 'error' ] = 'Sorry, you have used your upload quota.';
 	}
 
 	return $uploads;
