@@ -76,7 +76,7 @@ function wp_upload_view() {
 		</div>
 		<?php the_attachment_links( $id ); ?>
 	</div>
-<?php
+<?php		echo "<form action='' id='browse-form'><input type='hidden' id='nonce-value' value='" . wp_create_nonce( 'inlineuploading' )  . "' /></form>\n";
 }
 
 function wp_upload_form() {

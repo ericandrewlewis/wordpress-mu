@@ -223,7 +223,8 @@ addLoadEvent( function() {
 				win.tinyMCE.execCommand('mceInsertContent', false, h);
 			else
 				win.edInsertContent(win.edCanvas, h);
-			this.cancelView();
+			if ( !this.ID )
+				this.cancelView();
 			return false;
 		},
 
