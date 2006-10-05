@@ -19,8 +19,8 @@ When you&#8217;re promoted, just reload this page and you&#8217;ll be able to bl
 	exit();
 }
 
-if ( isset($_GET['posted']) ) : ?>
-<div id="message" class="updated fade"><p><?php printf(__('Post saved. <a href="%s">View site &raquo;</a>'), get_bloginfo('home') . '/'); ?></p></div>
+if ( isset($_GET['posted']) && $_GET['posted'] ) : ?>
+<div id="message" class="updated fade"><p><strong><?php _e('Post saved.'); ?></strong> <a href="<?php echo get_permalink( $_GET['posted'] ); ?>"><?php _e('View post'); ?> &raquo;</a></p></div>
 <?php
 endif;
 

@@ -26,7 +26,7 @@ if ( isset($rss->items) && 0 != count($rss->items) ) {
 $rss->items = array_slice($rss->items, 0, 10);
 foreach ($rss->items as $item ) {
 ?>
-	<li><a href="<?php echo wp_filter_kses($item['link']); ?>"><?php echo wp_specialchars($item['title']); ?></a></li>
+	<li><a href="<?php echo wp_filter_kses($item['link']); ?>"><?php echo wptexturize(wp_specialchars($item['title'])); ?></a></li>
 <?php } ?>
 </ul>
 </div>
@@ -118,44 +118,54 @@ if (0 < $numcats) $numcats = number_format($numcats);
 <p><?php _e('Use these links to get started:'); ?></p>
 
 <ul>
-<li><a href="post-new.php"><?php _e('Write a post'); ?></a></li>
-<li><a href="profile.php"><?php _e('Update your profile or change your password'); ?></a></li>
-<li><a href="link-add.php"><?php _e('Add a bookmark to your blogroll'); ?></a></li>
-<li><a href="themes.php"><?php _e('Change your site&#8217;s look or theme'); ?></a></li>
+<?php if ( current_user_can('edit_posts') ) : ?>
+	<li><a href="post-new.php"><?php _e('Write a post'); ?></a></li>
+<?php endif; ?>
+	<li><a href="profile.php"><?php _e('Update your profile or change your password'); ?></a></li>
+<?php if ( current_user_can('manage_links') ) : ?>
+	<li><a href="link-add.php"><?php _e('Add a bookmark to your blogroll'); ?></a></li>
+<?php endif; ?>
+<?php if ( current_user_can('switch_themes') ) : ?>
+	<li><a href="themes.php"><?php _e('Change your site&#8217;s look or theme'); ?></a></li>
+<?php endif; ?>
 </ul>
-	<p><?php _e("Below is the latest news from the official WordPress development blog, click on a title to read the full entry. If you need help with WordPress please see our <a href='http://codex.wordpress.org/'>great documentation</a> or if that doesn't help visit the <a href='http://wordpress.org/support/'>support forums</a>."); ?></p>
-	<?php
-	$rss = @fetch_rss('http://wordpress.org/development/feed/');
-	if ( isset($rss->items) && 0 != count($rss->items) ) {
-		?>
-		<h3><?php _e('WordPress Development Blog'); ?></h3>
-		<?php
-		$rss->items = array_slice($rss->items, 0, 3);
-		foreach ($rss->items as $item ) {
-			?>
-			<h4><a href='<?php echo wp_filter_kses($item['link']); ?>'><?php echo wp_specialchars($item['title']); ?></a> &#8212; <?php printf(__('%s ago'), human_time_diff(strtotime($item['pubdate'], time() ) ) ); ?></h4>
-			<p><?php echo $item['description']; ?></p>
-			<?php
-		}
+<p><?php _e("Need help with WordPress? Please see our <a href='http://codex.wordpress.org/'>documentation</a> or visit the <a href='http://wordpress.org/support/'>support forums</a>."); ?></p>
+<?php
+$rss = @fetch_rss('http://wordpress.org/development/feed/');
+if ( isset($rss->items) && 0 != count($rss->items) ) {
+?>
+<h3><?php _e('WordPress Development News'); ?></h3>
+<?php
+$rss->items = array_slice($rss->items, 0, 3);
+foreach ($rss->items as $item ) {
+?>
+<h4><a href='<?php echo wp_filter_kses($item['link']); ?>'><?php echo wp_specialchars($item['title']); ?></a> &#8212; <?php printf(__('%s ago'), human_time_diff(strtotime($item['pubdate'], time() ) ) ); ?></h4>
+<p><?php echo $item['description']; ?></p>
+<?php
 	}
-	$rss = @fetch_rss('http://planet.wordpress.org/feed/');
-	if ( isset($rss->items) && 0 != count($rss->items) ) {
-		?>
-		<div id="planetnews">
-		<h3><?php _e('Other WordPress News'); ?> <a href="http://planet.wordpress.org/"><?php _e('more'); ?> &raquo;</a></h3>
-		<ul>
-		<?php
-		$rss->items = array_slice($rss->items, 0, 20);
-		foreach ($rss->items as $item ) {
-			?>
-			<li><a href='<?php echo wp_filter_kses($item['link']); ?>'><?php echo wp_specialchars($item['title']); ?></a></li>
-			<?php
-		}
-		?>
-		</ul>
-		</div>
-		<?php
+}
+?>
+
+
+<?php
+$rss = @fetch_rss('http://planet.wordpress.org/feed/');
+if ( isset($rss->items) && 0 != count($rss->items) ) {
+?>
+<div id="planetnews">
+<h3><?php _e('Other WordPress News'); ?> <a href="http://planet.wordpress.org/"><?php _e('more'); ?> &raquo;</a></h3>
+<ul>
+<?php
+$rss->items = array_slice($rss->items, 0, 20);
+foreach ($rss->items as $item ) {
+?>
+<li><a href='<?php echo wp_filter_kses($item['link']); ?>'><?php echo wp_specialchars($item['title']); ?></a></li>
+<?php
 	}
+?>
+</ul>
+</div>
+<?php
+}
 ?>
 <div style="clear: both">&nbsp;
 <br clear="all" />

@@ -674,7 +674,7 @@ function dropdown_categories($default = 0) {
 
 function return_link_categories_list($parent = 0) {
 	global $wpdb;
-	return $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories WHERE category_parent = $parent AND link_count > 0");
+	return $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories WHERE category_parent = $parent ORDER BY link_count DESC");
 }
 
 function get_nested_link_categories( $default = 0, $parent = 0 ) {
@@ -1720,24 +1720,22 @@ function get_plugins() {
 		}
 	}
 
-	if (!$plugins_dir || !$plugin_files) {
+	if ( !$plugins_dir || !$plugin_files )
 		return $wp_plugins;
-	}
 
-	sort($plugin_files);
-
-	foreach ($plugin_files as $plugin_file) {
-		if ( !is_readable("$plugin_root/$plugin_file"))
+	foreach ( $plugin_files as $plugin_file ) {
+		if ( !is_readable("$plugin_root/$plugin_file") )
 			continue;
 
 		$plugin_data = get_plugin_data("$plugin_root/$plugin_file");
 
-		if (empty ($plugin_data['Name'])) {
+		if ( empty ($plugin_data['Name']) )
 			continue;
-		}
 
 		$wp_plugins[plugin_basename($plugin_file)] = $plugin_data;
 	}
+
+	uasort($wp_plugins, create_function('$a, $b', 'return strnatcasecmp($a["Name"], $b["Name"]);'));
 
 	return $wp_plugins;
 }
@@ -1988,16 +1986,28 @@ function the_attachment_links($id = false) {
 	$icon = get_attachment_icon($post->ID);
 
 ?>
-<p><?php _e('Text linked to file') ?><br />
-<textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid ?>" class="attachmentlink"><?php echo basename($post->guid) ?></a></textarea></p>
-<p><?php _e('Text linked to subpost') ?><br />
-<textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment" id="<?php echo $post->ID ?>"><?php echo $post->post_title ?></a></textarea></p>
+<form id="the-attachment-links">
+<table>
+	<tr>
+		<th scope="row"><?php _e('Text linked to file') ?></th>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid ?>" class="attachmentlink"><?php echo basename($post->guid) ?></a></textarea></td>
+	</tr>
+	<tr>
+		<th scope="row"><?php _e('Text linked to subpost') ?></th>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment" id="<?php echo $post->ID ?>"><?php echo $post->post_title ?></a></textarea></td>
+	</tr>
 <?php if ( $icon ) : ?>
-<p><?php _e('Thumbnail linked to file') ?><br />
-<textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid ?>" class="attachmentlink"><?php echo $icon ?></a></textarea></p>
-<p><?php _e('Thumbnail linked to subpost') ?><br />
-<textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment" id="<?php echo $post->ID ?>"><?php echo $icon ?></a></textarea></p>
+	<tr>
+		<th scope="row"><?php _e('Thumbnail linked to file') ?></th>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid ?>" class="attachmentlink"><?php echo $icon ?></a></textarea></td>
+	</tr>
+	<tr>
+		<th scope="row"><?php _e('Thumbnail linked to subpost') ?></th>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment" id="<?php echo $post->ID ?>"><?php echo $icon ?></a></textarea></td>
+	</tr>
 <?php endif; ?>
+</table>
+</form>
 <?php
 }
 

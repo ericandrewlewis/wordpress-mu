@@ -34,6 +34,7 @@ $submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.p
 
 $submenu['edit.php'][5] = array(__('Posts'), 'edit_posts', 'edit.php');
 $submenu['edit.php'][10] = array(__('Pages'), 'edit_pages', 'edit-pages.php');
+$submenu['edit.php'][12] = array(__('Uploads'), 'upload_files', 'upload.php');
 $submenu['edit.php'][15] = array(__('Categories'), 'manage_categories', 'categories.php');
 $submenu['edit.php'][20] = array(__('Comments'), 'edit_posts', 'edit-comments.php');
 $awaiting_mod = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = '0'");
@@ -128,6 +129,7 @@ foreach ( $menu as $id => $data ) {
 	}
 }
 
+unset($id);
 get_currentuserinfo();
 if( is_site_admin() ) {
 	$menu[1] = array( __('Site Admin'), '10', 'wpmu-admin.php' );
@@ -137,7 +139,7 @@ if( is_site_admin() ) {
 	$submenu[ 'wpmu-admin.php' ][25] = array( __('Options'), '10', 'wpmu-options.php' );
 	$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
 }
-ksort($menu); // make it all pretty
+uksort($menu, "strnatcasecmp"); // make it all pretty
 
 if (! user_can_access_admin_page()) {
 	global $wpdb;

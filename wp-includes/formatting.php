@@ -1,6 +1,7 @@
 <?php
 
 function wptexturize($text) {
+	global $wp_cockneyreplace;
 	$output = '';
 	// Capture tags and everything inside them
 	$textarr = preg_split("/(<.*>)/Us", $text, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -16,9 +17,15 @@ function wptexturize($text) {
 			$curl = str_replace('...', '&#8230;', $curl);
 			$curl = str_replace('``', '&#8220;', $curl);
 
-			// This is a hack, look at this more later. It works pretty well though.
-			$cockney = array("'tain't","'twere","'twas","'tis","'twill","'til","'bout","'nuff","'round","'cause");
-			$cockneyreplace = array("&#8217;tain&#8217;t","&#8217;twere","&#8217;twas","&#8217;tis","&#8217;twill","&#8217;til","&#8217;bout","&#8217;nuff","&#8217;round","&#8217;cause");
+			// if a plugin has provided an autocorrect array, use it
+			if ( isset($wp_cockneyreplace) ) {
+				$cockney = array_keys($wp_cockneyreplace);
+				$cockney_replace = array_values($wp_cockneyreplace);
+			} else {
+				$cockney = array("'tain't","'twere","'twas","'tis","'twill","'til","'bout","'nuff","'round","'cause");
+				$cockneyreplace = array("&#8217;tain&#8217;t","&#8217;twere","&#8217;twas","&#8217;tis","&#8217;twill","&#8217;til","&#8217;bout","&#8217;nuff","&#8217;round","&#8217;cause");
+			}
+
 			$curl = str_replace($cockney, $cockneyreplace, $curl);
 
 			$curl = preg_replace("/'s/", '&#8217;s', $curl);
@@ -249,7 +256,9 @@ function remove_accents($string) {
 		chr(197).chr(188) => 'z', chr(197).chr(189) => 'Z',
 		chr(197).chr(190) => 'z', chr(197).chr(191) => 's',
 		// Euro Sign
-		chr(226).chr(130).chr(172) => 'E');
+		chr(226).chr(130).chr(172) => 'E',
+		// GBP (Pound) Sign
+		chr(194).chr(163) => '');
 
 		$string = strtr($string, $chars);
 	} else {
@@ -613,7 +622,7 @@ function convert_smilies($text) {
 		for ($i = 0; $i < $stop; $i++) {
 			$content = $textarr[$i];
 			if ((strlen($content) > 0) && ('<' != $content{0})) { // If it's not a tag
-				$content = str_replace($wp_smiliessearch, $wp_smiliesreplace, $content);
+				$content = preg_replace($wp_smiliessearch, $wp_smiliesreplace, $content);
 			}
 			$output .= $content;
 		}

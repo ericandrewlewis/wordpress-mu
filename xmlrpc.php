@@ -58,31 +58,8 @@ function starify($string) {
 	return str_repeat('*', $i);
 }
 
-logIO("I", $HTTP_RAW_POST_DATA);
-
-
-function mkdir_p($target) {
-	// from php.net/mkdir user contributed notes 
-	if (file_exists($target)) {
-	  if (!is_dir($target)) {
-	    return false;
-	  } else {
-	    return true;
-	  }
-	}
-
-	// Attempting to create the directory may clutter up our display.
-	if (@mkdir($target)) {
-	  return true;
-	}
-
-	// If the above failed, attempt to create the parent node, then try again.
-	if (mkdir_p(dirname($target))) {
-	  return mkdir_p($target);
-	}
-
-	return false;
-}
+if ( isset($HTTP_RAW_POST_DATA) )
+  logIO("I", $HTTP_RAW_POST_DATA);
 
 
 class wp_xmlrpc_server extends IXR_Server {
@@ -1238,8 +1215,8 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		$commentdata = compact('comment_post_ID', 'comment_author', 'comment_author_url', 'comment_content', 'comment_type');
 
-		$comment_ID = wp_new_comment($commentdata);
-		do_action('pingback_post', $comment_ID);
+		wp_new_comment($commentdata);
+		do_action('pingback_post', $wpdb->insert_id);
 
 		return "Pingback from $pagelinkedfrom to $pagelinkedto registered. Keep the web talking! :-)";
 	}
