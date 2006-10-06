@@ -94,7 +94,7 @@ default:
 	}
 ?>
  </select>
- <input type="submit" name="Submit" value="<?php _e('Select &raquo;') ?>" />
+ <input type="submit" name="Submit" value="<?php _e('Select &raquo;') ?>" class="button" />
  </form>
  </div>
 

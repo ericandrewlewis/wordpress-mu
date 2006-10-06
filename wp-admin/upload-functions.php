@@ -142,7 +142,7 @@ function wp_upload_form() {
 <?php	endif; ?>
 					<?php wp_nonce_field( 'inlineuploading' ); ?>
 					<div class="submit">
-						<input type="submit" value="<?php $id ? _e('Save') : _e('Upload'); ?>" />
+						<input type="submit" value="<?php $id ? _e('Save') : _e('Upload'); ?> &raquo;" />
 <?php	if ( $id ) : ?>
 						<input type="submit" name="delete" class="delete" value="<?php _e('Delete'); ?>" />
 <?php	endif; ?>
