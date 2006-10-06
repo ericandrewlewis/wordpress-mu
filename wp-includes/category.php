@@ -232,4 +232,19 @@ function &_get_cat_children($category_id, $categories) {
 	return $category_list;
 }
 
+function cat_is_ancestor_of($cat1, $cat2) {
+	if ( is_int($cat1) )
+		$cat1 = & get_category($cat1);
+	if ( is_int($cat2) )
+		$cat2 = & get_category($cat2);
+
+	if ( !$cat1->cat_ID || !$cat2->category_parent )
+		return false;
+
+	if ( $cat2->category_parent == $cat1->cat_ID )
+		return true;
+
+	return cat_is_ancestor_of($cat1, get_category($cat2->parent_category));
+}
+
 ?>
