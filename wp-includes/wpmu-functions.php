@@ -1,4 +1,4 @@
-<?PHP
+<?php
 /*
 	Helper functions for WPMU
 */
@@ -163,7 +163,7 @@ function get_user_details( $username ) {
 }
 
 function get_blog_details( $id, $all = true ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	$details = wp_cache_get( $id, 'blog-details' );
 
@@ -177,9 +177,11 @@ function get_blog_details( $id, $all = true ) {
 
 	if( $all == true ) {
 		$wpdb->hide_errors();
+		switch_to_blog($id);
 		$details->blogname   = get_blog_option($id, 'blogname');
 		$details->siteurl    = get_blog_option($id, 'siteurl');
 		$details->post_count = get_blog_option($id, 'post_count');
+		restore_current_blog();
 		$wpdb->show_errors();
 
 		wp_cache_set( $id, serialize( $details ), 'blog-details' );
@@ -288,50 +290,40 @@ function update_site_option( $key, $value ) {
 }
 
 function get_blog_option( $id, $key, $default='na' ) {
-	global $wpdb, $wpmuBaseTablePrefix, $blog_id, $switched;
-
-	$current_blog_id = $blog_id;
-	$current_options_table = $wpdb->options;
-	$wpdb->options = $wpmuBaseTablePrefix . $id . "_options";
-	$blog_id = $id;
-	if ($id != $current_blog_id)
-		$switched = true;
+	switch_to_blog($id);
 	$opt = get_option( $key );
-	$switched = false;
-	$blog_id = $current_blog_id;
-	$wpdb->options = $current_options_table;
+	restore_current_blog();
 
 	return $opt;
 }
 
 function add_blog_option( $id, $key, $value ) {
-	global $wpdb, $wpmuBaseTablePrefix, $blog_id;
-
-	$current_blog_id = $blog_id;
-	$current_options_table = $wpdb->options;
-	$wpdb->options = $wpmuBaseTablePrefix . $id . "_options";
-	$blog_id = $id;
-	$opt = add_option( $key, $value );
-	$blog_id = $current_blog_id;
-	$wpdb->options = $current_options_table;
+	switch_to_blog($id);
+	add_option( $key, $value );
+	restore_current_blog();
 }
 
 
 function update_blog_option( $id, $key, $value ) {
-	global $wpdb, $wpmuBaseTablePrefix, $blog_id;
-
-	$current_blog_id = $blog_id;
-	$current_options_table = $wpdb->options;
-	$wpdb->options = $wpmuBaseTablePrefix . $id . "_options";
-	$blog_id = $id;
+	switch_to_blog($id);
 	$opt = update_option( $key, $value );
-	$blog_id = $current_blog_id;
-	$wpdb->options = $current_options_table;
+	restore_current_blog();
 	refresh_blog_details( $id );
 }
 
 function switch_to_blog( $new_blog ) {
-	global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $table_prefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched, $wp_roles, $current_user;
+	global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
+
+	if ( empty($new_blog) )
+		$new_blog = $blog_id;
+
+	if ( empty($switched_stack) )
+		$switched_stack = array();
+
+	$switched_stack[] = $blog_id;
+
+	if ( $new_blog == $blog_id )
+		return;
 
 	// backup
 	$tmpoldblogdetails[ 'blogid' ]         = $wpdb->blogid;
@@ -345,12 +337,7 @@ function switch_to_blog( $new_blog ) {
 	$tmpoldblogdetails[ 'options' ]         = $wpdb->options;
 	$tmpoldblogdetails[ 'postmeta' ]       = $wpdb->postmeta;
 	$tmpoldblogdetails[ 'prefix' ]         = $wpdb->prefix;
-	$tmpoldblogdetails[ 'cache_settings' ] = $cache_settings;
-	$tmpoldblogdetails[ 'category_cache' ] = $category_cache;
-	$tmpoldblogdetails[ 'cache_categories' ] = $cache_categories;
 	$tmpoldblogdetails[ 'table_prefix' ] = $table_prefix;
-	$tmpoldblogdetails[ 'post_cache' ]     = $post_cache;
-	$tmpoldblogdetails[ 'wp_object_cache' ] = $wp_object_cache;
 	$tmpoldblogdetails[ 'blog_id' ] = $blog_id;
 
 	// fix the new prefix.
@@ -368,16 +355,6 @@ function switch_to_blog( $new_blog ) {
 	$wpdb->postmeta         = $table_prefix . 'postmeta';
 	$blog_id = $new_blog;
 
-	$cache_settings = array();
-	unset( $cache_settings );
-	unset( $category_cache );
-	unset( $cache_categories );
-	unset( $post_cache );
-	//unset( $wp_object_cache );
-	//$wp_object_cache = new WP_Object_Cache();
-	//$wp_object_cache->cache_enabled = false;
-	wp_cache_flush();
-	wp_cache_close();
 	if( is_object( $wp_roles ) ) {
 		$wpdb->hide_errors();
 		$wp_roles->_init();
@@ -386,7 +363,6 @@ function switch_to_blog( $new_blog ) {
 	if ( is_object( $current_user ) ) {
 		$current_user->_init_caps();
 	}
-	wp_cache_init();
 
 	do_action('switch_blog', $blog_id, $tmpoldblogdetails[ 'blog_id' ]);
 
@@ -394,7 +370,16 @@ function switch_to_blog( $new_blog ) {
 }
 
 function restore_current_blog() {
-	global $table_prefix, $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $cache_settings, $category_cache, $cache_categories, $post_cache, $wp_object_cache, $blog_id, $switched, $wp_roles;
+	global $table_prefix, $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
+
+	if ( !$switched )
+		return;
+
+	$blog = array_pop($switched_stack);
+
+	if ( $blog_id == $blog )
+		return;
+
 	// backup
 	$wpdb->blogid = $tmpoldblogdetails[ 'blogid' ];
 	$wpdb->posts = $tmpoldblogdetails[ 'posts' ];
@@ -407,24 +392,19 @@ function restore_current_blog() {
 	$wpdb->options = $tmpoldblogdetails[ 'options' ];
 	$wpdb->postmeta = $tmpoldblogdetails[ 'postmeta' ];
 	$wpdb->prefix = $tmpoldblogdetails[ 'prefix' ];
-	$cache_settings = $tmpoldblogdetails[ 'cache_settings' ];
-	$category_cache = $tmpoldblogdetails[ 'category_cache' ];
-	$cache_categories = $tmpoldblogdetails[ 'cache_categories' ];
 	$table_prefix = $tmpoldblogdetails[ 'table_prefix' ];
-	$post_cache      = $tmpoldblogdetails[ 'post_cache' ];
-	$wp_object_cache = $tmpoldblogdetails[ 'wp_object_cache' ];
 	$prev_blog_id = $blog_id;
 	$blog_id = $tmpoldblogdetails[ 'blog_id' ];
 	unset( $tmpoldblogdetails );
-	wp_cache_flush();
-	wp_cache_close();
+
 	if( is_object( $wp_roles ) ) {
 		$wpdb->hide_errors();
 		$wp_roles->_init();
 		$wpdb->show_errors();
 	}
-	wp_cache_init();
-
+	if ( is_object( $current_user ) ) {
+		$current_user->_init_caps();
+	}
 	do_action('switch_blog', $blog_id, $prev_blog_id);
 
 	$switched = false;
@@ -453,7 +433,7 @@ function get_blogs_of_user( $id ) {
 		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
 			preg_match('/wp_(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
-			if ( $blog && isset( $blog->domain ) ) {
+			if ( $blog && $blog->deleted == 0 && isset( $blog->domain ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
 				$blogs[$match[1]]->domain      = $blog->domain;
 				$blogs[$match[1]]->path        = $blog->path;
@@ -614,7 +594,7 @@ function get_blog_post( $blog_id, $post_id ) {
 	$post = wp_cache_get( $key, "site-options" );
 	if( $post == false ) {
 		$post = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
-		wp_cache_set( $key, $post, "site-options", 30 );
+		wp_cache_set( $key, $post, "site-options", 120 );
 	}
 
 	return $post;
@@ -622,17 +602,7 @@ function get_blog_post( $blog_id, $post_id ) {
 }
 
 function add_user_to_blog( $blog_id, $user_id, $role ) {
-	global $wpdb;
-
-	$switch = false;
-
-	if ( empty($blog_id) )
-		$blog_id = $wpdb->blogid;
-
-	if ( $blog_id != $wpdb->blogid ) {
-		$switch = true;
-		switch_to_blog($blog_id);
-	}
+	switch_to_blog($blog_id);
 
 	$user = new WP_User($user_id);
 
@@ -656,21 +626,13 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 
 	do_action('add_user_to_blog', $user_id, $role, $blog_id);
 
-	if ( $switch )
-		restore_current_blog();
+	restore_current_blog();
 }
 
 function remove_user_from_blog($user_id, $blog_id = '') {
 	global $wpdb;
-	if ( empty($blog_id) )
-		$blog_id = $wpdb->blogid;
 
-	$blog_id = (int) $blog_id;
-
-	if ( $blog_id != $wpdb->blogid ) {
-		$switch = true;
-		switch_to_blog($blog_id);
-	}
+	switch_to_blog($blog_id);
 
 	$user_id = (int) $user_id;
 
@@ -704,8 +666,7 @@ function remove_user_from_blog($user_id, $blog_id = '') {
 		update_usermeta($user_id, 'source_domain', '');
 	}
 
-	if ( $switch )
-		restore_current_blog();
+	restore_current_blog();
 }
 
 function create_empty_blog( $domain, $path, $weblog_title, $site_id = 1 ) {
@@ -823,7 +784,7 @@ function validate_email( $email, $check_domain = true) {
 }
 
 function wpmu_validate_user_signup($user_name, $user_email) {
-	global $wpdb;
+	global $wpdb, $current_site;
 
 	$errors = new WP_Error();
 
@@ -1070,8 +1031,9 @@ function wpmu_activate_signup($key) {
 		return new WP_Error('invalid_key', __('Invalid activation key.'));
 
 	if ( $signup->active )
-		return new WP_Error('already_active', __('The blog is already active.'));
+		return new WP_Error('already_active', __('The blog is already active.'), $signup);
 
+	$meta = unserialize($signup->meta);
 	$user_login = $wpdb->escape($signup->user_login);
 	$user_email = $wpdb->escape($signup->user_email);
 	$password = generate_random_password();
@@ -1080,25 +1042,37 @@ function wpmu_activate_signup($key) {
 
 	if ( ! $user_id )
 		$user_id = wpmu_create_user($user_login, $password, $user_email);
+	else
+		$user_already_exists = true;
 
 	if ( ! $user_id )
-		return new WP_Error('create_user', __('Could not create user'));
+		return new WP_Error('create_user', __('Could not create user'), $signup);
 
 	$now = current_time('mysql', true);
 
 	if ( empty($signup->domain) ) {
 		$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
+		if ( isset($user_already_exists) )
+			return new WP_Error('user_already_exists', __('That username is already activated.'), $signup);
 		wpmu_welcome_user_notification($user_id, $password, $meta);
 		do_action('wpmu_activate_user', $user_id, $password, $meta);
 		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
 	}
 
-	$meta = unserialize($signup->meta);
 	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta);
 
 	// TODO: What to do if we create a user but cannot create a blog?
-	if ( is_wp_error($blog_id) )
+	if ( is_wp_error($blog_id) ) {
+		// If blog is taken, that means a previous attempt to activate this blog failed in between creating the blog and
+		// setting the activation flag.  Let's just set the active flag and instruct the user to reset their password.
+		if ( 'blog_taken' == $blog_id->get_error_code() ) {
+			$blog_id->add_data($signup);
+			$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
+			error_log("Blog $blog_id failed to complete activation.", 0);	
+		}
+
 		return $blog_id;
+	}
 
 	$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
 
@@ -1122,7 +1096,6 @@ function wpmu_create_user( $user_name, $password, $email) {
 	// Check if the email address has been used already.
 	if ( email_exists($email) )
 		return false;
-
 
 	$user_id = wp_create_user( $user_name, $password, $email );
 	$user = new WP_User($user_id);

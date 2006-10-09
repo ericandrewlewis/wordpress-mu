@@ -145,6 +145,7 @@ add_filter('option_ping_sites', 'privacy_ping_filter');
 add_filter('option_blog_charset', 'wp_specialchars');
 add_filter('mce_plugins', '_mce_load_rtl_plugin');
 add_filter('mce_buttons', '_mce_add_direction_buttons');
+add_filter('tiny_mce_config_url', '_mce_config_url');
 
 // Actions
 add_action('wp_head', 'rsd_link');
@@ -152,7 +153,7 @@ add_action('wp_head', 'locale_stylesheet');
 add_action('publish_future_post', 'wp_publish_post', 10, 1);
 add_action('wp_head', 'noindex', 1);
 add_action('wp_head', 'wp_print_scripts');
-if(!defined('DOING_CRON'))
+if(!defined('DOING_CRON') && !strstr( $_SERVER['REQUEST_URI'], 'wp-cron.php' ) )
 	add_action('init', 'wp_cron');
 add_action('do_feed_rdf', 'do_feed_rdf', 10, 1);
 add_action('do_feed_rss', 'do_feed_rss', 10, 1);

@@ -219,7 +219,7 @@ case 'delete':
 			$go_delete = true;
 		}
 	}
-	$all_logins = $wpdb->get_results("SELECT ID, user_login FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities'");
+	$all_logins = $wpdb->get_results("SELECT ID, user_login FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities' ORDER BY user_login");
 	$user_dropdown = '<select name="reassign_user">';
 	foreach ( (array) $all_logins as $login )
 		if ( $login->ID == $current_user->id || !in_array($login->ID, $userids) )

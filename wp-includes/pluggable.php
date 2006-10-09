@@ -227,6 +227,8 @@ function auth_redirect() {
 			 (empty($_COOKIE[USER_COOKIE])) ) {
 		nocache_headers();
 
+		wp_clearcookie();
+
 		wp_redirect(get_option('siteurl') . '/wp-login.php?redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
 		exit();
 	}

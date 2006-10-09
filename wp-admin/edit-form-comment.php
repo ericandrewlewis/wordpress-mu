@@ -36,7 +36,7 @@ addLoadEvent(focusit);
     </div>
 </fieldset>
 
-<fieldset style="clear: both;">
+<fieldset id="<?php echo user_can_richedit() ? 'commentdivrich' : 'commentdiv'; ?>" style="clear: both;">
         <legend><?php _e('Comment') ?></legend>
 	<?php the_editor($comment->comment_content, 'content', 'newcomment_author_url'); ?>
 </fieldset>

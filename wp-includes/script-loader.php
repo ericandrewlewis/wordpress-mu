@@ -17,7 +17,7 @@ class WP_Scripts {
 		$this->add( 'colorpicker', '/wp-includes/js/colorpicker.js', false, '3517' );
 		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '09212006a' );
 		$mce_config = apply_filters('tiny_mce_config_url', '/wp-includes/js/tinymce/tiny_mce_config.php');
-		$this->add( 'wp_tiny_mce', $mce_config, array('tiny_mce'), '09212006' );
+		$this->add( 'wp_tiny_mce', $mce_config, array('tiny_mce'), '20061006' );
 		$this->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.5.0');
 		$this->add( 'autosave', '/wp-includes/js/autosave.js.php', array('prototype', 'sack'), '4211');
 		$this->add( 'wp-ajax', '/wp-includes/js/wp-ajax-js.php', array('prototype'), '4187');
@@ -35,7 +35,7 @@ class WP_Scripts {
 			$this->add( 'admin-comments', '/wp-admin/edit-comments.js', array('listman'), '3847' );
 			$this->add( 'admin-users', '/wp-admin/users.js', array('listman'), '3684' );
 			$this->add( 'xfn', '/wp-admin/xfn.js', false, '3517' );
-			$this->add( 'upload', '/wp-admin/upload-js.php', array('prototype'), mt_rand() );
+			$this->add( 'upload', '/wp-admin/upload-js.php', array('prototype'), '4355b' );
 		}
 	}
 

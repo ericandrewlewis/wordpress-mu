@@ -46,7 +46,6 @@ switch($step) {
 		} else {
 			$wpdb->query( "INSERT INTO wp_blog_versions ( `blog_id` , `db_version` , `last_updated` ) VALUES ( '{$wpdb->blogid}', '{$wp_db_version}', NOW());" );
 		}
-
 ?> 
 <h2><?php _e('Step 1'); ?></h2> 
 	<p><?php printf(__("There's actually only one step. So if you see this, you're done. <a href='%s'>Have fun</a>!"),  $backto); ?></p>

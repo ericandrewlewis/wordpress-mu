@@ -27,6 +27,7 @@ form { margin-top: 2em; }
 <?php
 function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 	global $current_site;
+	$locale = get_locale();
 
 	// Blog name/Username
 	if ( $errors->get_error_message('blog_id') )
@@ -105,7 +106,7 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	}
 
 	print '<input name="user_name" type="text" id="user_name" value="'.$user_name.'" maxlength="50" style="width:50%; font-size: 30px;" /><br />';
-	print __('(Must be at least 4 characters, letters and numbers only.)') . '</td> </tr>';
+	_e('(Must be at least 4 characters, letters and numbers only.)'); echo '</td> </tr>';
 
 	// User Email
 	if ( $errors->get_error_message('user_email') ) {
@@ -118,10 +119,10 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	if ( $errmsg = $errors->get_error_message('user_email') ) {
 ?><p><strong><?php echo $errmsg ?></strong></p><?php
 	}
-	print '
-	<input name="user_email" type="text" id="user_email" value="'.wp_specialchars($user_email, 1).'" maxlength="200" /><br /> ' . __('(We&#8217;ll send your password to this address, so <strong>triple-check it</strong>.)') . '</td>
-	</tr>';
-
+	?>
+	<input name="user_email" type="text" id="user_email" value="<?php  echo wp_specialchars($user_email, 1) ?>" maxlength="200" /><br /><?php _e('(We&#8217;ll send your password to this address, so <strong>triple-check it</strong>.)') ?></td>
+	</tr>
+	<?php
 	if ( $errmsg = $errors->get_error_message('generic') )
 		print '<tr class="error"> <th colspan="2">'.$errmsg.'</th> </tr>';
 }
@@ -147,11 +148,11 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	echo '<h2>' . sprintf( __('Get <em>another</em> %s blog in seconds'), $current_site->site_name ) . '</h2>';
 
 	if ( $errors->get_error_code() ) {
-		print '<p>'.__('There was a problem, please correct the form below and try again.').'</p>';
+		echo "<p>" . __('There was a problem, please correct the form below and try again.') . "</p>";
 	}
 
 ?>
-<?php printf(__("<p>Welcome back, %s. By filling out the form below, you can <strong>add another blog to your account</strong>. There is no limit to the number of blogs you can have, so create to your heart's content, but blog responsibly.</p>"), $current_user->display_name) ?>
+<p><?php printf(__("Welcome back, %s. By filling out the form below, you can <strong>add another blog to your account</strong>. There is no limit to the number of blogs you can have, so create to your heart's content, but blog responsibly."), $current_user->display_name) ?></p>
 <?php
 	$blogs = get_blogs_of_user($current_user->ID);
 
@@ -165,6 +166,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 <p><?php _e("If you&#8217;re not going to use a great blog domain, leave it for a new user. Now have at it!") ?></p>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
 <input type="hidden" name="stage" value="gimmeanotherblog">
+<?php do_action( "signup_hidden_fields" ); ?>
 <table border="0" width="100%" cellpadding="9">
 <?php
 	show_blog_form($blog_id, $blog_title, $errors);

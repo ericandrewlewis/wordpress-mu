@@ -31,6 +31,9 @@
 	$mce_buttons = apply_filters('mce_buttons', array('bold', 'italic', 'strikethrough', 'separator', 'bullist', 'numlist', 'outdent', 'indent', 'separator', 'justifyleft', 'justifycenter', 'justifyright', 'separator', 'link', 'unlink', 'image', 'wp_more', 'separator', 'spellchecker', 'separator', 'wp_help', 'wp_adv_start', 'wp_adv', 'separator', 'formatselect', 'underline', 'justifyfull', 'forecolor', 'separator', 'pastetext', 'pasteword', 'separator', 'removeformat', 'cleanup', 'separator', 'charmap', 'separator', 'undo', 'redo', 'wp_adv_end'));
 	$mce_buttons = implode($mce_buttons, ',');
 
+	if ( !user_can_switchedit() )
+		$mce_buttons = str_replace('wp_help', 'wp_help,code', $mce_buttons);
+
 	$mce_buttons_2 = apply_filters('mce_buttons_2', array());
 	$mce_buttons_2 = implode($mce_buttons_2, ',');
 
@@ -62,6 +65,7 @@ initArray = {
 	theme_advanced_toolbar_align : "left",
 	theme_advanced_path_location : "bottom",
 	theme_advanced_resizing : true,
+	theme_advanced_source_editor_wrap : true,
 	browsers : "<?php echo $mce_browsers; ?>",
 	dialog_type : "modal",
 	theme_advanced_resize_horizontal : false,

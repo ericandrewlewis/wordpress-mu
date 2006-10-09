@@ -3,13 +3,19 @@
 <div id="menu">
 
 <ul>
-	<?php wp_list_pages(); ?>
-	<?php get_links_list(); ?>
- <li id="categories"><?php _e('Categories:'); ?>
-	<ul>
-	<?php wp_list_cats(); ?>
-	</ul>
- </li>
+<?php if ( function_exists('dynamic_sidebar') && dynamic_sidebar() ) : ?>
+
+</ul>
+
+</div>
+
+<?php return; ?>
+
+<?php endif; ?>
+
+	<?php wp_list_pages('title_li=' . __('Pages:')); ?>
+	<?php wp_list_bookmarks('title_after=&title_before='); ?>
+	<?php wp_list_categories('title_li=' . __('Categories:')); ?>
  <li id="search">
    <label for="s"><?php _e('Search:'); ?></label>
    <form id="searchform" method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">

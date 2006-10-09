@@ -45,13 +45,13 @@ case 'edit':
 	$editing = true;
 	$page_ID = $post_ID = $p = (int) $_GET['post'];
 	$post = get_post_to_edit($page_ID);
-	if($post->post_status == 'draft') {
-		wp_enqueue_script('prototype');
-		wp_enqueue_script('autosave');
-	}
 	if( $post->post_type == 'post' ) {
 		header( "Location: " . str_replace( "page.php", "post.php", $_SERVER[ 'REQUEST_URI' ] ) );
 		die();
+	}
+	if($post->post_status == 'draft') {
+		wp_enqueue_script('prototype');
+		wp_enqueue_script('autosave');
 	}
 	require_once('admin-header.php');
 

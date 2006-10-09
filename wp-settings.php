@@ -99,7 +99,6 @@ if ( file_exists(ABSPATH . 'wp-content/db.php') )
 else
 	require_once (ABSPATH . WPINC . '/wp-db.php');
 
-// Table names
 $wpdb->blogs		= $table_prefix . 'blogs';
 $wpdb->users		= $table_prefix . 'users';
 $wpdb->usermeta		= $table_prefix . 'usermeta';

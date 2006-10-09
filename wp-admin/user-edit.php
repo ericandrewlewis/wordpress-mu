@@ -36,7 +36,10 @@ check_admin_referer('update-user_' . $user_id);
 if ( !current_user_can('edit_user', $user_id) )
 	wp_die(__('You do not have permission to edit this user.'));
 
+$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$user_id}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 $errors = edit_user($user_id);
+if( $cap == null )
+	$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$user_id}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 
 if( !is_wp_error( $errors ) ) {
 	$redirect = "user-edit.php?user_id=$user_id&updated=true";

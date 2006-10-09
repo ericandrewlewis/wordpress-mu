@@ -8,7 +8,7 @@ if (
 	$current_blog->deleted == '1' 
 ) {
 	header("HTTP/1.1 404 Not Found");
-	die('404 &#8212; File not found.');
+	graceful_fail('404 &#8212; File not found.');
 }
 
 if ( !function_exists('wp_check_filetype') ) :
@@ -68,19 +68,20 @@ function wp_check_filetype($filename, $mimes = null) {
 }
 endif;
 
-$file = $_GET[ 'file' ];
-$file = constant( "ABSPATH" ) . constant( "UPLOADS" ) . $file;
 
+$file = $_GET[ 'file' ];
+
+$file = constant( "ABSPATH" ) . constant( "UPLOADS" ) . $file;
 if ( !is_file( $file ) ) {
 	header("HTTP/1.1 404 Not Found");
-	die('404 &#8212; File not found.');
+	graceful_fail('404 &#8212; File not found.');
 }
 
 // These should never, ever be served
 $never = array( 'js', 'exe', 'swf', 'class', 'tar', 'zip', 'rar' );
 if ( in_array( preg_replace( '|.*\.(.*)$|', '$1', $file ), $never ) ) {
 	header("HTTP/1.1 404 Not Found");
-	die('404 &#8212; File not found.');
+	graceful_fail('404 &#8212; File not found.');
 }
 
 $mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );

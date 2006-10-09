@@ -206,7 +206,7 @@ function wp_title($sep = '&raquo;', $display = true) {
 	}
 
 	$prefix = '';
-	if ( isset($title) )
+	if ( !empty($title) )
 		$prefix = " $sep ";
 
 	$title = $prefix . $title;
@@ -333,7 +333,11 @@ function wp_get_archives($args = '') {
 	$add_minutes = intval(60 * (get_option('gmt_offset') - $add_hours));
 
 	if ( 'monthly' == $type ) {
-		$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
+		$arcresults = wp_cache_get( md5('archives' . $type . $limit), 'general');
+		if ( !$arcresults ) {
+			$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
+			wp_cache_set( md5('archives' . $type . $limit), $arcresults, 'general', 600 );
+		}
 		if ( $arcresults ) {
 			$afterafter = $after;
 			foreach ( $arcresults as $arcresult ) {
@@ -452,8 +456,8 @@ function get_calendar($initial = true) {
 		else
 				$thismonth = ''.zeroise(intval(substr($m, 4, 2)), 2);
 	} else {
-		$thisyear = gmdate('Y', current_time('timestamp') + get_option('gmt_offset') * 3600);
-		$thismonth = gmdate('m', current_time('timestamp') + get_option('gmt_offset') * 3600);
+		$thisyear = gmdate('Y', current_time('timestamp'));
+		$thismonth = gmdate('m', current_time('timestamp'));
 	}
 
 	$unixmonth = mktime(0, 0 , 0, $thismonth, 1, $thisyear);
@@ -758,6 +762,24 @@ function user_can_richedit() {
 	return apply_filters('user_can_richedit', $can);
 }
 
+function user_can_switchedit() {
+	$can = true;
+
+	$ua = $_SERVER['HTTP_USER_AGENT'];
+
+	if (
+		!user_can_richedit() ||
+		(	// Mozilla Test
+			strstr($ua, 'Mozilla/5.0') &&
+			!strstr($ua, 'ompatible') &&
+			!strstr($ua, 'irefox')
+		)
+	)
+		$can = false;
+
+	return apply_filters('user_can_switchedit', $can);
+}
+
 function the_editor($content, $id = 'content', $prev_id = 'title') {
 	$rows = get_option('default_post_edit_rows');
 	if (($rows < 3) || ($rows > 100))
@@ -768,13 +790,8 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 	if ( user_can_richedit() ) :
 		add_filter('the_editor_content', 'wp_richedit_pre');
 
-		//	The following line moves the border so that the active button "attaches" to the toolbar. Only IE needs it.
+	if ( user_can_switchedit() ) :
 	?>
-	<style type="text/css">
-		#postdivrich table, #postdivrich #quicktags {border-top: none;}
-		#quicktags {border-bottom: none; padding-bottom: 2px; margin-bottom: -1px;}
-		#edButtons {border-bottom: 1px solid #ccc;}
-	</style>
 	<div id='edButtons' style='display:none;'>
 		<div class='zerosize'><input accesskey='e' type='button' onclick='switchEditors("<?php echo $id; ?>")' /></div>
 		<input id='edButtonPreview' class='edButtonFore' type='button' value='<?php _e('Editor'); ?>' />
@@ -785,7 +802,7 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 			document.getElementById('edButtons').style.display = 'block';
 	</script>
 
-	<?php endif; ?>
+	<?php endif; endif; ?>
 	<div id="quicktags">
 	<?php wp_print_scripts( 'quicktags' ); ?>
 	<script type="text/javascript">edToolbar()</script>
@@ -820,7 +837,9 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 	</script>
 	<?php
 
-	$the_editor = apply_filters('the_editor', "<div><textarea class='mceEditor' $rows cols='40' name='$id' tabindex='2' id='$id'>%s</textarea></div>\n");
+	$class = user_can_switchedit() ? 'switched' : 'unswitched';
+
+	$the_editor = apply_filters('the_editor', "<div class='$class'><textarea class='mceEditor' $rows cols='40' name='$id' tabindex='2' id='$id'>%s</textarea></div>\n");
 	$the_editor_content = apply_filters('the_editor_content', $content);
 
 	printf($the_editor, $the_editor_content);

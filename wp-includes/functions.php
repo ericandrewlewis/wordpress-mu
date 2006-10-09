@@ -106,10 +106,10 @@ function get_weekstartend($mysqlstring, $start_of_week) {
 }
 
 function get_lastpostdate($timezone = 'server') {
-	global $cache_lastpostdate, $pagenow, $wpdb;
+	global $cache_lastpostdate, $pagenow, $wpdb, $blog_id;
 	$add_seconds_blog = get_option('gmt_offset') * 3600;
 	$add_seconds_server = date('Z');
-	if ( !isset($cache_lastpostdate[$timezone]) ) {
+	if ( !isset($cache_lastpostdate[$blog_id][$timezone]) ) {
 		switch(strtolower($timezone)) {
 			case 'gmt':
 				$lastpostdate = $wpdb->get_var("SELECT post_date_gmt FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
@@ -121,18 +121,18 @@ function get_lastpostdate($timezone = 'server') {
 				$lastpostdate = $wpdb->get_var("SELECT DATE_ADD(post_date_gmt, INTERVAL '$add_seconds_server' SECOND) FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1");
 				break;
 		}
-		$cache_lastpostdate[$timezone] = $lastpostdate;
+		$cache_lastpostdate[$blog_id][$timezone] = $lastpostdate;
 	} else {
-		$lastpostdate = $cache_lastpostdate[$timezone];
+		$lastpostdate = $cache_lastpostdate[$blog_id][$timezone];
 	}
 	return $lastpostdate;
 }
 
 function get_lastpostmodified($timezone = 'server') {
-	global $cache_lastpostmodified, $pagenow, $wpdb;
+	global $cache_lastpostmodified, $pagenow, $wpdb, $blog_id;
 	$add_seconds_blog = get_option('gmt_offset') * 3600;
 	$add_seconds_server = date('Z');
-	if ( !isset($cache_lastpostmodified[$timezone]) ) {
+	if ( !isset($cache_lastpostmodified[$blog_id][$timezone]) ) {
 		switch(strtolower($timezone)) {
 			case 'gmt':
 				$lastpostmodified = $wpdb->get_var("SELECT post_modified_gmt FROM $wpdb->posts WHERE post_status = 'publish' ORDER BY post_modified_gmt DESC LIMIT 1");
@@ -148,9 +148,9 @@ function get_lastpostmodified($timezone = 'server') {
 		if ( $lastpostdate > $lastpostmodified ) {
 			$lastpostmodified = $lastpostdate;
 		}
-		$cache_lastpostmodified[$timezone] = $lastpostmodified;
+		$cache_lastpostmodified[$blog_id][$timezone] = $lastpostmodified;
 	} else {
-		$lastpostmodified = $cache_lastpostmodified[$timezone];
+		$lastpostmodified = $cache_lastpostmodified[$blog_id][$timezone];
 	}
 	return $lastpostmodified;
 }
@@ -204,7 +204,7 @@ function get_option($setting) {
 			$value = $row->option_value;
 			wp_cache_set($setting, ($value=='')?'emptystringindb':$value, 'options');
 		} else {
-			wp_cache_set($setting, 'novalueindb', 'options', 5);
+			wp_cache_set($setting, 'novalueindb', 'options');
 			return false;
 		}
 	}
@@ -491,41 +491,41 @@ function is_new_day() {
 }
 
 function update_post_cache(&$posts) {
-	global $post_cache;
+	global $post_cache, $blog_id;
 
 	if ( !$posts )
 		return;
 
 	for ($i = 0; $i < count($posts); $i++) {
-		$post_cache[$posts[$i]->ID] = &$posts[$i];
+		$post_cache[$blog_id][$posts[$i]->ID] = &$posts[$i];
 	}
 }
 
 function clean_post_cache($id) {
-	global $post_cache;
+	global $post_cache, $blog_id;
 
-	if ( isset( $post_cache[$id] ) )
-		unset( $post_cache[$id] );
+	if ( isset( $post_cache[$blog_id][$id] ) )
+		unset( $post_cache[$blog_id][$id] );
 }
 
 function update_page_cache(&$pages) {
-	global $page_cache;
+	global $page_cache, $blog_id;
 
 	if ( !$pages )
 		return;
 
 	for ($i = 0; $i < count($pages); $i++) {
-		$page_cache[$pages[$i]->ID] = &$pages[$i];
+		$page_cache[$blog_id][$pages[$i]->ID] = &$pages[$i];
 		wp_cache_add($pages[$i]->ID, $pages[$i], 'pages');
 	}
 }
 
 
 function clean_page_cache($id) {
-	global $page_cache, $wpdb;
+	global $page_cache, $wpdb, $blog_id;
 
-	if ( isset( $page_cache[$id] ) )
-		unset( $page_cache[$id] );
+	if ( isset( $page_cache[$blog_id][$id] ) )
+		unset( $page_cache[$blog_id][$id] );
 
 	$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type='page'");
 	wp_cache_delete('all_page_ids','pages');
@@ -533,7 +533,7 @@ function clean_page_cache($id) {
 }
 
 function update_post_category_cache($post_ids) {
-	global $wpdb, $category_cache;
+	global $wpdb, $category_cache, $blog_id;
 
 	if ( empty($post_ids) )
 		return;
@@ -547,12 +547,12 @@ function update_post_category_cache($post_ids) {
 		return;
 
 	foreach ($dogs as $catt)
-		$category_cache[$catt->post_id][$catt->category_id] = &get_category($catt->category_id);
+		$category_cache[$blog_id][$catt->post_id][$catt->category_id] = &get_category($catt->category_id);
 }
 
 function update_post_caches(&$posts) {
 	global $post_cache, $category_cache, $post_meta_cache;
-	global $wpdb;
+	global $wpdb, $blog_id;
 
 	// No point in doing all this work if we didn't match any posts.
 	if ( !$posts )
@@ -561,7 +561,7 @@ function update_post_caches(&$posts) {
 	// Get the categories for all the posts
 	for ($i = 0; $i < count($posts); $i++) {
 		$post_id_array[] = $posts[$i]->ID;
-		$post_cache[$posts[$i]->ID] = &$posts[$i];
+		$post_cache[$blog_id][$posts[$i]->ID] = &$posts[$i];
 	}
 
 	$post_id_list = implode(',', $post_id_array);
@@ -571,20 +571,20 @@ function update_post_caches(&$posts) {
 	// Get post-meta info
 	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta WHERE post_id IN($post_id_list) ORDER BY post_id, meta_key", ARRAY_A) ) {
 		// Change from flat structure to hierarchical:
-		$post_meta_cache = array();
+		$post_meta_cache[$blog_id] = array();
 		foreach ($meta_list as $metarow) {
 			$mpid = $metarow['post_id'];
 			$mkey = $metarow['meta_key'];
 			$mval = $metarow['meta_value'];
 
 			// Force subkeys to be array type:
-			if ( !isset($post_meta_cache[$mpid]) || !is_array($post_meta_cache[$mpid]) )
-				$post_meta_cache[$mpid] = array();
-			if ( !isset($post_meta_cache[$mpid]["$mkey"]) || !is_array($post_meta_cache[$mpid]["$mkey"]) )
-				$post_meta_cache[$mpid]["$mkey"] = array();
+			if ( !isset($post_meta_cache[$blog_id][$mpid]) || !is_array($post_meta_cache[$blog_id][$mpid]) )
+				$post_meta_cache[$blog_id][$mpid] = array();
+			if ( !isset($post_meta_cache[$blog_id][$mpid]["$mkey"]) || !is_array($post_meta_cache[$blog_id][$mpid]["$mkey"]) )
+				$post_meta_cache[$blog_id][$mpid]["$mkey"] = array();
 
 			// Add a value to the current pid/key:
-			$post_meta_cache[$mpid][$mkey][] = $mval;
+			$post_meta_cache[$blog_id][$mpid][$mkey][] = $mval;
 		}
 	}
 }
@@ -812,6 +812,7 @@ function do_feed_atom() {
 function do_robots() {
 	global $current_blog;
 	do_action('do_robotstxt');
+
 	if ( '0' == $current_blog->public ) {
 		echo "User-agent: *\n";
 		echo "Disallow: /\n";
@@ -1127,62 +1128,31 @@ function wp_nonce_ays($action) {
 }
 
 function wp_die($message, $title = '') {
+	global $wp_locale;
+
 	header('Content-Type: text/html; charset=utf-8');
 
 	if ( empty($title) )
 		$title = __('WordPress &rsaquo; Error');
 
 	if ( strstr($_SERVER['PHP_SELF'], 'wp-admin') )
-		$logo_src = 'images/wordpress-logo.png';
+		$admin_dir = '';
 	else
-		$logo_src = 'wp-admin/images/wordpress-logo.png';
+		$admin_dir = 'wp-admin/';
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
 <head>
 	<title><?php echo $title ?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<style media="screen" type="text/css">
-	<!--
-	html {
-		background: #eee;
-	}
-	body {
-		background: #fff;
-		color: #000;
-		font-family: Georgia, "Times New Roman", Times, serif;
-		margin-left: 25%;
-		margin-right: 25%;
-		padding: .2em 2em;
-	}
-
-	h1 {
-		color: #006;
-		font-size: 18px;
-		font-weight: lighter;
-	}
-
-	h2 {
-		font-size: 16px;
-	}
-
-	p, li, dt {
-		line-height: 140%;
-		padding-bottom: 2px;
-	}
-
-	ul, ol {
-		padding: 5px 5px 5px 20px;
-	}
-	#logo {
-		margin-bottom: 2em;
-	}
-	-->
-	</style>
+	<link rel="stylesheet" href="<?php echo $admin_dir; ?>install.css" type="text/css" />
+<?php if ( ('rtl' == $wp_locale->text_direction) ) : ?>
+	<link rel="stylesheet" href="<?php echo $admin_dir; ?>install-rtl.css" type="text/css" />
+<?php endif; ?>
 </head>
 <body>
-	<h1 id="logo"><img alt="WordPress" src="<?php echo $logo_src; ?>" /></h1>
+	<h1 id="logo"><img alt="WordPress" src="<?php echo $admin_dir; ?>images/wordpress-logo.png" /></h1>
 	<p><?php echo $message; ?></p>
 </body>
 </html>
@@ -1191,10 +1161,24 @@ function wp_die($message, $title = '') {
 	die();
 }
 
+function _mce_config_url($url) {
+	global $wp_locale;
+
+	if ( 'rtl' == $wp_locale->text_direction )
+		$url = add_query_arg('mce_text_direction', 'rtl', $url);
+
+	return $url;
+}
+
 function _mce_set_direction() {
 	global $wp_locale;
 
-	if ('rtl' == $wp_locale->text_direction) {
+	if ( isset($_GET['mce_text_direction']) && 'rtl' == $_GET['mce_text_direction'] )
+		$dir = 'rtl';
+	else
+		$dir = $wp_locale->text_direction;
+
+	if ( 'rtl' == $dir ) {
 		echo 'directionality : "rtl" ,';
 		echo 'theme_advanced_toolbar_align : "right" ,';
 	}
@@ -1203,7 +1187,12 @@ function _mce_set_direction() {
 function _mce_load_rtl_plugin($input) {
 	global $wp_locale;
 
-	if ('rtl' == $wp_locale->text_direction)
+	if ( isset($_GET['mce_text_direction']) && 'rtl' == $_GET['mce_text_direction'] )
+		$dir = 'rtl';
+	else
+		$dir = $wp_locale->text_direction;
+
+	if ( 'rtl' == $dir )
 		$input[] = 'directionality';
 
 	return $input;
@@ -1212,7 +1201,12 @@ function _mce_load_rtl_plugin($input) {
 function _mce_add_direction_buttons($input) {
 	global $wp_locale;
 
-	if ('rtl' == $wp_locale->text_direction) {
+	if ( isset($_GET['mce_text_direction']) && 'rtl' == $_GET['mce_text_direction'] )
+		$dir = 'rtl';
+	else
+		$dir = $wp_locale->text_direction;
+
+	if ( 'rtl' == $dir ) {
 		$new_buttons = array('separator', 'ltr', 'rtl');
 		$input = array_merge($input, $new_buttons);
 	}

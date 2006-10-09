@@ -22,7 +22,7 @@ if( trim( get_option('blog_public') ) == '' )
 	<label for="blog-public"><?php _e('I would like my blog to be visible to anyone who visits, including search engines, archivers and in public listings around this site.') ?></label>
 <br />
 <input id="blog-norobots" type="radio" name="blog_public" value="0" <?php checked('0', get_option('blog_public')); ?> />
-	<label for="blog-norobots"><?php _e('I would like to block search engines, but allow normal folks') ?></label>
+	<label for="blog-norobots"><?php _e( 'I would like to block search engines, but allow normal visitors' ); ?></label>
 <?php do_action('blog_privacy_selector'); ?>
 </td>
 </tr>

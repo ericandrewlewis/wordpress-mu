@@ -42,14 +42,11 @@ function wp_login($username, $password, $already_md5 = false) {
 		$error = __('<strong>Error</strong>: Wrong username.');
 		return false;
 	} else {
-		$primary_blog = get_usermeta( $login->ID, "primary_blog" );
-		if( $primary_blog ) {
+		if( is_site_admin( $username ) == false && ( $primary_blog = get_usermeta( $login->ID, "primary_blog" ) ) ) {
 			$details = get_blog_details( $primary_blog );
-			if( is_object( $details ) ) {
-				if( $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
-					$error = __('<strong>Error</strong>: Blog suspended.');
-					return false;
-				}
+			if( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
+				$error = __('<strong>Error</strong>: Blog suspended.');
+				return false;
 			}
 		}
 		// If the password is already_md5, it has been double hashed.
@@ -72,15 +69,14 @@ function get_userdata( $user_id ) {
 
 	$user = wp_cache_get($user_id, 'users');
 	$user_level = $wpmuBaseTablePrefix . $wpdb->blogid . '_user_level';
-	if( $user->$user_level != '' || $user->user_level != '' ) {
-		if( $user && is_site_admin( $user->user_login ) == true ) {
-			$user->$user_level = 10;
-			$user->user_level = 10;
-			$cap_key = $wpdb->prefix . 'capabilities';
-			$user->{$cap_key} = array( 'administrator' => '1' );
-			return $user;
-		} elseif ( $user )
-			return $user;
+	if ( $user && is_site_admin( $user->user_login ) ) {
+		$user->$user_level = 10;
+		$user->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$user->{$cap_key} = array( 'administrator' => '1' );
+		return $user;
+	} elseif ( $user ) {
+		return $user;
 	}
 
 	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id'") )

@@ -25,16 +25,16 @@ form { margin-top: 2em; }
 <?php
 	if ( empty($_GET['key']) && empty($_POST['key']) ) {
 ?>
-<h2>Activation Key Required</h2>
+<h2><?php _e('Activation Key Required') ?></h2>
 <form name="activateform" id="activateform" method="post" action="/wp-activate.php">
 <table border="0" width="100%" cellpadding="9">
 <tr>
-<th valign="top">Activation Key:</th>
+<th valign="top"><?php _e('Activation Key:') ?></th>
 <td><input name="key" type="text" id="key" value="" /></td>
 </tr>
 <tr>
 <th scope="row"  valign="top">&nbsp;</th>
-<td><input id="submit" type="submit" name="Submit" class="submit" value="Activate &raquo;" /></td>
+<td><input id="submit" type="submit" name="Submit" class="submit" value="<?php _e('Activate &raquo;') ?>" /></td>
 </tr>
 </table>
 </form>

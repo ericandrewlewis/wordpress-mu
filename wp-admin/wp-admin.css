@@ -51,6 +51,7 @@ a.delete:hover {
 	font-size: 18px;
 	display: block;
 	height: 60px;
+	overflow: hidden;
 }
 
 #planetnews .hidden {
@@ -171,6 +172,19 @@ h2 {
 	margin: 5px 10px;
 }
 
+h2 small.quickjump {
+	display: block;
+	text-align: right;
+}
+
+h2 small.quickjump a {
+	text-decoration: none;
+	border-bottom: 0;
+	font-size: 15px;
+	background: #f0f8ff;
+	padding: 5px 10px;
+}
+
 img, #footer a {
 	border: 0;
 }
@@ -205,7 +219,7 @@ textarea, input, select {
 	border-style: none;
 	padding: 0px;
 	margin-bottom: 16px;
-	height: 16em;
+	height: 17em;
 	width: 100%;
 /*	overflow-y: hidden;*/
 }
@@ -574,7 +588,7 @@ input.delete:hover {
 	color: #fff;
 }
 
-#postdivrich #quicktags {
+#postdivrich #quicktags, #commentdivrich #quicktags {
 	background: #f0f0ee;
 	padding: 0px;
 	border: 1px solid #ccc;
@@ -648,9 +662,6 @@ input.delete:hover {
 #footer {
 	clear: both;
 	text-align: center;
-	width: 500px;
-	margin: auto;
-	height: 100px;
 }
 
 #footer .docs {
@@ -674,6 +685,12 @@ input.delete:hover {
 	margin: 5em auto;
 	padding: 20px 50px 0;
 	width: 325px;
+	_width:  390px;
+}
+
+#login form {
+	_width: 325px;
+	_margin: 0 auto;
 }
 
 #login #login_error {
@@ -696,6 +713,8 @@ input.delete:hover {
 	text-align: left;
 	font-weight: normal;
 	font-size: 1.1em;
+	_width: 325px;
+	_margin: 0 auto 15px;
 }
 
 #login h1 a {
@@ -719,6 +738,21 @@ input.delete:hover {
 	font-size: 20px;
 }
 
+#register #login h2 { 
+	border-bottom: 1px solid #1e6491;
+	padding-bottom:  15px;
+	color: #fff;
+	text-align: left;
+	font-weight: normal;
+	font-size: 1.7em;
+	font-family: "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana;
+	letter-spacing:  -1px;
+	margin:  15px 0 0;
+	_width: 325px;
+	_padding: 15px 0;
+	_margin:  10px auto 5px;
+}
+
 #login input {
 	padding: 4px;
 }
@@ -727,7 +761,9 @@ input.delete:hover {
 	background: url('images/login-bkg-bottom.gif') no-repeat bottom center;
 	list-style: none;
 	margin: 0 -50px;
+	_margin:  10px auto 0;
 	padding: 10px 50px 25px;;
+	_padding: 0 0 5px 30px;
 }
 
 #login ul:after {
@@ -737,6 +773,13 @@ input.delete:hover {
 	clear: both;
 	visibility: hidden;
 }
+
+#login ul {display: inline-block;}
+
+/* Hides from IE-mac \*/
+* html #login ul {height: 1%;}
+#login ul {display: block;}
+/* End hide from IE-mac */
 
 #login ul li {
 	float: left;
@@ -751,6 +794,10 @@ input.delete:hover {
 	border: none;
 	padding: 4px 1px 5px;
 	width: 160px;
+}
+
+#register #login ul li a { 
+	width: 106px;
 }
 
 #login ul li a:hover {
@@ -1282,7 +1329,7 @@ input #catadd {
 	padding-left: 3px;
 }
 
-#postdivrich #content, #postdivrich #content:active {
+#postdivrich #content, #postdivrich #content:active, #commentdivrich #content, #commentdivrich #content:active {
 	border: 1px solid #ccc;
 }
 
@@ -1298,6 +1345,20 @@ input #catadd {
 #edButtons input.edButtonBack, #edButtons input.edButtonBack:active {
 	background: #fff url( images/fade-butt.png ) repeat-x 0px 15px;
 	border-bottom: 1px solid #ccc;
+}
+
+#postdivrich .switched table, #postdivrich #quicktags, #commentdivrich .switched table, #commentdivrich #quicktags {
+	border-top: none;
+}
+
+#postdivrich #quicktags, #commentdivrich #quicktags {
+	border-bottom: none;
+	padding-bottom: 2px;
+	margin-bottom: -1px;
+}
+
+#edButtons {
+	border-bottom: 1px solid #ccc
 }
 
 .page-numbers {

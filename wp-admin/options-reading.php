@@ -5,6 +5,16 @@ $title = __('Reading Options');
 $parent_file = 'options-general.php';
 
 include('admin-header.php');
+
+// Sanity checks
+if ( 'page' == get_option('show_on_front') ) {
+	$front_page = get_option('page_on_front');
+	if ( empty($front_page) ) {
+		update_option('show_on_front', 'posts');
+		delete_option('page_for_posts');
+		delete_option('page_on_front');
+	}
+}
 ?>
 
 <div class="wrap"> 

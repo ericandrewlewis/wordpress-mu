@@ -512,7 +512,7 @@ function upgrade_210() {
 		$posts = $wpdb->get_results("SELECT ID, post_date FROM $wpdb->posts WHERE post_status ='future'");
 		if ( !empty($posts) )
 			foreach ( $posts as $post )
-				wp_schedule_single_event(mysql2date('U', $post->post_date), 'publish_future_post', $post->ID);
+				wp_schedule_single_event(mysql2date('U', $post->post_date), 'publish_future_post', array($post->ID));
 	}
 	if ( $wp_current_db_version < 3570 ) {
 		// Create categories for link categories if a category with the same
@@ -686,7 +686,7 @@ function dbDelta($queries, $execute = true) {
 
 	// Create a tablename index for an array ($cqueries) of queries
 	foreach($queries as $qry) {
-		if(preg_match("|CREATE TABLE ([^ ]*)|", $qry, $matches)) {
+		if(preg_match("|CREATE TABLE (?:IF NOT EXISTS )?([^ ]*)|", $qry, $matches)) {
 			$cqueries[strtolower($matches[1])] = $qry;
 			$for_update[$matches[1]] = 'Created table '.$matches[1];
 		}

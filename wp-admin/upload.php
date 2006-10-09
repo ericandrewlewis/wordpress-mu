@@ -14,6 +14,8 @@ if ( !$tab )
 
 do_action( "upload_files_$tab" );
 
+add_action( 'admin_head', 'wp_upload_admin_head' );
+
 $pid = 0;
 if ( $post_id < 0 )
 	$pid = $post_id;
