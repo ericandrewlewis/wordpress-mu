@@ -130,4 +130,9 @@ function wpmu_log_new_registrations( $blog_id, $user_id ) {
 
 add_action( "wpmu_new_blog" ,"wpmu_log_new_registrations", 10, 2 );
 
+function scriptaculous_admin_loader() {
+	        wp_enqueue_script('scriptaculous');
+}
+add_action( 'admin_print_scripts', 'scriptaculous_admin_loader' );
+
 ?>
