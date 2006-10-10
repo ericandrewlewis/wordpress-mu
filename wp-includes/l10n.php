@@ -6,15 +6,11 @@ function get_locale() {
 		return $locale;
 
 	// WPLANG is defined in wp-config.
-	if ( defined('WPLANG') && '' != WPLANG )
+	if (defined('WPLANG'))
 		$locale = WPLANG;
-	else if ( is_admin() )
-		$locale = get_user_lang_code();
-	else
-		$locale = get_blog_lang_code();
 
 	if (empty($locale))
-		$locale = 'en';
+		$locale = 'en_US';
 
 	$locale = apply_filters('locale', $locale);
 
