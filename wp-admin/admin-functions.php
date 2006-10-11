@@ -811,8 +811,6 @@ function user_row( $user_object, $style = '' ) {
 	if ( !(is_object($user_object) && is_a($user_object, 'WP_User')) )
 		$user_object = new WP_User( (int) $user_object );
 	$email = $user_object->user_email;
-	if( $current_user->ID != $user_object->ID && is_site_admin() == false )
-		$email = "N/A";
 	$url = $user_object->user_url;
 	$short_url = str_replace('http://', '', $url);
 	$short_url = str_replace('www.', '', $short_url);
