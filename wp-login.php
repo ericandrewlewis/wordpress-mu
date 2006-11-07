@@ -23,7 +23,7 @@ if ( defined('RELOCATE') ) { // Move flag is set
 
 // Rather than duplicating this HTML all over the place, we'll stick it in function
 function login_header($title = 'Login', $message = '') {
-	global $errors, $error, $wp_locale;
+	global $errors, $error, $wp_locale, $current_site;
 
 	?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -133,7 +133,7 @@ case 'retrievepassword' :
 	if ( 'invalidkey' == $_GET['error'] ) $errors['invalidkey'] = __('Sorry, that key does not appear to be valid.');
 
 	do_action('lost_password');
-	login_header(__('Lost Password'), '<p class="message">' . __('Please enter your username and e-mail address. You will recieve a new password via e-mail.') . '</p>');
+	login_header(__('Lost Password'), '<p class="message">' . __('Please enter your username and e-mail address. You will receive a new password via e-mail.') . '</p>');
 ?>
 
 <form name="lostpasswordform" id="lostpasswordform" action="wp-login.php?action=lostpassword" method="post">
@@ -263,7 +263,7 @@ default:
 	login_header(__('Login'));
 ?>
 
-<form name="loginform" id="loginform" action="wp-login.php" method="post">
+<form name="loginform" id="loginform" action="https://<?php echo $current_blog->domain . $current_blog->path ?>wp-login.php" method="post">
 	<p>
 		<label><?php _e('Username:') ?><br />
 		<input type="text" name="log" id="user_login" class="input" value="<?php echo wp_specialchars(stripslashes($user_login), 1); ?>" size="20" tabindex="10" /></label>

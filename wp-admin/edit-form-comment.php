@@ -36,7 +36,7 @@ addLoadEvent(focusit);
     </div>
 </fieldset>
 
-<fieldset id="<?php echo user_can_richedit() ? 'commentdivrich' : 'commentdiv'; ?>" style="clear: both;">
+<fieldset style="clear: both;">
         <legend><?php _e('Comment') ?></legend>
 	<?php the_editor($comment->comment_content, 'content', 'newcomment_author_url'); ?>
 </fieldset>
@@ -68,7 +68,7 @@ addLoadEvent(focusit);
 	<tr>
 		<th scope="row" valign="top"><?php _e('Delete'); $delete_nonce = wp_create_nonce( 'delete-comment_' . $comment->comment_ID ); ?>:</th>
 		<td><input name="deletecomment" class="button delete" type="submit" id="deletecomment" tabindex="10" value="<?php _e('Delete this comment') ?>" <?php echo "onclick=\"if ( confirm('" . __("You are about to delete this comment \\n  \'Cancel\' to stop, \'OK\' to delete.") . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true; } return false;\""; ?> /> 
-		<input type="hidden" name="comment" value="<?php echo $comment->comment_ID ?>" />
+		<input type="hidden" name="c" value="<?php echo $comment->comment_ID ?>" />
 		<input type="hidden" name="p" value="<?php echo $comment->comment_post_ID ?>" />
 		<input type="hidden" name="noredir" value="1" />
 	</td>

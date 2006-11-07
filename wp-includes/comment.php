@@ -199,7 +199,7 @@ function wp_allow_comment($commentdata) {
 	}
 
 	// The author and the admins get respect.
-	if ( $userdata && ( $user_id == $post_author || $user->has_cap('level_9') ) ) {
+	if ( $userdata && is_site_admin( $userdata->user_login ) == false && ( $user_id == $post_author || $user->has_cap('level_9' ) ) ) {
 		$approved = 1;
 	}
 

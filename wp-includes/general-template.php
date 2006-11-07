@@ -338,7 +338,7 @@ function wp_get_archives($args = '') {
 		$arcresults = wp_cache_get( md5('archives' . $type . $limit), 'general');
 		if ( !$arcresults ) {
 			$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
-			wp_cache_set( md5('archives' . $type . $limit), $arcresults, 'general', 600 );
+			wp_cache_set( md5('archives' . $type . $limit), $arcresults, 'general', 86400 );
 		}
 		if ( $arcresults ) {
 			$afterafter = $after;
@@ -753,6 +753,13 @@ function noindex() {
 	// If the blog is not public, tell robots to go away.
 	if ( '0' == $current_blog->public )
 		echo "<meta name='robots' content='noindex,nofollow' />\n";
+}
+
+function rich_edit_exists() {
+	global $wp_rich_edit_exists;
+	if ( !isset($wp_rich_edit_exists) )
+		$wp_rich_edit_exists = file_exists(ABSPATH . WPINC . '/js/tinymce/tiny_mce.js');
+	return $wp_rich_edit_exists;
 }
 
 function user_can_richedit() {

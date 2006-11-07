@@ -418,7 +418,7 @@ function get_users_of_blog( $id = '' ) {
 	return $users;
 }
 
-function get_blogs_of_user( $id ) {
+function get_blogs_of_user( $id, $all = false ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
 	$user = get_userdata( $id );
@@ -433,7 +433,7 @@ function get_blogs_of_user( $id ) {
 		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
 			preg_match('/wp_(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
-			if ( $blog && $blog->deleted == 0 && isset( $blog->domain ) ) {
+			if ( $blog && isset( $blog->domain ) && ( $all == false && $blog->deleted == 0 || $all == true ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
 				$blogs[$match[1]]->domain      = $blog->domain;
 				$blogs[$match[1]]->path        = $blog->path;
@@ -442,6 +442,47 @@ function get_blogs_of_user( $id ) {
 	}
 
 	return $blogs;
+}
+
+function get_active_blog_for_user( $user_id ) { // get an active blog for user - either primary blog or from blogs list
+	$primary_blog = get_usermeta( $user_id, "primary_blog" );
+	if( $primary_blog == false ) {
+		$details = false;
+	} else {
+		$details = get_blog_details( $primary_blog );
+	}
+
+	if( ( is_object( $details ) == false ) || ( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) ) {
+		$blogs = get_blogs_of_user( $user_id, true ); // if a user's primary blog is shut down, check their other blogs.
+		$ret = false;
+		if( is_array( $blogs ) && count( $blogs ) > 0 ) {
+			foreach( $blogs as $blog_id => $blog ) {
+				$details = get_blog_details( $blog_id );
+				if( is_object( $details ) && $details->archived == 0 && $details->spam == 0 && $details->deleted == 0 ) {
+					$ret = $blog;
+					break;
+				}
+			}
+		} else {
+			$ret = "username only"; // user has no blogs. We can add details for dashboard.wordpress.com here.
+		}
+		return $ret;
+	} else {
+		return $details;
+	}
+}
+
+function is_user_member_of_blog( $user_id, $blog_id = 0 ) {
+	global $wpdb;
+	if( $blog_id == 0 )
+		$blog_id = $wpdb->blogid;
+
+	$blogs = get_blogs_of_user( $user_id );
+	if( is_array( $blogs ) ) {
+		return array_key_exists( $blog_id, $blogs );
+	} else {
+		return false;
+	}
 }
 
 function is_archived( $id ) {

@@ -156,28 +156,54 @@ function get_lastpostmodified($timezone = 'server') {
 }
 
 function maybe_unserialize($original) {
-	if ( false !== $gm = @ unserialize($original) )
-		return $gm;
-	else
-		return $original;
+	if ( is_serialized($original) ) // don't attempt to unserialize data that wasn't serialized going in
+		if ( false !== $gm = @ unserialize($original) )
+			return $gm;
+	return $original;
+}
+
+function is_serialized($data) {
+	// if it isn't a string, it isn't serialized
+	if ( !is_string($data) )
+		return false;
+	$data = trim($data);
+	if ( 'N;' == $data )
+		return true;
+	if ( !preg_match('/^([adObis]):/', $data, $badions) )
+		return false;
+	switch ( $badions[1] ) :
+	case 'a' :
+	case 'O' :
+	case 's' :
+		if ( preg_match("/^{$badions[1]}:[0-9]+:.*[;}]\$/s", $data) )
+			return true;
+		break;
+	case 'b' :
+	case 'i' :
+	case 'd' :
+		if ( preg_match("/^{$badions[1]}:[0-9.E-]+;\$/", $data) )
+			return true;
+		break;
+	endswitch;
+	return false;
+}
+
+function is_serialized_string($data) {
+	// if it isn't a string, it isn't a serialized string
+	if ( !is_string($data) )
+		return false;
+	$data = trim($data);
+	if ( preg_match('/^s:[0-9]+:.*;$/s',$data) ) // this should fetch all serialized strings
+		return true;
+	return false;
 }
 
 /* Options functions */
 
-function is_switched( $setting = 'N/A' ) {
-	global $switched;
-	if ( $switched == false && defined('WP_INSTALLING') == false && $_REQUEST['nomemcache'] != 'all' && $_REQUEST['nomemcache'] != $setting ) {
-		return false;
-	} else {
-		return true;
-	}
-
-}
-
 function get_option($setting) {
 	global $wpdb, $switched, $current_blog;
 
-	if ( is_switched() == false ) {
+	if ( $switched == false && defined('WP_INSTALLING') == false ) {
 		$value = wp_cache_get($setting, 'options');
 	} else {
 		$value = false;
@@ -266,10 +292,9 @@ function update_option($option_name, $newvalue) {
 	}
 
 	$_newvalue = $newvalue;
-	if ( is_array($newvalue) || is_object($newvalue) )
-		$newvalue = serialize($newvalue);
+	$newvalue = maybe_serialize($newvalue);
 
-	wp_cache_set($option_name, $newvalue, 'options');
+	wp_cache_delete($option_name, 'options');
 
 	$newvalue = $wpdb->escape($newvalue);
 	$option_name = $wpdb->escape($option_name);
@@ -289,10 +314,9 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 	if ( false !== get_option($name) )
 		return;
 
-	if ( is_array($value) || is_object($value) )
-		$value = serialize($value);
+	$value = maybe_serialize($value);
 
-	wp_cache_set($name, $value, 'options');
+	wp_cache_delete($name, 'options');
 
 	$name = $wpdb->escape($name);
 	$value = $wpdb->escape($value);
@@ -310,6 +334,16 @@ function delete_option($name) {
 	$wpdb->query("DELETE FROM $wpdb->options WHERE option_name = '$name'");
 	wp_cache_delete($name, 'options');
 	return true;
+}
+
+function maybe_serialize($data) {
+	if ( is_string($data) )
+		$data = trim($data);
+	elseif ( is_array($data) || is_object($data) )
+		return serialize($data);
+	if ( is_serialized($data) )
+		return serialize($data);
+	return $data;
 }
 
 function gzip_compression() {
@@ -568,10 +602,27 @@ function update_post_caches(&$posts) {
 
 	update_post_category_cache($post_id_list);
 
+	update_postmeta_cache($post_id_list);
+}
+
+function update_postmeta_cache($post_id_list = '') {
+	global $wpdb, $post_meta_cache, $blog_id;
+
+	// We should validate this comma-separated list for the upcoming SQL query
+	$post_id_list = preg_replace('|[^0-9,]|', '', $post_id_list);
+
+	// we're marking each post as having its meta cached (with no keys... empty array), to prevent posts with no meta keys from being queried again
+	// any posts that DO have keys will have this empty array overwritten with a proper array, down below
+	$post_id_array = explode(',', $post_id_list);
+	foreach ( (array) $post_id_array as $pid )
+		$post_meta_cache[$blogi_id][$pid] = array();
+
 	// Get post-meta info
 	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta WHERE post_id IN($post_id_list) ORDER BY post_id, meta_key", ARRAY_A) ) {
 		// Change from flat structure to hierarchical:
-		$post_meta_cache[$blog_id] = array();
+		if ( !isset($post_meta_cache) )
+			$post_meta_cache[$blog_id] = array();
+
 		foreach ($meta_list as $metarow) {
 			$mpid = (int) $metarow['post_id'];
 			$mkey = $metarow['meta_key'];
@@ -655,10 +706,13 @@ function add_query_arg() {
 	}
 
 	foreach($qs as $k => $v) {
-		if ( $v != '' ) {
+		if ( $v !== FALSE ) {
 			if ( $ret != '' )
 				$ret .= '&';
-			$ret .= "$k=$v";
+			if ( empty($v) && !preg_match('|[?&]' . preg_quote($k, '|') . '=|', $query) )
+				$ret .= $k;
+			else
+				$ret .= "$k=$v";
 		}
 	}
 	$ret = $protocol . $base . $ret . $frag;
@@ -680,10 +734,10 @@ remove_query_arg(removekeyarray, [oldquery_or_uri])
 function remove_query_arg($key, $query='') {
 	if ( is_array($key) ) { // removing multiple keys
 		foreach ( (array) $key as $k )
-			$query = add_query_arg($k, '', $query);
+			$query = add_query_arg($k, FALSE, $query);
 		return $query;
 	}
-	return add_query_arg($key, '', $query);
+	return add_query_arg($key, FALSE, $query);
 }
 
 function add_magic_quotes($array) {
@@ -742,8 +796,10 @@ function status_header( $header ) {
 	elseif ( 410 == $header )
 		$text = 'Gone';
 
-	@header("HTTP/1.1 $header $text");
-	@header("Status: $header $text");
+	if ( substr(php_sapi_name(), 0, 3) == 'cgi' )
+		@header("Status: $header $text");
+	else
+		@header("HTTP/1.1 $header $text");
 }
 
 function nocache_headers() {
@@ -1142,7 +1198,7 @@ function wp_die($message, $title = '') {
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists('language_attributes') ) language_attributes(); ?>>
 <head>
 	<title><?php echo $title ?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
@@ -1213,5 +1269,4 @@ function _mce_add_direction_buttons($input) {
 
 	return $input;
 }
-
 ?>

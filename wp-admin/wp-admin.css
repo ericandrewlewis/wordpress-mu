@@ -458,6 +458,10 @@ textarea.all-options, input.all-options {
 	width: 250px;
 }
 
+input.disabled, textarea.disabled {
+	background: #ccc;
+}
+
 #adminmenu {
 	background: #83B4D8;
 	border-top: 3px solid #448abd;
@@ -505,7 +509,6 @@ textarea.all-options, input.all-options {
 	border-bottom: none;
 	margin: 0;
 	padding: 3px 2em 0 3em;
-	height: 25px;
 }
 
 #minisub {
@@ -533,6 +536,7 @@ textarea.all-options, input.all-options {
 
 #submenu li {
 	line-height: 180%;
+	height: 25px;
 }
 
 

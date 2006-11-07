@@ -54,26 +54,10 @@ class WP_Import {
 	//function to check the authorname and do the mapping
 	function checkauthor($author) {
 		global $wpdb;
-		//mtnames is an array with the names in the mt import file
-		$pass = 'changeme';
-		if (!(in_array($author, $this->mtnames))) { //a new mt author name is found
-			++ $this->j;
-			$this->mtnames[$this->j] = $author; //add that new mt author name to an array 
-			$user_id = username_exists($this->newauthornames[$this->j]); //check if the new author name defined by the user is a pre-existing wp user
-			if (!$user_id) { //banging my head against the desk now. 
-				if ($newauthornames[$this->j] == 'left_blank') { //check if the user does not want to change the authorname
-					$user_id = wp_create_user($author, $pass);
-					$this->newauthornames[$this->j] = $author; //now we have a name, in the place of left_blank.
-				} else {
-					$user_id = wp_create_user($this->newauthornames[$this->j], $pass);
-				}
-			} else {
-				return $user_id; // return pre-existing wp username if it exists
-			}
-		} else {
-			$key = array_search($author, $this->mtnames); //find the array key for $author in the $mtnames array
-			$user_id = username_exists($this->newauthornames[$key]); //use that key to get the value of the author's name from $newauthornames
-		}
+		
+		$map = $_POST['userselect'];
+
+		$user_id = username_exists($map[$author]); //use that key to get the value of the author's name from $newauthornames
 
 		return $user_id;
 	}
@@ -140,7 +124,6 @@ class WP_Import {
 ?>
 <h2><?php _e('Assign Authors'); ?></h2>
 <p><?php _e('To make it easier for you to edit and save the imported posts and drafts, you may want to change the name of the author of the posts. For example, you may want to import all the entries as <code>admin</code>s entries.'); ?></p>
-<p><?php _e('If a new user is created by WordPress, the password will be set, by default, to "changeme". Quite suggestive, eh? ;)'); ?></p>
 	<?php
 
 
@@ -151,7 +134,7 @@ class WP_Import {
 		foreach ($authors as $author) {
 			++ $j;
 			echo '<li>Current author: <strong>'.$author.'</strong><br />'.'Map to existing: ';
-			$this->users_form($author);
+			$this->users_form($j);
 			echo '</li>';
 		}
 

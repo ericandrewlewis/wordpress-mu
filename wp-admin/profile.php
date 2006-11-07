@@ -36,6 +36,7 @@ $bookmarklet_height= 440;
 <?php do_action('profile_personal_options'); ?>
 
 <p class="submit"><input type="submit" value="<?php _e('Update Profile &raquo;') ?>" name="submit" /></p>
+<div style="clear: both"></div>
 
 <fieldset>
 <legend><?php _e('Name'); ?></legend>
@@ -88,14 +89,14 @@ $bookmarklet_height= 440;
 <input type="text" name="yim" value="<?php echo $profileuser->yim ?>" />
 </label></p>
 
-<p><label><?php _e('Jabber / Google Talk:') ?>
+<p><label><?php _e('Jabber / Google Talk:') ?><br />
 <input type="text" name="jabber" value="<?php echo $profileuser->jabber ?>" /></label>
 </p>
 </fieldset>
 <br clear="all" />
 <fieldset>
 <legend><?php _e('About Yourself'); ?></legend>
-<p class="desc"><?php _e('Share a little biographical information to fill out your profile. This may be shown publicly.'); ?></p>
+<p class="desc"><?php _e('Share a little biographical information. '); ?></p>
 <p><textarea name="description" rows="5" cols="30"><?php echo $profileuser->description ?></textarea></p>
 </fieldset>
 

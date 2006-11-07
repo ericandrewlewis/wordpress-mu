@@ -11,9 +11,10 @@ if ( !current_user_can('manage_options') )
 	wp_die(__('Cheatin&#8217; uh?'));
 
 if( $_GET[ 'adminhash' ] ) {
-	$new_admin_details = get_option( 'new_admin_email' );
+	$new_admin_details = get_option( 'adminhash' );
 	if( is_array( $new_admin_details ) && $new_admin_details[ 'hash' ] == $_GET[ 'adminhash' ] && $new_admin_details[ 'newemail' ] != '' ) {
 		update_option( "admin_email", $new_admin_details[ 'newemail' ] );
+		delete_option( "adminhash" );
 		delete_option( "new_admin_email" );
 	}
 	wp_redirect( get_option( "siteurl" ) . "/wp-admin/options-general.php?updated=true" );
@@ -24,6 +25,7 @@ function sanitize_option($option, $value) { // Remember to call stripslashes!
 
 	switch ($option) {
 		case 'admin_email':
+		case 'new_admin_email':
 			$value = stripslashes($value);
 			$value = sanitize_email($value);
 			break;
@@ -137,23 +139,32 @@ if (!is_site_admin())
   <table width="98%">
 <?php
 $options = $wpdb->get_results("SELECT * FROM $wpdb->options ORDER BY option_name");
-foreach ( (array) $options as $option )
-	$options_to_update[] = $option->option_name;
-$options_to_update = implode(',', $options_to_update);
-?>
 
-<input type="hidden" name="page_options" value="<?php echo $options_to_update; ?>" /> 
-
-<?php
 foreach ( (array) $options as $option) :
-	$value = wp_specialchars($option->option_value, 'single');
+	$disabled = '';
+	if ( is_serialized($option->option_value) ) {
+		if ( is_serialized_string($option->option_value) ) {
+			// this is a serialized string, so we should display it
+			$value = wp_specialchars(maybe_unserialize($option->option_value), 'single');
+			$options_to_update[] = $option->option_name;
+			$class = 'all-options';
+		} else {
+			$value = 'SERIALIZED DATA';
+			$disabled = ' disabled="disabled"';
+			$class = 'all-options disabled';
+		}
+	} else {
+		$value = wp_specialchars($option->option_value, 'single');
+		$options_to_update[] = $option->option_name;
+		$class = 'all-options';
+	}
 	echo "
 <tr>
 	<th scope='row'><label for='$option->option_name'>$option->option_name</label></th>
 <td>";
 
-	if (stristr($value, "\n")) echo "<textarea class='all-options' name='$option->option_name' id='$option->option_name' cols='30' rows='5'>$value</textarea>";
-	else echo "<input class='all-options' type='text' name='$option->option_name' id='$option->option_name' size='30' value='" . $value . "' />";
+	if (stristr($value, "\n")) echo "<textarea class='$class' name='$option->option_name' id='$option->option_name' cols='30' rows='5'>$value</textarea>";
+	else echo "<input class='$class' type='text' name='$option->option_name' id='$option->option_name' size='30' value='" . $value . "'$disabled />";
 	
 	echo "</td>
 	<td>$option->option_description</td>
@@ -161,7 +172,8 @@ foreach ( (array) $options as $option) :
 endforeach;
 ?>
   </table>
-<p class="submit"><input type="submit" name="Update" value="<?php _e('Update Options &raquo;') ?>" /></p>
+<?php $options_to_update = implode(',', $options_to_update); ?>
+<p class="submit"><input type="hidden" name="page_options" value="<?php echo wp_specialchars($options_to_update, true); ?>" /><input type="submit" name="Update" value="<?php _e('Update Options &raquo;') ?>" /></p>
   </form>
 </div>
 

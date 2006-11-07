@@ -285,6 +285,17 @@ function remove_accents($string) {
 	return $string;
 }
 
+function sanitize_file( $name ) { // Like sanitize_title, but with periods
+	$name = strtolower( $name );
+	$name = preg_replace('/&.+?;/', '', $name); // kill entities
+	$name = str_replace( '_', '-', $name );
+	$name = preg_replace('/[^a-z0-9\s-.]/', '', $name);
+	$name = preg_replace('/\s+/', '-', $name);
+	$name = preg_replace('|-+|', '-', $name);
+	$name = trim($name, '-');
+	return $name;
+}
+
 function sanitize_user( $username, $strict = false ) {
 	$raw_username = $username;
 	$username = strip_tags($username);
@@ -595,10 +606,18 @@ function antispambot($emailaddy, $mailto=0) {
 
 function make_clickable($ret) {
 	$ret = ' ' . $ret;
-	$ret = preg_replace("#(^|[\n ])([\w]+?://[\w\#$%&~/.\-;:=,?@\[\]+]*)#is", "$1<a href='$2' rel='nofollow'>$2</a>", $ret);
-	$ret = preg_replace("#(^|[\n ])((www|ftp)\.[\w\#$%&~/.\-;:=,?@\[\]+]*)#is", "$1<a href='http://$2' rel='nofollow'>$2</a>", $ret);
-	$ret = preg_replace("#(\s)([a-z0-9\-_.]+)@([^,< \n\r]+)#i", "$1<a href=\"mailto:$2@$3\">$2@$3</a>", $ret);
-	$ret = substr($ret, 1);
+	// in testing, using arrays here was found to be faster
+	$ret = preg_replace(
+		array(
+			'#([\s>])([\w]+?://[\w\#$%&~/.\-;:=,?@\[\]+]*)#is',
+			'#([\s>])((www|ftp)\.[\w\#$%&~/.\-;:=,?@\[\]+]*)#is',
+			'#([\s>])([a-z0-9\-_.]+)@([^,< \n\r]+)#i'),
+		array(
+			'$1<a href="$2" rel="nofollow">$2</a>',
+			'$1<a href="http://$2" rel="nofollow">$2</a>',
+			'$1<a href="mailto:$2@$3">$2@$3</a>'),$ret);
+	// this one is not in an array because we need it to run last, for cleanup of accidental links within links
+	$ret = preg_replace("#(<a( [^>]+?>|>))<a [^>]+?>([^>]+?)</a></a>#i", "$1$3</a>", $ret);
 	$ret = trim($ret);
 	return $ret;
 }
@@ -618,7 +637,14 @@ function convert_smilies($text) {
 	if (get_option('use_smilies')) {
 		// HTML loop taken from texturize function, could possible be consolidated
 		$textarr = preg_split("/(<.*>)/U", $text, -1, PREG_SPLIT_DELIM_CAPTURE); // capture the tags as well as in between
-		$output = implode('', preg_replace($wp_smiliessearch, $wp_smiliesreplace, $textarr));
+		$stop = count($textarr);// loop stuff 
+		for ($i = 0; $i < $stop; $i++) { 
+			$content = $textarr[$i]; 
+			if ((strlen($content) > 0) && ('<' != $content{0})) { // If it's not a tag 
+				$content = preg_replace($wp_smiliessearch, $wp_smiliesreplace, $content); 
+			} 
+			$output .= $content; 
+		}
 	} else {
 		// return default text.
 		$output = $text;

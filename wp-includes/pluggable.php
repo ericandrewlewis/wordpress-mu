@@ -78,9 +78,7 @@ function get_userdata( $user_id ) {
 
 	if ($metavalues) {
 		foreach ( $metavalues as $meta ) {
-			@ $value = unserialize($meta->meta_value);
-			if ($value === FALSE)
-				$value = $meta->meta_value;
+			$value = maybe_unserialize($meta->meta_value);
 			$user->{$meta->meta_key} = $value;
 
 			// We need to set user_level from meta, not row
@@ -131,9 +129,7 @@ function get_userdatabylogin($user_login) {
 
 	if ($metavalues) {
 		foreach ( $metavalues as $meta ) {
-			@ $value = unserialize($meta->meta_value);
-			if ($value === FALSE)
-				$value = $meta->meta_value;
+			$value = maybe_unserialize($meta->meta_value);
 			$user->{$meta->meta_key} = $value;
 
 			// We need to set user_level from meta, not row
@@ -229,7 +225,7 @@ function auth_redirect() {
 
 		wp_clearcookie();
 
-		wp_redirect(get_option('siteurl') . '/wp-login.php?redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
+		wp_redirect(get_option('siteurl') . '/wp-login.php?action=auth&redirect_to=' . urlencode($_SERVER['REQUEST_URI']));
 		exit();
 	}
 }
@@ -267,6 +263,11 @@ endif;
 if ( !function_exists('wp_redirect') ) :
 function wp_redirect($location, $status = 302) {
 	global $is_IIS;
+
+	$location = apply_filters('wp_redirect', $location, $status);
+
+	if ( !$location ) // allows the wp_redirect filter to cancel a redirect
+		return false; 
 
 	$location = preg_replace('|[^a-z0-9-~+_.?#=&;,/:%]|i', '', $location);
 	$location = wp_kses_no_null($location);
@@ -376,8 +377,8 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 		$subject = sprintf( __('[%1$s] Pingback: "%2$s"'), $blogname, $post->post_title );
 	}
 	$notify_message .= get_permalink($comment->comment_post_ID) . "#comments\r\n\r\n";
-	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
-	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_option('siteurl')."/wp-admin/comment.php?action=cdc&c=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_option('siteurl')."/wp-admin/comment.php?action=cdc&dt=spam&c=$comment_id" ) . "\r\n";
 
 	$admin_email = get_option('admin_email');
 
@@ -433,9 +434,9 @@ function wp_notify_moderator($comment_id) {
 	$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 	$notify_message .= sprintf( __('Whois  : http://ws.arin.net/cgi-bin/whois.pl?queryinput=%s'), $comment->comment_author_IP ) . "\r\n";
 	$notify_message .= __('Comment: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
-	$notify_message .= sprintf( __('To approve this comment, visit: %s'),  get_option('siteurl').'/wp-admin/comment.php?action=mailapprovecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
-	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
-	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_option('siteurl').'/wp-admin/comment.php?action=confirmdeletecomment&delete_type=spam&p='.$comment->comment_post_ID."&comment=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To approve this comment, visit: %s'),  get_option('siteurl')."/wp-admin/comment.php?action=mac&c=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To delete this comment, visit: %s'), get_option('siteurl')."/wp-admin/comment.php?action=cdc&c=$comment_id" ) . "\r\n";
+	$notify_message .= sprintf( __('To mark this comment as spam, visit: %s'), get_option('siteurl')."/wp-admin/comment.php?action=cdc&dt=spam&c=$comment_id" ) . "\r\n";
 	$notify_message .= sprintf( __('Currently %s comments are waiting for approval. Please visit the moderation panel:'), $comments_waiting ) . "\r\n";
 	$notify_message .= get_option('siteurl') . "/wp-admin/moderation.php\r\n";
 

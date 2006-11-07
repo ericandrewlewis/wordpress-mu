@@ -122,12 +122,12 @@ function fix_attachment_links($post_ID) {
 		return;
 
 	$i = 0;
-	$search = "# id=(\"|')p(\d+)\\1#i";
+	$search = "#[\s]+rel=(\"|')(.*?)wp-att-(\d+)\\1#i";
 	foreach ( $anchor_matches[0] as $anchor ) {
 		if ( 0 == preg_match($search, $anchor, $id_matches) )
 			continue;
 
-		$id = $id_matches[2];
+		$id = $id_matches[3];
 
 		// While we have the attachment ID, let's adopt any orphans.
 		$attachment = & get_post($id, ARRAY_A);
@@ -287,12 +287,10 @@ function edit_comment() {
 
 // Get an existing post and format it for editing.
 function get_post_to_edit($id) {
-	global $richedit;
-	$richedit = ( 'true' == get_user_option('rich_editing') ) ? true : false;
 
 	$post = get_post($id);
 
-	$post->post_content = format_to_edit($post->post_content, $richedit);
+	$post->post_content = format_to_edit($post->post_content, user_can_richedit());
 	$post->post_content = apply_filters('content_edit_pre', $post->post_content);
 
 	$post->post_excerpt = format_to_edit($post->post_excerpt);
@@ -350,12 +348,9 @@ function get_default_post_to_edit() {
 }
 
 function get_comment_to_edit($id) {
-	global $richedit;
-	$richedit = ( 'true' == get_user_option('rich_editing') ) ? true : false;
-
 	$comment = get_comment($id);
 
-	$comment->comment_content = format_to_edit($comment->comment_content, $richedit);
+	$comment->comment_content = format_to_edit($comment->comment_content, user_can_richedit());
 	$comment->comment_content = apply_filters('comment_edit_pre', $comment->comment_content);
 
 	$comment->comment_author = format_to_edit($comment->comment_author);
@@ -993,6 +988,18 @@ function list_meta($meta) {
 			$style = '';
 		if ('_' == $entry['meta_key'] { 0 })
 			$style .= ' hidden';
+
+		if ( is_serialized($entry['meta_value']) ) {
+			if ( is_serialized_string($entry['meta_value']) ) {
+				// this is a serialized string, so we should display it
+				$entry['meta_value'] = maybe_unserialize($entry['meta_value']);
+			} else {
+				// this is a serialized array/object so we should NOT display it
+				--$count;
+				continue;
+			}
+		}
+
 		$key_js = js_escape($entry['meta_key']);
 		$entry['meta_key'] = wp_specialchars( $entry['meta_key'], true );
 		$entry['meta_value'] = wp_specialchars( $entry['meta_value'], true );
@@ -1024,12 +1031,14 @@ function get_meta_keys() {
 
 function meta_form() {
 	global $wpdb;
+	$limit = (int) apply_filters('postmeta_form_limit', 30);
 	$keys = $wpdb->get_col("
-			SELECT meta_key
-			FROM $wpdb->postmeta
-			GROUP BY meta_key
-			ORDER BY meta_id DESC
-			LIMIT 10");
+		SELECT meta_key
+		FROM $wpdb->postmeta
+		GROUP BY meta_key
+		ORDER BY meta_id DESC
+		LIMIT $limit");
+	natcasesort($keys);
 ?>
 <h3><?php _e('Add a new custom field:') ?></h3>
 <table id="newmeta" cellspacing="3" cellpadding="3">
@@ -1039,12 +1048,12 @@ function meta_form() {
 </tr>
 	<tr valign="top">
 		<td align="right" width="18%">
-<?php if ($keys) : ?>
+<?php if ( $keys ) : ?>
 <select id="metakeyselect" name="metakeyselect" tabindex="7">
 <option value="#NONE#"><?php _e('- Select -'); ?></option>
 <?php
 
-	foreach ($keys as $key) {
+	foreach ( $keys as $key ) {
 		$key = wp_specialchars($key, 1);
 		echo "\n\t<option value='$key'>$key</option>";
 	}
@@ -1068,7 +1077,8 @@ function add_meta($post_ID) {
 
 	$metakeyselect = $wpdb->escape(stripslashes(trim($_POST['metakeyselect'])));
 	$metakeyinput = $wpdb->escape(stripslashes(trim($_POST['metakeyinput'])));
-	$metavalue = $wpdb->escape(stripslashes(trim($_POST['metavalue'])));
+	$metavalue = maybe_serialize(stripslashes((trim($_POST['metavalue']))));
+	$metavalue = $wpdb->escape($metavalue);
 
 	if ( ('0' === $metavalue || !empty ($metavalue)) && ((('#NONE#' != $metakeyselect) && !empty ($metakeyselect)) || !empty ($metakeyinput)) ) {
 		// We have a key/value pair. If both the select and the 
@@ -1099,8 +1109,9 @@ function delete_meta($mid) {
 
 function update_meta($mid, $mkey, $mvalue) {
 	global $wpdb;
+	$mvalue = maybe_serialize(stripslashes($mvalue));
+	$mvalue = $wpdb->escape($mvalue);
 	$mid = (int) $mid;
-
 	return $wpdb->query("UPDATE $wpdb->postmeta SET meta_key = '$mkey', meta_value = '$mvalue' WHERE meta_id = '$mid'");
 }
 
@@ -1108,7 +1119,10 @@ function get_post_meta_by_id($mid) {
 	global $wpdb;
 	$mid = (int) $mid;
 
-	return $wpdb->get_row("SELECT * FROM $wpdb->postmeta WHERE meta_id = '$mid'");
+	$meta = $wpdb->get_row("SELECT * FROM $wpdb->postmeta WHERE meta_id = '$mid'");
+	if ( is_serialized_string($meta->meta_value) )
+		$meta->meta_value = maybe_unserialize($meta->meta_value);
+	return $meta;
 }
 
 function touch_time($edit = 1, $for_post = 1) {
@@ -1936,11 +1950,21 @@ function wp_import_cleanup($id) {
 }
 
 function wp_import_upload_form($action) {
+	$size = strtolower( ini_get('upload_max_filesize') );
+	$bytes = 0;
+	if ( strstr( $size, 'k' ) )
+		$bytes = $size * 1024;
+	if ( strstr( $size, 'm' ) )
+		$bytes = $size * 1024 * 1024;
+	if ( strstr( $size, 'g' ) )
+		$bytes = $size * 1024 * 1024 * 1024;
 ?>
 <form enctype="multipart/form-data" id="import-upload-form" method="post" action="<?php echo $action ?>">
 <p>
-<label for="upload"><?php _e('Choose a file from your computer:'); ?></label> <input type="file" id="upload" name="import" size="25" />
+<label for="upload"><?php _e('Choose a file from your computer:'); ?></label> (<?php printf( __('Maximum size: %s'), $size ); ?>)
+<input type="file" id="upload" name="import" size="25" />
 <input type="hidden" name="action" value="save" />
+<input type="hidden" name="max_file_size" value="<?php echo $bytes; ?>" />
 </p>
 <p class="submit">
 <input type="submit" value="<?php _e('Upload file and import'); ?> &raquo;" />
@@ -1996,11 +2020,11 @@ function the_attachment_links($id = false) {
 <?php if ( $icon ) : ?>
 	<tr>
 		<th scope="row"><?php $thumb ? _e('Thumbnail linked to file') : _e('Image linked to file'); ?></th>
-		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid; ?>" id="<?php echo $post->ID ?>"><?php echo $icon ?></a></textarea></td>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid; ?>"><?php echo $icon ?></a></textarea></td>
 	</tr>
 	<tr>
 		<th scope="row"><?php $thumb ? _e('Thumbnail linked to page') : _e('Image linked to file'); ?></th>
-		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment" id="<?php echo $post->ID ?>"><?php echo $icon ?></a></textarea></td>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment wp-att-<?php echo $post->ID; ?>"><?php echo $icon ?></a></textarea></td>
 	</tr>
 <?php else : ?>
 	<tr>
@@ -2009,7 +2033,7 @@ function the_attachment_links($id = false) {
 	</tr>
 	<tr>
 		<th scope="row"><?php _e('Link to page') ?></th>
-		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment" id="<?php echo $post->ID ?>"><?php the_title(); ?></a></textarea></td>
+		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link($post->ID) ?>" rel="attachment wp-att-<?php echo $post->ID ?>"><?php the_title(); ?></a></textarea></td>
 	</tr>
 <?php endif; ?>
 </table>
@@ -2139,4 +2163,52 @@ The Webmaster" );
 }			
 
 add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
+
+function wp_crop_image($src_file, $src_x, $src_y, $src_w, $src_h, $dst_w, $dst_h, $src_abs = false, $dst_file = false) {
+	if ( ctype_digit($src_file) ) // Handle int as attachment ID
+		$src_file = get_attached_file($src_file);
+
+	$src = wp_load_image($src_file);
+
+	if ( !is_resource($src) )
+		return $src;
+
+	$dst = imagecreatetruecolor($dst_w, $dst_h);
+
+	if ( $src_abs ) {
+		$src_w -= $src_x;
+		$src_h -= $src_y;
+	}
+
+	imageantialias($dst, true);
+	imagecopyresampled($dst, $src, 0, 0, $src_x, $src_y, $dst_w, $dst_h, $src_w, $src_h);
+
+	if ( !$dst_file )
+		$dst_file = str_replace(basename($src_file), 'cropped-'.basename($src_file), $src_file);
+
+	$dst_file = preg_replace('/\\.[^\\.]+$/', '.jpg', $dst_file);
+
+	if ( imagejpeg($dst, $dst_file) )
+		return $dst_file;
+	else
+		return false;
+}
+
+function wp_load_image($file) {
+	if ( ctype_digit($file) )
+		$file = get_attached_file($file);
+
+	if ( !file_exists($file) )
+		return "File '$file' doesn't exist?";
+
+	$contents = file_get_contents($file);
+
+	$image = imagecreatefromstring($contents);
+
+	if ( !is_resource($image) )
+		return "File '$file' is not image?";
+
+	return $image;
+}
+
 ?>

@@ -229,13 +229,12 @@ function add_post_meta($post_id, $key, $value, $unique = false) {
 		}
 	}
 
-	$original = $value;
-	if ( is_array($value) || is_object($value) )
-		$value = $wpdb->escape(serialize($value));
+	$post_meta_cache[$blog_id][$post_id][$key][] = $original;
+
+	$value = maybe_serialize($value);
+	$value = $wpdb->escape($value);
 
 	$wpdb->query("INSERT INTO $wpdb->postmeta (post_id,meta_key,meta_value) VALUES ('$post_id','$key','$value')");
-
-	$post_meta_cache[$blog_id][$post_id][$key][] = $original;
 
 	return true;
 }
@@ -275,34 +274,17 @@ function get_post_meta($post_id, $key, $single = false) {
 
 	$post_id = (int) $post_id;
 
-	if ( isset($post_meta_cache[$blog_id][$post_id][$key]) ) {
-		if ( $single ) {
-			return maybe_unserialize( $post_meta_cache[$blog_id][$post_id][$key][0] );
-		} else {
-			return maybe_unserialize( $post_meta_cache[$blog_id][$post_id][$key] );
-		}
-	}
-
-	$metalist = $wpdb->get_results("SELECT meta_value FROM $wpdb->postmeta WHERE post_id = '$post_id' AND meta_key = '$key'", ARRAY_N);
-
-	$values = array();
-	if ( $metalist ) {
-		foreach ($metalist as $metarow) {
-			$values[] = $metarow[0];
-		}
-	}
+	if ( !isset($post_meta_cache[$blog_id][$post_id]) )
+		update_postmeta_cache($post_id);
 
 	if ( $single ) {
-		if ( count($values) ) {
-			$return = maybe_unserialize( $values[0] );
-		} else {
+		if ( isset($post_meta_cache[$blog_id][$post_id][$key][0]) )
+			return maybe_unserialize($post_meta_cache[$blog_id][$post_id][$key][0]);
+		else
 			return '';
-		}
-	} else {
-		$return = $values;
+	}	else {
+		return maybe_unserialize($post_meta_cache[$blog_id][$post_id][$key]);
 	}
-
-	return maybe_unserialize($return);
 }
 
 function update_post_meta($post_id, $key, $value, $prev_value = '') {
@@ -311,12 +293,12 @@ function update_post_meta($post_id, $key, $value, $prev_value = '') {
 	$post_id = (int) $post_id;
 
 	$original_value = $value;
-	if ( is_array($value) || is_object($value) )
-		$value = $wpdb->escape(serialize($value));
+	$value = maybe_serialize($value);
+	$value = $wpdb->escape($value);
 
 	$original_prev = $prev_value;
-	if ( is_array($prev_value) || is_object($prev_value) )
-		$prev_value = $wpdb->escape(serialize($prev_value));
+	$prev_value = maybe_serialize($prev_value);
+	$prev_value = $wpdb->escape($prev_value);
 
 	if (! $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key = '$key' AND post_id = '$post_id'") ) {
 		return false;
@@ -341,43 +323,24 @@ function update_post_meta($post_id, $key, $value, $prev_value = '') {
 }
 
 
-function get_post_custom( $post_id = 0 ) {
+function get_post_custom($post_id = 0) {
 	global $id, $post_meta_cache, $wpdb, $blog_id;
 
-	if ( ! $post_id )
+	if ( !$post_id )
 		$post_id = $id;
 
 	$post_id = (int) $post_id;
 
-	if ( isset($post_meta_cache[$blog_id][$post_id]) )
-		return $post_meta_cache[$blog_id][$post_id];
+	if ( !isset($post_meta_cache[$blog_id][$post_id]) )
+		update_postmeta_cache($post_id);
 
-	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta	WHERE post_id = '$post_id' ORDER BY post_id, meta_key", ARRAY_A) ) {
-		// Change from flat structure to hierarchical:
-		$post_meta_cache = array();
-		foreach ( $meta_list as $metarow ) {
-			$mpid = (int) $metarow['post_id'];
-			$mkey = $metarow['meta_key'];
-			$mval = $metarow['meta_value'];
-
-			// Force subkeys to be array type:
-			if ( !isset($post_meta_cache[$blog_id][$mpid]) || !is_array($post_meta_cache[$blog_id][$mpid]) )
-				$post_meta_cache[$blog_id][$mpid] = array();
-
-			if ( !isset($post_meta_cache[$blog_id][$mpid]["$mkey"]) || !is_array($post_meta_cache[$blog_id][$mpid]["$mkey"]) )
-				$post_meta_cache[$blog_id][$mpid]["$mkey"] = array();
-
-			// Add a value to the current pid/key:
-			$post_meta_cache[$blog_id][$mpid][$mkey][] = $mval;
-		}
-		return $post_meta_cache[$blog_id][$mpid];
-	}
+	return $post_meta_cache[$blog_id][$post_id];
 }
 
 function get_post_custom_keys( $post_id = 0 ) {
 	$custom = get_post_custom( $post_id );
 
-	if ( ! is_array($custom) )
+	if ( !is_array($custom) )
 		return;
 
 	if ( $keys = array_keys($custom) )
@@ -983,6 +946,16 @@ function get_page_by_path($page_path, $output = OBJECT) {
 	return NULL;
 }
 
+function get_page_by_title($page_title, $output = OBJECT) {
+	global $wpdb;
+	$page_title = $wpdb->escape($page_title);
+	$page = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_title = '$page_title' AND post_type='page'");
+	if ( $page )
+		return get_page($page, $output);
+
+	return NULL;
+}
+
 function &get_page_children($page_id, $pages) {
 	global $page_cache, $blog_id;
 
@@ -1305,7 +1278,7 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 	wp_set_post_categories($post_ID, $post_category);
 
 	if ( $file )
-		add_post_meta($post_ID, '_wp_attached_file', quotemeta( $file ) );
+		add_post_meta($post_ID, '_wp_attached_file', $file);
 
 	clean_post_cache($post_ID);
 
