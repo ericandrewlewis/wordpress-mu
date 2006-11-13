@@ -342,7 +342,7 @@ function wp_list_bookmarks($args = '') {
 		}
 	} else {
 		//output one single list using title_li for the title
-		$bookmarks = get_bookmarks("limit=$limit&category=$category&show_updated=$show_updated&orderby=$orderby&order=$order&hide_invisible=$hide_inivisible&show_updated=$show_updated");
+		$bookmarks = get_bookmarks("limit=$limit&category=$category&show_updated=$show_updated&orderby=$orderby&order=$order&hide_invisible=$hide_invisible&show_updated=$show_updated");
 		
 		if ( !empty($bookmarks) ) {
 			$output .= "<li id='linkuncat' class='$class'>$title_before$title_li$title_after\n\t<ul>\n";
