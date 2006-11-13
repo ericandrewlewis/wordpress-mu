@@ -263,7 +263,7 @@ default:
 	login_header(__('Login'));
 ?>
 
-<form name="loginform" id="loginform" action="https://<?php echo $current_blog->domain . $current_blog->path ?>wp-login.php" method="post">
+<form name="loginform" id="loginform" action="http://<?php echo $current_blog->domain . $current_blog->path ?>wp-login.php" method="post">
 	<p>
 		<label><?php _e('Username:') ?><br />
 		<input type="text" name="log" id="user_login" class="input" value="<?php echo wp_specialchars(stripslashes($user_login), 1); ?>" size="20" tabindex="10" /></label>
