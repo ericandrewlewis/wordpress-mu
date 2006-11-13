@@ -176,8 +176,8 @@ function get_blog_details( $id, $all = true ) {
 		return false;
 
 	if( $all == true ) {
-		$wpdb->hide_errors();
 		switch_to_blog($id);
+		$wpdb->hide_errors();
 		$details->blogname   = get_blog_option($id, 'blogname');
 		$details->siteurl    = get_blog_option($id, 'siteurl');
 		$details->post_count = get_blog_option($id, 'post_count');
