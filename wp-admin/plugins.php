@@ -110,7 +110,7 @@ if (empty($plugins)) {
 		$plugin_data['Description'] = wp_kses($plugin_data['Description'], array('a' => array('href' => array(),'title' => array()),'abbr' => array('title' => array()),'acronym' => array('title' => array()),'code' => array(),'em' => array(),'strong' => array()) ); ;
 		if ( $style != '' )
 			$style = 'class="' . $style . '"';
-		if ( is_writable(ABSPATH . 'wp-content/plugins/' . $plugin_file) )
+		if ( is_writable(ABSPATH . PLUGINDIR . '/' . $plugin_file) )
 			$edit = "<a href='plugin-editor.php?file=$plugin_file' title='".__('Open this file in the Plugin Editor')."' class='edit'>".__('Edit')."</a>";
 		else
 			$edit = '';
