@@ -853,7 +853,13 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	if ( is_array( $banned_names ) && empty( $banned_names ) == false ) {
 		$email_domain = strtolower( substr( $user_email, 1 + strpos( $user_email, '@' ) ) );
 		foreach( $banned_names as $banned_domain ) {
-			if( strstr( $email_domain, $banned_domain ) ) 
+			if (
+				strstr( $email_domain, $banned_domain ) ||
+				(
+					strstr( $banned_domain, '/' ) &&
+					preg_match( $banned_domain, $email_domain )
+				)
+			) 
 				$errors->add('user_email',  __("You cannot use that email address to signup. We are having problems with them blocking some of our email. Please use another email provider."));
 		}
 	}
