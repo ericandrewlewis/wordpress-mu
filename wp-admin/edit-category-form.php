@@ -40,5 +40,6 @@ if ( ! empty($cat_ID) ) {
 <?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
 <p class="submit"><input type="submit" name="submit" value="<?php echo $submit_text ?>" /></p>
 <div id="ajax-response"></div>
+<?php do_action('edit_category_form', $category); ?>
 </form>
 </div>

@@ -93,7 +93,7 @@ function get_comment_date( $d = '' ) {
 		$date = mysql2date( get_option('date_format'), $comment->comment_date);
 	else
 		$date = mysql2date($d, $comment->comment_date);
-	return apply_filters('get_comment_date', $date);
+	return apply_filters('get_comment_date', $date, $d);
 }
 
 function comment_date( $d = '' ) {
@@ -142,7 +142,7 @@ function get_comments_link() {
 }
 
 function comments_link( $file = '', $echo = true ) {
-    echo get_comments_link();
+		echo get_comments_link();
 }
 
 function get_comments_number( $post_id = 0 ) {
@@ -161,17 +161,18 @@ function get_comments_number( $post_id = 0 ) {
 	return apply_filters('get_comments_number', $count);
 }
 
-function comments_number( $zero = 'No Comments', $one = '1 Comment', $more = '% Comments', $number = '' ) {
-	global $id, $comment;
-	$number = get_comments_number( $id );
-	if ($number == 0) {
-		$blah = $zero;
-	} elseif ($number == 1) {
-		$blah = $one;
-	} elseif ($number  > 1) {
-		$blah = str_replace('%', $number, $more);
-	}
-	echo apply_filters('comments_number', $blah);
+function comments_number( $zero = false, $one = false, $more = false, $number = '' ) {
+	global $id;
+	$number = get_comments_number($id);
+
+	if ( $number > 1 )
+		$output = str_replace('%', $number, ( false === $more ) ? __('% Comments') : $more);
+	elseif ( $number == 0 )
+		$output = ( false === $zero ) ? __('No Comments') : $zero;
+	else // must be one
+		$output = ( false === $one ) ? __('1 Comment') : $one;
+
+	echo apply_filters('comments_number', $output, $number);
 }
 
 function get_comment_text() {
@@ -190,7 +191,7 @@ function get_comment_time( $d = '', $gmt = false ) {
 		$date = mysql2date(get_option('time_format'), $comment_date);
 	else
 		$date = mysql2date($d, $comment_date);
-	return apply_filters('get_comment_time', $date);
+	return apply_filters('get_comment_time', $date, $d, $gmt);
 }
 
 function comment_time( $d = '' ) {
@@ -239,9 +240,9 @@ function trackback_url( $display = true ) {
 function trackback_rdf($timezone = 0) {
 	global $id;
 	if (!stristr($_SERVER['HTTP_USER_AGENT'], 'W3C_Validator')) {
-	echo '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" 
-	    xmlns:dc="http://purl.org/dc/elements/1.1/"
-	    xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
+	echo '<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+			xmlns:dc="http://purl.org/dc/elements/1.1/"
+			xmlns:trackback="http://madskills.com/public/xml/rss/module/trackback/">
 		<rdf:Description rdf:about="';
 	the_permalink();
 	echo '"'."\n";
@@ -264,7 +265,7 @@ function comments_open() {
 
 function pings_open() {
 	global $post;
-	if ( 'open' == $post->ping_status ) 
+	if ( 'open' == $post->ping_status )
 		return true;
 	else
 		return false;
@@ -298,7 +299,7 @@ function comments_template( $file = '/comments.php' ) {
 }
 
 function comments_popup_script($width=400, $height=400, $file='') {
-    global $wpcommentspopupfile, $wptrackbackpopupfile, $wppingbackpopupfile, $wpcommentsjavascript;
+		global $wpcommentspopupfile, $wptrackbackpopupfile, $wppingbackpopupfile, $wpcommentsjavascript;
 
 		if (empty ($file)) {
 			$wpcommentspopupfile = '';  // Use the index.
@@ -306,9 +307,9 @@ function comments_popup_script($width=400, $height=400, $file='') {
 			$wpcommentspopupfile = $file;
 		}
 
-    $wpcommentsjavascript = 1;
-    $javascript = "<script type='text/javascript'>\nfunction wpopen (macagna) {\n    window.open(macagna, '_blank', 'width=$width,height=$height,scrollbars=yes,status=yes');\n}\n</script>\n";
-    echo $javascript;
+		$wpcommentsjavascript = 1;
+		$javascript = "<script type='text/javascript'>\nfunction wpopen (macagna) {\n    window.open(macagna, '_blank', 'width=$width,height=$height,scrollbars=yes,status=yes');\n}\n</script>\n";
+		echo $javascript;
 }
 
 function comments_popup_link($zero='No Comments', $one='1 Comment', $more='% Comments', $CSSclass='', $none='Comments Off') {

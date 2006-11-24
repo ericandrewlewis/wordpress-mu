@@ -146,7 +146,7 @@ function get_links($category = -1,
 }
 
 function get_linkrating($link) {
-    return apply_filters('link_rating', $link->link_rating);
+	return apply_filters('link_rating', $link->link_rating);
 }
 
 /** function get_linkcatname()
@@ -336,18 +336,20 @@ function wp_list_bookmarks($args = '') {
 			$bookmarks = get_bookmarks("limit=$limit&category={$cat->cat_ID}&show_updated=$show_updated&orderby=$orderby&order=$order&hide_invisible=$hide_invisible&show_updated=$show_updated");
 			if ( empty($bookmarks) )
 				continue;
-			$output .= "<li id='linkcat-$cat->cat_ID' class='$class'>$title_before$cat->cat_name$title_after\n\t<ul>\n";
+			$output .= str_replace(array('%id', '%class'), array("linkcat-$cat->cat_ID", $class), $category_before);
+			$output .= "$title_before$cat->cat_name$title_after\n\t<ul>\n";
 			$output .= _walk_bookmarks($bookmarks, $r);
-			$output .= "\n\t</ul>\n</li>\n";
+			$output .= "\n\t</ul>\n$category_after\n";
 		}
 	} else {
 		//output one single list using title_li for the title
 		$bookmarks = get_bookmarks("limit=$limit&category=$category&show_updated=$show_updated&orderby=$orderby&order=$order&hide_invisible=$hide_invisible&show_updated=$show_updated");
 		
 		if ( !empty($bookmarks) ) {
-			$output .= "<li id='linkuncat' class='$class'>$title_before$title_li$title_after\n\t<ul>\n";
+			$output .= str_replace(array('%id', '%class'), array("linkuncat", $class), $category_before);
+			$output .= "$title_before$title_li$title_after\n\t<ul>\n";
 			$output .= _walk_bookmarks($bookmarks, $r);
-			$output .= "\n\t</ul>\n</li>\n";
+			$output .= "\n\t</ul>\n$category_after\n";
 		}
 	}
 

@@ -29,12 +29,13 @@ switch ($action) {
 		$deleted = 0;
 		foreach ($linkcheck as $link_id) {
 			$link_id = (int) $link_id;
-			
+
 			if ( wp_delete_link($link_id) )
 				$deleted++;
 		}
 
 		wp_redirect("$this_file?deleted=$deleted");
+		exit;
 		break;
 
 	case 'move' :
@@ -54,6 +55,7 @@ switch ($action) {
 		//$q = $wpdb->query("update $wpdb->links SET link_category='$category' WHERE link_id IN ($all_links)");
 
 		wp_redirect($this_file);
+		exit;
 		break;
 
 	case 'add' :
@@ -62,6 +64,7 @@ switch ($action) {
 		add_link();
 
 		wp_redirect(wp_get_referer().'?added=true');
+		exit;
 		break;
 
 	case 'save' :
@@ -84,6 +87,7 @@ switch ($action) {
 		wp_delete_link($link_id);
 
 		wp_redirect($this_file);
+		exit;
 		break;
 
 	case 'edit' :
@@ -92,10 +96,10 @@ switch ($action) {
 			wp_enqueue_script( 'ajaxcat' );
 		$parent_file = 'link-manager.php';
 		$submenu_file = 'link-manager.php';
-		$title = __('Edit Bookmark');
+		$title = __('Edit Link');
 		include_once ('admin-header.php');
 		if (!current_user_can('manage_links'))
-			wp_die(__('You do not have sufficient permissions to edit the bookmarks for this blog.'));
+			wp_die(__('You do not have sufficient permissions to edit the links for this blog.'));
 
 		$link_id = (int) $_GET['link_id'];
 

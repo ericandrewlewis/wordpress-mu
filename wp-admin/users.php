@@ -123,6 +123,7 @@ case 'promote':
 
 	if (empty($_POST['users'])) {
 		wp_redirect($redirect);
+		exit();
 	}
 
 	if ( !current_user_can('edit_users') )
@@ -134,7 +135,7 @@ case 'promote':
 		if ( ! current_user_can('edit_user', $id) )
 			wp_die(__('You can&#8217;t edit that user.'));
 		// The new role of the current user must also have edit_users caps
-		if($id == $current_user->id && !$wp_roles->role_objects[$_POST['new_role']]->has_cap('edit_users')) {
+		if($id == $current_user->ID && !$wp_roles->role_objects[$_POST['new_role']]->has_cap('edit_users')) {
 			$update = 'err_admin_role';
 			continue;
 		}
@@ -144,6 +145,7 @@ case 'promote':
 	}
 
 	wp_redirect(add_query_arg('update', $update, $redirect));
+	exit();
 
 break;
 
@@ -153,6 +155,7 @@ case 'dodelete':
 
 	if ( empty($_POST['users']) ) {
 		wp_redirect($redirect);
+		exit();
 	}
 
 	if ( !current_user_can('delete_users') )
@@ -166,7 +169,7 @@ case 'dodelete':
 		if ( ! current_user_can('delete_user', $id) )
 			wp_die(__('You can&#8217;t delete that user.'));
 
-		if($id == $current_user->id) {
+		if($id == $current_user->ID) {
 			$update = 'err_admin_del';
 			continue;
 		}
@@ -181,9 +184,9 @@ case 'dodelete':
 		++$delete_count;
 	}
 
-	$redirect = add_query_arg('delete_count', $delete_count, $redirect);
-
-	wp_redirect(add_query_arg('update', $update, $redirect));
+	$redirect = add_query_arg( array('delete_count' => $delete_count, 'update' => $update), $redirect);
+	wp_redirect($redirect);
+	exit();
 
 break;
 
@@ -191,8 +194,10 @@ case 'delete':
 	wp_die(__('This function is disabled.'));
 	check_admin_referer('bulk-users');
 
-	if ( empty($_POST['users']) )
+	if ( empty($_POST['users']) ) {
 		wp_redirect($redirect);
+		exit();
+	}
 
 	if ( !current_user_can('delete_users') )
 		$errors = new WP_Error('edit_users', __('You can&#8217;t delete users.'));
@@ -212,7 +217,7 @@ case 'delete':
 	$go_delete = false;
 	foreach ( (array) $userids as $id ) {
 		$user = new WP_User($id);
-		if ( $id == $current_user->id ) {
+		if ( $id == $current_user->ID ) {
 			echo "<li>" . sprintf(__('ID #%1s: %2s <strong>The current user will not be deleted.</strong>'), $id, $user->user_login) . "</li>\n";
 		} else {
 			echo "<li><input type=\"hidden\" name=\"users[]\" value=\"{$id}\" />" . sprintf(__('ID #%1s: %2s'), $id, $user->user_login) . "</li>\n";
@@ -222,7 +227,7 @@ case 'delete':
 	$all_logins = $wpdb->get_results("SELECT ID, user_login FROM $wpdb->users, $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '".$wpdb->prefix."capabilities' ORDER BY user_login");
 	$user_dropdown = '<select name="reassign_user">';
 	foreach ( (array) $all_logins as $login )
-		if ( $login->ID == $current_user->id || !in_array($login->ID, $userids) )
+		if ( $login->ID == $current_user->ID || !in_array($login->ID, $userids) )
 			$user_dropdown .= "<option value=\"{$login->ID}\">{$login->user_login}</option>";
 	$user_dropdown .= '</select>';
 	?>
@@ -329,8 +334,8 @@ case 'adduser':
 		$add_user_errors = $user_id;
 	else {
 		$new_user_login = apply_filters('pre_user_login', sanitize_user(stripslashes($_POST['user_login']), true));
-		$redirect = add_query_arg('usersearch', $new_user_login, $redirect);
-		wp_redirect(add_query_arg('update', $update, $redirect) . '#user-' . $user_id);
+		$redirect = add_query_arg( array('usersearch' => urlencode($new_user_login), 'update' => $update), $redirect );
+		wp_redirect( $redirect . '#user-' . $user_id );
 		die();
 	}
 

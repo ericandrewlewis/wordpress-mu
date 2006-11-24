@@ -20,6 +20,7 @@ case 'addcat':
 	} else {
 		wp_redirect('categories.php?message=4#addcat');
 	}
+	exit;
 break;
 
 case 'delete':
@@ -36,20 +37,21 @@ case 'delete':
 		wp_die(sprintf(__("Can't delete the <strong>%s</strong> category: this is the default one"), $cat_name));
 
     if ( $cat_ID == get_option('default_link_category') )
-		wp_die(sprintf(__("Can't delete the <strong>%s</strong> category: this is the default one for bookmarks"), $cat_name));
+		wp_die(sprintf(__("Can't delete the <strong>%s</strong> category: this is the default one for links"), $cat_name));
 
 	wp_delete_category($cat_ID);
 
 	wp_redirect('categories.php?message=2');
+	exit;
 
 break;
 
 case 'edit':
 
-    require_once ('admin-header.php');
-    $cat_ID = (int) $_GET['cat_ID'];
-    $category = get_category_to_edit($cat_ID);
-    include('edit-category-form.php');
+	require_once ('admin-header.php');
+	$cat_ID = (int) $_GET['cat_ID'];
+	$category = get_category_to_edit($cat_ID);
+	include('edit-category-form.php');
 
 break;
 
@@ -60,9 +62,12 @@ case 'editedcat':
 	if ( !current_user_can('manage_categories') )
 		wp_die(__('Cheatin&#8217; uh?'));
 
-	wp_update_category($_POST);
+	if ( wp_update_category($_POST) )
+		wp_redirect('categories.php?message=3'); 
+	else
+		wp_redirect('categories.php?message=5'); 
 
-	wp_redirect('categories.php?message=3');
+	exit;
 break;
 
 default:
@@ -74,6 +79,7 @@ $messages[1] = __('Category added.');
 $messages[2] = __('Category deleted.');
 $messages[3] = __('Category updated.');
 $messages[4] = __('Category not added.');
+$messages[5] = __('Category not updated.');
 ?>
 
 <?php if (isset($_GET['message'])) : ?>
@@ -93,7 +99,7 @@ $messages[4] = __('Category not added.');
         <th scope="col"><?php _e('Name') ?></th>
         <th scope="col"><?php _e('Description') ?></th>
         <th scope="col" width="90" style="text-align: center"><?php _e('Posts') ?></th>
-        <th scope="col" width="90" style="text-align: center"><?php _e('Bookmarks') ?></th>
+        <th scope="col" width="90" style="text-align: center"><?php _e('Links') ?></th>
         <th colspan="2" style="text-align: center"><?php _e('Action') ?></th>
 	</tr>
 	</thead>
@@ -108,8 +114,7 @@ cat_rows();
 
 <?php if ( current_user_can('manage_categories') ) : ?>
 <div class="wrap">
-<p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete the posts and bookmarks in that category.  Instead, posts in the deleted category are set to the category <strong>%s</strong> and bookmarks are set to <strong>%s</strong>.'), get_catname(get_option('default_category')), get_catname(get_option('default_link_category'))) ?></p>
-<p><?php _e('<strong>Also Note:</strong><br />Categories will appear on your blog once you have posted something in them. Empty categories remain invisible.'); ?></p>
+<p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete the posts and links in that category.  Instead, posts in the deleted category are set to the category <strong>%s</strong> and links are set to <strong>%s</strong>.'), get_catname(get_option('default_category')), get_catname(get_option('default_link_category'))) ?></p>
 </div>
 
 <?php include('edit-category-form.php'); ?>

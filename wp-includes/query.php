@@ -3,7 +3,7 @@
 /*
  * The Big Query.
  */
- 
+
 function get_query_var($var) {
 	global $wp_query;
 
@@ -11,8 +11,9 @@ function get_query_var($var) {
 }
 
 function &query_posts($query) {
-	global $wp_query;
-	return $wp_query->query($query);
+	unset($GLOBALS['wp_query']);
+	$GLOBALS['wp_query'] =& new WP_Query();
+	return $GLOBALS['wp_query']->query($query);
 }
 
 /*
@@ -223,7 +224,7 @@ function is_404 () {
 /*
  * The Loop.  Post loop control.
  */
- 
+
 function have_posts() {
 	global $wp_query;
 
@@ -264,6 +265,9 @@ class WP_Query {
 	var $current_post = -1;
 	var $in_the_loop = false;
 	var $post;
+
+	var $found_posts = 0;
+	var $max_num_pages = 0;
 
 	var $is_single = false;
 	var $is_preview = false;
@@ -412,8 +416,8 @@ class WP_Query {
 		} elseif ( $qv['p'] ) {
 			$this->is_single = true;
 		} elseif (('' != $qv['hour']) && ('' != $qv['minute']) &&('' != $qv['second']) && ('' != $qv['year']) && ('' != $qv['monthnum']) && ('' != $qv['day'])) {
-			// If year, month, day, hour, minute, and second are set, a single 
-			// post is being queried.        
+			// If year, month, day, hour, minute, and second are set, a single
+			// post is being queried.
 			$this->is_single = true;
 		} elseif ('' != $qv['static'] || '' != $qv['pagename'] || (int) $qv['page_id']) {
 			$this->is_page = true;
@@ -489,7 +493,7 @@ class WP_Query {
 			if ('' != $qv['category_name']) {
 				$this->is_category = true;
 			}
-            
+
 			if ((empty($qv['author'])) || ($qv['author'] == '0')) {
 				$this->is_author = false;
 			} else {
@@ -583,14 +587,13 @@ class WP_Query {
 		$limits = '';
 		$join = '';
 		$search = '';
+		$groupby = '';
 
 		if ( !isset($q['post_type']) )
 			$q['post_type'] = 'post';
 		$post_type = $q['post_type'];
 		if ( !isset($q['posts_per_page']) || $q['posts_per_page'] == 0 )
 			$q['posts_per_page'] = get_option('posts_per_page');
-		if ( !isset($q['what_to_show']) )
-			$q['what_to_show'] = get_option('what_to_show');
 		if ( isset($q['showposts']) && $q['showposts'] ) {
 			$q['showposts'] = (int) $q['showposts'];
 			$q['posts_per_page'] = $q['showposts'];
@@ -606,7 +609,6 @@ class WP_Query {
 		}
 		if ( $this->is_feed ) {
 			$q['posts_per_page'] = get_option('posts_per_rss');
-			$q['what_to_show'] = 'posts';
 		}
 		$q['posts_per_page'] = (int) $q['posts_per_page'];
 		if ( $q['posts_per_page'] < -1 )
@@ -693,6 +695,7 @@ class WP_Query {
 				$reqpage = 0;
 
 			if  ( ('page' == get_option('show_on_front') ) && ( $reqpage == get_option('page_for_posts') ) ) {
+				$this->is_singular = false;
 				$this->is_page = false;
 				$this->is_home = true;
 				$this->is_posts_page = true;
@@ -732,6 +735,7 @@ class WP_Query {
 		if (($q['page_id'] != '') && (intval($q['page_id']) != 0)) {
 			$q['page_id'] = intval($q['page_id']);
 			if  ( ('page' == get_option('show_on_front') ) && ( $q['page_id'] == get_option('page_for_posts') ) ) {
+				$this->is_singular = false;
 				$this->is_page = false;
 				$this->is_home = true;
 				$this->is_posts_page = true;
@@ -767,7 +771,7 @@ class WP_Query {
 
 		// Category stuff
 
-		if ((empty($q['cat'])) || ($q['cat'] == '0') || 
+		if ((empty($q['cat'])) || ($q['cat'] == '0') ||
 				// Bypass cat checks if fetching specific posts
 				( $this->is_single || $this->is_page )) {
 			$whichcat='';
@@ -784,7 +788,7 @@ class WP_Query {
 				if ( $in )
 					$in_cats .= "$cat, " . get_category_children($cat, '', ', ');
 				else
-					$out_cats .= "$cat, " . get_category_children($cat, '', ', ');				
+					$out_cats .= "$cat, " . get_category_children($cat, '', ', ');
 			}
 			$in_cats = substr($in_cats, 0, -2);
 			$out_cats = substr($out_cats, 0, -2);
@@ -801,12 +805,10 @@ class WP_Query {
 					$out_cats = " AND ID NOT IN ($out_posts)";
 			}
 			$whichcat = $in_cats . $out_cats;
-			$distinct = 'DISTINCT';
+			$groupby = "{$wpdb->posts}.ID";
 		}
 
 		// Category stuff for nice URLs
-
-		global $cache_categories;
 		if ('' != $q['category_name']) {
 			$reqcat = get_category_by_path($q['category_name']);
 			$q['category_name'] = str_replace('%2F', '/', urlencode(urldecode($q['category_name'])));
@@ -829,14 +831,14 @@ class WP_Query {
 				$reqcat = 0;
 
 			$q['cat'] = $reqcat;
-				
+
 			$tables = ", $wpdb->post2cat, $wpdb->categories";
 			$join = " LEFT JOIN $wpdb->post2cat ON ($wpdb->posts.ID = $wpdb->post2cat.post_id) LEFT JOIN $wpdb->categories ON ($wpdb->post2cat.category_id = $wpdb->categories.cat_ID) ";
 			$whichcat = " AND category_id IN ({$q['cat']}, ";
 			$whichcat .= get_category_children($q['cat'], '', ', ');
 			$whichcat = substr($whichcat, 0, -2);
 			$whichcat .= ")";
-			$distinct = 'DISTINCT';
+			$groupby = "{$wpdb->posts}.ID";
 		}
 
 		// Author/user stuff
@@ -920,7 +922,7 @@ class WP_Query {
 
 			if ( is_admin() )
 				$where .= " OR post_status = 'future' OR post_status = 'draft'";
-	
+
 			if ( is_user_logged_in() ) {
 				if ( 'post' == $post_type )
 					$cap = 'edit_private_posts';
@@ -942,40 +944,26 @@ class WP_Query {
 		$join = apply_filters('posts_join', $join);
 
 		// Paging
-		if (empty($q['nopaging']) && ! $this->is_single && ! $this->is_page) {
+		if (empty($q['nopaging']) && !$this->is_singular) {
 			$page = abs(intval($q['paged']));
 			if (empty($page)) {
 				$page = 1;
 			}
 
-			if (($q['what_to_show'] == 'posts')) {
-				if ( empty($q['offset']) ) {
-					$pgstrt = '';
-					$pgstrt = (intval($page) -1) * $q['posts_per_page'] . ', ';
-					$limits = 'LIMIT '.$pgstrt.$q['posts_per_page'];
-				} else { // we're ignoring $page and using 'offset'
-					$q['offset'] = abs(intval($q['offset']));
-					$pgstrt = $q['offset'] . ', ';
-					$limits = 'LIMIT ' . $pgstrt . $q['posts_per_page'];
-				}
-			} elseif ($q['what_to_show'] == 'days') {
-				$startrow = $q['posts_per_page'] * (intval($page)-1);
-				$start_date = $wpdb->get_var("SELECT max(post_date) FROM $wpdb->posts $join WHERE (1=1) $where GROUP BY year(post_date), month(post_date), dayofmonth(post_date) ORDER BY post_date DESC LIMIT $startrow,1");
-				$endrow = $startrow + $q['posts_per_page'] - 1;
-				$end_date = $wpdb->get_var("SELECT min(post_date) FROM $wpdb->posts $join WHERE (1=1) $where GROUP BY year(post_date), month(post_date), dayofmonth(post_date) ORDER BY post_date DESC LIMIT $endrow,1");
-
-				if ($page > 1) {
-					$where .= " AND post_date >= '$end_date' AND post_date <= '$start_date'";
-				} else {
-					$where .= " AND post_date >= '$end_date'";
-				}
+			if ( empty($q['offset']) ) {
+				$pgstrt = '';
+				$pgstrt = (intval($page) -1) * $q['posts_per_page'] . ', ';
+				$limits = 'LIMIT '.$pgstrt.$q['posts_per_page'];
+			} else { // we're ignoring $page and using 'offset'
+				$q['offset'] = abs(intval($q['offset']));
+				$pgstrt = $q['offset'] . ', ';
+				$limits = 'LIMIT ' . $pgstrt . $q['posts_per_page'];
 			}
 		}
 
 		// Apply post-paging filters on where and join.  Only plugins that
 		// manipulate paging queries should use these hooks.
 		$where = apply_filters('posts_where_paged', $where);
-		$groupby = '';
 		$groupby = apply_filters('posts_groupby', $groupby);
 		if ( ! empty($groupby) )
 			$groupby = 'GROUP BY ' . $groupby;
@@ -983,11 +971,17 @@ class WP_Query {
 		$orderby = apply_filters('posts_orderby', $q['orderby']);
 		$distinct = apply_filters('posts_distinct', $distinct);
 		$fields = apply_filters('posts_fields', "$wpdb->posts.*");
-		$request = " SELECT $distinct $fields FROM $wpdb->posts $join WHERE 1=1 $where $groupby ORDER BY $orderby $limits";
+		$found_rows = '';
+		if ( !empty($limits) )
+			$found_rows = 'SQL_CALC_FOUND_ROWS';
+		$request = " SELECT $found_rows $distinct $fields FROM $wpdb->posts $join WHERE 1=1 $where $groupby ORDER BY $orderby $limits";
 		$this->request = apply_filters('posts_request', $request);
 
 		$this->posts = $wpdb->get_results($this->request);
-
+		if ( !empty($limits) ) {
+			$this->found_posts = $wpdb->get_var('SELECT FOUND_ROWS()');
+			$this->max_num_pages = ceil($this->found_posts / $q['posts_per_page']);
+		}
 		// Check post status to determine if post should be displayed.
 		if ( !empty($this->posts) && ($this->is_single || $this->is_page) ) {
 			$status = get_post_status($this->posts[0]);
@@ -1018,9 +1012,10 @@ class WP_Query {
 			}
 		}
 
+		$this->posts = apply_filters('the_posts', $this->posts);
+
 		update_post_caches($this->posts);
 
-		$this->posts = apply_filters('the_posts', $this->posts);
 		$this->post_count = count($this->posts);
 		if ($this->post_count > 0) {
 			$this->post = $this->posts[0];
@@ -1030,7 +1025,7 @@ class WP_Query {
 	}
 
 	function next_post() {
-        
+
 		$this->current_post++;
 
 		$this->post = $this->posts[$this->current_post];
@@ -1066,7 +1061,7 @@ class WP_Query {
 			$this->post = $this->posts[0];
 		}
 	}
-    
+
 	function &query($query) {
 		$this->parse_query($query);
 		return $this->get_posts();

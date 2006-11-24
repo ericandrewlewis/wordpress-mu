@@ -12,12 +12,17 @@ if ( isset($_GET['action']) ) {
 	if ('activate' == $_GET['action']) {
 		check_admin_referer('activate-plugin_' . $_GET['plugin']);
 		$current = get_option('active_plugins');
-		if (!in_array($_GET['plugin'], $current)) {
-			$current[] = trim( $_GET['plugin'] );
+		$plugin = trim($_GET['plugin']);
+		if ( validate_file($plugin) )
+			wp_die(__('Invalid plugin.'));
+		if ( ! file_exists(ABSPATH . PLUGINDIR . '/' . $plugin) )
+			wp_die(__('Plugin file does not exist.'));
+		if (!in_array($plugin, $current)) {
+			$current[] = $plugin;
 			sort($current);
 			update_option('active_plugins', $current);
-			include(ABSPATH . PLUGINDIR . '/' . trim( $_GET['plugin'] ));
-			do_action('activate_' . trim( $_GET['plugin'] ));
+			include(ABSPATH . PLUGINDIR . '/' . $plugin);
+			do_action('activate_' . $plugin);
 		}
 		wp_redirect('plugins.php?activate=true');
 	} else if ('deactivate' == $_GET['action']) {
@@ -110,7 +115,7 @@ if (empty($plugins)) {
 		$plugin_data['Description'] = wp_kses($plugin_data['Description'], array('a' => array('href' => array(),'title' => array()),'abbr' => array('title' => array()),'acronym' => array('title' => array()),'code' => array(),'em' => array(),'strong' => array()) ); ;
 		if ( $style != '' )
 			$style = 'class="' . $style . '"';
-		if ( is_writable(ABSPATH . PLUGINDIR . '/' . $plugin_file) )
+		if ( is_writable(ABSPATH . 'wp-content/plugins/' . $plugin_file) )
 			$edit = "<a href='plugin-editor.php?file=$plugin_file' title='".__('Open this file in the Plugin Editor')."' class='edit'>".__('Edit')."</a>";
 		else
 			$edit = '';

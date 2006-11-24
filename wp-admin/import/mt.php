@@ -375,7 +375,7 @@ class MT_Import {
 
 	function import() {
 		$this->id = (int) $_GET['id'];
-		
+
 		$this->file = get_attached_file($this->id);
 		$this->get_authors_from_post();
 		$this->get_entries();

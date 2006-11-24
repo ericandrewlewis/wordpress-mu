@@ -30,9 +30,7 @@ function wp_cache_get($id, $flag = '') {
 }
 
 function wp_cache_init() {
-	global $wp_object_cache;
-
-	$wp_object_cache = new WP_Object_Cache();
+	$GLOBALS['wp_object_cache'] =& new WP_Object_Cache();
 }
 
 function wp_cache_replace($key, $data, $flag = '', $expire = 0) {
@@ -67,7 +65,7 @@ class WP_Object_Cache {
 	var $secret = '';
 
 	function acquire_lock() {
-		// Acquire a write lock. 
+		// Acquire a write lock.
 		$this->mutex = @fopen($this->cache_dir.$this->flock_filename, 'w');
 		if ( false == $this->mutex)
 			return false;
@@ -260,11 +258,11 @@ class WP_Object_Cache {
 		while ($index < count($stack)) {
 			# Get indexed directory from stack
 			$dir = $stack[$index];
-      
+
 			$dh = @ opendir($dir);
 			if (!$dh)
 				return false;
-      
+
 			while (($file = @ readdir($dh)) !== false) {
 				if ($file == '.' or $file == '..')
 					continue;

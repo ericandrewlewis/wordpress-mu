@@ -57,11 +57,11 @@ endforeach;
 
 
 <p class="submit">
-<input type="hidden" name="action" value="update" /> 
+<input type="hidden" name="action" value="update" />
 <input type="hidden" name="page_options" value="default_post_edit_rows,use_smilies,default_category,default_email_category,use_balanceTags,default_link_category" /> 
-<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /> 
+<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 </p>
-</form> 
-</div> 
+</form>
+</div>
 
 <?php include('./admin-footer.php') ?>

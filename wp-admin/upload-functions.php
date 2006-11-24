@@ -13,9 +13,9 @@ function wp_upload_display( $dims = false, $href = '' ) {
 	
 	$class = 'text';
 	$innerHTML = get_attachment_innerHTML( $id, false, $dims );
-	if ( $image_src = strstr($innerHTML, 'src="') ) {
-		$image_src = explode('"', $image_src);
-		$image_src = $image_src[1];
+	if ( $image_src = strstr($innerHTML, 'src=') ) {
+		preg_match("/src=(\"|')(.+?)\\1/", $image_src, $matches);
+		$image_src = $matches[2];
 		$image_rel = wp_make_link_relative($image_src);
 		$class = 'image';
 		$innerHTML = '&nbsp;' . str_replace($image_src, $image_rel, $innerHTML);
@@ -358,14 +358,15 @@ add_action( 'upload_files_browse-all', 'wp_upload_tab_browse_action' );
 
 function wp_upload_admin_head() {
 	global $wp_locale;
-	echo "<link rel='stylesheet' href='" . get_option('siteurl') . '/wp-admin/upload.css?version=' . get_bloginfo('version') . "' type='text/css' />\n";
+	echo "<link rel='stylesheet' href='" . get_option('siteurl') . '/wp-admin/upload.css?version=' . get_bloginfo('version') . "a' type='text/css' />\n";
 	if ( 'rtl' == $wp_locale->text_direction )
-		echo "<link rel='stylesheet' href='" . get_option('siteurl') . '/wp-admin/upload-rtl.css?version=' . get_bloginfo('version') . "' type='text/css' />\n";
+		echo "<link rel='stylesheet' href='" . get_option('siteurl') . '/wp-admin/upload-rtl.css?version=' . get_bloginfo('version') . "a' type='text/css' />\n";
 	if ( 'inline' == @$_GET['style'] ) {
-		echo "<style type='text/css'>\n";
-		echo "\tbody { height: 15em; overflow: hidden; }\n";
-		echo "\t#upload-content { overflow-y: auto; }\n";
-		echo "\t#upload-file { position: absolute; }\n";
+		echo "<style type='text/css' media='screen'>\n";
+		echo "\t#upload-menu { position: absolute; z-index: 2; }\n";
+		echo "\tbody > #upload-menu { position: fixed; }\n";
+		echo "\t#upload-content { top: 2em; }\n";
+		echo "\t#upload-file { position: absolute; top: 15px; }\n";
 		echo "</style>";
 	}
 }

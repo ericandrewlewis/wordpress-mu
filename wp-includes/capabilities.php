@@ -130,7 +130,8 @@ class WP_Role {
 
 class WP_User {
 	var $data;
-	var $id = 0;
+	var $ID = 0;
+	var $id = 0; // Deprecated, use $ID instead.
 	var $caps = array();
 	var $cap_key;
 	var $roles = array();
@@ -193,7 +194,7 @@ class WP_User {
 
 	function add_role($role) {
 		$this->caps[$role] = true;
-		update_usermeta($this->id, $this->cap_key, $this->caps);
+		update_usermeta($this->ID, $this->cap_key, $this->caps);
 		$this->get_role_caps();
 		$this->update_user_level_from_caps();
 	}
@@ -202,7 +203,7 @@ class WP_User {
 		if ( empty($this->roles[$role]) || (count($this->roles) <= 1) )
 			return;
 		unset($this->caps[$role]);
-		update_usermeta($this->id, $this->cap_key, $this->caps);
+		update_usermeta($this->ID, $this->cap_key, $this->caps);
 		$this->get_role_caps();
 	}
 
@@ -215,42 +216,42 @@ class WP_User {
 		} else {
 			$this->roles = false;
 		}
-		update_usermeta($this->id, $this->cap_key, $this->caps);
+		update_usermeta($this->ID, $this->cap_key, $this->caps);
 		$this->get_role_caps();
 		$this->update_user_level_from_caps();
 	}
 
 	function level_reduction($max, $item) {
-	    if(preg_match('/^level_(10|[0-9])$/i', $item, $matches)) {
-	        $level = intval($matches[1]);
-	        return max($max, $level);
-	    } else {
-	        return $max;
-	    }
+		if(preg_match('/^level_(10|[0-9])$/i', $item, $matches)) {
+			$level = intval($matches[1]);
+			return max($max, $level);
+		} else {
+			return $max;
+		}
 	}
 
 	function update_user_level_from_caps() {
-	    global $wpdb;
-	    $this->user_level = array_reduce(array_keys($this->allcaps), 	array(&$this, 'level_reduction'), 0);
-	    update_usermeta($this->id, $wpdb->prefix.'user_level', $this->user_level);
+		global $wpdb;
+		$this->user_level = array_reduce(array_keys($this->allcaps), 	array(&$this, 'level_reduction'), 0);
+		update_usermeta($this->ID, $wpdb->prefix.'user_level', $this->user_level);
 	}
 
 	function add_cap($cap, $grant = true) {
 		$this->caps[$cap] = $grant;
-		update_usermeta($this->id, $this->cap_key, $this->caps);
+		update_usermeta($this->ID, $this->cap_key, $this->caps);
 	}
 
 	function remove_cap($cap) {
 		if ( empty($this->caps[$cap]) ) return;
 		unset($this->caps[$cap]);
-		update_usermeta($this->id, $this->cap_key, $this->caps);
+		update_usermeta($this->ID, $this->cap_key, $this->caps);
 	}
 
 	function remove_all_caps() {
 		global $wpdb;
 		$this->caps = array();
-		update_usermeta($this->id, $this->cap_key, '');
-		update_usermeta($this->id, $wpdb->prefix.'user_level', '');
+		update_usermeta($this->ID, $this->cap_key, '');
+		update_usermeta($this->ID, $wpdb->prefix.'user_level', '');
 		$this->get_role_caps();
 	}
 
@@ -261,7 +262,7 @@ class WP_User {
 			$cap = $this->translate_level_to_cap($cap);
 
 		$args = array_slice(func_get_args(), 1);
-		$args = array_merge(array($cap, $this->id), $args);
+		$args = array_merge(array($cap, $this->ID), $args);
 		$caps = call_user_func_array('map_meta_cap', $args);
 		// Must have ALL requested caps
 		$capabilities = apply_filters('user_has_cap', $this->allcaps, $caps, $args);
@@ -298,7 +299,7 @@ function map_meta_cap($cap, $user_id) {
 		$post = get_post($args[0]);
 		if ( 'page' == $post->post_type ) {
 			$args = array_merge(array('delete_page', $user_id), $args);
-			return call_user_func_array('map_meta_cap', $args);	
+			return call_user_func_array('map_meta_cap', $args);
 		}
 		$post_author_data = get_userdata($post->post_author);
 		//echo "current user id : $user_id, post author id: " . $post_author_data->ID . "<br/>";
@@ -352,7 +353,7 @@ function map_meta_cap($cap, $user_id) {
 		$post = get_post($args[0]);
 		if ( 'page' == $post->post_type ) {
 			$args = array_merge(array('edit_page', $user_id), $args);
-			return call_user_func_array('map_meta_cap', $args);	
+			return call_user_func_array('map_meta_cap', $args);
 		}
 		$post_author_data = get_userdata($post->post_author);
 		//echo "current user id : $user_id, post author id: " . $post_author_data->ID . "<br/>";
@@ -402,7 +403,7 @@ function map_meta_cap($cap, $user_id) {
 		$post = get_post($args[0]);
 		if ( 'page' == $post->post_type ) {
 			$args = array_merge(array('read_page', $user_id), $args);
-			return call_user_func_array('map_meta_cap', $args);	
+			return call_user_func_array('map_meta_cap', $args);
 		}
 
 		if ( 'private' != $post->post_status ) {

@@ -8,7 +8,7 @@ function wp_unregister_GLOBALS() {
 		return;
 
 	if ( isset($_REQUEST['GLOBALS']) )
-		wp_die('GLOBALS overwrite attempt detected');
+		die('GLOBALS overwrite attempt detected');
 
 	// Variables that shouldn't be unset
 	$noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES', 'table_prefix');
@@ -57,7 +57,7 @@ if ( empty($PHP_SELF) )
 if ( !(phpversion() >= '4.1') )
 	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.1' );
 
-if ( !extension_loaded('mysql') )
+if ( !extension_loaded('mysql') && !file_exists(ABSPATH . 'wp-content/db.php') )
 	die( 'Your PHP installation appears to be missing the MySQL which is required for WordPress.' );
 
 function timer_start() {
@@ -286,9 +286,10 @@ $_SERVER = add_magic_quotes($_SERVER);
 
 do_action('sanitize_comment_cookies');
 
-$wp_query   = new WP_Query();
-$wp_rewrite = new WP_Rewrite();
-$wp         = new WP();
+$wp_the_query =& new WP_Query();
+$wp_query     =& $wp_the_query;
+$wp_rewrite   =& new WP_Rewrite();
+$wp           =& new WP();
 
 if( defined( "WP_INSTALLING" ) == false )
 	validate_current_theme();
@@ -301,7 +302,7 @@ load_default_textdomain();
 // Pull in locale data after loading text domain.
 require_once(ABSPATH . WPINC . '/locale.php');
 
-$wp_locale = new WP_Locale();
+$wp_locale =& new WP_Locale();
 
 // Load functions for active theme.
 if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists(STYLESHEETPATH . '/functions.php') )

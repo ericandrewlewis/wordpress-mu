@@ -1,4 +1,4 @@
-<?php 
+<?php
 require_once('admin.php');
 
 $title = __('Profile');
@@ -30,13 +30,14 @@ $bookmarklet_height= 440;
 
 <h3><?php _e('Personal Options'); ?></h3>
 
+<?php if ( rich_edit_exists() ) : // don't bother showing the option if the editor has been removed ?>
 <p><label for="rich_editing"><input name="rich_editing" type="checkbox" id="rich_editing" value="true" <?php checked('true', get_user_option('rich_editing')); ?> />
 <?php _e('Use the visual editor when writing') ?></label></p>
+<?php endif; ?>
 
 <?php do_action('profile_personal_options'); ?>
 
 <p class="submit"><input type="submit" value="<?php _e('Update Profile &raquo;') ?>" name="submit" /></p>
-<div style="clear: both"></div>
 
 <fieldset>
 <legend><?php _e('Name'); ?></legend>
@@ -120,13 +121,13 @@ if ( $show_password_fields ) :
 
 <br clear="all" />
 
-  <table width="99%"  border="0" cellspacing="2" cellpadding="3" class="editform">
-    <?php
-    if(count($profileuser->caps) > count($profileuser->roles)):
-    ?>
-    <tr>
-      <th scope="row"><?php _e('Additional Capabilities:') ?></th>
-      <td><?php 
+	<table width="99%"  border="0" cellspacing="2" cellpadding="3" class="editform">
+		<?php
+		if(count($profileuser->caps) > count($profileuser->roles)):
+		?>
+		<tr>
+			<th scope="row"><?php _e('Additional Capabilities:') ?></th>
+			<td><?php
 			$output = '';
 			foreach($profileuser->caps as $cap => $value) {
 				if(!$wp_roles->is_role($cap)) {

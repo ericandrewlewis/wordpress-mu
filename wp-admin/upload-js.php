@@ -74,7 +74,7 @@ addLoadEvent( function() {
 				params.action = '';
 				h += "<a href='" + this.urlData[0] + '?' + params.toQueryString() + "' title='Browse your files' class='back'>&laquo; Back</a>";
 			} else {
-				h += "<a href='#' onclick='theFileList.cancelView()'  title='Browse your files' class='back'>&laquo; Back</a>";
+				h += "<a href='#' onclick='return theFileList.cancelView();'  title='Browse your files' class='back'>&laquo; Back</a>";
 			}
 			h += "<div id='file-title'>"
 			if ( !this.currentImage.isImage )
@@ -82,7 +82,7 @@ addLoadEvent( function() {
 			else
 				h += "<h2>" + this.currentImage.title + "</h2>";
 			h += " &#8212; <span>";
-			h += "<a href='#' onclick='theFileList.editView(" + id + ")'>Edit</a>"
+			h += "<a href='#' onclick='return theFileList.editView(" + id + ");'>Edit</a>"
 			h += "</span>";
 			h += '</div>'
 			h += "<div id='upload-file-view' class='alignleft'>";
@@ -97,20 +97,20 @@ addLoadEvent( function() {
 			h += "<form name='uploadoptions' id='uploadoptions' class='alignleft'>";
 			h += "<table>";
 			if ( this.currentImage.thumb ) {
-				h += "<tr><th style='padding-bottom:.5em'>Show:</th><td style='padding-bottom:.5em'>";
-				h += "<label for='display-thumb'><input type='radio' name='display' id='display-thumb' value='thumb' checked='checked' /> Thumbnail</label><br />";
-				h += "<label for='display-full'><input type='radio' name='display' id='display-full' value='full' /> Full size</label>";
+				h += "<tr><th style='padding-bottom:.5em'><?php echo addslashes(__('Show:')); ?></th><td style='padding-bottom:.5em'>";
+				h += "<label for='display-thumb'><input type='radio' name='display' id='display-thumb' value='thumb' checked='checked' /> <?php echo addslashes(__('Thumbnail')); ?></label><br />";
+				h += "<label for='display-full'><input type='radio' name='display' id='display-full' value='full' /> <?php echo addslashes(__('Full size')); ?></label>";
 				h += "</td></tr>";
 			}
 
-			h += "<tr><th>Link to:</th><td>";
-			h += "<label for='link-file'><input type='radio' name='link' id='link-file' value='file' checked='checked'/> File</label><br />";
-			h += "<label for='link-page'><input type='radio' name='link' id='link-page' value='page' /> Page</label><br />";
-			h += "<label for='link-none'><input type='radio' name='link' id='link-none' value='none' /> None</label>";
+			h += "<tr><th><?php echo addslashes(__('Link to:')); ?></th><td>";
+			h += "<label for='link-file'><input type='radio' name='link' id='link-file' value='file' checked='checked'/> <?php echo addslashes(__('File')); ?></label><br />";
+			h += "<label for='link-page'><input type='radio' name='link' id='link-page' value='page' /> <?php echo addslashes(__('Page')); ?></label><br />";
+			h += "<label for='link-none'><input type='radio' name='link' id='link-none' value='none' /> <?php echo addslashes(__('None')); ?></label>";
 			h += "</td></tr>";
 
 			h += "<tr><td colspan='2'><p class='submit'>";
-			h += "<input type='button' class='button' name='send' onclick='theFileList.sendToEditor(" + id + ")' value='Send to editor &raquo;' />";
+			h += "<input type='button' class='button' name='send' onclick='theFileList.sendToEditor(" + id + ")' value='<?php echo addslashes(__('Send to editor')); ?> &raquo;' />";
 			h += "</p></td></tr></table>";
 			h += "</form>";
 
@@ -136,7 +136,7 @@ addLoadEvent( function() {
 				params.action = '';
 				h += "<a href='" + this.urlData[0] + '?' + params.toQueryString() + "'  title='Browse your files' class='back'>&laquo; Back</a>";
 			} else {
-				h += "<a href='#' onclick='theFileList.cancelView()'  title='Browse your files' class='back'>&laquo; Back</a>";
+				h += "<a href='#' onclick='return theFileList.cancelView();'  title='Browse your files' class='back'>&laquo; Back</a>";
 			}
 			h += "<div id='file-title'>"
 			if ( !this.currentImage.isImage )
@@ -144,7 +144,7 @@ addLoadEvent( function() {
 			else
 				h += "<h2>" + this.currentImage.title + "</h2>";
 			h += " &#8212; <span>";
-			h += "<a href='#' onclick='theFileList.imageView(" + id + ")'>Insert</a>"
+			h += "<a href='#' onclick='return theFileList.imageView(" + id + ");'>Insert</a>"
 			h += "</span>";
 			h += '</div>'
 			h += "<div id='upload-file-view' class='alignleft'>";
@@ -221,7 +221,7 @@ addLoadEvent( function() {
 				display = 'full';
 
 			if ( 'none' != link )
-				h += "<a href='" + ( 'file' == link ? ( this.currentImage.srcBase + this.currentImage.src ) : ( this.currentImage.page + "' rel='attachment wp-att-" + this.currentImage.ID + "'" ) ) + "' title='" + this.currentImage.title + "'>";
+				h += "<a href='" + ( 'file' == link ? ( this.currentImage.srcBase + this.currentImage.src ) : ( this.currentImage.page + "' rel='attachment wp-att-" + this.currentImage.ID ) ) + "' title='" + this.currentImage.title + "'>";
 			if ( display )
 				h += "<img src='" + ( 'thumb' == display ? ( this.currentImage.thumbBase + this.currentImage.thumb ) : ( this.currentImage.srcBase + this.currentImage.src ) ) + "' alt='" + this.currentImage.title + "' />";
 			else
@@ -233,9 +233,10 @@ addLoadEvent( function() {
 			if ( !win )
 				win = top;
 			tinyMCE = win.tinyMCE;
-			if ( typeof tinyMCE != 'undefined' && tinyMCE.getInstanceById('content') )
-				win.tinyMCE.execCommand('mceInsertContent', false, h);
-			else
+			if ( typeof tinyMCE != 'undefined' && tinyMCE.getInstanceById('content') ) {
+				tinyMCE.selectedInstance.getWin().focus();
+				tinyMCE.execCommand('mceInsertContent', false, h);
+			} else
 				win.edInsertContent(win.edCanvas, h);
 			if ( !this.ID )
 				this.cancelView();
@@ -243,7 +244,7 @@ addLoadEvent( function() {
 		},
 
 		deleteFile: function(id) {
-			if ( confirm("Are you sure you want to delete the file '" + this.currentImage.title + "'?\nClick ok to delete or cancel to go back.") ) {
+			if ( confirm("<?php printf(js_escape(__("Are you sure you want to delete the file '%s'?\nClick ok to delete or cancel to go back.")), '" + this.currentImage.title + "'); ?>") ) {
 				$('action-value').value = 'delete';
 				$('upload-file').submit();
 				return true;

@@ -12,7 +12,7 @@ function mysql2date($dateformatstring, $mysqlstring, $translate = true) {
 
 	if( 'U' == $dateformatstring )
 		return $i;
-	
+
 	if ( -1 == $i || false == $i )
 		$i = 0;
 
@@ -479,7 +479,7 @@ function wp_get_http_headers( $url, $red = 1 ) {
 	@set_time_limit( 60 );
 
 	if ( $red > 5 )
-	   return false;
+		 return false;
 
 	$parts = parse_url( $url );
 	$file = $parts['path'] . ($parts['query'] ? '?'.$parts['query'] : '');
@@ -508,9 +508,9 @@ function wp_get_http_headers( $url, $red = 1 ) {
 	preg_match('/.*([0-9]{3}).*/', $response, $return);
 	$headers['response'] = $return[1]; // HTTP response code eg 204, 200, 404
 
-    $code = $headers['response'];
-    if ( ('302' == $code || '301' == $code) && isset($headers['location']) )
-        return wp_get_http_headers( $headers['location'], ++$red );
+		$code = $headers['response'];
+		if ( ('302' == $code || '301' == $code) && isset($headers['location']) )
+				return wp_get_http_headers( $headers['location'], ++$red );
 
 	return $headers;
 }
@@ -573,9 +573,22 @@ function update_post_category_cache($post_ids) {
 		return;
 
 	if ( is_array($post_ids) )
-		$post_ids = implode(',', $post_ids);
+		$post_id_list = implode(',', $post_ids);
 
-	$dogs = $wpdb->get_results("SELECT post_id, category_id FROM $wpdb->post2cat WHERE post_id IN ($post_ids)");
+	$post_id_array = (array) explode(',', $post_ids);
+	$count = count( $post_id_array);
+	for ( $i = 0; $i < $count; $i++ ) {
+		$post_id = $post_id_array[ $i ];
+		if ( isset( $category_cache[$blog_id][$post_id] ) ) {
+			unset( $post_id_array[ $i ] );
+			continue;
+		}
+	}
+	if ( count( $post_id_array ) == 0 )
+		return;
+	$post_id_list = join( ',', $post_id_array ); // with already cached stuff removed
+
+	$dogs = $wpdb->get_results("SELECT post_id, category_id FROM $wpdb->post2cat WHERE post_id IN ($post_id_list)");
 
 	if ( empty($dogs) )
 		return;
@@ -611,11 +624,24 @@ function update_postmeta_cache($post_id_list = '') {
 	// We should validate this comma-separated list for the upcoming SQL query
 	$post_id_list = preg_replace('|[^0-9,]|', '', $post_id_list);
 
+	if ( empty( $post_id_list ) )
+		return false;
+
 	// we're marking each post as having its meta cached (with no keys... empty array), to prevent posts with no meta keys from being queried again
 	// any posts that DO have keys will have this empty array overwritten with a proper array, down below
-	$post_id_array = explode(',', $post_id_list);
-	foreach ( (array) $post_id_array as $pid )
-		$post_meta_cache[$blogi_id][$pid] = array();
+	$post_id_array = (array) explode(',', $post_id_list);
+	$count = count( $post_id_array);
+	for ( $i = 0; $i < $count; $i++ ) {
+		$post_id = $post_id_array[ $i ];
+		if ( isset( $post_meta_cache[$blog_id][$post_id] ) ) { // If the meta is already cached
+			unset( $post_id_array[ $i ] );
+			continue;
+		}
+		$post_meta_cache[$blog_id][$post_id] = array();
+	}
+	if ( count( $post_id_array ) == 0 )
+		return;
+	$post_id_list = join( ',', $post_id_array ); // with already cached stuff removeds
 
 	// Get post-meta info
 	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta WHERE post_id IN($post_id_list) ORDER BY post_id, meta_key", ARRAY_A) ) {
@@ -755,7 +781,7 @@ function add_magic_quotes($array) {
 
 function wp_remote_fopen( $uri ) {
 	if ( ini_get('allow_url_fopen') ) {
-		$fp = fopen( $uri, 'r' );
+		$fp = @fopen( $uri, 'r' );
 		if ( !$fp )
 			return false;
 		$linea = '';
@@ -797,9 +823,9 @@ function status_header( $header ) {
 		$text = 'Gone';
 
 	if ( substr(php_sapi_name(), 0, 3) == 'cgi' )
-		@header("Status: $header $text");
-	else
 		@header("HTTP/1.1 $header $text");
+	else
+		@header("Status: $header $text");
 }
 
 function nocache_headers() {
@@ -822,8 +848,8 @@ function get_num_queries() {
 }
 
 function bool_from_yn($yn) {
-    if ($yn == 'Y') return 1;
-    return 0;
+		if ($yn == 'Y') return 1;
+		return 0;
 }
 
 function do_feed() {
@@ -836,7 +862,7 @@ function do_feed() {
     	$feed = 'rss2';
 
 	$for_comments = false;
-	if ( is_singular() || get_query_var('withcomments') == 1 || $feed == 'comments-rss2' ) {
+	if ( 1 != get_query_var('withoutcomments') && ( is_singular() || get_query_var('withcomments') == 1 || $feed == 'comments-rss2' ) ) {
 		$feed = 'rss2';
 		$for_comments = true;	
 	}
@@ -980,7 +1006,7 @@ function wp_upload_dir() {
 		return array('error' => $message);
 	}
 
-    $uploads = array('path' => $dir, 'url' => $url, 'error' => false);
+		$uploads = array('path' => $dir, 'url' => $url, 'error' => false);
 	return apply_filters('upload_dir', $uploads);
 }
 

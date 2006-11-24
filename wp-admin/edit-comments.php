@@ -2,7 +2,7 @@
 require_once('admin.php');
 
 $title = __('Edit Comments');
-$parent_file = 'edit.php';
+$parent_file = 'edit-comments.php';
 wp_enqueue_script( 'admin-comments' );
 
 require_once('admin-header.php');
@@ -85,19 +85,57 @@ if (isset($_GET['s'])) {
 		comment_approved != 'spam'
 		ORDER BY comment_date DESC");
 } else {
-	if ( isset($_GET['offset']) )
-		$offset = (int) $_GET['offset'] * 20;
+	if ( isset( $_GET['apage'] ) )
+		$page = (int) $_GET['apage'];
 	else
-		$offset = 0;
+		$page = 1;
+	$start = $offset = ( $page - 1 ) * 20;
+	$end = $start + 20;
 
-	$comments = $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_approved = '0' OR comment_approved = '1' ORDER BY comment_date DESC LIMIT $offset,20");
+	$comments = $wpdb->get_results( "SELECT * FROM $wpdb->comments WHERE comment_approved = '0' OR comment_approved = '1' ORDER BY comment_date DESC LIMIT $start, $end" );
+	$total = $wpdb->get_var( "SELECT COUNT(*) FROM $wpdb->comments WHERE comment_approved = '0' OR comment_approved = '1'" );
 }
+?>
+<?php if ( $total > 20 ) {
+$total_pages = ceil( $total / 20 );
+$r = '';
+if ( 1 < $page ) {
+	$args['apage'] = ( 1 == $page - 1 ) ? FALSE : $page - 1;
+	$r .=  '<a class="prev" href="' . add_query_arg( $args ) . '">&laquo; '. __('Previous Page') .'</a>' . "\n";
+}
+if ( ( $total_pages = ceil( $total / 20 ) ) > 1 ) {
+	for ( $page_num = 1; $page_num <= $total_pages; $page_num++ ) :
+		if ( $page == $page_num ) :
+			$r .=  "<span>$page_num</span>\n";
+		else :
+			$p = false;
+			if ( $page_num < 3 || ( $page_num >= $page - 3 && $page_num <= $page + 3 ) || $page_num > $total_pages - 3 ) :
+				$args['apage'] = ( 1 == $page_num ) ? FALSE : $page_num;
+				$r .= '<a class="page-numbers" href="' . add_query_arg($args) . '">' . ( $page_num ) . "</a>\n";
+				$in = true;
+			elseif ( $in == true ) :
+				$r .= "...\n";
+				$in = false;
+			endif;
+		endif;
+	endfor;
+}
+if ( ( $page ) * 20 < $total || -1 == $total ) {
+	$args['apage'] = $page + 1;
+	$r .=  '<a class="next" href="' . add_query_arg($args) . '">'. __('Next Page') .' &raquo;</a>' . "\n";
+}
+echo "<p>$r</p>";
+?>
+
+<?php } ?>
+
+<?php
 if ('view' == $mode) {
 	if ($comments) {
-		if ($offset)
-			$start = " start='$offset'";
-		else
-			$start = '';
+?>
+<?php
+$offset = $offset + 1;
+$start = " start='$offset'";
 
 		echo "<ol id='the-comment-list' class='commentlist' $start>";
 		$i = 0;
@@ -105,7 +143,7 @@ if ('view' == $mode) {
 		++$i; $class = '';
 		$authordata = get_userdata($wpdb->get_var("SELECT post_author FROM $wpdb->posts WHERE ID = $comment->comment_post_ID"));
 			$comment_status = wp_get_comment_status($comment->comment_ID);
-			if ('unapproved' == $comment_status) 
+			if ('unapproved' == $comment_status)
 				$class .= ' unapproved';
 			if ($i % 2)
 				$class .= ' alternate';
@@ -115,7 +153,7 @@ if ('view' == $mode) {
 
 <?php comment_text() ?>
 
-<p><?php comment_date('M j, g:i A');  ?> &#8212; [ 
+<p><?php comment_date('M j, g:i A');  ?> &#8212; [
 <?php
 if ( current_user_can('edit_post', $comment->comment_post_ID) ) {
 	echo " <a href='comment.php?action=editcomment&amp;c=".$comment->comment_ID."'>" .  __('Edit') . '</a>';
@@ -143,7 +181,7 @@ $post_title = ('' == $post_title) ? "# $comment->comment_post_ID" : $post_title;
 
 		?>
 		<p>
-        <strong><?php _e('No comments found.') ?></strong></p>
+			<strong><?php _e('No comments found.') ?></strong></p>
 
 		<?php
 	} // end if ($comments)
@@ -205,6 +243,38 @@ $post_title = ('' == $post_title) ? "# $comment->comment_post_ID" : $post_title;
 	} // end if ($comments)
 }
 	?>
+<?php if ( $total > 20 ) {
+$total_pages = ceil( $total / 20 );
+$r = '';
+if ( 1 < $page ) {
+	$args['apage'] = ( 1 == $page - 1 ) ? FALSE : $page - 1;
+	$r .=  '<a class="prev" href="' . add_query_arg( $args ) . '">&laquo; '. __('Previous Page') .'</a>' . "\n";
+}
+if ( ( $total_pages = ceil( $total / 20 ) ) > 1 ) {
+	for ( $page_num = 1; $page_num <= $total_pages; $page_num++ ) :
+		if ( $page == $page_num ) :
+			$r .=  "<span>$page_num</span>\n";
+		else :
+			$p = false;
+			if ( $page_num < 3 || ( $page_num >= $page - 3 && $page_num <= $page + 3 ) || $page_num > $total_pages - 3 ) :
+				$args['apage'] = ( 1 == $page_num ) ? FALSE : $page_num;
+				$r .= '<a class="page-numbers" href="' . add_query_arg($args) . '">' . ( $page_num ) . "</a>\n";
+				$in = true;
+			elseif ( $in == true ) :
+				$r .= "...\n";
+				$in = false;
+			endif;
+		endif;
+	endfor;
+}
+if ( ( $page ) * 20 < $total || -1 == $total ) {
+	$args['apage'] = $page + 1;
+	$r .=  '<a class="next" href="' . add_query_arg($args) . '">'. __('Next Page') .' &raquo;</a>' . "\n";
+}
+echo "<p>$r</p>";
+?>
+
+<?php } ?>
 
 </div>
 

@@ -3,10 +3,20 @@ cache_javascript_headers();
 ?>
 var autosaveLast = '';
 var autosavePeriodical;
+
 function autosave_start_timer() {
 	var form = $('post');
 	autosaveLast = form.post_title.value+form.content.value;
-	autosavePeriodical = new PeriodicalExecuter(autosave, <?php echo apply_filters('autosave_interval', '60'); ?>);
+	autosavePeriodical = new PeriodicalExecuter(autosave, <?php echo apply_filters('autosave_interval', '120'); ?>);
+	//Disable autosave after the form has been submitted
+	if(form.addEventListener) {
+		form.addEventListener("submit", function () { autosavePeriodical.currentlyExecuting = true; }, false);
+	}
+	if(form.attachEvent) {
+		$('save').attachEvent("onclick", function () { autosavePeriodical.currentlyExecuting = true; });
+		$('publish').attachEvent("onclick", function () { autosavePeriodical.currentlyExecuting = true; });
+		$('deletepost').attachEvent("onclick", function () { autosavePeriodical.currentlyExecuting = true; });
+	}
 }
 addLoadEvent(autosave_start_timer)
 

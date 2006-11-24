@@ -1,7 +1,7 @@
-<?php 
+<?php
 /* Don't remove these lines. */
 add_filter('comment_text', 'popuplinks');
-foreach ($posts as $post) { start_wp();
+while( have_posts()) : the_post();
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -93,11 +93,11 @@ if (!empty($commentstatus->post_password) && $_COOKIE['wp-postpass_'. COOKIEHASH
 <div><strong><a href="javascript:window.close()"><?php _e("Close this window."); ?></a></strong></div>
 
 <?php // if you delete this the sky will fall on your head
-}
+endwhile;
 ?>
 
 <!-- // this is just the end of the motor - don't touch that line either :) -->
-<?php //} ?> 
+<?php //} ?>
 <p class="credit"><?php timer_stop(1); ?> <?php echo sprintf(__("<cite>Powered by <a href=\"http://wordpress.org\" title=\"%s\"><strong>Wordpress</strong></a></cite>"),__("Powered by WordPress, state-of-the-art semantic personal publishing platform.")); ?></p>
 <?php // Seen at http://www.mijnkopthee.nl/log2/archive/2003/05/28/esc(18) ?>
 <script type="text/javascript">

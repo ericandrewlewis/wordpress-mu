@@ -35,6 +35,11 @@ function get_bookmarks($args = '') {
 	$r = array_merge($defaults, $r);
 	extract($r);
 
+	$key = md5( serialize( $r ) );
+	if ( $cache = wp_cache_get( 'get_bookmarks', 'bookmark' ) )
+		if ( isset( $cache[ $key ] ) )
+			return apply_filters('get_bookmarks', $cache[ $key ], $r );
+
 	$inclusions = '';
 	if ( !empty($include) ) {
 	$exclude = '';  //ignore exclude, category, and category_name params if using include
@@ -128,7 +133,18 @@ function get_bookmarks($args = '') {
 		$query .= " LIMIT $limit";
 
 	$results = $wpdb->get_results($query);
+
+	$cache[ $key ] = $results;
+	wp_cache_set( 'get_bookmarks', $cache, 'bookmark' );
+
 	return apply_filters('get_bookmarks', $results, $r);
 }
+
+function delete_get_bookmark_cache() {
+	wp_cache_delete( 'get_bookmarks', 'bookmark' );
+}
+add_action( 'add_link', 'delete_get_bookmark_cache' );
+add_action( 'edit_link', 'delete_get_bookmark_cache' );
+add_action( 'delete_link', 'delete_get_bookmark_cache' );
 
 ?>

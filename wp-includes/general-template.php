@@ -426,6 +426,15 @@ function calendar_week_mod($num) {
 function get_calendar($initial = true) {
 	global $wpdb, $m, $monthnum, $year, $timedifference, $wp_locale, $posts;
 
+	$key = md5( $m . $monthnum . $year );
+	if ( $cache = wp_cache_get( 'get_calendar', 'calendar' ) ) {
+		if ( isset( $cache[ $key ] ) ) {
+			echo $cache[ $key ];
+			return;
+		}
+	}
+
+	ob_start();
 	// Quick check. If we have no posts at all, abort!
 	if ( !$posts ) {
 		$gotsome = $wpdb->get_var("SELECT ID from $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' ORDER BY post_date DESC LIMIT 1");
@@ -475,7 +484,7 @@ function get_calendar($initial = true) {
 		FROM $wpdb->posts
 		WHERE post_date >	'$thisyear-$thismonth-01'
 		AND MONTH( post_date ) != MONTH( '$thisyear-$thismonth-01' )
-		AND post_type = 'post' AND post_status = 'publish' 
+		AND post_type = 'post' AND post_status = 'publish'
 			ORDER	BY post_date ASC
 			LIMIT 1");
 
@@ -599,7 +608,22 @@ function get_calendar($initial = true) {
 		echo "\n\t\t".'<td class="pad" colspan="'.$pad.'">&nbsp;</td>';
 
 	echo "\n\t</tr>\n\t</tbody>\n\t</table>";
+
+	$output = ob_get_contents();
+	ob_end_clean();
+	echo $output;
+	$cache[ $key ] = $output;
+	wp_cache_set( 'get_calendar', $cache, 'calendar' );
 }
+
+function delete_get_calendar_cache() {
+	wp_cache_delete( 'get_calendar', 'calendar' );
+}
+add_action( 'save_post', 'delete_get_calendar_cache' );
+add_action( 'delete_post', 'delete_get_calendar_cache' );
+add_action( 'update_option_start_of_week', 'delete_get_calendar_cache' );
+add_action( 'update_option_gmt_offset', 'delete_get_calendar_cache' );
+add_action( 'update_option_start_of_week', 'delete_get_calendar_cache' );
 
 
 function allowed_tags() {
@@ -763,30 +787,12 @@ function rich_edit_exists() {
 }
 
 function user_can_richedit() {
-	$can = true;
+	global $wp_rich_edit;
+	
+	if ( !isset($wp_rich_edit) )
+		$wp_rich_edit = ( 'true' == get_user_option('rich_editing') && !preg_match('!opera[ /][2-8]|konqueror|safari!i', $_SERVER['HTTP_USER_AGENT']) && rich_edit_exists() ) ? true : false;
 
-	if ( 'true' != get_user_option('rich_editing') || preg_match('!opera[ /][2-8]|konqueror|safari!i', $_SERVER['HTTP_USER_AGENT']) )
-		$can = false;
-
-	return apply_filters('user_can_richedit', $can);
-}
-
-function user_can_switchedit() {
-	$can = true;
-
-	$ua = $_SERVER['HTTP_USER_AGENT'];
-
-	if (
-		!user_can_richedit() ||
-		(	// Mozilla Test
-			strstr($ua, 'Mozilla/5.0') &&
-			!strstr($ua, 'ompatible') &&
-			!strstr($ua, 'irefox')
-		)
-	)
-		$can = false;
-
-	return apply_filters('user_can_switchedit', $can);
+	return apply_filters('user_can_richedit', $wp_rich_edit);
 }
 
 function the_editor($content, $id = 'content', $prev_id = 'title') {
@@ -799,19 +805,24 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 	if ( user_can_richedit() ) :
 		add_filter('the_editor_content', 'wp_richedit_pre');
 
-	if ( user_can_switchedit() ) :
+		//	The following line moves the border so that the active button "attaches" to the toolbar. Only IE needs it.
 	?>
+	<style type="text/css">
+		#postdivrich table, #postdivrich #quicktags {border-top: none;}
+		#quicktags {border-bottom: none; padding-bottom: 2px; margin-bottom: -1px;}
+		#edButtons {border-bottom: 1px solid #ccc;}
+	</style>
 	<div id='edButtons' style='display:none;'>
 		<div class='zerosize'><input accesskey='e' type='button' onclick='switchEditors("<?php echo $id; ?>")' /></div>
-		<input id='edButtonPreview' class='edButtonFore' type='button' value='<?php _e('Editor'); ?>' />
-		<input id='edButtonHTML' class='edButtonBack' type='button' value='<?php _e('HTML'); ?>' onclick='switchEditors("<?php echo $id; ?>")' />
+		<input id='edButtonPreview' class='edButtonFore' type='button' value='<?php _e('Visual'); ?>' />
+		<input id='edButtonHTML' class='edButtonBack' type='button' value='<?php _e('Code'); ?>' onclick='switchEditors("<?php echo $id; ?>")' />
 	</div>
 	<script type="text/javascript">
 		if ( typeof tinyMCE != "undefined" && tinyMCE.configs.length > 0 )
 			document.getElementById('edButtons').style.display = 'block';
 	</script>
 
-	<?php endif; endif; ?>
+	<?php endif; ?>
 	<div id="quicktags">
 	<?php wp_print_scripts( 'quicktags' ); ?>
 	<script type="text/javascript">edToolbar()</script>
@@ -846,9 +857,7 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 	</script>
 	<?php
 
-	$class = user_can_switchedit() ? 'switched' : 'unswitched';
-
-	$the_editor = apply_filters('the_editor', "<div class='$class'><textarea class='mceEditor' $rows cols='40' name='$id' tabindex='2' id='$id'>%s</textarea></div>\n");
+	$the_editor = apply_filters('the_editor', "<div><textarea class='mceEditor' $rows cols='40' name='$id' tabindex='2' id='$id'>%s</textarea></div>\n");
 	$the_editor_content = apply_filters('the_editor_content', $content);
 
 	printf($the_editor, $the_editor_content);

@@ -63,7 +63,7 @@ function get_permalink($id = 0) {
 		$authordata = get_userdata($post->post_author);
 		$author = $authordata->user_nicename;
 		$date = explode(" ",date('Y m d H i s', $unixtime));
-		$rewritereplace = 
+		$rewritereplace =
 		array(
 			$date[0],
 			$date[1],
@@ -89,7 +89,23 @@ function post_permalink($post_id = 0, $mode = '') { // $mode legacy
 	return get_permalink($post_id);
 }
 
+// Respects page_on_front.  Use this one.
 function get_page_link($id = false) {
+	global $post;
+
+	if ( !$id )
+		$id = $post->ID;
+
+	if ( 'page' == get_option('show_on_front') && $id == get_option('page_on_front') )
+		$link = get_option('home');
+	else
+		$link = _get_page_link( $id );
+
+	return apply_filters('page_link', $link, $id);
+}
+
+// Ignores page_on_front.  Internal use only.
+function _get_page_link( $id = false ) {
 	global $post, $wp_rewrite;
 
 	if ( !$id )
@@ -105,10 +121,7 @@ function get_page_link($id = false) {
 		$link = get_option('home') . "/?page_id=$id";
 	}
 
-	if ( 'page' == get_option('show_on_front') && $id == get_option('page_on_front') )
-		$link = get_option('home');
-
-	return apply_filters('page_link', $link, $id);
+	return apply_filters( '_get_page_link', $link, $id );
 }
 
 function get_attachment_link($id = false) {
@@ -123,7 +136,10 @@ function get_attachment_link($id = false) {
 	$object = get_post($id);
 	if ( $wp_rewrite->using_permalinks() && ($object->post_parent > 0) ) {
 		$parent = get_post($object->post_parent);
-		$parentlink = get_permalink($object->post_parent);
+		if ( 'page' == $parent->post_type )
+			$parentlink = _get_page_link( $object->post_parent ); // Ignores page_on_front
+		else
+			$parentlink = get_permalink( $object->post_parent );
 		if (! strstr($parentlink, '?') )
 			$link = trim($parentlink, '/') . '/' . $object->post_name . '/';
 	}
@@ -266,7 +282,7 @@ function get_previous_post($in_same_cat = false, $excluded_categories = '') {
 		for ( $i = 1; $i < (count($cat_array)); $i++ ) {
 			$join .= ' OR category_id = ' . intval($cat_array[$i]->cat_ID);
 		}
-		$join .= ')'; 
+		$join .= ')';
 	}
 
 	$sql_exclude_cats = '';
@@ -299,7 +315,7 @@ function get_next_post($in_same_cat = false, $excluded_categories = '') {
 		for ( $i = 1; $i < (count($cat_array)); $i++ ) {
 			$join .= ' OR category_id = ' . intval($cat_array[$i]->cat_ID);
 		}
-		$join .= ')'; 
+		$join .= ')';
 	}
 
 	$sql_exclude_cats = '';
@@ -334,7 +350,7 @@ function previous_post_link($format='&laquo; %link', $link='%title', $in_same_ca
 
 	$format = str_replace('%link', $link, $format);
 
-	echo $format;	    
+	echo $format;
 }
 
 function next_post_link($format='%link &raquo;', $link='%title', $in_same_cat = false, $excluded_categories = '') {
@@ -349,7 +365,7 @@ function next_post_link($format='%link &raquo;', $link='%title', $in_same_cat = 
 	$link = $string . $link . '</a>';
 	$format = str_replace('%link', $link, $format);
 
-	echo $format;	    
+	echo $format;
 }
 
 function get_pagenum_link($pagenum = 1) {
@@ -357,7 +373,7 @@ function get_pagenum_link($pagenum = 1) {
 
 	$qstr = wp_specialchars($_SERVER['REQUEST_URI']);
 
-	$page_querystring = "paged"; 
+	$page_querystring = "paged";
 	$page_modstring = "page/";
 	$page_modregex = "page/?";
 	$permalink = 0;
@@ -435,9 +451,9 @@ function next_posts($max_page = 0) { // original by cfactor at cooltux.org
 }
 
 function next_posts_link($label='Next Page &raquo;', $max_page=0) {
-	global $paged, $wpdb;
+	global $paged, $wpdb, $wp_query;
 	if ( !$max_page ) {
-		$max_page = _max_num_pages();
+		$max_page = $wp_query->max_num_pages;
 	}
 	if ( !$paged )
 		$paged = 1;
@@ -471,34 +487,12 @@ function previous_posts_link($label='&laquo; Previous Page') {
 	}
 }
 
-function _max_num_pages() {
-	static $max_num_pages;
-	global $wpdb, $wp_query;
-	
-	if (isset($max_num_pages)) return $max_num_pages;
-	$posts_per = get_query_var('posts_per_page');
-	if ( empty($posts_per) ) $posts_per = 1;
-
-	if ( 'posts' == get_query_var('what_to_show') ) {
-		preg_match('#FROM\s(.*)\sORDER BY#siU', $wp_query->request, $matches);
-		$fromwhere = $matches[1];
-		$numposts = $wpdb->get_var("SELECT COUNT(DISTINCT $wpdb->posts.ID) FROM $fromwhere");
-		$max_num_pages = ceil($numposts / $posts_per);
-	} else {
-		preg_match('#FROM\s(.*)\sORDER BY#siU', $wp_query->request, $matches);
-		$fromwhere = preg_replace('/( AND )?post_date >= (\'|\")(.*?)(\'|\")( AND post_date <= (\'\")(.*?)(\'\"))?/siU', '', $matches[1]);
-		$num_days = $wpdb->query("SELECT DISTINCT post_date FROM $fromwhere GROUP BY year(post_date), month(post_date), dayofmonth(post_date)");
-		$max_num_pages = ceil($num_days / $posts_per);
-	}
-
-	return $max_num_pages;
-}
-
 function posts_nav_link($sep=' &#8212; ', $prelabel='&laquo; Previous Page', $nxtlabel='Next Page &raquo;') {
-	if ( !is_single() ) {
-		$max_num_pages = _max_num_pages();
+	global $wp_query;
+	if ( !is_singular() ) {
+		$max_num_pages = $wp_query->max_num_pages;
 		$paged = get_query_var('paged');
-		
+
 		//only have sep if there's both prev and next results
 		if ($paged < 2 || $paged >= $max_num_pages) {
 			$sep = '';

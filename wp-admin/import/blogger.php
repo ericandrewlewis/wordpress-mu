@@ -525,7 +525,7 @@ class Blogger_Import {
 				$did_one = true;
 			}
 			$output.= "<p>$archivename $status</p>\n";
- 		}
+		}
 		if ( ! $did_one )
 			$this->set_next_step(7);
 		die( $this->refresher(1000) . $output );

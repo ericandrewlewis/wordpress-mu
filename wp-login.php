@@ -200,7 +200,7 @@ break;
 case 'auth' :
 	$_COOKIE = array(); // Prevent redirect loops caused by corrupted cookies
 
-case 'login' : 
+case 'login' :
 default:
 	$user_login = '';
 	$user_pass = '';
