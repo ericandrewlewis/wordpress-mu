@@ -402,6 +402,7 @@ function wp_delete_post($postid = 0) {
 			foreach ( $categories as $cat_id ) {
 				$wpdb->query("UPDATE $wpdb->categories SET category_count = category_count - 1 WHERE cat_ID = '$cat_id'");
 				wp_cache_delete($cat_id, 'category');
+				do_action('edit_category', $cat_id);
 			}
 		}
 	}
@@ -417,8 +418,9 @@ function wp_delete_post($postid = 0) {
 
 	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = $postid");
 
-	if ( 'page' == $post->type ) {
-		wp_cache_delete('all_page_ids', 'pages');
+	if ( 'page' == $post->post_type ) {
+		wp_cache_delete( 'all_page_ids', 'pages' );
+		wp_cache_delete( 'get_pages', 'page' );
 		$wp_rewrite->flush_rules();
 	}
 
@@ -495,6 +497,7 @@ function wp_insert_post($postarr = array()) {
 	// Get the basics.
 	if ( empty($no_filter) ) {
 		$post_content    = apply_filters('content_save_pre',   $post_content);
+		$post_content_filtered = apply_filters('content_filtered_save_pre',   $post_content_filtered);
 		$post_excerpt    = apply_filters('excerpt_save_pre',   $post_excerpt);
 		$post_title      = apply_filters('title_save_pre',     $post_title);
 		$post_category   = apply_filters('category_save_pre',  $post_category);
@@ -679,7 +682,8 @@ function wp_insert_post($postarr = array()) {
 			wp_schedule_single_event(time(), 'do_pings');
 		}
 	} else if ($post_type == 'page') {
-		wp_cache_delete('all_page_ids', 'pages');
+		wp_cache_delete( 'all_page_ids', 'pages' );
+		wp_cache_delete( 'get_pages', 'page' );
 		$wp_rewrite->flush_rules();
 
 		if ( !empty($page_template) )
@@ -808,6 +812,8 @@ function wp_set_post_categories($post_ID = 0, $post_categories = array()) {
 		wp_cache_delete($cat_id, 'category');
 		do_action('edit_category', $cat_id);
 	}
+
+	wp_cache_delete('get_categories', 'category');
 
 	do_action('edit_post', $post_ID);
 }	// wp_set_post_categories()
@@ -1059,7 +1065,7 @@ function &get_pages($args = '') {
 	$inclusions = '';
 	if ( !empty($include) ) {
 		$child_of = 0; //ignore child_of, exclude, meta_key, and meta_value params if using include 
-		$exclude = '';  
+		$exclude = '';
 		$meta_key = '';
 		$meta_value = '';
 		$incpages = preg_split('/[\s,]+/',$include);
@@ -1072,8 +1078,8 @@ function &get_pages($args = '') {
 			}
 		}
 	}
-	if (!empty($inclusions)) 
-		$inclusions .= ')';	
+	if (!empty($inclusions))
+		$inclusions .= ')';
 
 	$exclusions = '';
 	if ( !empty($exclude) ) {
@@ -1209,6 +1215,7 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 
 	// Get the basics.
 	$post_content    = apply_filters('content_save_pre',   $post_content);
+	$post_content_filtered = apply_filters('content_filtered_save_pre',   $post_content_filtered);
 	$post_excerpt    = apply_filters('excerpt_save_pre',   $post_excerpt);
 	$post_title      = apply_filters('title_save_pre',     $post_title);
 	$post_category   = apply_filters('category_save_pre',  $post_category);

@@ -139,6 +139,7 @@ function wp_insert_category($catarr) {
 	}
 
 	wp_cache_delete($cat_ID, 'category');
+	wp_cache_delete('get_categories', 'category');
 
 	if ($update) {
 		do_action('edit_category', $cat_ID);
@@ -220,6 +221,7 @@ function wp_delete_category($cat_ID) {
 
 	wp_cache_delete($cat_ID, 'category');
 	wp_cache_delete('all_category_ids', 'category');
+	wp_cache_delete('get_categories', 'category');
 
 	do_action('delete_category', $cat_ID);
 
@@ -413,6 +415,7 @@ function wp_delete_link($link_id) {
 		foreach ( $categories as $category ) {
 			$wpdb->query("UPDATE $wpdb->categories SET link_count = link_count - 1 WHERE cat_ID = '$category'");
 			wp_cache_delete($category, 'category');
+			do_action('edit_category', $cat_id);
 		}
 	}
 
