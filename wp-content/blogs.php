@@ -1,5 +1,5 @@
 <?php
-define( 'BLOGDEFINITION', true ); // this prevents most of WP from being loaded
+define( 'SHORTINIT', true ); // this prevents most of WP from being loaded
 require_once( dirname( dirname( __FILE__) ) . '/wp-config.php' ); // absolute includes are faster
 
 if ( 

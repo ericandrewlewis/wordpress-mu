@@ -147,8 +147,9 @@ else
 
 wp_cache_init();
 
-define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files/" );
-if( defined( "BLOGDEFINITION" ) && constant( "BLOGDEFINITION" ) == true )
+if( !defined( "UPLOADS" ) )
+	define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files/" );
+if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
 	return;
 
 
