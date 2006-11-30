@@ -10,7 +10,7 @@ class Blogger_Import {
 		$title = __('Import Blogger');
 		$welcome = __('Howdy! This importer allows you to import posts and comments from your Blogger account into your WordPress blog.');
 		$noiframes = __('This feature requires iframe support.');
-		$warning = __('This will delete everything saved by the Blogger importer except your posts and comments. Are you sure you want to do this?');
+		$warning = js_escape(__('This will delete everything saved by the Blogger importer except your posts and comments. Are you sure you want to do this?'));
 		$reset = __('Reset this importer');
 		$incompat = __('Your web server is not properly configured to use this importer. Please enable the CURL extension for PHP and then reload this page.');
 
@@ -255,7 +255,7 @@ class Blogger_Import {
 					'blog-options-basic' => false,
 					'blog-options-archiving' => array('archiveFrequency' => 'm'),
 					'blog-publishing' => array('publishMode'=>'0', 'blogID' => "$id", 'subdomain' => mt_rand().mt_rand(), 'pingWeblogs' => 'false'),
-					'blog-formatting' => array('timeStampFormat' => '0', 'convertLineBreaks'=>'false', 'floatAlignment'=>'false'),
+					'blog-formatting' => array('timeStampFormat' => '0', 'encoding'=>'UTF-8', 'convertLineBreaks'=>'false', 'floatAlignment'=>'false'),
 					'blog-comments' => array('commentsTimeStampFormat' => '0'),
 					'template-edit' => array( 'templateText' =>  str_replace('%title%', trim($blogsary[2][$key]), $template) )
 				);
@@ -349,7 +349,7 @@ class Blogger_Import {
 				$form = "<div style='height:0px;width:0px;overflow:hidden;'>";
 				$form.= $body;
 				$form.= "</div><script type='text/javascript'>forms=document.getElementsByTagName('form');for(i=0;i<forms.length;i++){if(forms[i].action.search('{$blog_opt}')){forms[i].submit();break;}}</script>";
-				$output.= '<p>'.sprintf('<strong>%s</strong> in progress, please wait...', $blog_opt)."</p>\n";
+				$output.= '<p>'.sprintf(__('<strong>%s</strong> in progress, please wait...'), $blog_opt)."</p>\n";
 			} else {
 				$output.= "<p>$blog_opt</p>\n";
 			}
@@ -428,7 +428,7 @@ class Blogger_Import {
 							$user_email = $wpdb->escape($post_author_email);
 							$user_password = substr(md5(uniqid(microtime())), 0, 6);
 							$result = wp_create_user( $user_login, $user_password, $user_email );
-							$status.= sprintf('Registered user <strong>%s</strong>.', $user_login);
+							$status.= sprintf(__('Registered user <strong>%s</strong>.'), $user_login);
 							$this->import['blogs'][$_GET['blog']]['newusers'][] = $user_login;
 						}
 						$userdata = get_userdatabylogin( $post_author_name );

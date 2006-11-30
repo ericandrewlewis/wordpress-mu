@@ -444,7 +444,7 @@ function edit_user( $user_id = 0 ) {
 		$user->user_email = wp_specialchars( trim( $_POST['email'] ));
 	if ( isset( $_POST['url'] ) ) {
 		$user->user_url = wp_specialchars( trim( $_POST['url'] ));
-		$user->user_url = preg_match( '/^(https?|ftps?|mailto|news|gopher):/is', $user->user_url ) ? $user->user_url : 'http://'.$user->user_url;
+		$user->user_url = preg_match('/^(https?|ftps?|mailto|news|irc|gopher|nntp|feed|telnet):/is', $user->user_url) ? $user->user_url : 'http://'.$user->user_url;
 	}
 	if ( isset( $_POST['first_name'] ))
 		$user->first_name = wp_specialchars( trim( $_POST['first_name'] ));
@@ -558,7 +558,7 @@ function edit_link( $link_id = '' ) {
 		wp_die( __("Cheatin' uh ?" ));
 
 	$_POST['link_url'] = wp_specialchars( $_POST['link_url'] );
-	$_POST['link_url'] = preg_match( '/^(https?|ftps?|mailto|news|gopher):/is', $_POST['link_url'] ) ? $_POST['link_url'] : 'http://' . $_POST['link_url'];
+	$_POST['link_url'] = preg_match('/^(https?|ftps?|mailto|news|irc|gopher|nntp|feed|telnet):/is', $_POST['link_url']) ? $_POST['link_url'] : 'http://' . $_POST['link_url'];
 	$_POST['link_name'] = wp_specialchars( $_POST['link_name'] );
 	$_POST['link_image'] = wp_specialchars( $_POST['link_image'] );
 	$_POST['link_rss'] = wp_specialchars( $_POST['link_rss'] );
@@ -598,7 +598,10 @@ function return_categories_list( $parent = 0 ) {
 }
 
 function sort_cats( $cat1, $cat2 ) {
-	return strcasecmp( $cat1['cat_name'], $cat2['cat_name'] );
+	if ( $cat1['checked'] || $cat2['checked'] )
+		return ( $cat1['checked'] && !$cat2['checked'] ) ? -1 : 1;
+	else
+		return strcasecmp( $cat1['cat_name'], $cat2['cat_name'] );
 }
 
 function get_nested_categories( $default = 0, $parent = 0 ) {
@@ -758,7 +761,7 @@ function _cat_row( $category, $level, $name_override = false ) {
 		<th scope='row' style='text-align: center'>$category->cat_ID</th>
 		<td>" . ( $name_override ? $name_override : $pad . ' ' . $category->cat_name ) . "</td>
 		<td>$category->category_description</td>
-		<td align='center'>$category->category_count</td>
+		<td align='center'><a href='edit.php?cat=$category->cat_ID'>$category->category_count</a></td>
 		<td align='center'>$category->link_count</td>
 		<td>$edit</td>\n\t</tr>\n";
 }
@@ -1037,7 +1040,8 @@ function meta_form() {
 		GROUP BY meta_key
 		ORDER BY meta_id DESC
 		LIMIT $limit" );
-	natcasesort( $keys );
+	if ( $keys )
+		natcasesort($keys);
 ?>
 <h3><?php _e( 'Add a new custom field:' ) ?></h3>
 <table id="newmeta" cellspacing="3" cellpadding="3">
@@ -1991,13 +1995,14 @@ function wp_import_handle_upload() {
 		return $file;
 
 	$url = $file['url'];
+	$type = $file['type'];
 	$file = addslashes( $file['file'] );
 	$filename = basename( $file );
 
 	// Construct the object array
 	$object = array( 'post_title' => $filename,
 		'post_content' => $url,
-		'post_mime_type' => 'import',
+		'post_mime_type' => $type,
 		'guid' => $url
 	);
 
@@ -2076,6 +2081,43 @@ function wp_reset_vars( $vars ) {
 		}
 	}
 }
+
+
+function wp_check_for_changed_slugs($post_id) {
+	if ( !strlen($_POST['wp-old-slug']) )
+		return $post_id;
+
+	$post = &get_post($post_id);
+
+	// we're only concerned with published posts
+	if ( $post->post_status != 'publish' || $post->post_type != 'post' )
+		return $post_id;
+
+	// only bother if the slug has changed
+	if ( $post->post_name == $_POST['wp-old-slug'] )
+		return $post_id;
+
+	$old_slugs = get_post_meta($post_id, '_wp_old_slug');
+
+	// if we haven't added this old slug before, add it now
+	if ( !count($old_slugs) || !in_array($_POST['wp-old-slug'], $old_slugs) )
+		add_post_meta($post_id, '_wp_old_slug', $_POST['wp-old-slug']);
+
+	// if the new slug was used previously, delete it from the list
+	if ( in_array($post->post_name, $old_slugs) )
+		delete_post_meta($post_id, '_wp_old_slug', $post->post_name);
+
+	return $post_id;
+}
+
+
+function wp_remember_old_slug() {
+	global $post;
+	$name = wp_specialchars($post->post_name); // just in case
+	if ( strlen($name) )
+		echo '<input type="hidden" id="wp-old-slug" name="wp-old-slug" value="' . $name . '" />';
+}
+
 
 // If siteurl or home changed, reset cookies and flush rewrite rules.
 function update_home_siteurl( $old_value, $value ) {

@@ -107,7 +107,7 @@ function get_links($category = -1,
 
 		if ( $show_updated )
 			if (substr($row->link_updated_f, 0, 2) != '00')
-				$title .= ' (Last updated ' . date(get_option('links_updated_date_format'), $row->link_updated_f + (get_option('gmt_offset') * 3600)) . ')';
+				$title .= ' ('.__('Last updated') . ' ' . date(get_option('links_updated_date_format'), $row->link_updated_f + (get_option('gmt_offset') * 3600)) . ')';
 
 		if ( '' != $title )
 			$title = ' title="' . $title . '"';
@@ -319,7 +319,8 @@ function wp_list_bookmarks($args = '') {
 	$defaults = array('orderby' => 'name', 'order' => 'ASC', 'limit' => -1, 'category' => '',
 		'category_name' => '', 'hide_invisible' => 1, 'show_updated' => 0, 'echo' => 1,
 		'categorize' => 1, 'title_li' => __('Bookmarks'), 'title_before' => '<h2>', 'title_after' => '</h2>',
-		'category_orderby' => 'name', 'category_order' => 'ASC', 'class' => 'linkcat');
+		'category_orderby' => 'name', 'category_order' => 'ASC', 'class' => 'linkcat',
+		'category_before' => '<li id="%id" class="%class">', 'category_after' => '</li>');
 	$r = array_merge($defaults, $r);
 	extract($r);
 

@@ -175,6 +175,9 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 3845 )
 		upgrade_210();
 
+	if ( $wp_current_db_version < 4351 )
+		upgrade_old_slugs();
+
 	$wp_rewrite->flush_rules();
 
 	update_option('db_version', $wp_db_version);
