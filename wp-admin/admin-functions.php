@@ -1268,16 +1268,16 @@ function save_mod_rewrite_rules() {
 	$home_path = get_home_path();
 
 	if (!$wp_rewrite->using_mod_rewrite_permalinks() )
-		return;
+		return false;
 
 	if (!((!file_exists( $home_path.'.htaccess' ) && is_writable( $home_path ) ) || is_writable( $home_path.'.htaccess' ) ) )
-		return;
+		return false;
 
 	if (! got_mod_rewrite() )
-		return;
+		return false;
 
 	$rules = explode( "\n", $wp_rewrite->mod_rewrite_rules() );
-	insert_with_markers( $home_path.'.htaccess', 'WordPress', $rules );
+	return insert_with_markers( $home_path.'.htaccess', 'WordPress', $rules );
 }
 
 function get_broken_themes() {
@@ -2097,7 +2097,7 @@ function wp_check_for_changed_slugs($post_id) {
 	if ( $post->post_name == $_POST['wp-old-slug'] )
 		return $post_id;
 
-	$old_slugs = get_post_meta($post_id, '_wp_old_slug');
+	$old_slugs = (array) get_post_meta($post_id, '_wp_old_slug');
 
 	// if we haven't added this old slug before, add it now
 	if ( !count($old_slugs) || !in_array($_POST['wp-old-slug'], $old_slugs) )

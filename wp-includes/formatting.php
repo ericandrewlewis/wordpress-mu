@@ -32,7 +32,7 @@ function wptexturize($text) {
 
 			// regular expressions
 			$curl = preg_replace($dynamic_characters, $dynamic_replacements, $curl);
-		} elseif (strstr($curl, '<code') || strstr($curl, '<pre') || strstr($curl, '<kbd' || strstr($curl, '<style') || strstr($curl, '<script'))) {
+		} elseif ( strstr($curl, '<code') || strstr($curl, '<pre') || strstr($curl, '<kbd') || strstr($curl, '<style') || strstr($curl, '<script') ) { 
 			$next = false;
 		} else {
 			$next = true;
@@ -56,27 +56,33 @@ function wpautop($pee, $br = 1) {
 	$pee = $pee . "\n"; // just to make things a little easier, pad the end
 	$pee = preg_replace('|<br />\s*<br />|', "\n\n", $pee);
 	// Space things out a little
-	$pee = preg_replace('!(<(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|p|h[1-6]|input|param|script)[^>]*>)!', "\n$1", $pee);
-	$pee = preg_replace('!(</(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|p|h[1-6]|input|param|script)>)!', "$1\n\n", $pee);
+	$allblocks = '(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|style|script|object|input|param|p|h[1-6])';
+	$pee = preg_replace('!(<' . $allblocks . '[^>]*>)!', "\n$1", $pee);
+	$pee = preg_replace('!(</' . $allblocks . '>)!', "$1\n\n", $pee);
 	$pee = str_replace(array("\r\n", "\r"), "\n", $pee); // cross-platform newlines
 	$pee = preg_replace("/\n\n+/", "\n\n", $pee); // take care of duplicates
 	$pee = preg_replace('/\n?(.+?)(?:\n\s*\n|\z)/s', "<p>$1</p>\n", $pee); // make paragraphs, including one at the end
 	$pee = preg_replace('|<p>\s*?</p>|', '', $pee); // under certain strange conditions it could create a P of entirely whitespace
-	$pee = preg_replace('!<p>\s*(</?(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|hr|pre|select|form|blockquote|address|math|p|h[1-6])[^>]*>)\s*</p>!', "$1", $pee); // don't pee all over a tag
+	$pee = preg_replace( '|<p>(<div[^>]*>\s*)|', "$1<p>", $pee );
+	$pee = preg_replace('!<p>([^<]+)\s*?(</(?:div|address|form)[^>]*>)!', "<p>$1</p>$2", $pee);
+	$pee = preg_replace( '|<p>|', "$1<p>", $pee );
+	$pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee); // don't pee all over a tag
 	$pee = preg_replace("|<p>(<li.+?)</p>|", "$1", $pee); // problem with nested lists
 	$pee = preg_replace('|<p><blockquote([^>]*)>|i', "<blockquote$1><p>", $pee);
 	$pee = str_replace('</blockquote></p>', '</p></blockquote>', $pee);
-	$pee = preg_replace('!<p>\s*(</?(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|hr|pre|select|form|blockquote|address|math|p|h[1-6])[^>]*>)!', "$1", $pee);
-	$pee = preg_replace('!(</?(?:table|thead|tfoot|caption|colgroup|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|p|h[1-6])[^>]*>)\s*</p>!', "$1", $pee);
+	$pee = preg_replace('!<p>\s*(</?' . $allblocks . '[^>]*>)!', "$1", $pee);
+	$pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*</p>!', "$1", $pee);
 	if ($br) {
 		$pee = preg_replace('/<(script|style).*?<\/\\1>/se', 'str_replace("\n", "<WPPreserveNewline />", "\\0")', $pee);
 		$pee = preg_replace('|(?<!<br />)\s*\n|', "<br />\n", $pee); // optionally make line breaks
 		$pee = str_replace('<WPPreserveNewline />', "\n", $pee);
 	}
-	$pee = preg_replace('!(</?(?:table|thead|tfoot|caption|tbody|tr|td|th|div|dl|dd|dt|ul|ol|li|pre|select|form|blockquote|address|math|p|h[1-6])[^>]*>)\s*<br />!', "$1", $pee);
+	$pee = preg_replace('!(</?' . $allblocks . '[^>]*>)\s*<br />!', "$1", $pee);
 	$pee = preg_replace('!<br />(\s*</?(?:p|li|div|dl|dd|dt|th|pre|td|ul|ol)[^>]*>)!', '$1', $pee);
-	$pee = preg_replace('!(<pre.*?>)(.*?)</pre>!ise', " stripslashes('$1') .  stripslashes(clean_pre('$2'))  . '</pre>' ", $pee);
-
+	if ( strstr( $pee, '<pre' ) )
+		$pee = preg_replace('!(<pre.*?>)(.*?)</pre>!ise', " stripslashes('$1') .  stripslashes(clean_pre('$2'))  . '</pre>' ", $pee);
+	$pee = preg_replace( "|\n</p>$|", '</p>', $pee );
+/**/
 	return $pee;
 }
 
@@ -116,7 +122,7 @@ function wp_specialchars( $text, $quotes = 0 ) {
 	return $text;
 }
 
-function utf8_uri_encode( $utf8_string ) {
+function utf8_uri_encode( $utf8_string, $length = 0 ) {
 	$unicode = '';
 	$values = array();
 	$num_octets = 1;
@@ -126,21 +132,25 @@ function utf8_uri_encode( $utf8_string ) {
 		$value = ord( $utf8_string[ $i ] );
 
 		if ( $value < 128 ) {
+			if ( $length && ( strlen($unicode) + 1 > $length ) )
+				break; 
 			$unicode .= chr($value);
 		} else {
 			if ( count( $values ) == 0 ) $num_octets = ( $value < 224 ) ? 2 : 3;
 
 			$values[] = $value;
 
+			if ( $length && ( (strlen($unicode) + ($num_octets * 3)) > $length ) )
+				break;
 			if ( count( $values ) == $num_octets ) {
-	if ($num_octets == 3) {
-		$unicode .= '%' . dechex($values[0]) . '%' . dechex($values[1]) . '%' . dechex($values[2]);
-	} else {
-		$unicode .= '%' . dechex($values[0]) . '%' . dechex($values[1]);
-	}
+				if ($num_octets == 3) {
+					$unicode .= '%' . dechex($values[0]) . '%' . dechex($values[1]) . '%' . dechex($values[2]);
+				} else {
+					$unicode .= '%' . dechex($values[0]) . '%' . dechex($values[1]);
+				}
 
-	$values = array();
-	$num_octets = 1;
+				$values = array();
+				$num_octets = 1;
 			}
 		}
 	}
@@ -328,7 +338,7 @@ function sanitize_title_with_dashes($title) {
 		if (function_exists('mb_strtolower')) {
 			$title = mb_strtolower($title, 'UTF-8');
 		}
-		$title = utf8_uri_encode($title);
+		$title = utf8_uri_encode($title, 200);
 	}
 
 	$title = strtolower($title);

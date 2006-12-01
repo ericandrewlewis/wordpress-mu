@@ -155,7 +155,10 @@ case 'add-meta' :
 	if ( !current_user_can( 'edit_post', $id ) )
 		die('-1');
 	if ( $id < 0 ) {
-		if ( $pid = wp_insert_post() )
+		$now = current_time('timestamp');
+		if ( $pid = wp_insert_post( array(
+			'post_title' => sprintf('Draft created on %s at %s', date(get_option('date_format'), $now), date(get_option('time_format'), $now))
+		) ) )
 			$mid = add_meta( $pid );
 		else
 			die('0');
@@ -181,7 +184,7 @@ case 'update-meta' :
 	$key = $_POST['meta'][$mid]['key'];
 	$value = $_POST['meta'][$mid]['value'];
 	if ( !$meta = get_post_meta_by_id( $mid ) )
-		die('0');
+		die('0'); // if meta doesn't exist
 	if ( !current_user_can( 'edit_post', $meta->post_id ) )
 		die('-1');
 	if ( $u = update_meta( $mid, $key, $value ) ) {
@@ -195,7 +198,7 @@ case 'update-meta' :
 		) );
 		$x->send();
 	}
-	die('0');
+	die('1'); // We know meta exists; we also know it's unchanged (or DB error, in which case there are bigger problems).
 	break;
 case 'add-user' :
 	if ( !current_user_can('edit_users') )

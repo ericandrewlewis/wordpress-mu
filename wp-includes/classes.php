@@ -430,6 +430,9 @@ class Walker {
 				if ( !$to_depth || ($depth < $to_depth) ) { //only descend if we're below $to_depth
 					$cb_args = array_merge( array($output, $depth - 1), $args);
 					$output = call_user_func_array(array(&$this, 'start_lvl'), $cb_args);
+				} else {  // If we've reached depth, end the previous element.
+					$cb_args = array_merge( array($output, $previous_element, $depth - 1), $args);
+					$output = call_user_func_array(array(&$this, 'end_el'), $cb_args);
 				}
 			} else if ( $element->$parent_field == $previous_element->$parent_field) {
 				// On the same level as previous element.
@@ -500,8 +503,11 @@ class Walker_Page extends Walker {
 			$indent = str_repeat("\t", $depth);
 
 		$css_class = 'page_item';
+		$_current_page = get_page( $current_page );
 		if ( $page->ID == $current_page )
 			$css_class .= ' current_page_item';
+		elseif ( $_current_page && $page->ID == $_current_page->post_parent )
+			$css_class .= ' current_page_parent';
 
 		$output .= $indent . '<li class="' . $css_class . '"><a href="' . get_page_link($page->ID) . '" title="' . wp_specialchars($page->post_title, 1) . '">' . $page->post_title . '</a>';
 	
@@ -609,11 +615,15 @@ class Walker_Category extends Walker {
 		if ( isset($show_date) && $show_date ) {
 			$link .= ' ' . gmdate('Y-m-d', $category->last_update_timestamp);
 		}
-	
+
+		$_current_category = get_category( $current_category );
+
 		if ( 'list' == $args['style'] ) {
 			$output .= "\t<li";
 			if ( ($category->cat_ID == $current_category) && is_category() )
 				$output .=  ' class="current-cat"';
+			elseif ( ($category->cat_ID == $_current_category->category_parent) && is_category() )
+				$output .=  ' class="current-cat-parent"';
 			$output .= ">$link\n";
 		} else {
 			$output .= "\t$link<br />\n";
