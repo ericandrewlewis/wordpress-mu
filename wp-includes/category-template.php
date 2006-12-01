@@ -31,6 +31,9 @@ function get_category_link($category_id) {
 		$category = &get_category($category_id);
 		$category_nicename = $category->category_nicename;
 
+		if ( $category->category_parent == $category_id ) // recursive recursion
+			$category->category_parent = 0;
+
 		if ( $parent = $category->category_parent )
 			$category_nicename = get_category_parents($parent, false, '/', true) . $category_nicename . '/';
 
@@ -238,7 +241,10 @@ function wp_list_categories($args = '') {
 			$output .= __("No categories");
 	} else {
 		global $wp_query;
-		$r['current_category'] = $wp_query->get_queried_object_id();
+		
+		if ( is_category() )
+			$r['current_category'] = $wp_query->get_queried_object_id();
+
 		if ( $hierarchical )
 			$depth = 0;  // Walk the full depth.
 		else
