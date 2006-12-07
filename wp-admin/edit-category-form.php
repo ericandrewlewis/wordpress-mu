@@ -5,17 +5,20 @@ if ( ! empty($cat_ID) ) {
 	$form = '<form name="editcat" id="editcat" method="post" action="categories.php">';
 	$action = 'editedcat';
 	$nonce_action = 'update-category_' . $cat_ID;
+	do_action('edit_category_form_pre', $category);
 } else {
 	$heading = __('Add Category');
 	$submit_text = __('Add Category &raquo;');
 	$form = '<form name="addcat" id="addcat" method="post" action="categories.php">';
 	$action = 'addcat';
 	$nonce_action = 'add-category';
+	do_action('add_category_form_pre', $category);
 }
 ?>
 
 <div class="wrap">
 <h2><?php echo $heading ?></h2>
+<div id="ajax-response"></div>
 <?php echo $form ?>
 <input type="hidden" name="action" value="<?php echo $action ?>" />
 <input type="hidden" name="cat_ID" value="<?php echo $category->cat_ID ?>" />
@@ -39,7 +42,6 @@ if ( ! empty($cat_ID) ) {
 	</table>
 <?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "cat_name", "searchresults" ); ?>
 <p class="submit"><input type="submit" name="submit" value="<?php echo $submit_text ?>" /></p>
-<div id="ajax-response"></div>
 <?php do_action('edit_category_form', $category); ?>
 </form>
 </div>

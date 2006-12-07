@@ -73,7 +73,7 @@ if ( isset($_GET['deleted']) ) {
 <div class="wrap">
 
 <h2><?php _e('Blogroll Management'); ?></h2>
-<p><?php _e('Here you add links to sites that you visit often and share them on your blog. When you have a list of links in your sidebar to other blogs, it&#8217;s called a &#8220;blogroll.&#8221;'); ?></p>
+<p><?php _e('Here you <a href="link-add.php">add links</a> to sites that you visit often and share them on your blog. When you have a list of links in your sidebar to other blogs, it&#8217;s called a &#8220;blogroll.&#8221;'); ?></p>
 <form id="cats" method="get" action="">
 <p><?php
 $categories = get_categories("hide_empty=1&type=link");
@@ -93,6 +93,24 @@ printf(__('Currently showing %1$s links ordered by %2$s'), $select_cat, $select_
 ?>
 <input type="submit" name="action" value="<?php _e('Update &raquo;') ?>" /></p>
 </form>
+<?php
+$link_columns = array(
+	'name'       => '<th width="15%">' . __('Name') . '</th>',
+	'url'       => '<th>' . __('URL') . '</th>',
+	'categories' => '<th>' . __('Categories') . '</th>',
+	'rel'      => '<th style="text-align: center">' . __('rel') . '</th>',
+	'visible'   => '<th style="text-align: center">' . __('Visible') . '</th>',
+	'action'   => '<th colspan="2" style="text-align: center">' . __('Action') . '</th>',
+);
+$link_columns = apply_filters('manage_link_columns', $link_columns);
+?>
+
+<?php
+if ( 'all' == $cat_id )
+	$cat_id = '';
+$links = get_bookmarks( "category=$cat_id&hide_invisible=0&orderby=$sqlorderby&hide_empty=0" );
+if ( $links ) {
+?>
 
 <form id="links" method="post" action="link.php">
 <?php wp_nonce_field('bulk-bookmarks') ?>
@@ -103,21 +121,14 @@ printf(__('Currently showing %1$s links ordered by %2$s'), $select_cat, $select_
 <table class="widefat">
 	<thead>
 	<tr>
-		<th width="15%"><?php _e('Name') ?></th>
-		<th><?php _e('URL') ?></th>
-		<th><?php _e('Categories') ?></th>
-		<th style="text-align: center"><?php _e('rel') ?></th>
-		<th style="text-align: center"><?php _e('Visible') ?></th>
-		<th colspan="2" style="text-align: center"><?php _e('Action') ?></th>
-		<th style="text-align: center"><input type="checkbox" onclick="checkAll(document.getElementById('links'));" /></th>
+<?php foreach($link_columns as $column_display_name) {
+	echo $column_display_name;
+} ?>
+	<th style="text-align: center"><input type="checkbox" onclick="checkAll(document.getElementById('links'));" /></th>
 	</tr>
 	</thead>
 	<tbody id="the-list">
 <?php
-if ( 'all' == $cat_id )
-	$cat_id = '';
-$links = get_bookmarks("category=$cat_id&hide_invisible=0&orderby=$sqlorderby&hide_empty=0");
-if ($links)
 	foreach ($links as $link) {
 		$link->link_name = wp_specialchars($link->link_name);
 		$link->link_description = wp_specialchars($link->link_description);
@@ -133,47 +144,59 @@ if ($links)
 		$visible = ($link->link_visible == 'Y') ? __('Yes') : __('No');
 		++ $i;
 		$style = ($i % 2) ? '' : ' class="alternate"';
-?>
-	<tr id="link-<?php echo $link->link_id; ?>" valign="middle" <?php echo $style; ?>>
-		<td><strong><?php echo $link->link_name; ?></strong><br />
-		<?php
+		?><tr id="link-<?php echo $link->link_id; ?>" valign="middle" <?php echo $style; ?>><?php
+		foreach($link_columns as $column_name=>$column_display_name) {
+			switch($column_name) {
+				case 'name':
+					?><td><strong><?php echo $link->link_name; ?></strong><br /><?php
+					echo $link->link_description . "</td>";
+					break;
+				case 'url':
+					echo "<td><a href='$link->link_url' title='".sprintf(__('Visit %s'), $link->link_name)."'>$short_url</a></td>";
+					break;
+				case 'categories':
+					?><td><?php
+					$cat_names = array();
+					foreach ($link->link_category as $category) {
+						$cat_name = get_the_category_by_ID($category);
+						$cat_name = wp_specialchars($cat_name);
+						if ( $cat_id != $category )
+							$cat_name = "<a href='link-manager.php?cat_id=$category'>$cat_name</a>";
+						$cat_names[] = $cat_name;
+					}
+					echo implode(', ', $cat_names);
+					?> </td><?php
+					break;
+				case 'rel':
+					?><td><?php echo $link->link_rel; ?></td><?php
+					break;
+				case 'visible':
+					?><td align='center'><?php echo $visible; ?></td><?php
+					break;
+				case 'action':
+					echo '<td><a href="link.php?link_id='.$link->link_id.'&amp;action=edit" class="edit">'.__('Edit').'</a></td>';
+					echo '<td><a href="' . wp_nonce_url('link.php?link_id='.$link->link_id.'&amp;action=delete', 'delete-bookmark_' . $link->link_id ) . '"'." onclick=\"return deleteSomething( 'link', $link->link_id , '".js_escape(sprintf(__("You are about to delete the &quot;%s&quot; link to %s.\n&quot;Cancel&quot; to stop, &quot;OK&quot; to delete."), $link->link_name, $link->link_url )).'\' );" class="delete">'.__('Delete').'</a></td>';
+					break;
+				default:
+					?>
+					<td><?php do_action('manage_link_custom_column', $column_name, $id); ?></td>
+					<?php
+					break;
 
-
-		echo $link->link_description . "</td>";
-		echo "<td><a href=\"$link->link_url\" title=\"".sprintf(__('Visit %s'), $link->link_name)."\">$short_url</a></td>";
-		?>
-		<td>
-		<?php
-
-		$cat_names = array();
-		foreach ($link->link_category as $category) {
-			$cat_name = get_the_category_by_ID($category);
-			$cat_name = wp_specialchars($cat_name);
-			if ( $cat_id != $category )
-				$cat_name = "<a href='link-manager.php?cat_id=$category'>$cat_name</a>";
-			$cat_names[] = $cat_name;
+			}
 		}
-		echo implode(', ', $cat_names);
-		?>
-		</td>
-		<td><?php echo $link->link_rel; ?></td>
-		<td align='center'><?php echo $visible; ?></td>
-<?php
-
-		echo '<td><a href="link.php?link_id='.$link->link_id.'&amp;action=edit" class="edit">'.__('Edit').'</a></td>';
-		echo '<td><a href="' . wp_nonce_url('link.php?link_id='.$link->link_id.'&amp;action=delete', 'delete-bookmark_' . $link->link_id ) . '"'." onclick=\"return deleteSomething( 'link', $link->link_id , '".js_escape(sprintf(__("You are about to delete the &quot;%s&quot; link to %s.\\n&quot;Cancel&quot; to stop, &quot;OK&quot; to delete."), $link->link_name, $link->link_url )).'\' );" class="delete">'.__('Delete').'</a></td>';
 		echo '<td align="center"><input type="checkbox" name="linkcheck[]" value="'.$link->link_id.'" /></td>';
 		echo "\n    </tr>\n";
 	}
+}
 ?>
 	</tbody>
 </table>
 
 <div id="ajax-response"></div>
 
-<p class="submit"><input type="submit" class="button" name="deletebookmarks" id="deletebookmarks" value="<?php _e('Delete Checked Links') ?> &raquo;" onclick="return confirm('<?php echo js_escape(__("You are about to delete these links permanently \\n  \'Cancel\' to stop, \'OK\' to delete.")); ?>')" /></p>
+<p class="submit"><input type="submit" class="button" name="deletebookmarks" id="deletebookmarks" value="<?php _e('Delete Checked Links') ?> &raquo;" onclick="return confirm('<?php echo js_escape(__("You are about to delete these links permanently.\n'Cancel' to stop, 'OK' to delete.")); ?>')" /></p>
 </form>
-</div>
 
 <?php
 if( wp_cache_get( "checked_bookmarks_table", "options" ) == false ) {
@@ -187,8 +210,8 @@ if( wp_cache_get( "checked_bookmarks_table", "options" ) == false ) {
 		}
 	}
 	wp_cache_set( "checked_bookmarks_table", "1", "options" );
-}
+} ?>
 
-?>
+</div>
 
 <?php include('admin-footer.php'); ?>

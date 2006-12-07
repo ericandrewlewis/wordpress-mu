@@ -158,7 +158,7 @@ function wp_link_pages($args = '') {
 					if ( '' == get_option('permalink_structure') )
 						$output .= '<a href="' . get_permalink() . '&amp;page=' . $i . '">';
 					else
-						$output .= '<a href="' . trailingslashit( get_permalink() ) . $i . '/">';
+						$output .= '<a href="' . trailingslashit(get_permalink()) . $i . '/">';
 				}
 				$output .= $j;
 				if ( ($i != $page) || ((!$more) && ($page==1)) )
@@ -171,16 +171,16 @@ function wp_link_pages($args = '') {
 				$i = $page - 1;
 				if ( $i && $more ) {
 					if ( '' == get_option('permalink_structure') )
-						$output .= '<a href="' . get_permalink() . '&amp;page=' . $i . '">'.$previouspagelink.'</a>';
+						$output .= '<a href="' . get_permalink() . '&amp;page=' . $i . '">' . $previouspagelink . '</a>';
 					else
 						$output .= '<a href="' . get_permalink() . $i . '/">'.$previouspagelink.'</a>';
 				}
 				$i = $page + 1;
 				if ( $i <= $numpages && $more ) {
 					if ( '' == get_option('permalink_structure') )
-						$output .= '<a href="'.get_permalink() . '&amp;page=' . $i . '">'.$nextpagelink.'</a>';
+						$output .= '<a href="' . get_permalink() . '&amp;page=' . $i . '">'.$nextpagelink.'</a>';
 					else
-						$output .= '<a href="'.get_permalink().$i.'/">'.$nextpagelink.'</a>';
+						$output .= '<a href="' . trailingslashit(get_permalink()) . $i . '/">' . $nextpagelink . '</a>';
 				}
 				$output .= $after;
 			}
@@ -269,10 +269,16 @@ function wp_list_pages($args = '') {
 		parse_str($args, $r);
 
 	$defaults = array('depth' => 0, 'show_date' => '', 'date_format' => get_option('date_format'),
-		'child_of' => 0, 'title_li' => __('Pages'), 'echo' => 1, 'authors' => '');
+		'child_of' => 0, 'exclude' => '', 'title_li' => __('Pages'), 'echo' => 1, 'authors' => '');
 	$r = array_merge($defaults, $r);
 
 	$output = '';
+
+	// sanitize, mostly to keep spaces out
+	$r['exclude'] = preg_replace('[^0-9,]', '', $r['exclude']);
+
+	// Allow plugins to filter an array of excluded pages
+	$r['exclude'] = implode(',', apply_filters('wp_list_pages_excludes', explode(',', $r['exclude'])));
 
 	// Query pages.
 	$pages = get_pages($r);
@@ -347,12 +353,11 @@ function get_attachment_icon($id = 0, $fullsize = false, $max_dims = false) {
 
 	$mime = $post->post_mime_type;
 
-	$imagedata = get_post_meta($post->ID, '_wp_attachment_metadata', true);
+	$imagedata = wp_get_attachment_metadata( $post->ID );
 
-	$file = get_post_meta($post->ID, '_wp_attached_file', true);
+	$file = get_attached_file( $post->ID );
 
 	$exts = array('jpg', 'gif', 'png');
-
 	if ( !$fullsize && !empty($imagedata['thumb'])
 			&& ($thumbfile = str_replace(basename($file), $imagedata['thumb'], $file))
 			&& file_exists($thumbfile) ) {

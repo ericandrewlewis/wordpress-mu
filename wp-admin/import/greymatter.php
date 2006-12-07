@@ -6,7 +6,7 @@ class GM_Import {
 
 	function header() {
 		echo '<div class="wrap">';
-		echo '<h2>'.__('Import Greymatter').'</h2>';
+		echo '<h2>'.__('Import GreyMatter').'</h2>';
 	}
 
 	function footer() {
@@ -281,7 +281,7 @@ class GM_Import {
 	?>
 </ul><strong><?php _e('Done') ?></strong></li></ul>
 <p>&nbsp;</p>
-<p><?php _e('Completed Greymatter import!') ?></p>
+<p><?php _e('Completed GreyMatter import!') ?></p>
 <?php
 	$this->footer();
 	}

@@ -506,7 +506,7 @@ default:
 foreach($roleclasses as $role => $roleclass) {
 	uksort($roleclass, "strnatcasecmp");
 ?>
-
+<tbody>
 <tr>
 <?php if ( !empty($role) ) : ?>
 	<th colspan="7"><h3><?php echo $wp_roles->role_names[$role]; ?></h3></th>
@@ -522,7 +522,7 @@ foreach($roleclasses as $role => $roleclass) {
 	<th><?php _e('Website') ?></th>
 	<th colspan="2" style="text-align: center"><?php _e('Actions') ?></th>
 </tr>
-</thead>
+</tbody>
 <tbody id="role-<?php echo $role; ?>"><?php
 $style = '';
 foreach ( (array) $roleclass as $user_object ) {

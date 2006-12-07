@@ -10,10 +10,10 @@ class WP_Scripts {
 	}
 
 	function default_scripts() {
-		$this->add( 'dbx', '/wp-includes/js/dbx.js', false, '2.05' );
-		$this->add( 'fat', '/wp-includes/js/fat.js', false, '1.0-RC1_3660' );
-		$this->add( 'sack', '/wp-includes/js/tw-sack.js', false, '1.6.1' );
-		$this->add( 'quicktags', '/wp-includes/js/quicktags.js', false, '3517' );
+		$this->add( 'dbx', '/wp-includes/js/dbx.compressed.js', false, '2.05' );
+		$this->add( 'fat', '/wp-includes/js/fat.compressed.js', false, '1.0-RC1_3660' );
+		$this->add( 'sack', '/wp-includes/js/tw-sack.compressed.js', false, '1.6.1' );
+		$this->add( 'quicktags', '/wp-includes/js/quicktags.compressed.js', false, '3517' );
 		$this->add( 'colorpicker', '/wp-includes/js/colorpicker.js', false, '3517' );
 		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '20061113' );
 		$mce_config = apply_filters('tiny_mce_config_url', '/wp-includes/js/tinymce/tiny_mce_config.php');
@@ -21,16 +21,16 @@ class WP_Scripts {
 		$this->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.5.0');
 		$this->add( 'autosave', '/wp-includes/js/autosave.js.php', array('prototype', 'sack'), '4508');
 		$this->add( 'wp-ajax', '/wp-includes/js/wp-ajax-js.php', array('prototype'), '4459');
-		$this->add( 'listman', '/wp-includes/js/list-manipulation-js.php', array('wp-ajax', 'fat'), '4459');
+		$this->add( 'listman', '/wp-includes/js/list-manipulation-js.php', array('wp-ajax', 'fat'), '4583');
 		if ( is_admin() ) {
 			$this->add( 'dbx-admin-key', '/wp-admin/dbx-admin-key-js.php', array('dbx'), '3651' );
 			$this->add( 'ajaxcat', '/wp-admin/cat-js.php', array('listman'), '3684' );
 			$this->add( 'admin-categories', '/wp-admin/categories.js', array('listman'), '3684' );
 			$this->add( 'admin-custom-fields', '/wp-admin/custom-fields.js', array('listman'), '3733' );
 			$this->add( 'admin-comments', '/wp-admin/edit-comments.js', array('listman'), '3847' );
-			$this->add( 'admin-users', '/wp-admin/users.js', array('listman'), '3684' );
+			$this->add( 'admin-users', '/wp-admin/users.js', array('listman'), '4583' );
 			$this->add( 'xfn', '/wp-admin/xfn.js', false, '3517' );
-			$this->add( 'upload', '/wp-admin/upload-js.php', array('prototype'), '4466b' );
+			$this->add( 'upload', '/wp-admin/upload-js.php', array('prototype'), '4535' );
 		}
 	}
 

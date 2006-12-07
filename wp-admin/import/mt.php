@@ -11,7 +11,7 @@ class MT_Import {
 
 	function header() {
 		echo '<div class="wrap">';
-		echo '<h2>'.__('Import Movable Type and TypePad').'</h2>';
+		echo '<h2>'.__('Import Movable Type or TypePad').'</h2>';
 	}
 
 	function footer() {
@@ -22,7 +22,7 @@ class MT_Import {
 		$this->header();
 ?>
 <div class="narrow">
-<p><?php _e('Howdy! We&#8217;re about to begin the process to import all of your Movable Type entries into WordPress. To begin, select a file to upload and click Import.'); ?></p>
+<p><?php _e('Howdy! We&#8217;re about to begin importing all of your Movable Type or Typepad entries into WordPress. To begin, choose a file to upload and click Upload file and import.'); ?></p>
 <?php wp_import_upload_form( add_query_arg('step', 1) ); ?>
 	<p><?php _e('The importer is smart enough not to import duplicates, so you can run this multiple times without worry if&#8212;for whatever reason&#8212;it doesn\'t finish. If you get an <strong>out of memory</strong> error try splitting up the import file into pieces.'); ?> </p>
 </div>
@@ -95,6 +95,13 @@ class MT_Import {
 		$formnames = array ();
 		$selectnames = array ();
 
+		foreach ($_POST['user'] as $key => $line) {
+			$newname = trim(stripslashes($line));
+			if ($newname == '')
+				$newname = 'left_blank'; //passing author names from step 1 to step 2 is accomplished by using POST. left_blank denotes an empty entry in the form.
+			array_push($formnames, "$newname");
+		} // $formnames is the array with the form entered names
+
 		foreach ($_POST['userselect'] as $user => $key) {
 			$selected = trim(stripslashes($key));
 			array_push($selectnames, "$selected");
@@ -131,7 +138,7 @@ class MT_Import {
 			echo '</li>';
 		}
 
-		echo '<input type="submit" value="Submit">'.'<br/>';
+		echo '<input type="submit" value="'.__('Submit').'">'.'<br/>';
 		echo '</form>';
 		echo '</ol></div>';
 
@@ -408,5 +415,5 @@ class MT_Import {
 
 $mt_import = new MT_Import();
 
-register_importer('mt', __('Movable Type and TypePad'), __('Imports <strong>posts and comments</strong> from your Movable Type or TypePad blog'), array ($mt_import, 'dispatch'));
+register_importer('mt', __('Movable Type and TypePad'), __('Import posts and comments from a Movable Type or Typepad blog'), array ($mt_import, 'dispatch'));
 ?>

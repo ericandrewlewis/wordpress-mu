@@ -46,6 +46,10 @@ a.delete:hover {
 	overflow: hidden;
 }
 
+#planetnews cite {
+	font-size: 11px;
+}
+
 #planetnews li .post {
 	font-family: Georgia, "Times New Roman", Times, serif;
 	font-size: 18px;
@@ -824,6 +828,7 @@ input.delete:hover {
 	margin: 0;
 	font-size: 15px;
 }
+
 .plugins p {
 }
 

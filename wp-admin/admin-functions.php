@@ -722,6 +722,7 @@ function cat_rows( $parent = 0, $level = 0, $categories = 0 ) {
 		$categories = get_categories( 'hide_empty=0' );
 
 	if ( $categories ) {
+		ob_start();
 		foreach ( $categories as $category ) {
 			if ( $category->cat_ID == 0 ) { // HACK, added 2006-05-13
 				$wpdb->query("DELETE FROM $wpdb->categories WHERE cat_ID = 0");
@@ -732,6 +733,12 @@ function cat_rows( $parent = 0, $level = 0, $categories = 0 ) {
 				cat_rows( $category->cat_ID, $level +1, $categories );
 			}
 		}
+		$output = ob_get_contents();
+		ob_end_clean();
+		
+		$output = apply_filters('cat_rows', $output);
+
+		echo $output;
 	} else {
 		return false;
 	}
@@ -826,11 +833,13 @@ function user_row( $user_object, $style = '' ) {
 	if ( $numposts > 0 ) {
 		$r .= "<a href='edit.php?author=$user_object->ID' title='" . __( 'View posts by this author' ) . "' class='edit'>";
 		$r .= sprintf( __('View %1$s %2$s' ), $numposts, __ngettext( 'post', 'posts', $numposts ));
+		$r .= '</a>';
 	}
 	$r .= "</td>\n\t\t<td>";
-	$edit_link = add_query_arg( 'wp_http_referer', wp_specialchars( urlencode( stripslashes( $_SERVER['REQUEST_URI'] ) ) ), "user-edit.php?user_id=$user_object->ID" );
-	if ( ( is_site_admin() || $current_user->ID == $user_object->ID ) && current_user_can('edit_user', $user_object->ID) )
+	if ( ( is_site_admin() || $current_user->ID == $user_object->ID ) && current_user_can( 'edit_user', $user_object->ID ) ) {
+		$edit_link = wp_specialchars( add_query_arg( 'wp_http_referer', urlencode( stripslashes( $_SERVER['REQUEST_URI'] ) ), "user-edit.php?user_id=$user_object->ID" ) );
 		$r .= "<a href='$edit_link' class='edit'>".__( 'Edit' )."</a>";
+	}
 	$r .= "</td>\n\t</tr>";
 	return $r;
 }
@@ -1296,8 +1305,8 @@ function get_page_templates() {
 	if ( is_array( $templates ) ) {
 		foreach ( $templates as $template ) {
 			$template_data = implode( '', file( ABSPATH.$template ));
-			preg_match( "|Template Name:(.* )|i", $template_data, $name );
-			preg_match( "|Description:(.* )|i", $template_data, $description );
+			preg_match( "|Template Name:(.*)|i", $template_data, $name );
+			preg_match( "|Description:(.*)|i", $template_data, $description );
 
 			$name = $name[1];
 			$description = $description[1];
@@ -2020,7 +2029,7 @@ function the_attachment_links( $id = false ) {
 		return false;
 
 	$icon = get_attachment_icon( $post->ID );
-	$attachment_data = get_post_meta( $id, '_wp_attachment_metadata', true );
+	$attachment_data = wp_get_attachment_metadata( $id );
 	$thumb = isset( $attachment_data['thumb'] );
 ?>
 <form id="the-attachment-links">
@@ -2037,7 +2046,7 @@ function the_attachment_links( $id = false ) {
 		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo $post->guid; ?>"><?php echo $icon ?></a></textarea></td>
 	</tr>
 	<tr>
-		<th scope="row"><?php $thumb ? _e( 'Thumbnail linked to page' ) : _e( 'Image linked to file' ); ?></th>
+		<th scope="row"><?php $thumb ? _e( 'Thumbnail linked to page' ) : _e( 'Image linked to page' ); ?></th>
 		<td><textarea rows="1" cols="40" type="text" class="attachmentlinks" readonly="readonly"><a href="<?php echo get_attachment_link( $post->ID ) ?>" rel="attachment wp-att-<?php echo $post->ID; ?>"><?php echo $icon ?></a></textarea></td>
 	</tr>
 <?php else : ?>
