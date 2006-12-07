@@ -547,12 +547,7 @@ input.disabled, textarea.disabled {
 	border: none;
 }
 
-#titlediv, #guiddiv {
-	margin: 0 8px 0 0;
-	padding: 0px;
-}
-
-#postdiv {
+#postdiv, #titlediv, #guiddiv {
 	margin: 0 8px 0 0;
 	padding: 0px;
 }
@@ -595,7 +590,7 @@ input.delete:hover {
 	color: #fff;
 }
 
-#postdivrich #quicktags, #commentdivrich #quicktags {
+#postdivrich #quicktags {
 	background: #f0f0ee;
 	padding: 0px;
 	border: 1px solid #ccc;
@@ -689,13 +684,15 @@ input.delete:hover {
 	position: relative;
 	background: url('images/login-bkg-tile.gif') no-repeat top center;
 	color: #fff;
-	margin: 5em auto;
-	padding: 20px 50px 0;
-	width: 325px;
-	_width:  390px;
+	margin: 5em auto 1em;
+	padding: 20px 0 0;
+	width: 425px;
+	_width: 390px;
 }
 
 #login form {
+	background: url('images/login-bkg-bottom.gif') no-repeat bottom center;
+	padding: 0 50px 25px;
 	_width: 325px;
 	_margin: 0 auto;
 }
@@ -707,7 +704,18 @@ input.delete:hover {
 	font-size: 11px;
 	font-weight: bold;
 	padding: .6em;
+	width: 310px;
+	margin: 0 auto;
 	text-align: center;
+}
+
+#login p { 
+	font-size: 12px;
+}
+
+#login p.message { 
+	width: 310px;
+	margin: 0 auto 1em;
 }
 
 #login #login_error a {
@@ -764,13 +772,12 @@ input.delete:hover {
 	padding: 4px;
 }
 
-#login ul {
-	background: url('images/login-bkg-bottom.gif') no-repeat bottom center;
+.login ul, #protected #login .bottom {
 	list-style: none;
-	margin: 0 -50px;
-	_margin:  10px auto 0;
-	padding: 10px 50px 25px;;
-	_padding: 0 0 5px 30px;
+	width: 325px;
+	margin: 0 auto;
+	padding: 0;
+	line-height: 1.2;
 }
 
 #login ul:after {
@@ -795,22 +802,12 @@ input.delete:hover {
 	text-align: center;
 }
 
-#login ul li a {
-	display: block;
-	color: #84c4f0;
+.login ul li a {
+	color: #0d324f;
 	border: none;
-	padding: 4px 1px 5px;
-	width: 160px;
-}
-
-#register #login ul li a { 
-	width: 106px;
 }
 
 #login ul li a:hover {
-	background: #0e3350;
-	border: 1px solid #2571ab;
-	padding: 3px 0 4px; 
 	color: #fff;
 }
 
@@ -1195,7 +1192,7 @@ overall, dbx-box is best left as visually unstyled as possible
 	background: #2685af url(images/box-head-right.gif) no-repeat top right;
 }
 
-#advancedstuff div.dbx-handle-wrapper {
+#advancedstuff div.dbx-h-andle-wrapper {
 	margin: 0 0 0 -7px;
 	background: #fff url(images/box-head-left.gif) no-repeat top left;
 }
@@ -1211,7 +1208,7 @@ overall, dbx-box is best left as visually unstyled as possible
 	padding-right: 17px;
 }
 
-#advancedstuff div.dbx-content-wrapper {
+#advancedstuff div.dbx-c-ontent-wrapper {
 	margin-left: -7px;
 	margin-right: 0;
 	background: url(images/box-bg-left.gif) repeat-y left;
@@ -1223,11 +1220,11 @@ overall, dbx-box is best left as visually unstyled as possible
 	background: url(images/box-butt-right.gif) no-repeat bottom right;
 }
 
-#advancedstuff div.dbx-box-wrapper {
+#advancedstuff div.dbx-b-ox-wrapper {
 	background: url(images/box-butt-left.gif) no-repeat bottom left;
 }
 
-#advancedstuff .dbx-box-closed div.dbx-content-wrapper {
+#advancedstuff .dbx-box-closed div.dbx-c-ontent-wrapper {
 	padding-bottom: 2px;
 	background: url(images/box-butt-left.gif) no-repeat bottom left;
 }
@@ -1337,7 +1334,7 @@ input #catadd {
 	padding-left: 3px;
 }
 
-#postdivrich #content, #postdivrich #content:active, #commentdivrich #content, #commentdivrich #content:active {
+#postdivrich #content, #postdivrich #content:active {
 	border: 1px solid #ccc;
 }
 
