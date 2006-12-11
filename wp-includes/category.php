@@ -111,15 +111,15 @@ function &get_categories($args = '') {
 	// Update category counts to include children.
 	if ( $hierarchical ) {
 		foreach ( $categories as $k => $category ) {
-			$progeny = $category->category_count;
+			$progeny = 'link' == $type ? $category->link_count : $category->category_count;
 			if ( $children = _get_cat_children($category->cat_ID, $categories) ) {
 				foreach ( $children as $child )
-					$progeny += $child->category_count;
+					$progeny += 'link' == $type ? $child->link_count : $child->category_count;
 			}
 			if ( !$progeny && $hide_empty )
 				unset($categories[$k]);
 			else
-				$categories[$k]->category_count = $progeny;
+				$categories[$k]->{'link' == $type ? 'link_count' : 'category_count'} = $progeny;
 		}
 	}
 	reset ( $categories );
@@ -129,14 +129,6 @@ function &get_categories($args = '') {
 
 	return apply_filters('get_categories', $categories, $r);
 }
-
-function delete_get_categories_cache() {
-	wp_cache_delete('get_categories', 'category');
-}
-add_action( 'wp_insert_post', 'delete_get_categories_cache' );
-add_action( 'edit_category', 'delete_get_categories_cache' );
-add_action( 'add_category', 'delete_get_categories_cache' );
-add_action( 'delete_category', 'delete_get_categories_cache' );
 
 // Retrieves category data given a category ID or category object.
 // Handles category caching.
@@ -177,8 +169,9 @@ function get_category_by_path($category_path, $full_match = true, $output = OBJE
 	$category_paths = '/' . trim($category_path, '/');
 	$leaf_path  = sanitize_title(basename($category_paths));
 	$category_paths = explode('/', $category_paths);
-	foreach($category_paths as $pathdir)
-		$full_path .= ($pathdir!=''?'/':'') . sanitize_title($pathdir);
+	$full_path = '';
+	foreach ( (array) $category_paths as $pathdir )
+		$full_path .= ( $pathdir != '' ? '/' : '' ) . sanitize_title($pathdir);
 
 	$categories = $wpdb->get_results("SELECT cat_ID, category_nicename, category_parent FROM $wpdb->categories WHERE category_nicename = '$leaf_path'");
 

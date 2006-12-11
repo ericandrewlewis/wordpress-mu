@@ -536,10 +536,16 @@ function update_post_cache(&$posts) {
 }
 
 function clean_post_cache($id) {
-	global $post_cache, $blog_id;
+	global $post_cache, $post_meta_cache, $category_cache, $blog_id;
 
 	if ( isset( $post_cache[$blog_id][$id] ) )
 		unset( $post_cache[$blog_id][$id] );
+
+	if ( isset ($post_meta_cache[$blog_id][$id] ) )
+		unset( $post_meta_cache[$blog_id][$id] );
+
+	if ( isset( $category_cache[$blog_id][$id]) )
+		unset ( $category_cache[$blog_id][$id] );
 }
 
 function update_page_cache(&$pages) {
@@ -554,16 +560,15 @@ function update_page_cache(&$pages) {
 	}
 }
 
-
 function clean_page_cache($id) {
-	global $page_cache, $wpdb, $blog_id;
+	global $page_cache, $blog_id;
 
 	if ( isset( $page_cache[$blog_id][$id] ) )
 		unset( $page_cache[$blog_id][$id] );
 
-	$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type='page'");
-	wp_cache_delete('all_page_ids','pages');
-	
+	wp_cache_delete($id, 'pages');
+	wp_cache_delete( 'all_page_ids', 'pages' );
+	wp_cache_delete( 'get_pages', 'page' );
 }
 
 function update_post_category_cache($post_ids) {
@@ -668,6 +673,12 @@ function update_postmeta_cache($post_id_list = '') {
 
 function update_category_cache() {
 	return true;
+}
+
+function clean_category_cache($id) {
+	wp_cache_delete($id, 'category');
+	wp_cache_delete('all_category_ids', 'category');
+	wp_cache_delete('get_categories', 'category');
 }
 
 /*
@@ -1115,6 +1126,126 @@ function wp_check_filetype($filename, $mimes = null) {
 	}
 
 	return compact('ext', 'type');
+}
+
+function wp_generate_attachment_metadata( $attachment_id, $file ) {
+	$attachment = get_post( $attachment_id );
+
+	$metadata = array();
+	if ( preg_match('!^image/!', get_post_mime_type( $attachment )) ) {
+		$imagesize = getimagesize($file);
+		$metadata['width'] = $imagesize['0'];
+		$metadata['height'] = $imagesize['1'];
+		list($uwidth, $uheight) = get_udims($metadata['width'], $metadata['height']);
+		$metadata['hwstring_small'] = "height='$uheight' width='$uwidth'";
+		$metadata['file'] = $file;
+
+		if ( $metadata['width'] * $metadata['height'] < 3 * 1024 * 1024 ) {
+			if ( $metadata['width'] > 128 && $metadata['width'] >= $metadata['height'] * 4 / 3 )
+				$thumb = wp_create_thumbnail($file, 128);
+			elseif ( $metadata['height'] > 96 )
+				$thumb = wp_create_thumbnail($file, 96);
+
+			if ( @file_exists($thumb) )
+				$metadata['thumb'] = basename($thumb);
+		}
+	}
+	return apply_filters( 'wp_generate_attachment_metadata', $metadata );
+}
+
+function wp_create_thumbnail( $file, $max_side, $effect = '' ) {
+
+		// 1 = GIF, 2 = JPEG, 3 = PNG
+
+	if ( file_exists( $file ) ) {
+		$type = getimagesize( $file );
+
+		// if the associated function doesn't exist - then it's not
+		// handle. duh. i hope.
+
+		if (!function_exists( 'imagegif' ) && $type[2] == 1 ) {
+			$error = __( 'Filetype not supported. Thumbnail not created.' );
+		}
+		elseif (!function_exists( 'imagejpeg' ) && $type[2] == 2 ) {
+			$error = __( 'Filetype not supported. Thumbnail not created.' );
+		}
+		elseif (!function_exists( 'imagepng' ) && $type[2] == 3 ) {
+			$error = __( 'Filetype not supported. Thumbnail not created.' );
+		} else {
+
+			// create the initial copy from the original file
+			if ( $type[2] == 1 ) {
+				$image = imagecreatefromgif( $file );
+			}
+			elseif ( $type[2] == 2 ) {
+				$image = imagecreatefromjpeg( $file );
+			}
+			elseif ( $type[2] == 3 ) {
+				$image = imagecreatefrompng( $file );
+			}
+
+			if ( function_exists( 'imageantialias' ))
+				imageantialias( $image, TRUE );
+
+			$image_attr = getimagesize( $file );
+
+			// figure out the longest side
+
+			if ( $image_attr[0] > $image_attr[1] ) {
+				$image_width = $image_attr[0];
+				$image_height = $image_attr[1];
+				$image_new_width = $max_side;
+
+				$image_ratio = $image_width / $image_new_width;
+				$image_new_height = $image_height / $image_ratio;
+				//width is > height
+			} else {
+				$image_width = $image_attr[0];
+				$image_height = $image_attr[1];
+				$image_new_height = $max_side;
+
+				$image_ratio = $image_height / $image_new_height;
+				$image_new_width = $image_width / $image_ratio;
+				//height > width
+			}
+
+			$thumbnail = imagecreatetruecolor( $image_new_width, $image_new_height);
+			@ imagecopyresampled( $thumbnail, $image, 0, 0, 0, 0, $image_new_width, $image_new_height, $image_attr[0], $image_attr[1] );
+
+			// If no filters change the filename, we'll do a default transformation.
+			if ( basename( $file ) == $thumb = apply_filters( 'thumbnail_filename', basename( $file ) ) )
+				$thumb = preg_replace( '!(\.[^.]+)?$!', __( '.thumbnail' ).'$1', basename( $file ), 1 );
+
+			$thumbpath = str_replace( basename( $file ), $thumb, $file );
+
+			// move the thumbnail to it's final destination
+			if ( $type[2] == 1 ) {
+				if (!imagegif( $thumbnail, $thumbpath ) ) {
+					$error = __( "Thumbnail path invalid" );
+				}
+			}
+			elseif ( $type[2] == 2 ) {
+				if (!imagejpeg( $thumbnail, $thumbpath ) ) {
+					$error = __( "Thumbnail path invalid" );
+				}
+			}
+			elseif ( $type[2] == 3 ) {
+				if (!imagepng( $thumbnail, $thumbpath ) ) {
+					$error = __( "Thumbnail path invalid" );
+				}
+			}
+
+		}
+	} else {
+		$error = __( 'File not found' );
+	}
+
+	if (!empty ( $error ) ) {
+		return $error;
+	} else {
+		apply_filters( 'wp_create_thumbnail', $thumbpath );
+		return $thumbpath;
+	}
 }
 
 function wp_explain_nonce($action) {

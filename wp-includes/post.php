@@ -438,8 +438,7 @@ function wp_delete_post($postid = 0) {
 	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = $postid");
 
 	if ( 'page' == $post->post_type ) {
-		wp_cache_delete( 'all_page_ids', 'pages' );
-		wp_cache_delete( 'get_pages', 'page' );
+		clean_page_cache($postid);
 		$wp_rewrite->flush_rules();
 	}
 
@@ -652,7 +651,7 @@ function wp_insert_post($postarr = array()) {
 
 	if ( 'page' == $post_type ) {
 		clean_page_cache($post_ID);
-		wp_cache_delete($post_ID, 'pages');
+		$wp_rewrite->flush_rules();
 	} else {
 		clean_post_cache($post_ID);
 	}
@@ -691,10 +690,6 @@ function wp_insert_post($postarr = array()) {
 			wp_schedule_single_event(time(), 'do_pings');
 		}
 	} else if ($post_type == 'page') {
-		wp_cache_delete( 'all_page_ids', 'pages' );
-		wp_cache_delete( 'get_pages', 'page' );
-		$wp_rewrite->flush_rules();
-
 		if ( !empty($page_template) )
 			if ( ! update_post_meta($post_ID, '_wp_page_template',  $page_template))
 				add_post_meta($post_ID, '_wp_page_template',  $page_template, true);
@@ -818,13 +813,9 @@ function wp_set_post_categories($post_ID = 0, $post_categories = array()) {
 	foreach ( $all_affected_cats as $cat_id ) {
 		$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->post2cat, $wpdb->posts WHERE $wpdb->posts.ID=$wpdb->post2cat.post_id AND post_status = 'publish' AND post_type = 'post' AND category_id = '$cat_id'");
 		$wpdb->query("UPDATE $wpdb->categories SET category_count = '$count' WHERE cat_ID = '$cat_id'");
-		wp_cache_delete($cat_id, 'category');
+		clean_category_cache($cat_id);
 		do_action('edit_category', $cat_id);
 	}
-
-	wp_cache_delete('get_categories', 'category');
-
-	do_action('edit_post', $post_ID);
 }	// wp_set_post_categories()
 
 //
@@ -1164,11 +1155,6 @@ function &get_pages($args = '') {
 	return $pages;
 }
 
-function delete_get_pages_cache() {
-	wp_cache_delete( 'get_pages', 'page' );
-}
-add_action( 'save_post', 'delete_get_pages_cache' );
-
 function generate_page_uri_index() {
 	global $wpdb;
 
@@ -1437,6 +1423,33 @@ function wp_update_attachment_metadata( $post_id, $data ) {
 		return update_post_meta( $post_id, '_wp_attachment_metadata', $data, $old_data );
 	else
 		return add_post_meta( $post_id, '_wp_attachment_metadata', $data );
+}
+
+function wp_check_for_changed_slugs($post_id) {
+	if ( !strlen($_POST['wp-old-slug']) )
+		return $post_id;
+
+	$post = &get_post($post_id);
+
+	// we're only concerned with published posts
+	if ( $post->post_status != 'publish' || $post->post_type != 'post' )
+		return $post_id;
+
+	// only bother if the slug has changed
+	if ( $post->post_name == $_POST['wp-old-slug'] )
+		return $post_id;
+
+	$old_slugs = (array) get_post_meta($post_id, '_wp_old_slug');
+
+	// if we haven't added this old slug before, add it now
+	if ( !count($old_slugs) || !in_array($_POST['wp-old-slug'], $old_slugs) )
+		add_post_meta($post_id, '_wp_old_slug', $_POST['wp-old-slug']);
+
+	// if the new slug was used previously, delete it from the list
+	if ( in_array($post->post_name, $old_slugs) )
+		delete_post_meta($post_id, '_wp_old_slug', $post->post_name);
+
+	return $post_id;
 }
 
 ?>
