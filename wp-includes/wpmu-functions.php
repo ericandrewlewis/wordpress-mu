@@ -795,10 +795,13 @@ function wpmu_admin_redirect_url() {
 	}
 }
 
-function is_blog_user() {
+function is_blog_user( $blog_id = 0 ) {
 	global $current_user, $wpdb, $wpmuBaseTablePrefix;
 
-	$cap_key = $wpmuBaseTablePrefix . $wpdb->blogid . '_capabilities';
+	if ( !$blog_id )
+		$blog_id = $wpdb->blogid;
+
+	$cap_key = $wpmuBaseTablePrefix . $blog_id . '_capabilities';
 
 	if ( is_array($current_user->$cap_key) && in_array(1, $current_user->$cap_key) )
 		return true;
@@ -822,6 +825,24 @@ function validate_email( $email, $check_domain = true) {
         return true;
     }
     return false;
+}
+
+function is_email_address_unsafe( $user_email ) {
+	$banned_names = get_site_option( "banned_email_domains" );
+	if ( is_array( $banned_names ) && empty( $banned_names ) == false ) {
+		$email_domain = strtolower( substr( $user_email, 1 + strpos( $user_email, '@' ) ) );
+		foreach( $banned_names as $banned_domain ) {
+			if (
+				strstr( $email_domain, $banned_domain ) ||
+				(
+					strstr( $banned_domain, '/' ) &&
+					preg_match( $banned_domain, $email_domain )
+				)
+			) 
+			return true;
+		}
+	}
+	return false;
 }
 
 function wpmu_validate_user_signup($user_name, $user_email) {
@@ -849,20 +870,8 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	    $errors->add('user_name',  __("That username is not allowed"));
 	}
 
-	$banned_names = get_site_option( "banned_email_domains" );
-	if ( is_array( $banned_names ) && empty( $banned_names ) == false ) {
-		$email_domain = strtolower( substr( $user_email, 1 + strpos( $user_email, '@' ) ) );
-		foreach( $banned_names as $banned_domain ) {
-			if (
-				strstr( $email_domain, $banned_domain ) ||
-				(
-					strstr( $banned_domain, '/' ) &&
-					preg_match( $banned_domain, $email_domain )
-				)
-			) 
-				$errors->add('user_email',  __("You cannot use that email address to signup. We are having problems with them blocking some of our email. Please use another email provider."));
-		}
-	}
+	if( is_email_address_unsafe( $user_email ) ) 
+		$errors->add('user_email',  __("You cannot use that email address to signup. We are having problems with them blocking some of our email. Please use another email provider."));
 
 	if( strlen( $user_name ) < 4 ) {
 	    $errors->add('user_name',  __("Username must be at least 4 characters"));
@@ -910,6 +919,8 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 		} else {
 			$errors->add('user_name', __("That username is currently reserved but may be available in a couple of days."));
 		}
+		if( $signup->active == 0 && $signup->user_email == $user_email )
+			$errors->add('user_email_used', __("username and email used"));
 	}
 
 	$signup = $wpdb->get_row("SELECT * FROM $wpdb->signups WHERE user_email = '$user_email'");
