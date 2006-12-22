@@ -28,7 +28,7 @@ else
 <?php
 switch($step) {
 	case 0:
-		$goback = wp_specialchars(wp_get_referer());
+		$goback = attribute_escape(stripslashes(wp_get_referer()));
 ?> 
 <p><?php _e('This file upgrades you from any previous version of WordPress to the latest. It may take a while though, so be patient.'); ?></p> 
 <h2 class="step"><a href="upgrade.php?step=1&amp;backto=<?php echo $goback; ?>"><?php _e('Upgrade WordPress &raquo;'); ?></a></h2>
@@ -40,7 +40,7 @@ switch($step) {
 		if ( empty( $_GET['backto'] ) )
 			$backto = __get_option('home');
 		else
-			$backto = wp_specialchars( $_GET['backto'] , 1 );
+			$backto = attribute_escape(stripslashes($_GET['backto']));
 		if( $wpdb->get_row( "SELECT blog_id FROM wp_blog_versions WHERE blog_id = '{$wpdb->blogid}'" ) ) {
 			$wpdb->query( "UPDATE wp_blog_versions SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
 		} else {

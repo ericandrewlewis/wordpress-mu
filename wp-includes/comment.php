@@ -155,21 +155,21 @@ function sanitize_comment_cookies() {
 	if ( isset($_COOKIE['comment_author_'.COOKIEHASH]) ) {
 		$comment_author = apply_filters('pre_comment_author_name', $_COOKIE['comment_author_'.COOKIEHASH]);
 		$comment_author = stripslashes($comment_author);
-		$comment_author = wp_specialchars($comment_author, true);
+		$comment_author = attribute_escape($comment_author);
 		$_COOKIE['comment_author_'.COOKIEHASH] = $comment_author;
 	}
 
 	if ( isset($_COOKIE['comment_author_email_'.COOKIEHASH]) ) {
 		$comment_author_email = apply_filters('pre_comment_author_email', $_COOKIE['comment_author_email_'.COOKIEHASH]);
 		$comment_author_email = stripslashes($comment_author_email);
-		$comment_author_email = wp_specialchars($comment_author_email, true);
+		$comment_author_email = attribute_escape($comment_author_email);
 		$_COOKIE['comment_author_email_'.COOKIEHASH] = $comment_author_email;
 	}
 
 	if ( isset($_COOKIE['comment_author_url_'.COOKIEHASH]) ) {
 		$comment_author_url = apply_filters('pre_comment_author_url', $_COOKIE['comment_author_url_'.COOKIEHASH]);
 		$comment_author_url = stripslashes($comment_author_url);
-		$comment_author_url = wp_specialchars($comment_author_url, true);
+		$comment_author_url = attribute_escape($comment_author_url);
 		$_COOKIE['comment_author_url_'.COOKIEHASH] = $comment_author_url;
 	}
 }
@@ -204,13 +204,11 @@ function wp_allow_comment($commentdata) {
 		$post_author = $wpdb->get_var("SELECT post_author FROM $wpdb->posts WHERE ID = '$comment_post_ID' LIMIT 1");
 	}
 
-	// The author and the admins get respect.
 	if ( $userdata && is_site_admin( $userdata->user_login ) == false && ( $user_id == $post_author || $user->has_cap('level_9' ) ) ) {
+		// The author and the admins get respect.
 		$approved = 1;
-	}
-
-	// Everyone else's comments will be checked.
-	else {
+	 } else {
+		// Everyone else's comments will be checked.
 		if ( check_comment($comment_author, $comment_author_email, $comment_author_url, $comment_content, $comment_author_IP, $comment_agent, $comment_type) )
 			$approved = 1;
 		else

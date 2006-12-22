@@ -12,10 +12,10 @@ $action = $_REQUEST['action'];
 $update = '';
 
 if ( empty($_POST) ) {
-	$referer = '<input type="hidden" name="wp_http_referer" value="'. wp_specialchars(stripslashes($_SERVER['REQUEST_URI'])) . '" />';
+	$referer = '<input type="hidden" name="wp_http_referer" value="'. attribute_escape(stripslashes($_SERVER['REQUEST_URI'])) . '" />';
 } elseif ( isset($_POST['wp_http_referer']) ) {
-	$redirect = remove_query_arg(array('wp_http_referer', 'updated', 'delete_count'), urlencode(stripslashes($_POST['wp_http_referer'])));
-	$referer = '<input type="hidden" name="wp_http_referer" value="' . wp_specialchars($redirect) . '" />';
+	$redirect = remove_query_arg(array('wp_http_referer', 'updated', 'delete_count'), stripslashes($_POST['wp_http_referer']));
+	$referer = '<input type="hidden" name="wp_http_referer" value="' . attribute_escape($redirect) . '" />';
 } else {
 	$redirect = 'users.php';
 }
@@ -388,7 +388,7 @@ default:
 		case 'del_many':
 		?>
 			<?php $delete_count = (int) $_GET['delete_count']; ?>
-			<div id="message" class="updated fade"><p><?php printf(__('%1$s %2$s deleted.'), $delete_count, __ngettext('user', 'users', $delete_count) ); ?></p></div>
+			<div id="message" class="updated fade"><p><?php printf(__ngettext('%s user deleted', '%s users deleted', $delete_count), $delete_count); ?></p></div>
 		<?php
 			break;
 		case 'remove':
@@ -468,7 +468,7 @@ default:
 	<?php endif; ?>
 
 	<form action="" method="get" name="search" id="search">
-		<p><input type="text" name="usersearch" id="usersearch" value="<?php echo wp_specialchars($wp_user_search->search_term, 1); ?>" /> <input type="submit" value="<?php _e('Search 	users &raquo;'); ?>" class="button" /></p>
+		<p><input type="text" name="usersearch" id="usersearch" value="<?php echo attribute_escape($wp_user_search->search_term); ?>" /> <input type="submit" value="<?php _e('Search 	users &raquo;'); ?>" class="button" /></p>
 	</form>
 
 	<?php if ( is_wp_error( $wp_user_search->search_errors ) ) : ?>
@@ -541,7 +541,7 @@ foreach ( (array) $roleclass as $user_object ) {
 
 	<h3><?php _e('Update Selected'); ?></h3>
 	<ul style="list-style:none;">
-		<li><input type="radio" name="action" id="action0" value="removeuser" /> <label for="action0"><?php _e('Remove checked users.'); ?></label></li>
+		<li><input type="radio" name="action" id="action0" value="delete" /> <label for="action0"><?php _e('Delete checked users.'); ?></label></li>
 		<li>
 			<input type="radio" name="action" id="action1" value="promote" /> <label for="action1"><?php _e('Set the Role of checked users to:'); ?></label>
 			<select name="new_role" onchange="getElementById('action1').checked = 'true'"><?php wp_dropdown_roles(); ?></select>
@@ -559,7 +559,7 @@ foreach ( (array) $roleclass as $user_object ) {
 	if ( is_wp_error($add_user_errors) ) {
 		foreach ( array('user_login' => 'user_login', 'first_name' => 'user_firstname', 'last_name' => 'user_lastname', 'email' => 'user_email', 'url' => 'user_uri', 'role' => 'user_role') as $formpost => $var ) {
 			$var = 'new_' . $var;
-			$$var = wp_specialchars(stripslashes($_POST[$formpost]));
+			$$var = attribute_escape(stripslashes($_POST[$formpost]));
 		}
 		unset($name);
 	}

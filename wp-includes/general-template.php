@@ -279,7 +279,7 @@ function single_month_title($prefix = '', $display = true ) {
 /* link navigation hack by Orien http://icecode.com/ */
 function get_archives_link($url, $text, $format = 'html', $before = '', $after = '') {
 	$text = wptexturize($text);
-	$title_text = wp_specialchars($text, 1);
+	$title_text = attribute_escape($text);
 
 	if ('link' == $format)
 		return "\t<link rel='archives' title='$title_text' href='$url' />\n";
@@ -906,7 +906,7 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 
 function the_search_query() {
 	global $s;
-	echo wp_specialchars( stripslashes($s), 1 );
+	echo attribute_escape(stripslashes($s));
 }
 
 function language_attributes() {
@@ -961,7 +961,7 @@ function paginate_links( $arg = '' ) {
 		$link = str_replace('%#%', $current - 1, $link);
 		if ( $add_args )
 			$link = add_query_arg( $add_args, $link );
-		$page_links[] = "<a class='prev page-numbers' href='" . wp_specialchars( $link, 1 ) . "'>$prev_text</a>";
+		$page_links[] = "<a class='prev page-numbers' href='" . attribute_escape($link) . "'>$prev_text</a>";
 	endif;
 	for ( $n = 1; $n <= $total; $n++ ) :
 		if ( $n == $current ) :
@@ -973,7 +973,7 @@ function paginate_links( $arg = '' ) {
 				$link = str_replace('%#%', $n, $link);
 				if ( $add_args )
 					$link = add_query_arg( $add_args, $link );
-				$page_links[] = "<a class='page-numbers' href='" . wp_specialchars( $link, 1 ) . "'>$n</a>";
+				$page_links[] = "<a class='page-numbers' href='" . attribute_escape($link) . "'>$n</a>";
 				$dots = true;
 			elseif ( $dots && !$show_all ) :
 				$page_links[] = "<span class='page-numbers dots'>...</span>";
@@ -986,7 +986,7 @@ function paginate_links( $arg = '' ) {
 		$link = str_replace('%#%', $current + 1, $link);
 		if ( $add_args )
 			$link = add_query_arg( $add_args, $link );
-		$page_links[] = "<a class='next page-numbers' href='" . wp_specialchars( $link, 1 ) . "'>$next_text</a>";
+		$page_links[] = "<a class='next page-numbers' href='" . attribute_escape($link) . "'>$next_text</a>";
 	endif;
 	switch ( $type ) :
 		case 'array' :

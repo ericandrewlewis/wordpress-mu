@@ -40,10 +40,10 @@ function wp_write_post() {
 	if ( $_POST['post_author'] != $_POST['user_ID'] ) {
 		if ( 'page' == $_POST['post_type'] ) {
 			if ( !current_user_can( 'edit_others_pages' ) )
-				return new WP_Error( 'edit_others_pages', __( 'You cannot create pages as this user.' ) );
+				return new WP_Error( 'edit_others_pages', __( 'You are not allowed to create pages as this user.' ) );
 		} else {
 			if ( !current_user_can( 'edit_others_posts' ) )
-				return new WP_Error( 'edit_others_posts', __( 'You cannot post as this user.' ) );
+				return new WP_Error( 'edit_others_posts', __( 'You are not allowed to post as this user.' ) );
 
 		}
 	}
@@ -184,10 +184,10 @@ function edit_post() {
 	if ( $_POST['post_author'] != $_POST['user_ID'] ) {
 		if ( 'page' == $_POST['post_type'] ) {
 			if ( !current_user_can( 'edit_others_pages' ) )
-				wp_die( __('You cannot edit pages as this user.' ));
+				wp_die( __('You are not allowed to edit pages as this user.' ));
 		} else {
 			if ( !current_user_can( 'edit_others_posts' ) )
-				wp_die( __('You cannot edit posts as this user.' ));
+				wp_die( __('You are not allowed to edit posts as this user.' ));
 
 		}
 	}
@@ -323,7 +323,7 @@ function get_default_post_to_edit() {
 	else if ( !empty( $post_title ) ) {
 		$text       = wp_specialchars( stripslashes( urldecode( $_REQUEST['text'] ) ) );
 		$text       = funky_javascript_fix( $text);
-		$popupurl   = wp_specialchars( $_REQUEST['popupurl'] );
+		$popupurl   = attribute_escape($_REQUEST['popupurl']);
         $post_content = '<a href="'.$popupurl.'">'.$post_title.'</a>'."\n$text";
     }
 
@@ -380,17 +380,17 @@ function wp_dropdown_roles( $default = false ) {
 
 function get_user_to_edit( $user_id ) {
 	$user = new WP_User( $user_id );
-	$user->user_login = wp_specialchars( $user->user_login, 1 );
-	$user->user_email = wp_specialchars( $user->user_email, 1 );
-	$user->user_url = wp_specialchars( $user->user_url, 1 );
-	$user->first_name = wp_specialchars( $user->first_name, 1 );
-	$user->last_name = wp_specialchars( $user->last_name, 1 );
-	$user->display_name = wp_specialchars( $user->display_name, 1 );
-	$user->nickname = wp_specialchars( $user->nickname, 1 );
-	$user->aim = wp_specialchars( $user->aim, 1 );
-	$user->yim = wp_specialchars( $user->yim, 1 );
-	$user->jabber = wp_specialchars( $user->jabber, 1 );
-	$user->description = wp_specialchars( $user->description );
+	$user->user_login   = attribute_escape($user->user_login);
+	$user->user_email   = attribute_escape($user->user_email);
+	$user->user_url     = attribute_escape($user->user_url);
+	$user->first_name   = attribute_escape($user->first_name);
+	$user->last_name    = attribute_escape($user->last_name);
+	$user->display_name = attribute_escape($user->display_name);
+	$user->nickname     = attribute_escape($user->nickname);
+	$user->aim          = attribute_escape($user->aim);
+	$user->yim          = attribute_escape($user->yim);
+	$user->jabber       = attribute_escape($user->jabber);
+	$user->description  =  wp_specialchars($user->description);
 
 	return $user;
 }
@@ -462,6 +462,12 @@ function edit_user( $user_id = 0 ) {
 		$user->aim = wp_specialchars( trim( $_POST['aim'] ));
 	if ( isset( $_POST['yim'] ))
 		$user->yim = wp_specialchars( trim( $_POST['yim'] ));
+	if ( !$update )
+		$user->rich_editing = 'true';  // Default to true for new users.
+	else if ( isset( $_POST['rich_editing'] ) )
+		$user->rich_editing = $_POST['rich_editing'];
+	else
+		$user->rich_editing = 'false';
 
 	$errors = new WP_Error();
 
@@ -521,26 +527,26 @@ function edit_user( $user_id = 0 ) {
 function get_link_to_edit( $link_id ) {
 	$link = get_link( $link_id );
 
-	$link->link_url = wp_specialchars( $link->link_url, 1 );
-	$link->link_name = wp_specialchars( $link->link_name, 1 );
-	$link->link_image = wp_specialchars( $link->link_image, 1 );
-	$link->link_description = wp_specialchars( $link->link_description, 1 );
-	$link->link_notes = wp_specialchars( $link->link_notes );
-	$link->link_rss = wp_specialchars( $link->link_rss, 1 );
-	$link->link_rel = wp_specialchars( $link->link_rel, 1 );
-	$link->post_category = $link->link_category;
+	$link->link_url         = attribute_escape($link->link_url);
+	$link->link_name        = attribute_escape($link->link_name);
+	$link->link_image       = attribute_escape($link->link_image);
+	$link->link_description = attribute_escape($link->link_description);
+	$link->link_rss         = attribute_escape($link->link_rss);
+	$link->link_rel         = attribute_escape($link->link_rel);
+	$link->link_notes       =  wp_specialchars($link->link_notes);
+	$link->post_category    = $link->link_category;
 
 	return $link;
 }
 
 function get_default_link_to_edit() {
 	if ( isset( $_GET['linkurl'] ) )
-		$link->link_url = wp_specialchars( $_GET['linkurl'], 1 );
+		$link->link_url = attribute_escape( $_GET['linkurl']);
 	else
 		$link->link_url = '';
 
 	if ( isset( $_GET['name'] ) )
-		$link->link_name = wp_specialchars( $_GET['name'], 1 );
+		$link->link_name = attribute_escape( $_GET['name']);
 	else
 		$link->link_name = '';
 
@@ -555,7 +561,7 @@ function add_link() {
 
 function edit_link( $link_id = '' ) {
 	if (!current_user_can( 'manage_links' ))
-		wp_die( __("Cheatin' uh ?" ));
+		wp_die( __( 'Cheatin&8217; uh?' ));
 
 	$_POST['link_url'] = wp_specialchars( $_POST['link_url'] );
 	$_POST['link_url'] = preg_match('/^(https?|ftps?|mailto|news|irc|gopher|nntp|feed|telnet):/is', $_POST['link_url']) ? $_POST['link_url'] : 'http://' . $_POST['link_url'];
@@ -764,11 +770,12 @@ function _cat_row( $category, $level, $name_override = false ) {
 
 	$category->category_count = number_format( $category->category_count );
 	$category->link_count = number_format( $category->link_count );
+	$posts_count = ( $category->category_count > 0 ) ? "<a href='edit.php?cat=$category->cat_ID'>$category->category_count</a>" : $category->category_count;
 	return "<tr id='cat-$category->cat_ID'$class>
 		<th scope='row' style='text-align: center'>$category->cat_ID</th>
 		<td>" . ( $name_override ? $name_override : $pad . ' ' . $category->cat_name ) . "</td>
 		<td>$category->category_description</td>
-		<td align='center'><a href='edit.php?cat=$category->cat_ID'>$category->category_count</a></td>
+		<td align='center'>$posts_count</td>
 		<td align='center'>$category->link_count</td>
 		<td>$edit</td>\n\t</tr>\n";
 }
@@ -832,12 +839,12 @@ function user_row( $user_object, $style = '' ) {
 	$r .= "\n\t\t<td align='center'>";
 	if ( $numposts > 0 ) {
 		$r .= "<a href='edit.php?author=$user_object->ID' title='" . __( 'View posts by this author' ) . "' class='edit'>";
-		$r .= sprintf( __('View %1$s %2$s' ), $numposts, __ngettext( 'post', 'posts', $numposts ));
+		$r .= sprintf(__ngettext( 'View %s post', 'View %s posts', $numposts ), $numposts);
 		$r .= '</a>';
 	}
 	$r .= "</td>\n\t\t<td>";
 	if ( ( is_site_admin() || $current_user->ID == $user_object->ID ) && current_user_can( 'edit_user', $user_object->ID ) ) {
-		$edit_link = wp_specialchars( add_query_arg( 'wp_http_referer', urlencode( stripslashes( $_SERVER['REQUEST_URI'] ) ), "user-edit.php?user_id=$user_object->ID" ) );
+		$edit_link = attribute_escape( add_query_arg( 'wp_http_referer', urlencode( stripslashes( $_SERVER['REQUEST_URI'] ) ), "user-edit.php?user_id=$user_object->ID" ));
 		$r .= "<a href='$edit_link' class='edit'>".__( 'Edit' )."</a>";
 	}
 	$r .= "</td>\n\t</tr>";
@@ -917,8 +924,8 @@ function list_meta( $meta ) {
 		}
 
 		$key_js = js_escape( $entry['meta_key'] );
-		$entry['meta_key'] = wp_specialchars( $entry['meta_key'], true );
-		$entry['meta_value'] = wp_specialchars( $entry['meta_value'], true );
+		$entry['meta_key']   = attribute_escape($entry['meta_key']);
+		$entry['meta_value'] = attribute_escape($entry['meta_value']);
 		$r .= "\n\t<tr id='meta-{$entry['meta_id']}' class='$style'>";
 		$r .= "\n\t\t<td valign='top'><input name='meta[{$entry['meta_id']}][key]' tabindex='6' type='text' size='20' value='{$entry['meta_key']}' /></td>";
 		$r .= "\n\t\t<td><textarea name='meta[{$entry['meta_id']}][value]' tabindex='6' rows='2' cols='30'>{$entry['meta_value']}</textarea></td>";
@@ -971,7 +978,7 @@ function meta_form() {
 <?php
 
 	foreach ( $keys as $key ) {
-		$key = wp_specialchars( $key, 1 );
+		$key = attribute_escape( $key);
 		echo "\n\t<option value='$key'>$key</option>";
 	}
 ?>
@@ -1075,9 +1082,7 @@ function touch_time( $edit = 1, $for_post = 1 ) {
 <input type="hidden" id="ss" name="ss" value="<?php echo $ss ?>" size="2" maxlength="2" onchange="edit_date.checked=true" />
 <?php
 	if ( $edit ) {
-		_e( 'Existing timestamp' );
-		//echo ': ' . $wp_locale->get_month( $mm ) . "$jj, $aa @ $hh:$mn";
-		echo sprintf( __(': %1$s %2$s, %3$s @ %4$s:%5$s' ), $wp_locale->get_month( $mm ), $jj, $aa, $hh, $mn );
+		printf( __('Existing timestamp: %1$s %2$s, %3$s @ %4$s:%5$s' ), $wp_locale->get_month( $mm ), $jj, $aa, $hh, $mn );
 	}
 ?>
 </fieldset>
@@ -1999,7 +2004,7 @@ function wp_reset_vars( $vars ) {
 
 function wp_remember_old_slug() {
 	global $post;
-	$name = wp_specialchars($post->post_name); // just in case
+	$name = attribute_escape($post->post_name); // just in case
 	if ( strlen($name) )
 		echo '<input type="hidden" id="wp-old-slug" name="wp-old-slug" value="' . $name . '" />';
 }

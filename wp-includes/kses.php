@@ -822,6 +822,7 @@ function kses_init_filters() {
 
 	// Post filtering
 	add_filter('content_save_pre', 'wp_filter_post_kses');
+	add_filter('excerpt_save_pre', 'wp_filter_post_kses');
 	add_filter('content_filtered_save_pre', 'wp_filter_post_kses');
 	add_filter('pre_comment_author', 'wp_filter_kses');
 	add_action('admin_notices', 'wp_kses_show_message');
@@ -834,6 +835,7 @@ function kses_remove_filters() {
 
 	// Post filtering
 	remove_filter('content_save_pre', 'wp_filter_post_kses');
+	remove_filter('excerpt_save_pre', 'wp_filter_post_kses');
 	remove_filter('content_filtered_save_pre', 'wp_filter_post_kses');
 }
 

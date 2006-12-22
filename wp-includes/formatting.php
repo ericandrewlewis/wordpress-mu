@@ -749,22 +749,22 @@ function human_time_diff( $from, $to = '' ) {
 	$diff = (int) abs($to - $from);
 	if ($diff <= 3600) {
 		$mins = round($diff / 60);
-		if ($mins <= 1)
-			$since = __('1 min');
-		else
-			$since = sprintf( __('%s mins'), $mins);
+		if ($mins <= 1) {
+			$mins = 1;
+		}
+		$since = sprintf(__ngettext('%s min', '%s mins', $mins), $mins);
 	} else if (($diff <= 86400) && ($diff > 3600)) {
 		$hours = round($diff / 3600);
-		if ($hours <= 1)
-			$since = __('1 hour');
-		else
-			$since = sprintf( __('%s hours'), $hours );
+		if ($hours <= 1) {
+			$hour = 1;
+		}
+		$since = sprintf(__ngettext('%s hour', '%s hours', $hours), $hours);
 	} elseif ($diff >= 86400) {
 		$days = round($diff / 86400);
-		if ($days <= 1)
-			$since = __('1 day');
-		else
-			$since = sprintf( __('%s days'), $days );
+		if ($days <= 1) {
+			$days = 1;
+		}
+		$since = sprintf(__('%s day', '%s days', $days), $days);
 	}
 	return $since;
 }
@@ -1087,9 +1087,16 @@ function htmlentities2($myHTML) {
 
 // Escape single quotes, specialchar double quotes, and fix line endings.
 function js_escape($text) {
-	$text = wp_specialchars($text, 'double');
-	$text = str_replace('&#039;', "'", $text);
-	return preg_replace("/\r?\n/", "\\n", addslashes($text));
+	$safe_text = wp_specialchars($text, 'double');
+	$safe_text = str_replace('&#039;', "'", $safe_text);
+	$safe_text = preg_replace("/\r?\n/", "\\n", addslashes($safe_text));
+	return apply_filters('js_escape', $safe_text, $text);
+}
+
+// Escaping for HTML attributes
+function attribute_escape($text) {
+	$safe_text = wp_specialchars($text, true);
+	return apply_filters('attribute_escape', $safe_text, $text);
 }
 
 function wp_make_link_relative( $link ) {

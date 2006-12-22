@@ -13,12 +13,10 @@ if (0 == $post_ID) {
 	$form_extra = "<input type='hidden' id='post_ID' name='post_ID' value='$post_ID' />";
 }
 
-$sendto = wp_get_referer();
+$sendto = attribute_escape(stripslashes(wp_get_referer()));
 
 if ( 0 != $post_ID && $sendto == get_permalink($post_ID) )
 	$sendto = 'redo';
-$sendto = wp_specialchars( $sendto );
-
 ?>
 
 <form name="post" action="page.php" method="post" id="post">
@@ -54,13 +52,13 @@ addLoadEvent(focusit);
 <input name="advanced_view" type="hidden" value="1" />
 <label for="comment_status" class="selectit">
 <input name="comment_status" type="checkbox" id="comment_status" value="open" <?php checked($post->comment_status, 'open'); ?> />
-<?php _e('Allow Comments') ?></label> 
+<?php _e('Allow Comments') ?></label>
 <label for="ping_status" class="selectit"><input name="ping_status" type="checkbox" id="ping_status" value="open" <?php checked($post->ping_status, 'open'); ?> /> <?php _e('Allow Pings') ?></label>
 </div>
 </fieldset>
 
 <fieldset class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Page Status') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page Status') ?></h3>
 <div class="dbx-content"><?php if ( current_user_can('publish_pages') ) : ?>
 <label for="post_status_publish" class="selectit"><input id="post_status_publish" name="post_status" type="radio" value="publish" <?php checked($post->post_status, 'publish'); checked($post->post_status, 'future'); ?> /> <?php _e('Published') ?></label>
 <?php endif; ?>
@@ -69,12 +67,12 @@ addLoadEvent(focusit);
 </fieldset>
 
 <fieldset id="passworddiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Page Password') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page Password') ?></h3>
 <div class="dbx-content"><input name="post_password" type="text" size="13" id="post_password" value="<?php echo $post->post_password ?>" /></div>
 </fieldset>
 
 <fieldset id="pageparent" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Page Parent') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page Parent') ?></h3>
 <div class="dbx-content"><p><select name="parent_id">
 <option value='0'><?php _e('Main Page (no parent)'); ?></option>
 <?php parent_dropdown($post->post_parent); ?>
@@ -84,7 +82,7 @@ addLoadEvent(focusit);
 
 <?php if ( 0 != count( get_page_templates() ) ) { ?>
 <fieldset id="pagetemplate" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Page Template:') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page Template') ?></h3>
 <div class="dbx-content"><p><select name="page_template">
 		<option value='default'><?php _e('Default Template'); ?></option>
 		<?php page_template_dropdown($post->page_template); ?>
@@ -94,7 +92,7 @@ addLoadEvent(focusit);
 <?php } ?>
 
 <fieldset id="slugdiv" class="dbx-box">
-<h3 class="dbx-handle"><?php _e('Page Slug') ?></h3> 
+<h3 class="dbx-handle"><?php _e('Page Slug') ?></h3>
 <div class="dbx-content"><input name="post_name" type="text" size="13" id="post_name" value="<?php echo $post->post_name ?>" /></div>
 </fieldset>
 
@@ -127,7 +125,7 @@ endforeach;
 </div>
 
 <fieldset id="titlediv">
-  <legend><?php _e('Page Title') ?></legend> 
+  <legend><?php _e('Page Title') ?></legend>
   <div><input type="text" name="post_title" size="30" tabindex="1" value="<?php echo $post->post_title; ?>" id="title" /></div>
 </fieldset>
 
@@ -140,12 +138,12 @@ endforeach;
 <p class="submit">
 <span id="autosave"></span>
 <input name="save" type="submit" id="save" tabindex="3" value="<?php _e('Save and Continue Editing'); ?>" />
-<input type="submit" name="submit" value="<?php _e('Save') ?>" style="font-weight: bold;" tabindex="4" /> 
-<?php 
+<input type="submit" name="submit" value="<?php _e('Save') ?>" style="font-weight: bold;" tabindex="4" />
+<?php
 if ('publish' != $post->post_status || 0 == $post_ID):
 ?>
 <?php if ( current_user_can('publish_pages') ) : ?>
-	<input name="publish" type="submit" id="publish" tabindex="5" accesskey="p" value="<?php _e('Publish') ?>" /> 
+	<input name="publish" type="submit" id="publish" tabindex="5" accesskey="p" value="<?php _e('Publish') ?>" />
 <?php endif; endif;?>
 <input name="referredby" type="hidden" id="referredby" value="<?php echo $sendto; ?>" />
 </p>
@@ -188,7 +186,7 @@ list_meta($metadata);
 <?php if ('edit' == $action) :
 	$delete_nonce = wp_create_nonce( 'delete-page_' . $post_ID );
 	if ( current_user_can('delete_page', $post->ID) ) ?>
-		<input name="deletepost" class="button delete" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this page') ?>" <?php echo "onclick=\"if ( confirm('" . js_escape(sprintf(__("You are about to delete this page \'%s\'\\n  \'Cancel\' to stop, \'OK\' to delete."), $post->post_title )) . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true;}return false;\""; ?> />
+		<input name="deletepost" class="button delete" type="submit" id="deletepost" tabindex="10" value="<?php _e('Delete this page') ?>" <?php echo "onclick=\"if ( confirm('" . js_escape(sprintf(__("You are about to delete this page '%s'\n  'Cancel' to stop, 'OK' to delete."), $post->post_title )) . "') ) { document.forms.post._wpnonce.value = '$delete_nonce'; return true;}return false;\""; ?> />
 <?php endif; ?>
 </div>
 

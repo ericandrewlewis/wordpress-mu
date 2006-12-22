@@ -17,12 +17,6 @@ if ( is_wp_error( $errors ) ) {
 	exit;
 }
 
-if ( rich_edit_exists() ) {
-	if ( !isset( $_POST['rich_editing'] ) )
-		$_POST['rich_editing'] = 'false';
-	update_user_option( $current_user->id, 'rich_editing', $_POST['rich_editing'], true );
-}
-
 if ( isset( $_POST['primary_blog'] ) ) {
 	$primary_blog = (int) $_POST['primary_blog'];
 	update_user_option( $current_user->id, 'primary_blog', $primary_blog, true );
