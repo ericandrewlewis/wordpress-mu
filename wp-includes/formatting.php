@@ -1067,7 +1067,7 @@ function wp_richedit_pre($text) {
 	return apply_filters('richedit_pre', $output);
 }
 
-function clean_url( $url ) {
+function clean_url( $url, $protocols = null ) {
 	if ('' == $url) return $url;
 	$url = preg_replace('|[^a-z0-9-~+_.?#=!&;,/:%]|i', '', $url);
 	$strip = array('%0d', '%0a');
@@ -1075,6 +1075,10 @@ function clean_url( $url ) {
 	$url = str_replace(';//', '://', $url);
 	$url = (!strstr($url, '://')) ? 'http://'.$url : $url;
 	$url = preg_replace('/&([^#])(?![a-z]{2,8};)/', '&#038;$1', $url);
+	if ( !is_array($protocols) )
+		$protocols = array('http', 'https', 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet'); 
+	if ( wp_kses_bad_protocol( $url, $protocols ) != $url )
+		return '';
 	return $url;
 }
 
