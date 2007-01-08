@@ -45,11 +45,13 @@ class wpdb {
 	 * @param string $dbhost
 	 */
 	function wpdb($dbuser, $dbpassword, $dbname, $dbhost) {
-
-		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true ) {
+		if( defined( "WP_USE_MULTIPLE_DB" ) && CONSTANT( "WP_USE_MULTIPLE_DB" ) == true )
 			$this->db_connect();
-			return true;
-		}
+		return $this->__construct($dbuser, $dbpassword, $dbname, $dbhost);
+	}
+	
+	function __construct($dbuser, $dbpassword, $dbname, $dbhost) {
+		register_shutdown_function(array(&$this, "__destruct"));
 
 		$this->dbh = @mysql_connect($dbhost, $dbuser, $dbpassword);
 		if (!$this->dbh) {
@@ -66,6 +68,10 @@ class wpdb {
 		}
 
 		$this->select($dbname, $this->dbh);
+	}
+
+	function __destruct() {
+		return true;		
 	}
 
 	/**
@@ -420,6 +426,12 @@ class wpdb {
 			return false;
 
 		header('Content-Type: text/html; charset=utf-8');
+
+		if ( strstr($_SERVER['PHP_SELF'], 'wp-admin') )
+			$admin_dir = '';
+		else
+			$admin_dir = 'wp-admin/';
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -465,7 +477,7 @@ class wpdb {
 	</style>
 </head>
 <body>
-	<h1 id="logo"><img alt="WordPress" src="<?php echo "wp-admin/images/wordpress-logo.png" ?>/></h1>
+	<h1 id="logo"><img alt="WordPress" src="<?php echo $admin_dir; ?>images/wordpress-logo.png" /></h1>
 	<p><?php echo $message; ?></p>
 </body>
 </html>

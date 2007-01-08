@@ -30,6 +30,7 @@ else
 $menu[40] = array(__('Options'), 'manage_options', 'options-general.php');
 
 
+$_wp_real_parent_file['post.php'] = 'post-new.php'; // Back-compat
 $submenu['post-new.php'][5] = array(__('Write Post'), 'edit_posts', 'post-new.php');
 $submenu['post-new.php'][10] = array(__('Write Page'), 'edit_pages', 'page-new.php');
 
@@ -87,14 +88,14 @@ foreach ($submenu as $parent => $sub) {
 			$_wp_submenu_nopriv[$parent][$data[2]] = true;
 		}
 	}
-	
+
 	if ( empty($submenu[$parent]) )
 		unset($submenu[$parent]);
 }
 
 // Loop over the top-level menu.
 // Menus for which the original parent is not acessible due to lack of privs will have the next
-// submenu in line be assigned as the new menu parent. 
+// submenu in line be assigned as the new menu parent.
 foreach ( $menu as $id => $data ) {
 	if ( empty($submenu[$data[2]]) ) 
 		continue;

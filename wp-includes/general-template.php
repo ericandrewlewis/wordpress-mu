@@ -818,8 +818,10 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 		<input id='edButtonHTML' class='edButtonBack' type='button' value='<?php _e('Code'); ?>' onclick='switchEditors("<?php echo $id; ?>")' />
 	</div>
 	<script type="text/javascript">
+	// <![CDATA[
 		if ( typeof tinyMCE != "undefined" && tinyMCE.configs.length > 0 )
 			document.getElementById('edButtons').style.display = 'block';
+	// ]]>
 	</script>
 
 	<?php endif; ?>
@@ -828,6 +830,7 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 	<script type="text/javascript">edToolbar()</script>
 	</div>
 	<script type="text/javascript">
+	// <![CDATA[
 		if ( typeof tinyMCE != "undefined" && tinyMCE.configs.length > 0 )
 			document.getElementById("quicktags").style.display="none";
 
@@ -854,6 +857,7 @@ function the_editor($content, $id = 'content', $prev_id = 'title') {
 				myField.focus();
 			}
 		}
+	// ]]>
 	</script>
 	<?php
 

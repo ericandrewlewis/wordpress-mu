@@ -19,13 +19,16 @@ class WP_Scripts {
 		$mce_config = apply_filters('tiny_mce_config_url', '/wp-includes/js/tinymce/tiny_mce_config.php');
 		$this->add( 'wp_tiny_mce', $mce_config, array('tiny_mce'), '20061113' );
 		$this->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.5.0');
-		$this->add( 'autosave', '/wp-includes/js/autosave.js.php', array('prototype', 'sack'), '4508');
+		$this->add( 'autosave', '/wp-includes/js/autosave-js.php', array('prototype', 'sack'), '4508');
 		$this->add( 'wp-ajax', '/wp-includes/js/wp-ajax-js.php', array('prototype'), '4459');
 		$this->add( 'listman', '/wp-includes/js/list-manipulation-js.php', array('wp-ajax', 'fat'), '4583');
-		$this->add( 'scriptaculous', '/wp-includes/js/scriptaculous/scriptaculous.js', array('prototype'), '1.6.1');
-		$this->add( 'scriptaculous-dragdrop', '/wp-includes/js/scriptaculous/scriptaculous.js?load=builder,dragdrop', array('prototype'), '1.6.1');
-		$this->add( 'scriptaculous-slider', '/wp-includes/js/scriptaculous/scriptaculous.js?load=slider,effects', array('prototype'), '1.6.1');
-		$this->add( 'scriptaculous-controls', '/wp-includes/js/scriptaculous/scriptaculous.js?load=controls', array('prototype'), '1.6.1');
+		$this->add( 'scriptaculous-root', '/wp-includes/js/scriptaculous/wp-scriptaculous.js', array('prototype'), '1.6.1');
+		$this->add( 'scriptaculous-builder', '/wp-includes/js/scriptaculous/builder.js', array('scriptaculous-root'), '1.6.1');
+		$this->add( 'scriptaculous-dragdrop', '/wp-includes/js/scriptaculous/dragdrop.js', array('scriptaculous-builder'), '1.6.1');
+		$this->add( 'scriptaculous-effects', '/wp-includes/js/scriptaculous/effects.js', array('scriptaculous-root'), '1.6.1');
+		$this->add( 'scriptaculous-slider', '/wp-includes/js/scriptaculous/slider.js', array('scriptaculous-effects'), '1.6.1');
+		$this->add( 'scriptaculous-controls', '/wp-includes/js/scriptaculous/controls.js', array('scriptaculous-root'), '1.6.1');
+		$this->add( 'scriptaculous', '', array('scriptaculous-dragdrop', 'scriptaculous-slider', 'scriptaculous-controls'), '1.6.1');
 		$this->add( 'cropper', '/wp-includes/js/crop/cropper.js', array('scriptaculous-dragdrop'), '1');
 		if ( is_admin() ) {
 			$this->add( 'dbx-admin-key', '/wp-admin/dbx-admin-key-js.php', array('dbx'), '3651' );
@@ -70,12 +73,14 @@ class WP_Scripts {
 			elseif ( is_array($handles[$handle]) )
 				$this->_print_scripts( $handles[$handle] );
 			if ( !in_array($handle, $this->printed) && isset($this->scripts[$handle]) ) {
-				$ver = $this->scripts[$handle]->ver ? $this->scripts[$handle]->ver : $wp_db_version;
-				if ( isset($this->args[$handle]) )
-					$ver .= '&amp;' . $this->args[$handle];
-				$src = 0 === strpos($this->scripts[$handle]->src, 'http://') ? $this->scripts[$handle]->src : get_option( 'siteurl' ) . $this->scripts[$handle]->src;
-				$src = add_query_arg('ver', $ver, $src);
-				echo "<script type='text/javascript' src='$src'></script>\n";
+				if ( $this->scripts[$handle]->src ) { // Else it defines a group.
+					$ver = $this->scripts[$handle]->ver ? $this->scripts[$handle]->ver : $wp_db_version;
+					if ( isset($this->args[$handle]) )
+						$ver .= '&amp;' . $this->args[$handle];
+					$src = 0 === strpos($this->scripts[$handle]->src, 'http://') ? $this->scripts[$handle]->src : get_option( 'siteurl' ) . $this->scripts[$handle]->src;
+					$src = add_query_arg('ver', $ver, $src);
+					echo "<script type='text/javascript' src='$src'></script>\n";
+				}
 				$this->printed[] = $handle;
 			}
 		}
