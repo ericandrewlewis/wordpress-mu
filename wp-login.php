@@ -148,6 +148,8 @@ case 'retrievepassword' :
 <?php do_action('lostpassword_form'); ?>
 	<p class="submit"><input type="submit" name="submit" id="submit" value="<?php _e('Get New Password &raquo;'); ?>" tabindex="100" /></p>
 </form>
+</div>
+
 <ul>
 <?php if (get_option('users_can_register')) : ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Login') ?></a></li>
@@ -158,7 +160,7 @@ case 'retrievepassword' :
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Login') ?></a></li>
 <?php endif; ?>
 </ul>
-</div>
+
 </body>
 </html>
 <?php
@@ -279,6 +281,8 @@ default:
 		<input type="hidden" name="redirect_to" value="<?php echo attribute_escape($redirect_to); ?>" />
 	</p>
 </form>
+</div>
+
 <ul>
 <?php if (get_option('users_can_register')) : ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/signup/"><?php _e('Register') ?></a></li>
@@ -289,7 +293,7 @@ default:
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a></li>
 <?php endif; ?>
 </ul>
-</div>
+
 
 </body>
 </html>

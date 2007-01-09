@@ -176,19 +176,6 @@ h2 {
 	margin: 5px 10px;
 }
 
-h2 small.quickjump {
-	display: block;
-	text-align: right;
-}
-
-h2 small.quickjump a {
-	text-decoration: none;
-	border-bottom: 0;
-	font-size: 15px;
-	background: #f0f8ff;
-	padding: 5px 10px;
-}
-
 img, #footer a {
 	border: 0;
 }
@@ -664,6 +651,9 @@ input.delete:hover {
 #footer {
 	clear: both;
 	text-align: center;
+	width: 500px;
+	margin: auto;
+	height: 100px;
 }
 
 #footer .docs {
@@ -705,7 +695,7 @@ input.delete:hover {
 	font-weight: bold;
 	padding: .6em;
 	width: 310px;
-	margin: 0 auto;
+	margin: 0 50px;
 	text-align: center;
 }
 
@@ -753,21 +743,6 @@ input.delete:hover {
 	font-size: 20px;
 }
 
-#register #login h2 { 
-	border-bottom: 1px solid #1e6491;
-	padding-bottom:  15px;
-	color: #fff;
-	text-align: left;
-	font-weight: normal;
-	font-size: 1.7em;
-	font-family: "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana;
-	letter-spacing:  -1px;
-	margin:  15px 0 0;
-	_width: 325px;
-	_padding: 15px 0;
-	_margin:  10px auto 5px;
-}
-
 #login input {
 	padding: 4px;
 }
@@ -780,26 +755,8 @@ input.delete:hover {
 	line-height: 1.2;
 }
 
-#login ul:after {
-	content: ".";
-	display: block;
-	height: 0;
-	clear: both;
-	visibility: hidden;
-}
-
-#login ul {display: inline-block;}
-
-/* Hides from IE-mac \*/
-* html #login ul {height: 1%;}
-#login ul {display: block;}
-/* End hide from IE-mac */
-
-#login ul li {
-	float: left;
-	font-size: 12px;
-	padding: 5px 0;
-	text-align: center;
+.login ul li {
+	font-size: 11px;
 }
 
 .login ul li a {
@@ -1350,20 +1307,6 @@ input #catadd {
 #edButtons input.edButtonBack, #edButtons input.edButtonBack:active {
 	background: #fff url( images/fade-butt.png ) repeat-x 0px 15px;
 	border-bottom: 1px solid #ccc;
-}
-
-#postdivrich .switched table, #postdivrich #quicktags, #commentdivrich .switched table, #commentdivrich #quicktags {
-	border-top: none;
-}
-
-#postdivrich #quicktags, #commentdivrich #quicktags {
-	border-bottom: none;
-	padding-bottom: 2px;
-	margin-bottom: -1px;
-}
-
-#edButtons {
-	border-bottom: 1px solid #ccc
 }
 
 .page-numbers {
