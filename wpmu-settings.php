@@ -7,6 +7,9 @@ $wpmuBaseTablePrefix = $table_prefix;
 $domain = addslashes( $_SERVER['HTTP_HOST'] );
 if( substr( $domain, 0, 4 ) == 'www.' )
 	$domain = substr( $domain, 4 );
+if( strpos( $domain, ':' ) ) {
+	die( 'WPMU only works without the port number in the URL.' );
+}
 $domain = preg_replace('/:.*$/', '', $domain); // Strip ports
 if( substr( $domain, -1 ) == '.' )
 	$domain = substr( $domain, 0, -1 );
