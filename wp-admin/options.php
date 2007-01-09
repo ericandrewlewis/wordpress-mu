@@ -16,9 +16,12 @@ if( $_GET[ 'adminhash' ] ) {
 		update_option( "admin_email", $new_admin_details[ 'newemail' ] );
 		delete_option( "adminhash" );
 		delete_option( "new_admin_email" );
+		wp_redirect( get_option( "siteurl" ) . "/wp-admin/options-general.php?updated=true" );
+		exit;
+	} else {
+		wp_redirect( get_option( "siteurl" ) . "/wp-admin/options-general.php?updated=false" );
+		exit;
 	}
-	wp_redirect( get_option( "siteurl" ) . "/wp-admin/options-general.php?updated=true" );
-	exit;
 }
 
 function sanitize_option($option, $value) { // Remember to call stripslashes!
@@ -58,6 +61,7 @@ function sanitize_option($option, $value) { // Remember to call stripslashes!
 			if (current_user_can('unfiltered_html') == false)
 				$value = wp_filter_post_kses( $value ); // calls stripslashes then addslashes
 			$value = stripslashes($value);
+			$value = wp_specialchars( $value );
 			break;
 
 		case 'blog_charset':

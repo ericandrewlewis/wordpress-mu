@@ -2257,6 +2257,7 @@ function update_option_new_admin_email($old_value, $value) {
 			"hash" => $hash,
 			"newemail" => $value
 	);
+	update_option( 'adminhash', $newadminemail );
 	// TODO: gettext
 	wp_mail( $value, "[ " . get_option( 'blogname' ) . " ] New Admin Email Address", "Dear User,
 
