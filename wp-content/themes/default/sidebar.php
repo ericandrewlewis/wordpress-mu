@@ -46,7 +46,7 @@
 			<?php } ?>
 			</li>
 
-			<?php wp_list_pages('title_li=<h2>Pages</h2>&sort_column=post_title&sort_order=ASC'); ?>
+			<?php wp_list_pages('title_li=<h2>Pages</h2>' ); ?>
 
 			<li><h2>Archives</h2>
 				<ul>
@@ -54,7 +54,7 @@
 				</ul>
 			</li>
 
-			<?php wp_list_categories('optioncount=1&hierarchical=0&title_li=<h2>Categories</h2>'); ?>
+			<?php wp_list_categories('show_count=1&title_li=<h2>Categories</h2>'); ?>
 
 			<?php /* If this is the frontpage */ if ( is_home() || is_page() ) { ?>
 				<?php wp_list_bookmarks(); ?>
