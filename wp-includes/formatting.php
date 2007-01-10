@@ -288,7 +288,7 @@ function remove_accents($string) {
 	return $string;
 }
 
-function sanitize_file( $name ) { // Like sanitize_title, but with periods
+function sanitize_file_name( $name ) { // Like sanitize_title, but with periods
 	$name = strtolower( $name );
 	$name = preg_replace('/&.+?;/', '', $name); // kill entities
 	$name = str_replace( '_', '-', $name );
