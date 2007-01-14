@@ -73,6 +73,17 @@ $submenu['options-general.php'][35] = array(__('Permalinks'), 'manage_options', 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
 //$submenu['themes.php'][10] = array(__('Theme Editor'), 'edit_themes', 'theme-editor.php');
 
+get_currentuserinfo();
+if( is_site_admin() ) {
+	$menu[1] = array(__('Site Admin'), '10', 'wpmu-admin.php' );
+	$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
+	$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
+	$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
+	$submenu[ 'wpmu-admin.php' ][20] = array( __('Themes'), '10', 'wpmu-themes.php' );
+	$submenu[ 'wpmu-admin.php' ][25] = array( __('Options'), '10', 'wpmu-options.php' );
+	$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
+}
+
 // Create list of page plugin hook names.
 foreach ($menu as $menu_page) {
 	$admin_page_hooks[$menu_page[2]] = sanitize_title($menu_page[0]);
@@ -134,15 +145,7 @@ foreach ( $menu as $id => $data ) {
 }
 
 unset($id);
-get_currentuserinfo();
-if( is_site_admin() ) {
-	$menu[1] = array( __('Site Admin'), '10', 'wpmu-admin.php' );
-	$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
-	$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
-	$submenu[ 'wpmu-admin.php' ][20] = array( __('Themes'), '10', 'wpmu-themes.php' );
-	$submenu[ 'wpmu-admin.php' ][25] = array( __('Options'), '10', 'wpmu-options.php' );
-	$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
-}
+
 uksort($menu, "strnatcasecmp"); // make it all pretty
 
 if (! user_can_access_admin_page()) {
