@@ -30,7 +30,7 @@ $bookmarklet_height= 440;
 
 <h3><?php _e('Personal Options'); ?></h3>
 
-<?php if ( rich_edit_exists() ) : // don't bother showing the option if the editor has been removed ?>
+<?php if ( rich_edit_exists() && current_user_can( 'edit_posts' ) ) : // don't bother showing the option if the editor has been removed ?>
 <p><label for="rich_editing"><input name="rich_editing" type="checkbox" id="rich_editing" value="true" <?php checked('true', get_user_option('rich_editing')); ?> />
 <?php _e('Use the visual editor when writing') ?></label></p>
 <?php endif; ?>
