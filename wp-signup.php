@@ -2,6 +2,7 @@
 
 define( "WP_INSTALLING", true );
 require ('wp-config.php');
+require('./wp-blog-header.php');
 
 require_once( ABSPATH . WPINC . '/registration.php');
 
