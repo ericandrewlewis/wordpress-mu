@@ -269,9 +269,9 @@ switch( $_GET[ 'action' ] ) {
 			$query .= ' ORDER BY registered ';
 		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
 			$query .= ' ORDER BY ' . $wpdb->blogs . '.blog_id ';
-		} elseif( $_GET[ 'sortby' ] == 'Last Updated' ) {
+		} elseif( $_GET[ 'sortby' ] == 'LastUpdated' ) {
 			$query .= ' ORDER BY last_updated ';
-		} elseif( $_GET[ 'sortby' ] == 'Blog Name' ) {
+		} elseif( $_GET[ 'sortby' ] == 'BlogName' ) {
 			$query .= ' ORDER BY domain ';
 		}
 		if( $_GET[ 'order' ] == 'DESC' ) {
@@ -387,7 +387,7 @@ $sortby_url = "s=" . $_GET[ 's' ] . "&ip_address=" . $_GET[ 'ip_address' ];
 	<tr>
 
 <?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&sortby=<?php echo urlencode( $column_display_name ) ?>&<?php if( $_GET[ 'sortby' ] == $column_display_name ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
+	<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&sortby=<?php echo urlencode( str_replace( ' ', '', $column_display_name ) ) ?>&<?php if( $_GET[ 'sortby' ] == str_replace( ' ', '', $column_display_name ) ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
 <?php } ?>
 
 	</tr>
@@ -514,7 +514,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	default:
 		?>
-		<td valign='top'><?php do_action('manage_posts_custom_column', $column_name, $id); ?></td>
+		<td valign='top'><?php do_action('manage_blogs_custom_column', $column_name, $id); ?></td>
 		<?php
 		break;
 	}
