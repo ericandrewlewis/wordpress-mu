@@ -224,6 +224,8 @@ class WP {
 		foreach (array_keys($this->query_vars) as $wpvar) {
 			if ( '' != $this->query_vars[$wpvar] ) {
 				$this->query_string .= (strlen($this->query_string) < 1) ? '' : '&';
+				if ( !is_scalar($this->query_vars[$wpvar]) ) // Discard non-scalars.
+					continue;
 				$this->query_string .= $wpvar . '=' . rawurlencode($this->query_vars[$wpvar]);
 			}
 		}
@@ -498,10 +500,10 @@ class Walker_Page extends Walker {
 		return $output;
 	}
 
-	function start_el($output, $page, $depth, $current_page, $show_date, $date_format) {
+	function start_el($output, $page, $depth, $current_page, $args) {
 		if ( $depth )
 			$indent = str_repeat("\t", $depth);
-
+		extract($args);
 		$css_class = 'page_item';
 		$_current_page = get_page( $current_page );
 		if ( $page->ID == $current_page )

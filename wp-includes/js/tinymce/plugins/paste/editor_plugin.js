@@ -383,4 +383,3 @@ var TinyMCE_PastePlugin = {
 };
 
 tinyMCE.addPlugin("paste", TinyMCE_PastePlugin);
-

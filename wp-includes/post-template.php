@@ -289,7 +289,7 @@ function wp_list_pages($args = '') {
 
 		global $wp_query;
 		$current_page = $wp_query->get_queried_object_id();
-		$output .= walk_page_tree($pages, $r['depth'], $current_page, $r['show_date'], $r['date_format']);
+		$output .= walk_page_tree($pages, $r['depth'], $current_page, $r);
 
 		if ( $r['title_li'] )
 			$output .= '</ul></li>';
@@ -368,8 +368,9 @@ function get_attachment_icon_src( $id = 0, $fullsize = false ) {
 		$src_file = $icon_dir . '/' . basename($src);
 	}
 
-	if ( !isset($src) )
+	if ( !isset($src) || !$src )
 		return false;
+
 	return array($src, $src_file);
 }
 

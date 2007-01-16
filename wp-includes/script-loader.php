@@ -38,7 +38,7 @@ class WP_Scripts {
 			$this->add( 'admin-comments', '/wp-admin/edit-comments.js', array('listman'), '3847' );
 			$this->add( 'admin-users', '/wp-admin/users.js', array('listman'), '4583' );
 			$this->add( 'xfn', '/wp-admin/xfn.js', false, '3517' );
-			$this->add( 'upload', '/wp-admin/upload-js.php', array('prototype'), '20061223' );
+			$this->add( 'upload', '/wp-admin/upload-js.php', array('prototype'), '20070116' );
 		}
 	}
 
@@ -146,10 +146,7 @@ class WP_Scripts {
 		foreach ( (array) $handles as $handle ) {
 			$handle = explode('?', $handle);
 			if ( !in_array($handle[0], $this->queue) && isset($this->scripts[$handle[0]]) ) {
-				if ( 'wp_tiny_mce' == $handle[0] ) // HACK: Put tinyMCE first.
-					array_unshift($this->queue, $handle[0]);
-				else
-					$this->queue[] = $handle[0];
+				$this->queue[] = $handle[0];
 				if ( isset($handle[1]) )
 					$this->args[$handle[0]] = $handle[1];
 			}
