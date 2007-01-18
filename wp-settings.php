@@ -158,10 +158,8 @@ if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of 
 require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
-
-include_once(ABSPATH . 'wp-includes/streams.php');
-include_once(ABSPATH . 'wp-includes/gettext.php');
-
+include_once(ABSPATH . WPINC . '/streams.php');
+include_once(ABSPATH . WPINC . '/gettext.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
 
 $wpdb->hide_errors();
