@@ -1,5 +1,6 @@
 <?php
 
+if ( !function_exists('graceful_fail') ) :
 function graceful_fail( $message ) {
 	die('
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -27,6 +28,7 @@ text-align: center;
 </html>
 	');
 }
+endif;
 
 function fix_upload_details( $uploads ) {
 

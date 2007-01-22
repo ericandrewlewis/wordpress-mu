@@ -3,7 +3,6 @@
 	Helper functions for WPMU
 */
 
-
 function wpmu_update_blogs_date() {
 	global $wpdb;
 
