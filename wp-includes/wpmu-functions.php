@@ -432,7 +432,7 @@ function get_blogs_of_user( $id, $all = false ) {
 		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
 			preg_match('/wp_(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
-			if ( $blog && isset( $blog->domain ) && ( $all == false && $blog->deleted == 0 || $all == true ) ) {
+			if ( $blog && isset( $blog->domain ) && ( $all == true || $all == false && ( $blog->archived == 0 && $blog->spam == 0 && $blog->deleted == 0 ) ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
 				$blogs[$match[1]]->domain      = $blog->domain;
 				$blogs[$match[1]]->path        = $blog->path;
@@ -494,12 +494,13 @@ function update_archived( $id, $archived ) {
 	return $archived;
 }
 
-function update_blog_status( $id, $pref, $value ) {
+function update_blog_status( $id, $pref, $value, $refresh = 1 ) {
 	global $wpdb;
 
 	$wpdb->query( "UPDATE {$wpdb->blogs} SET {$pref} = '{$value}', last_updated = NOW() WHERE blog_id = '$id'" );
 
-	refresh_blog_details($id);
+	if( $refresh == 1 )
+		refresh_blog_details($id);
 
 	if( $pref == 'spam' ) {
 		if( $value == 1 ) {
@@ -659,6 +660,7 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 		$userdata = array();
 		$userdata['ID'] = $user->id;
 		$userdata['user_url'] = get_blogaddress_by_id($blog_id);
+		$userdata['user_login'] = $user->user_login;
 		wp_update_user($userdata);
 	}
 
