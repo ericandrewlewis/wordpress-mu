@@ -549,7 +549,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 			$wpdb->query( "DROP TABLE IF EXISTS $val" );
 
 		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
-		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/" . $blog_id ."/files/"
+		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/" . $blog_id ."/files/";
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
 		$top_dir = $dir;
 		$stack = array($dir);
