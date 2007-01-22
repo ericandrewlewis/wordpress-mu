@@ -533,31 +533,31 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 
 	if ( $drop ) {
 		$drop_tables = array( $wpmuBaseTablePrefix . $blog_id . "_categories",
-			$wpmuBaseTablePrefix . $blog_id . "_comments",
-			$wpmuBaseTablePrefix . $blog_id . "_linkcategories",
-			$wpmuBaseTablePrefix . $blog_id . "_links",
-			$wpmuBaseTablePrefix . $blog_id . "_link2cat",
-			$wpmuBaseTablePrefix . $blog_id . "_options",
-			$wpmuBaseTablePrefix . $blog_id . "_post2cat",
-			$wpmuBaseTablePrefix . $blog_id . "_postmeta",
-			$wpmuBaseTablePrefix . $blog_id . "_posts",
-			$wpmuBaseTablePrefix . $blog_id . "_referer_visitLog",
-			$wpmuBaseTablePrefix . $blog_id . "_referer_blacklist" );
+		$wpmuBaseTablePrefix . $blog_id . "_comments",
+		$wpmuBaseTablePrefix . $blog_id . "_linkcategories",
+		$wpmuBaseTablePrefix . $blog_id . "_links",
+		$wpmuBaseTablePrefix . $blog_id . "_link2cat",
+		$wpmuBaseTablePrefix . $blog_id . "_options",
+		$wpmuBaseTablePrefix . $blog_id . "_post2cat",
+		$wpmuBaseTablePrefix . $blog_id . "_postmeta",
+		$wpmuBaseTablePrefix . $blog_id . "_posts",
+		$wpmuBaseTablePrefix . $blog_id . "_referer_visitLog",
+		$wpmuBaseTablePrefix . $blog_id . "_referer_blacklist" );
 		reset( $drop_tables );
 
 		while( list( $key, $val ) = each( $drop_tables  ) ) 
 			$wpdb->query( "DROP TABLE IF EXISTS $val" );
 
 		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
-                $dir = constant( "ABSPATH" ) . constant( "UPLOADS" );
-                $dir = rtrim($dir, DIRECTORY_SEPARATOR);
-                $top_dir = $dir;
-                $stack = array($dir);
-                $index = 0;
+		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/" . $blog_id ."/files/"
+		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
+		$top_dir = $dir;
+		$stack = array($dir);
+		$index = 0;
 
-                while ($index < count($stack)) {
-                        # Get indexed directory from stack
-                        $dir = $stack[$index];
+		while ($index < count($stack)) {
+			# Get indexed directory from stack
+			$dir = $stack[$index];
 
 			$dh = @ opendir($dir);
 			if ($dh) {
@@ -572,13 +572,13 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 				}
 			}
 			$index++;
-                }
+		}
 
-                $stack = array_reverse($stack);  // Last added dirs are deepest
-                foreach($stack as $dir) {
-                        if ( $dir != $top_dir)
-                                @ rmdir($dir);
-                }
+		$stack = array_reverse($stack);  // Last added dirs are deepest
+		foreach($stack as $dir) {
+			if ( $dir != $top_dir)
+			@ rmdir($dir);
+		}
 	}
 
 	if ( $switch )
