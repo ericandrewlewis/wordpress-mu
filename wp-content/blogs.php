@@ -77,13 +77,6 @@ if ( !is_file( $file ) ) {
 	die('404 &#8212; File not found.');
 }
 
-// These should never, ever be served
-$never = array( 'js', 'exe', 'swf', 'class', 'tar', 'zip', 'rar' );
-if ( in_array( preg_replace( '|.*\.(.*)$|', '$1', $file ), $never ) ) {
-	header("HTTP/1.1 404 Not Found");
-	die('404 &#8212; File not found.');
-}
-
 $mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
 if( $mime[ 'type' ] != false ) {
 	$mimetype = $mime[ 'type' ];
