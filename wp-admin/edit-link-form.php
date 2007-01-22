@@ -39,16 +39,11 @@ function xfn_check($class, $value = '', $type = 'check') {
 <div id="moremeta">
 <div id="grabit" class="dbx-group">
 
-<?php autocomplete_css(); ?>
 <fieldset id="categorydiv" class="dbx-box">
 <h3 class="dbx-handle"><?php _e('Categories') ?></h3>
 <div class="dbx-content">
 <p id="jaxcat"></p>
-<?php if ( current_user_can('manage_categories') ) : ?>
-<div id="searchresults" class="autocomplete"></div>
-<?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
-<?php endif; ?>
-<ul id="categorychecklist"><?php dropdown_categories(get_option('default_link_category')); ?></ul>
+<ul id="categorychecklist"><?php dropdown_link_categories(get_option('default_link_category')); ?></ul>
 </div>
 </fieldset>
 

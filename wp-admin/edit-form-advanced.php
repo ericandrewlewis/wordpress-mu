@@ -63,7 +63,6 @@ function focusit() {
 addLoadEvent(focusit);
 </script>
 <?php endif; ?>
-<?php autocomplete_css(); ?>
 <div id="poststuff">
 
 <div id="moremeta">
@@ -73,10 +72,6 @@ addLoadEvent(focusit);
 <h3 class="dbx-handle"><?php _e('Categories') ?></h3>
 <div class="dbx-content">
 <p id="jaxcat"></p>
-<?php if ( current_user_can('manage_categories') ) : ?>
-<div id="searchresults" class="autocomplete"></div>
-<?php autocomplete_textbox( "wpmu-edit.php?action=searchcategories&search=", "newcat", "searchresults" ); ?>
-<?php endif; ?>
 <ul id="categorychecklist"><?php dropdown_categories(); ?></ul></div>
 </fieldset>
 

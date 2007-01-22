@@ -2233,46 +2233,6 @@ function wp_create_thumbnail( $file, $max_side, $effect = '' ) {
 	}
 }
 
-function autocomplete_css() {
-	?>
-<style type='text/css'>
-    div.autocomplete {
-      position:absolute;
-      width:200px;
-      background-color:white;
-      border:1px solid #888;
-      margin:0px;
-      padding:0px;
-    }
-    div.autocomplete ul {
-      list-style-type:none;
-      margin:0px;
-      padding:0px;
-    }
-    div.autocomplete ul li.selected { background-color: #ffb;}
-    div.autocomplete ul li {
-      list-style-type:none;
-      display:block;
-      margin:0;
-      padding:2px;
-      height:32px;
-      cursor:pointer;
-    }
-</style>
-<?php
-}
-function autocomplete_textbox( $url, $search_field, $results_field ) {
-	wp_print_scripts('scriptaculous-controls');
-	?>
-
-<script type="text/javascript">
-function load_autocompleter() {
-	new Ajax.Autocompleter("<?php echo $search_field ?>", "<?php echo $results_field ?>", "<?php echo $url ?>", {paramName: "search", minChars: 3});
-}
-addLoadEvent( load_autocompleter );
-</script>
-<?php
-}
 
 function update_blog_public($old_value, $value) {
 	global $wpdb;

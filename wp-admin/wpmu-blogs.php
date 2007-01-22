@@ -199,11 +199,10 @@ switch( $_GET[ 'action' ] ) {
     }
     print "<h3>" . __('Add a new user') . "</h3>";
     ?>
-<?php autocomplete_css(); ?>
 <p><?php _e('As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.') ?></p>
 <table>
 <tr><th scope="row"><?php _e('User&nbsp;Login:') ?> </th><td><input type="text" name="newuser" id="newuser"></td></tr>
-<tr><td></td><td><div id="searchresults" class="autocomplete"></div></td> </tr>
+<tr><td></td><td></td> </tr>
 	<tr>
 		<th scope="row"><?php _e('Role:') ?></th>
 		<td><select name="new_role" id="new_role"><?php 
@@ -222,8 +221,7 @@ switch( $_GET[ 'action' ] ) {
 </div>
 <p class="submit">
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
-</p> 
-<?php autocomplete_textbox( "wpmu-edit.php?action=searchusers&search=", "newuser", "searchresults" ); ?>
+</p>
 
     </td>
     </table>
@@ -313,7 +311,7 @@ function check_all_rows() {
 </script>
 
 <h2><?php _e ('Blogs') ?></h2>
-<form name="searchform" action="wpmu-blogs.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
+<form name="searchform" action="wpmu-blogs.php" method="get" style="float: left; margin-right: 3em;"> 
   <table><td>
   <fieldset> 
   <legend><?php _e('Search Blogs&hellip;') ?></legend> 
@@ -328,7 +326,7 @@ function check_all_rows() {
 	  ?><a href="/wp-admin/wpmu-users.php?action=users&s=<?php echo wp_specialchars($_GET[ 's' ], 1) ?>"><?php _e('Search Users:') ?> <?php echo wp_specialchars($_GET[ 's' ], 1) ?></a><?php
   }
   ?>
-  </td><td>
+  </td><td valign='top'>
   <fieldset> 
   <legend><?php _e('Blog Navigation') ?></legend> 
   <?php 

@@ -24,7 +24,7 @@ switch( $_REQUEST[ 'action' ] ) {
 			update_site_option( "limited_email_domains", '' );
 		}
 		if( $_POST[ 'banned_email_domains' ] != '' ) {
-			update_site_option( "banned_email_domains", split( ' ', $_POST[ 'banned_email_domains' ] ) );
+			update_site_option( "banned_email_domains", split( ' ', stripslashes($_POST[ 'banned_email_domains' ]) ) );
 		} else {
 			update_site_option( "banned_email_domains", '' );
 		}
@@ -212,6 +212,7 @@ switch( $_REQUEST[ 'action' ] ) {
 					$userdata = get_userdata($userid);
 					$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
 					$_POST[ 'email' ] = $userdata->user_email;
+					$_POST[ 'rich_editing' ] = $userdata->rich_editing;
 					edit_user( $userid );
 					if( $cap == null )
 						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
@@ -240,7 +241,7 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('deleteblog');
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id, true );
-		wp_redirect( add_query_arg( "updated", "blogdeleted", $_POST[ 'ref' ] ) );
+		wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
 		die();
 	break;
 	case "allblogs":
@@ -254,7 +255,8 @@ switch( $_REQUEST[ 'action' ] ) {
 					if( $_POST[ 'blogfunction' ] == 'delete' ) {
 						wpmu_delete_blog( $val, true );
 					} elseif( $_POST[ 'blogfunction' ] == 'spam' ) {
-						update_blog_status( $val, "spam", '1' );
+						update_blog_status( $val, "spam", '1', 0 );
+						set_time_limit(60); 
 					}
 				}
 			}

@@ -32,7 +32,7 @@ switch( $_REQUEST[ 'action' ] ) {
 					if( $_POST[ 'userfunction' ] == 'delete' ) {
 						wpmu_delete_user($val);
 					} elseif( $_POST[ 'userfunction' ] == 'spam' ) {
-						$blogs = get_blogs_of_user( $val );
+						$blogs = get_blogs_of_user( $val, true );
 						if( is_array( $blogs ) ) {
 							while( list( $key, $details ) = each( $blogs ) ) { 
 								update_blog_status( $details->userblog_id, "spam", '1' );
@@ -43,7 +43,7 @@ switch( $_REQUEST[ 'action' ] ) {
 				}
 			}
 		}
-		wpmu_admin_do_redirect( $_SERVER['HTTP_REFERER'] );
+		wp_redirect( add_query_arg( "updated", "true", $_SERVER[ 'HTTP_REFERER' ] ) );
 		die();
 	break;
 }
@@ -294,7 +294,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		break;
 
 	case 'blogs':
-		$blogs = get_blogs_of_user( $user[ 'ID' ] );
+		$blogs = get_blogs_of_user( $user[ 'ID' ], true );
 		?>
 		<td><?php if( is_array( $blogs ) ) 
 				while( list( $key, $val ) = each( $blogs ) ) { 
@@ -341,6 +341,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 <p><input type=button value="<?php _e('Check All') ?>" onClick="this.value=check_all_rows()" /> </p>
 <p><?php _e('Selected Users:') ?></p>
 <ul>
+    <?php wp_nonce_field( "allusers" ); ?>
 <li><input type='radio' name='userfunction' id='delete' value='delete' /> <label for='delete'><?php _e('Delete') ?></label></li>
 <li><input type='radio' name='userfunction' id='spam' value='spam' /> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
 </ul>
