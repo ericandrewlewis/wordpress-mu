@@ -78,7 +78,7 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 <td><label><input type="checkbox" name="blog_public" value="1" checked="checked" /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?></label></td>
 </tr>
 <?php
-do_action('signup_blogform');
+do_action('signup_blogform', $errors );
 }
 
 function validate_blog_form() {
