@@ -1069,12 +1069,13 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 }
 
 function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
+	global $current_site;
 	// Send email with activation link.
 	$admin_email = get_site_option( "admin_email" );
 	if( $admin_email == '' )
 		$admin_email = 'support@' . $_SERVER[ 'SERVER_NAME' ];
 	$message_headers = "MIME-Version: 1.0\n" . "From: " . get_site_option( "site_name" ) .  " <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), "http://{$_SERVER[ 'SERVER_NAME' ]}/wp-activate.php?key=$key" );
+	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), "http://{$current_site->domain}{$current_site->path}/wp-activate.php?key=$key" );
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $user);
 	wp_mail($user_email, $subject, $message, $message_headers);

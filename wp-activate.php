@@ -26,7 +26,7 @@ form { margin-top: 2em; }
 	if ( empty($_GET['key']) && empty($_POST['key']) ) {
 ?>
 <h2><?php _e('Activation Key Required') ?></h2>
-<form name="activateform" id="activateform" method="post" action="/wp-activate.php">
+<form name="activateform" id="activateform" method="post" action="<?php echo get_option( 'siteurl' ) ?>/wp-activate.php">
 <table border="0" width="100%" cellpadding="9">
 <tr>
 <th valign="top"><?php _e('Activation Key:') ?></th>
