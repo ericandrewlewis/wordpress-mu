@@ -203,6 +203,7 @@ class wp_xmlrpc_server extends IXR_Server {
 				"dateCreated"		=> new IXR_Date($page_date),
 				"userid"			=> $page->post_author,
 				"page_id"			=> $page->ID,
+				"page_status"		=> $page->post_status,
 				"description"		=> $full_page["main"],
 				"title"				=> $page->post_title,
 				"link"				=> $link,
@@ -1442,7 +1443,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		foreach($catids as $catid) {
 			$categories[] = array(
 				'categoryName' => get_cat_name($catid),
-				'categoryId' => $catid,
+				'categoryId' => (string) $catid,
 				'isPrimary' => $isPrimary
 			);
 			$isPrimary = false;

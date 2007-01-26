@@ -204,15 +204,14 @@ function get_option($setting) {
 	global $wpdb, $switched, $current_blog;
 
 	if ( $switched == false && defined('WP_INSTALLING') == false ) {
+	// prevent non-existent options from triggering multiple queries
+	if ( true === wp_cache_get($setting, 'notoptions') )
+		return false;
 		$value = wp_cache_get($setting, 'options');
 	} else {
 		$value = false;
 		wp_cache_delete($setting, 'options');
 	}
-
-// Uncomment if we get any page not found or rewrite errors	
-//	if( $setting == 'rewrite_rules' )
-//		$value = false;
 
 	if ( $value == 'novalueindb' )
 		return false;
@@ -228,9 +227,9 @@ function get_option($setting) {
 
 		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 			$value = $row->option_value;
-			wp_cache_set($setting, ($value=='')?'emptystringindb':$value, 'options');
-		} else {
-			wp_cache_set($setting, 'novalueindb', 'options');
+			wp_cache_set($setting, $value, 'options');
+		} else { // option does not exist, so we must cache its non-existence
+			wp_cache_set($setting, true, 'notoptions');
 			return false;
 		}
 	}
@@ -290,6 +289,9 @@ function update_option($option_name, $newvalue) {
 		add_option($option_name, $newvalue);
 		return true;
 	}
+
+	if ( true === wp_cache_get($option_name, 'notoptions') )
+		wp_cache_delete($option_name, 'notoptions');
 
 	$_newvalue = $newvalue;
 	$newvalue = maybe_serialize($newvalue);
@@ -1266,24 +1268,10 @@ function wp_die($message, $title = '') {
 	die();
 }
 
-function _mce_config_url($url) {
-	global $wp_locale;
-
-	if ( 'rtl' == $wp_locale->text_direction )
-		$url = add_query_arg('mce_text_direction', 'rtl', $url);
-
-	return $url;
-}
-
 function _mce_set_direction() {
 	global $wp_locale;
 
-	if ( isset($_GET['mce_text_direction']) && 'rtl' == $_GET['mce_text_direction'] )
-		$dir = 'rtl';
-	else
-		$dir = $wp_locale->text_direction;
-
-	if ( 'rtl' == $dir ) {
+	if ('rtl' == $wp_locale->text_direction) {
 		echo 'directionality : "rtl" ,';
 		echo 'theme_advanced_toolbar_align : "right" ,';
 	}
@@ -1292,12 +1280,7 @@ function _mce_set_direction() {
 function _mce_load_rtl_plugin($input) {
 	global $wp_locale;
 
-	if ( isset($_GET['mce_text_direction']) && 'rtl' == $_GET['mce_text_direction'] )
-		$dir = 'rtl';
-	else
-		$dir = $wp_locale->text_direction;
-
-	if ( 'rtl' == $dir )
+	if ('rtl' == $wp_locale->text_direction)
 		$input[] = 'directionality';
 
 	return $input;
@@ -1306,12 +1289,7 @@ function _mce_load_rtl_plugin($input) {
 function _mce_add_direction_buttons($input) {
 	global $wp_locale;
 
-	if ( isset($_GET['mce_text_direction']) && 'rtl' == $_GET['mce_text_direction'] )
-		$dir = 'rtl';
-	else
-		$dir = $wp_locale->text_direction;
-
-	if ( 'rtl' == $dir ) {
+	if ('rtl' == $wp_locale->text_direction) {
 		$new_buttons = array('separator', 'ltr', 'rtl');
 		$input = array_merge($input, $new_buttons);
 	}

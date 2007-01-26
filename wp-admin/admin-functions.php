@@ -840,7 +840,7 @@ function page_rows( $parent = 0, $level = 0, $pages = 0, $hierarchy = true ) {
       <?php echo $pad; ?><?php the_title() ?>
     </td> 
     <td><?php the_author() ?></td>
-    <td><?php if ( '0000-00-00 00:00:00' ==$post->post_modified ) _e('Unpublished'); else echo mysql2date( 'Y-m-d g:i a', $post->post_modified ); ?></td> 
+    <td><?php if ( '0000-00-00 00:00:00' ==$post->post_modified ) _e('Unpublished'); else echo mysql2date( __('Y-m-d g:i a'), $post->post_modified ); ?></td> 
 	<td><a href="<?php the_permalink(); ?>" rel="permalink" class="edit"><?php _e( 'View' ); ?></a></td>
     <td><?php if ( current_user_can( 'edit_page', $id ) ) { echo "<a href='page.php?action=edit&amp;post=$id' class='edit'>" . __( 'Edit' ) . "</a>"; } ?></td> 
     <td><?php if ( current_user_can( 'delete_page', $id ) ) { echo "<a href='" . wp_nonce_url( "page.php?action=delete&amp;post=$id", 'delete-page_' . $id ) .  "' class='delete' onclick=\"return deleteSomething( 'page', " . $id . ", '" . js_escape(sprintf( __("You are about to delete the '%s' page.\n'OK' to delete, 'Cancel' to stop." ), get_the_title() ) ) . "' );\">" . __( 'Delete' ) . "</a>"; } ?></td> 
@@ -1615,7 +1615,7 @@ function get_file_description( $file ) {
 	}
 	elseif ( file_exists( ABSPATH . $file ) && is_file( ABSPATH . $file ) ) {
 		$template_data = implode( '', file( ABSPATH . $file ) );
-		if ( preg_match( "|Template Name:(.* )|i", $template_data, $name ))
+		if ( preg_match( "|Template Name:(.*)|i", $template_data, $name ))
 			return $name[1];
 	}
 
@@ -2231,7 +2231,6 @@ function wp_create_thumbnail( $file, $max_side, $effect = '' ) {
 		return apply_filters( 'wp_create_thumbnail', $thumbpath );
 	}
 }
-
 
 function update_blog_public($old_value, $value) {
 	global $wpdb;
