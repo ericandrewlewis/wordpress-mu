@@ -60,9 +60,9 @@ if (isset($_GET['updated'])) {
 		</tr> 
 		<tr valign="top"> 
 		<th scope="row"><?php _e('Banned Email Domains:') ?></th> 
-		<td><input name="banned_email_domains" type="text" id="banned_email_domains" style="width: 95%" value="<?php echo get_site_option('banned_email_domains') == '' ? '' : @implode( " ", get_site_option('banned_email_domains') ); ?>" size="45" />
+		<td><textarea name="banned_email_domains" id="banned_email_domains" cols='40' rows='5'><?php echo get_site_option('banned_email_domains') == '' ? '' : @implode( "\n", get_site_option('banned_email_domains') ); ?></textarea>
 		<br />
-		<?php _e('If you want to ban certain email domains from blog registrations. Separate domains by spaces.') ?></td> 
+		<?php _e('If you want to ban certain email domains from blog registrations. One domain per line.') ?></td> 
 		</tr> 
 		<tr valign="top"> 
 		<th scope="row"><?php _e('Blog upload space:') ?></th> 

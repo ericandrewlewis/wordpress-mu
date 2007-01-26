@@ -24,7 +24,7 @@ switch( $_REQUEST[ 'action' ] ) {
 			update_site_option( "limited_email_domains", '' );
 		}
 		if( $_POST[ 'banned_email_domains' ] != '' ) {
-			update_site_option( "banned_email_domains", split( ' ', stripslashes($_POST[ 'banned_email_domains' ]) ) );
+			update_site_option( "banned_email_domains", split( "\n", stripslashes($_POST[ 'banned_email_domains' ]) ) );
 		} else {
 			update_site_option( "banned_email_domains", '' );
 		}
