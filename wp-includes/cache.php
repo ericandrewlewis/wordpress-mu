@@ -84,9 +84,12 @@ class WP_Object_Cache {
 		if (false !== array_search($group, $this->global_groups))
 			$prefix = '';
 		else
-			$prefix = $blog_id . ':';
+			$prefix = $blog_id . '-';
 
-		return "$prefix$group:$key";
+		if( '' != $key )
+			$key = '-' . $key;
+
+		return "$prefix$group$key";
 	}
 
 
@@ -349,22 +352,21 @@ class WP_Object_Cache {
 		// Loop over dirty objects and save them.
 		$errors = 0;
 		foreach ($this->dirty_objects as $group => $ids) {
-			$group_key = $this->key( '', $group );
-			$group_dir = $this->make_group_dir($group_key, $dir_perms);
+			$group_dir = $this->make_group_dir($group, $dir_perms);
 
 			$ids = array_unique($ids);
 			foreach ($ids as $id) {
-				$cache_file = $group_dir.$this->hash($id).'.php';
+				$cache_file = $group_dir.$this->hash($group.'-'.$id).'.php';
 
 				// Remove the cache file if the key is not set.
-				if (!isset ($this->cache[$group][$id])) {
+				if (!isset ($this->cache[$group.'-'.$id])) {
 					if (file_exists($cache_file))
 						@ unlink($cache_file);
 					continue;
 				}
 
 				$temp_file = tempnam($group_dir, 'tmp');
-				$serial = CACHE_SERIAL_HEADER.base64_encode(serialize($this->cache[$group][$id])).CACHE_SERIAL_FOOTER;
+				$serial = CACHE_SERIAL_HEADER.base64_encode(serialize($this->cache[$group.'-'.$id])).CACHE_SERIAL_FOOTER;
 				$fd = @fopen($temp_file, 'w');
 				if ( false === $fd ) {
 					$errors++;
