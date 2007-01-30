@@ -50,7 +50,6 @@ if ( 'page' == get_option('show_on_front') ) {
 	</p>
 </div>
 <?php endif; ?>
-</fieldset>
 </td> 
 </tr> 
 </table> 
@@ -64,7 +63,6 @@ if ( 'page' == get_option('show_on_front') ) {
 <th width="33%" scope="row"><?php _e('Show at most:') ?></th> 
 <td>
 <input name="posts_per_page" type="text" id="posts_per_page" value="<?php form_option('posts_per_page'); ?>" size="3" /> <?php _e('posts') ?>
-</select>
 </td> 
 </tr> 
 </table> 
@@ -82,7 +80,7 @@ if ( 'page' == get_option('show_on_front') ) {
 <td>
 <p><label><input name="rss_use_excerpt"  type="radio" value="0" <?php checked(0, get_option('rss_use_excerpt')); ?>	/> <?php _e('Full text') ?></label><br />
 <label><input name="rss_use_excerpt" type="radio" value="1" <?php checked(1, get_option('rss_use_excerpt')); ?> /> <?php _e('Summary') ?></label></p>
-<p><?php _e('Note: If you use the <code>&lt;--more--&gt;</code> feature, it will cut off posts in RSS feeds.'); ?></p>
+<p><?php _e('Note: If you use the <code>&lt;!--more--&gt;</code> feature, it will cut off posts in RSS feeds.'); ?></p>
 </td>
 </tr> 
 </table> 
@@ -96,7 +94,6 @@ if ( 'page' == get_option('show_on_front') ) {
 </table> 
 <p class="submit"> 
 <input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="posts_per_page,posts_per_rss,rss_use_excerpt,blog_charset,gzipcompression,show_on_front,page_on_front,page_for_posts" /> 
 <input type="hidden" name="page_options" value="posts_per_page,posts_per_rss,rss_use_excerpt,blog_charset,show_on_front,page_on_front,page_for_posts" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /> 
 </p> 

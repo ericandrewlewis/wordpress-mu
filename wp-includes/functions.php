@@ -203,15 +203,20 @@ function is_serialized_string($data) {
 function get_option($setting) {
 	global $wpdb, $switched, $current_blog;
 
+	$pre = apply_filters( 'pre_option_' . $setting, false ); 
+	if ( $pre ) 
+		return $pre; 
+
 	if ( $switched == false && defined('WP_INSTALLING') == false ) {
-	// prevent non-existent options from triggering multiple queries
-	if ( true === wp_cache_get($setting, 'notoptions') )
-		return false;
 		$value = wp_cache_get($setting, 'options');
 	} else {
 		$value = false;
 		wp_cache_delete($setting, 'options');
 	}
+
+// Uncomment if we get any page not found or rewrite errors	
+//	if( $setting == 'rewrite_rules' )
+//		$value = false;
 
 	if ( $value == 'novalueindb' )
 		return false;
@@ -227,9 +232,9 @@ function get_option($setting) {
 
 		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 			$value = $row->option_value;
-			wp_cache_set($setting, $value, 'options');
-		} else { // option does not exist, so we must cache its non-existence
-			wp_cache_set($setting, true, 'notoptions');
+			wp_cache_set($setting, ($value=='')?'emptystringindb':$value, 'options');
+		} else {
+			wp_cache_set($setting, 'novalueindb', 'options');
 			return false;
 		}
 	}
@@ -289,9 +294,6 @@ function update_option($option_name, $newvalue) {
 		add_option($option_name, $newvalue);
 		return true;
 	}
-
-	if ( true === wp_cache_get($option_name, 'notoptions') )
-		wp_cache_delete($option_name, 'notoptions');
 
 	$_newvalue = $newvalue;
 	$newvalue = maybe_serialize($newvalue);
@@ -1211,7 +1213,7 @@ function wp_nonce_ays($action) {
 
 	$adminurl = get_option('siteurl') . '/wp-admin';
 	if ( wp_get_referer() )
-		$adminurl = wp_get_referer();
+		$adminurl = wp_specialchars(wp_get_referer(), 1);
 
 	$title = __('WordPress Confirmation');
 	// Remove extra layer of slashes.
