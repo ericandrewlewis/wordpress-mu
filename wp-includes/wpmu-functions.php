@@ -409,14 +409,6 @@ function restore_current_blog() {
 	$switched = false;
 }
 
-function get_users_of_blog( $id = '' ) {
-	global $wpdb, $wpmuBaseTablePrefix;
-	if ( empty($id) )
-		$id = $wpdb->blogid;
-	$users = $wpdb->get_results( "SELECT user_id, user_login, user_email, meta_value FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities' ORDER BY {$wpdb->usermeta}.user_id" );
-	return $users;
-}
-
 function get_blogs_of_user( $id, $all = false ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 

@@ -223,7 +223,7 @@ class wp_xmlrpc_server extends IXR_Server {
 				"mt_allow_pings"		=> $allow_pings,
 				"wp_slug"				=> $page->post_name,
 				"wp_password"			=> $page->post_password,
-				"wp_author"				=> $author->user_nicename,
+				"wp_author"				=> $author->display_name,
 				"wp_page_parent_id"		=> $page->post_parent,
 				"wp_page_parent_title"	=> $parent_title,
 				"wp_page_order"			=> $page->menu_order,
@@ -445,15 +445,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			return($this->error);
 		}
 
-		// Get basic info on all users.
-		$all_users = $wpdb->get_results("
-			SELECT u.ID id,
-				u.user_login username
-			FROM {$wpdb->users} u
-			ORDER BY u.user_login
-		");
-
-		return($all_users);
+		return(get_users_of_blog());
 	}
 
 	/**
@@ -562,34 +554,24 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		$this->escape($args);
 
-		$user_login = $args[1];
-		$user_pass  = $args[2];
+	  $user_login = $args[1];
+	  $user_pass  = $args[2];
 
-		if (!$this->login_pass_ok($user_login, $user_pass))
-			return $this->error;
+	  if (!$this->login_pass_ok($user_login, $user_pass)) {
+	    return $this->error;
+	  }
 
-		$user = set_current_user(0, $user_login);
+	  set_current_user(0, $user_login);
+	  $is_admin = current_user_can('level_8');
 
-		$blogs = (array) get_blogs_of_user($user->ID);
+	  $struct = array(
+	    'isAdmin'  => $is_admin,
+	    'url'      => get_option('home') . '/',
+	    'blogid'   => '1',
+	    'blogName' => get_option('blogname')
+	  );
 
-		$struct = array();
-
-		foreach ( $blogs as $blog ) {
-			$blog_id = $blog->userblog_id;
-
-			switch_to_blog($blog_id);
-
-			$is_admin = current_user_can('level_8');
-
-			$struct[] = array(
-				'isAdmin'  => $is_admin,
-				'url'      => get_settings('home') . '/',
-				'blogid'   => $blog_id,
-				'blogName' => get_settings('blogname')
-			);
-		}
-
-		return $struct;
+	  return array($struct);
 	}
 
 
@@ -963,6 +945,11 @@ class wp_xmlrpc_server extends IXR_Server {
 
 	  $post_author = $user->ID;
 
+		// If an author id was provided then use it instead.
+		if(!empty($content_struct["wp_author_id"])) {
+			$post_author = $content_struct["wp_author_id"];
+		}
+
 	  $post_title = $content_struct['title'];
 	  $post_content = apply_filters( 'content_save_pre', $content_struct['description'] );
 	  $post_status = $publish ? 'publish' : 'draft';
@@ -1091,8 +1078,20 @@ class wp_xmlrpc_server extends IXR_Server {
 		}
 
 		// Only set the post_author if one is set.
-		if(!empty($content_struct["wp_author"])) {
-			$post_author = $content_struct["wp_author"];
+		if(!empty($content_struct["wp_author_id"])) {
+			$post_author = $content_struct["wp_author_id"];
+		}
+
+		// Only set ping_status if it was provided.
+		if(isset($content_struct["mt_allow_pings"])) {
+			switch($content_struct["mt_allow_pings"]) {
+				case "0":
+					$ping_status = "closed";
+					break;
+				case "1":
+					$ping_status = "open";
+					break;
+			}
 		}
 
 	  $post_title = $content_struct['title'];
@@ -1120,10 +1119,6 @@ class wp_xmlrpc_server extends IXR_Server {
 	  $comment_status = (empty($content_struct['mt_allow_comments'])) ?
 	    get_option('default_comment_status')
 	    : $content_struct['mt_allow_comments'];
-
-	  $ping_status = (empty($content_struct['mt_allow_pings'])) ?
-	    get_option('default_ping_status')
-	    : $content_struct['mt_allow_pings'];
 
 	  // Do some timestamp voodoo
 	  $dateCreatedd = $content_struct['dateCreated'];
@@ -1204,7 +1199,7 @@ class wp_xmlrpc_server extends IXR_Server {
 	      'mt_allow_pings' => $allow_pings,
           'wp_slug' => $postdata['post_name'],
           'wp_password' => $postdata['post_password'],
-          'wp_author' => $author->user_nicename,
+          'wp_author' => $author->display_name,
           'wp_author_username'	=> $author->user_login
 	    );
 
@@ -1249,7 +1244,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			$link = post_permalink($entry['ID']);
 
 			// Get the post author info.
-			$author = get_userdata($entry['ID']);
+			$author = get_userdata($entry['post_author']);
 
 			$allow_comments = ('open' == $entry['comment_status']) ? 1 : 0;
 			$allow_pings = ('open' == $entry['ping_status']) ? 1 : 0;
@@ -1271,7 +1266,7 @@ class wp_xmlrpc_server extends IXR_Server {
 				'mt_allow_pings' => $allow_pings,
 				'wp_slug' => $entry['post_name'],
 				'wp_password' => $entry['post_password'],
-				'wp_author' => $author->user_nicename,
+				'wp_author' => $author->display_name,
 				'wp_author_username' => $author->user_login
 			);
 
