@@ -299,7 +299,7 @@ function update_option($option_name, $newvalue) {
 	$_newvalue = $newvalue;
 	$newvalue = maybe_serialize($newvalue);
 
-	wp_cache_set($option_name, $newvalue, 'options');
+	wp_cache_delete($option_name, 'options');
 
 	$newvalue = $wpdb->escape($newvalue);
 	$option_name = $wpdb->escape($option_name);
@@ -321,7 +321,7 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 
 	$value = maybe_serialize($value);
 
-	wp_cache_set($name, $value, 'options');
+	wp_cache_delete($name, 'options');
 
 	$name = $wpdb->escape($name);
 	$value = $wpdb->escape($value);

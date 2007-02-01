@@ -1,6 +1,7 @@
 <?php
 function wp_cache_add($key, $data, $flag = '', $expire = 0) {
 	global $wp_object_cache;
+	$data = unserialize(serialize($data));
 
 	return $wp_object_cache->add($key, $data, $flag, $expire);
 }
@@ -37,12 +38,14 @@ function wp_cache_init() {
 
 function wp_cache_replace($key, $data, $flag = '', $expire = 0) {
 	global $wp_object_cache;
+	$data = unserialize(serialize($data));
 
 	return $wp_object_cache->replace($key, $data, $flag, $expire);
 }
 
 function wp_cache_set($key, $data, $flag = '', $expire = 0) {
 	global $wp_object_cache;
+	$data = unserialize(serialize($data));
 
 	return $wp_object_cache->set($key, $data, $flag, $expire);
 }
@@ -212,8 +215,6 @@ class WP_Object_Cache {
 				foreach ($dogs as $catt) {
 					$this->cache['category'][$catt->cat_ID] = $catt;
 					$this->cache[$this->key( $catt->cat_ID, 'category' )] = $catt;
-				}
-			}
 		} else
 			if ('options' == $group) {
 				$wpdb->hide_errors();
@@ -227,7 +228,6 @@ class WP_Object_Cache {
 
 				foreach ($options as $option) {
 					$this->cache['options'][$option->option_name] = $option->option_value;
-					$this->cache[$this->key( $option->option_name, 'options' )] = $option->option_value;
 				}
 			}
 	}
