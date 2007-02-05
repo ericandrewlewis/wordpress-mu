@@ -154,7 +154,7 @@ CREATE TABLE $wpdb->usermeta (
   PRIMARY KEY  (umeta_id),
   KEY user_id (user_id),
   KEY meta_key (meta_key)
-) $charset_collate;";
+) $charset_collate;
 CREATE TABLE $wpdb->blogs (
   blog_id bigint(20) NOT NULL auto_increment,
   site_id bigint(20) NOT NULL default '0',
