@@ -136,7 +136,7 @@ class WP_Import {
 		$j = -1;
 		foreach ($authors as $author) {
 			++ $j;
-			echo '<li>Current author: <strong>'.$author.'</strong><br />'.'Map to existing: ';
+			echo '<li>'.__('Current author:').' <strong>'.$author.'</strong><br />'.'Map to existing: ';
 			$this->users_form($j);
 			echo '</li>';
 		}
