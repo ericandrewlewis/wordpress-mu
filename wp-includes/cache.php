@@ -217,22 +217,8 @@ class WP_Object_Cache {
 					$this->cache[$this->key( $catt->cat_ID, 'category' )] = $catt;
 				}
 			}
-		} else
-			if ('options' == $group) {
-				$wpdb->hide_errors();
-				if (!$options = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'")) {
-					$options = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options");
-				}
-				$wpdb->show_errors();
+		}
 
-				if ( ! $options )
-					return;
-
-				foreach ($options as $option) {
-					$this->cache['options'][$option->option_name] = $option->option_value;
-					$this->cache[$this->key( $option->option_name, 'options' )] = $option->option_value;
-				}
-			}
 	}
 
 	function make_group_dir($group, $perms) {

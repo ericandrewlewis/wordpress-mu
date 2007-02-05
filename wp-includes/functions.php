@@ -209,16 +209,25 @@ function get_option($setting) {
 		return $pre; 
 
 	if ( $switched == false && defined('WP_INSTALLING') == false ) {
+	// prevent non-existent options from triggering multiple queries
+	$notoptions = wp_cache_get('notoptions', 'options');
+	if ( isset($notoptions[$setting]) )
+		return false;
+
+	$alloptions = wp_load_alloptions();
+
+	if ( isset($alloptions[$setting]) ) {
+		$value = $alloptions[$setting];
+	} else {
 		$value = wp_cache_get($setting, 'options');
+	}
 	} else {
 		$value = false;
 		wp_cache_delete($setting, 'options');
 	}
-
 // Uncomment if we get any page not found or rewrite errors	
 //	if( $setting == 'rewrite_rules' )
 //		$value = false;
-
 	if ( $value == 'novalueindb' )
 		return false;
 	if ( $value == 'emptystringindb' )
@@ -233,10 +242,11 @@ function get_option($setting) {
 
 		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 			$value = $row->option_value;
-			wp_cache_set($setting, ($value=='')?'emptystringindb':$value, 'options');
-		} else {
-			wp_cache_set($setting, 'novalueindb', 'options');
-			return false;
+				wp_cache_set($setting, $value, 'options');
+			} else { // option does not exist, so we must cache its non-existence
+				$notoptions[$setting] = true;
+				wp_cache_set('notoptions', $notoptions, 'options');
+				return false;
 		}
 	}
 
@@ -250,6 +260,12 @@ function get_option($setting) {
 	if (! unserialize($value) )
 		$value = stripslashes( $value );
 	return apply_filters( 'option_' . $setting, maybe_unserialize($value) );
+}
+
+function wp_protect_special_option($option) {
+	$protected = array('alloptions', 'notoptions');
+	if ( in_array($option, $protected) )
+		die(sprintf(__('%s is a protected WP option and may not be modified'), wp_specialchars($option)));
 }
 
 function form_option($option) {
@@ -279,8 +295,28 @@ function get_alloptions() {
 	return apply_filters('all_options', $all_options);
 }
 
+function wp_load_alloptions() {
+	global $wpdb;
+
+	$alloptions = wp_cache_get('alloptions', 'options');
+
+	if ( !$alloptions ) {
+		$wpdb->hide_errors();
+		if ( !$alloptions_db = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'") )
+			$alloptions_db = $wpdb->get_results("SELECT option_name, option_value FROM $wpdb->options");
+		$wpdb->show_errors();
+		$alloptions = array();
+		foreach ( (array) $alloptions_db as $o )
+			$alloptions[$o->option_name] = $o->option_value;
+		wp_cache_set('alloptions', $alloptions, 'options');
+	}
+	return $alloptions;
+}
+
 function update_option($option_name, $newvalue) {
 	global $wpdb;
+
+	wp_protect_special_option($option_name);
 
 	if ( is_string($newvalue) )
 		$newvalue = trim($newvalue);
@@ -296,10 +332,22 @@ function update_option($option_name, $newvalue) {
 		return true;
 	}
 
+	$notoptions = wp_cache_get('notoptions', 'options');
+	if ( isset($notoptions[$option_name]) ) {
+		unset($notoptions[$option_name]);
+		wp_cache_set('notoptions', $notoptions, 'options');
+	}
+
 	$_newvalue = $newvalue;
 	$newvalue = maybe_serialize($newvalue);
 
-	wp_cache_delete($option_name, 'options');
+	$alloptions = wp_load_alloptions();
+	if ( isset($alloptions[$option_name]) ) {
+		$alloptions[$option_name] = $newvalue;
+		wp_cache_set('alloptions', $alloptions, 'options');
+	} else {
+		wp_cache_set($option_name, $newvalue, 'options');
+	}
 
 	$newvalue = $wpdb->escape($newvalue);
 	$option_name = $wpdb->escape($option_name);
@@ -315,13 +363,26 @@ function update_option($option_name, $newvalue) {
 function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 	global $wpdb;
 
-	// Make sure the option doesn't already exist
-	if ( false !== get_option($name) )
-		return;
+	wp_protect_special_option($name);
+
+	// Make sure the option doesn't already exist we can check the cache before we ask for a db query
+	$notoptions = wp_cache_get('notoptions', 'options');
+	if ( isset($notoptions[$name]) ) {
+		unset($notoptions[$name]);
+		wp_cache_set('notoptions', $notoptions, 'options');
+	} elseif ( false !== get_option($name) ) {
+			return;
+	}
 
 	$value = maybe_serialize($value);
 
-	wp_cache_delete($name, 'options');
+	if ( 'yes' == $autoload ) {
+		$alloptions = wp_load_alloptions();
+		$alloptions[$name] = $value;
+		wp_cache_set('alloptions', $alloptions, 'options');
+	} else {
+		wp_cache_set($name, $value, 'options');
+	}
 
 	$name = $wpdb->escape($name);
 	$value = $wpdb->escape($value);
@@ -333,11 +394,22 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 
 function delete_option($name) {
 	global $wpdb;
+
+	wp_protect_special_option($name);
+
 	// Get the ID, if no ID then return
-	$option_id = $wpdb->get_var("SELECT option_id FROM $wpdb->options WHERE option_name = '$name'");
-	if ( !$option_id ) return false;
+	$option = $wpdb->get_row("SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'");
+	if ( !$option->option_id ) return false;
 	$wpdb->query("DELETE FROM $wpdb->options WHERE option_name = '$name'");
-	wp_cache_delete($name, 'options');
+	if ( 'yes' == $option->autoload ) {
+		$alloptions = wp_load_alloptions();
+		if ( isset($alloptions[$name]) ) {
+			unset($alloptions[$name]);
+			wp_cache_set('alloptions', $alloptions, 'options');
+		}
+	} else {
+		wp_cache_delete($name, 'options');
+	}
 	return true;
 }
 

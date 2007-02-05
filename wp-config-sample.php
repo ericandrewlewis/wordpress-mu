@@ -22,7 +22,7 @@ define ('WPLANG', '');
 
 define( "WP_USE_MULTIPLE_DB", false );
 
-/* Stop editing */
+/* That's all, stop editing! Happy blogging. */
 
 define('ABSPATH', dirname(__FILE__).'/');
 require_once(ABSPATH.'wp-settings.php');
