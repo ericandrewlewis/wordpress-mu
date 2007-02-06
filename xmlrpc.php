@@ -228,7 +228,7 @@ class wp_xmlrpc_server extends IXR_Server {
 				"wp_page_parent_title"	=> $parent_title,
 				"wp_page_order"			=> $page->menu_order,
 				"wp_author_id"			=> $author->ID,
-				"wp_author_display_username"	=> $author->display_name
+				"wp_author_display_name"	=> $author->display_name
 			);
 
 			return($page_struct);
@@ -555,24 +555,34 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		$this->escape($args);
 
-	  $user_login = $args[1];
-	  $user_pass  = $args[2];
+		$user_login = $args[1];
+		$user_pass  = $args[2];
 
-	  if (!$this->login_pass_ok($user_login, $user_pass)) {
-	    return $this->error;
-	  }
+		if (!$this->login_pass_ok($user_login, $user_pass))
+			return $this->error;
 
-	  set_current_user(0, $user_login);
-	  $is_admin = current_user_can('level_8');
+		$user = set_current_user(0, $user_login);
 
-	  $struct = array(
-	    'isAdmin'  => $is_admin,
-	    'url'      => get_option('home') . '/',
-	    'blogid'   => '1',
-	    'blogName' => get_option('blogname')
-	  );
+		$blogs = (array) get_blogs_of_user($user->ID);
 
-	  return array($struct);
+		$struct = array();
+
+		foreach ( $blogs as $blog ) {
+			$blog_id = $blog->userblog_id;
+
+			switch_to_blog($blog_id);
+
+			$is_admin = current_user_can('level_8');
+
+			$struct[] = array(
+				'isAdmin'  => $is_admin,
+				'url'      => get_settings('home') . '/',
+				'blogid'   => $blog_id,
+				'blogName' => get_settings('blogname')
+			);
+		}
+
+		return $struct;
 	}
 
 
