@@ -162,14 +162,6 @@ if( '0' == $current_blog->public ) {
 	// This just means the blog shouldn't show up in google, etc. Only to registered members
 }
 
-if( $current_blog->archived == '1' ) {
-    die( 'This blog has been archived or suspended.' );
-}
-
-if( $current_blog->spam == '1' ) {
-    die( 'This blog has been archived or suspended.' );
-}
-
 function is_installed() {
 	global $wpdb, $domain, $path;
 	$base = stripslashes( $base );
