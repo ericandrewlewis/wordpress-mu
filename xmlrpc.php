@@ -578,9 +578,9 @@ class wp_xmlrpc_server extends IXR_Server {
 
 			$struct[] = array(
 				'isAdmin'  => $is_admin,
-				'url'      => get_settings('home') . '/',
+				'url'      => get_option('home') . '/',
 				'blogid'   => $blog_id,
-				'blogName' => get_settings('blogname')
+				'blogName' => get_option('blogname')
 			);
 		}
 
