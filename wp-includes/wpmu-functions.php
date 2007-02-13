@@ -303,11 +303,12 @@ function add_blog_option( $id, $key, $value ) {
 }
 
 
-function update_blog_option( $id, $key, $value ) {
+function update_blog_option( $id, $key, $value, $refresh = true ) {
 	switch_to_blog($id);
 	$opt = update_option( $key, $value );
 	restore_current_blog();
-	refresh_blog_details( $id );
+	if( $refresh == true )
+		refresh_blog_details( $id );
 }
 
 function switch_to_blog( $new_blog ) {
@@ -1390,6 +1391,19 @@ SITE_NAME" );
 function get_current_site() {
 	global $current_site;
 	return $current_site;
+}
+
+function get_user_id_from_string( $string ) {
+	global $wpdb;
+	if( is_email( $string ) ) {
+		$user_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->users} WHERE user_email = '$string'" );
+	} elseif ( is_numeric( $string ) ) {
+		$user_id = $string;
+	} else {
+		$user_id = $wpdb->get_var( "SELECT ID FROM {$wpdb->users} WHERE user_login = '$string'" );
+	}
+
+	return $user_id;
 }
 
 ?>

@@ -159,8 +159,15 @@ switch( $_REQUEST[ 'action' ] ) {
 			$_POST[ 'option' ][ 'allowed_themes' ] = '';
 		}
 		if( is_array( $_POST[ 'option' ] ) ) {
+			$c = 1;
+			$count = count( $_POST[ 'option' ] );
 			while( list( $key, $val ) = each( $_POST[ 'option' ] ) ) { 
-				update_blog_option( $id, $key, $val );
+				if( $c == $count ) {
+					update_blog_option( $id, $key, $val );
+				} else {
+					update_blog_option( $id, $key, $val, false ); // no need to refresh blog details yet
+				}
+				$c++;
 			}
 		}
 		// update blogs table

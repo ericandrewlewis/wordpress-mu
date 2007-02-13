@@ -13,16 +13,9 @@ if (isset($_GET['updated'])) {
 print '<div class="wrap">';
 switch( $_GET[ 'action' ] ) {
     case "editblog":
-    $options_table_name = $wpmuBaseTablePrefix . $_GET[ 'id' ] ."_options";
-    $query = "SELECT *
-              FROM   ".$options_table_name."
-	      WHERE  option_name NOT LIKE 'rss%'
-	      AND    option_name NOT LIKE '%user_roles'";
-    $options = $wpdb->get_results( $query, ARRAY_A );
-    $query = "SELECT * 
-	      FROM ".$wpdb->blogs." 
-              WHERE blog_id = '".$_GET[ 'id' ]."'";
-    $details = $wpdb->get_row( $query, ARRAY_A );
+	$options_table_name = $wpmuBaseTablePrefix . $_GET[ 'id' ] ."_options";
+	$options = $wpdb->get_results( "SELECT * FROM {$options_table_name} WHERE option_name NOT LIKE 'rss%' AND option_name NOT LIKE '%user_roles'", ARRAY_A );
+	$details = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$_GET[ 'id' ]}'", ARRAY_A );
 
     print "<h2>" . __('Edit Blog') . "</h2>";
     print "<a href='http://{$details[ 'domain' ]}/'>{$details[ 'domain' ]}</a>";
