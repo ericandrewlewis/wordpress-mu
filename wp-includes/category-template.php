@@ -35,10 +35,10 @@ function get_category_link($category_id) {
 			$category->category_parent = 0;
 
 		if ( $parent = $category->category_parent )
-			$category_nicename = get_category_parents($parent, false, '/', true) . $category_nicename . '/';
+			$category_nicename = get_category_parents($parent, false, '/', true) . $category_nicename;
 
 		$catlink = str_replace('%category%', $category_nicename, $catlink);
-		$catlink = get_option('home') . trailingslashit($catlink);
+		$catlink = get_option('home') . user_trailingslashit($catlink);
 	}
 	return apply_filters('category_link', $catlink, $category_id);
 }
