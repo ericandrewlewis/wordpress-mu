@@ -208,7 +208,12 @@ function get_option($setting) {
 	if ( $pre ) 
 		return $pre; 
 
-	if ( $switched == false && defined('WP_INSTALLING') == false ) {
+	if ( $switched != false || defined('WP_INSTALLING') != false ) {
+		wp_cache_delete($setting, 'options');
+		wp_cache_delete('notoptions', 'options');
+		wp_cache_delete('alloptions', 'options');
+	}
+
 	// prevent non-existent options from triggering multiple queries
 	$notoptions = wp_cache_get('notoptions', 'options');
 	if ( isset($notoptions[$setting]) )
@@ -220,33 +225,22 @@ function get_option($setting) {
 		$value = $alloptions[$setting];
 	} else {
 		$value = wp_cache_get($setting, 'options');
-	}
-	} else {
-		$value = false;
-		wp_cache_delete($setting, 'options');
-	}
-// Uncomment if we get any page not found or rewrite errors	
-//	if( $setting == 'rewrite_rules' )
-//		$value = false;
-	if ( $value == 'novalueindb' )
-		return false;
-	if ( $value == 'emptystringindb' )
-		return '';
 
-	if ( false === $value ) {
-		if ( defined('WP_INSTALLING') )
-			$wpdb->hide_errors();
-		$row = $wpdb->get_row("SELECT option_value FROM $wpdb->options WHERE option_name = '$setting' LIMIT 1");
-		if ( defined('WP_INSTALLING') )
-			$wpdb->show_errors();
+		if ( false === $value ) {
+			if ( defined('WP_INSTALLING') )
+				$wpdb->hide_errors();
+			$row = $wpdb->get_row("SELECT option_value FROM $wpdb->options WHERE option_name = '$setting' LIMIT 1");
+			if ( defined('WP_INSTALLING') )
+				$wpdb->show_errors();
 
-		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
-			$value = $row->option_value;
+			if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
+				$value = $row->option_value;
 				wp_cache_set($setting, $value, 'options');
 			} else { // option does not exist, so we must cache its non-existence
 				$notoptions[$setting] = true;
 				wp_cache_set('notoptions', $notoptions, 'options');
 				return false;
+			}
 		}
 	}
 
@@ -259,6 +253,7 @@ function get_option($setting) {
 
 	if (! unserialize($value) )
 		$value = stripslashes( $value );
+
 	return apply_filters( 'option_' . $setting, maybe_unserialize($value) );
 }
 
@@ -399,7 +394,14 @@ function delete_option($name) {
 
 	// Get the ID, if no ID then return
 	$option = $wpdb->get_row("SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'");
-	if ( !$option->option_id ) return false;
+	if ( !$option->option_id ) {
+		$alloptions = wp_load_alloptions();
+		if ( isset($alloptions[$name]) ) {
+			unset($alloptions[$name]);
+			wp_cache_set('alloptions', $alloptions, 'options');
+		}
+		return false;
+	}
 	$wpdb->query("DELETE FROM $wpdb->options WHERE option_name = '$name'");
 	if ( 'yes' == $option->autoload ) {
 		$alloptions = wp_load_alloptions();
@@ -407,9 +409,10 @@ function delete_option($name) {
 			unset($alloptions[$name]);
 			wp_cache_set('alloptions', $alloptions, 'options');
 		}
-	} else {
-		wp_cache_delete($name, 'options');
 	}
+
+	wp_cache_delete($name, 'options');
+
 	return true;
 }
 
@@ -1309,8 +1312,30 @@ function wp_nonce_ays($action) {
 	wp_die($html, $title);
 }
 
-function wp_die($message, $title = '') {
+function wp_die( $message, $title = '' ) {
 	global $wp_locale;
+
+	if ( is_wp_error( $message ) ) {
+		if ( empty($title) ) {
+			$error_data = $message->get_error_data();
+			if ( is_array($error_data) && isset($error_data['title']) )
+				$title = $error_data['title'];
+		}
+		$errors = $message->get_error_messages();
+		switch ( count($errors) ) :
+		case 0 :
+			$message = '';
+			break;
+		case 1 :
+			$message = "<p>{$errors[0]}</p>";
+			break;
+		default :
+			$message = "<ul>\n\t\t<li>" . join( "</li>\n\t\t<li>", $errors ) . "</li>\n\t</ul>";
+			break;
+		endswitch;
+	} elseif ( is_string($message) ) {
+		$message = "<p>$message</p>";
+	}
 
 	header('Content-Type: text/html; charset=utf-8');
 
@@ -1335,11 +1360,11 @@ function wp_die($message, $title = '') {
 </head>
 <body>
 	<h1 id="logo"><img alt="WordPress" src="<?php echo $admin_dir; ?>images/wordpress-logo.png" /></h1>
-	<p><?php echo $message; ?></p>
+	<?php echo $message; ?>
+
 </body>
 </html>
 <?php
-
 	die();
 }
 
