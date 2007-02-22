@@ -1113,7 +1113,7 @@ function wp_upload_dir() {
 	return apply_filters('upload_dir', $uploads);
 }
 
-function wp_upload_bits($name, $type, $bits) {
+function wp_upload_bits($name, $type, $bits, $overwrite = false) {
 	if ( empty($name) )
 		return array('error' => __("Empty filename"));
 
@@ -1134,7 +1134,7 @@ function wp_upload_bits($name, $type, $bits) {
 		$ext = '';
 	else
 		$ext = ".$ext";
-	while ( file_exists($upload['path'] . "/$filename") ) {
+	while ( file_exists($upload['path'] . "/$filename") && !$overwrite ) {
 		if ( '' == "$number$ext" )
 			$filename = $filename . ++$number . $ext;
 		else
