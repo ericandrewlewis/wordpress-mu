@@ -318,7 +318,7 @@ function update_option($option_name, $newvalue) {
 
 	// If the new and old values are the same, no need to update.
 	$oldvalue = get_option($option_name);
-	if ( $newvalue == $oldvalue ) {
+	if ( $newvalue === $oldvalue ) {
 		return false;
 	}
 
@@ -961,37 +961,48 @@ function do_feed() {
 	// Remove the pad, if present.
 	$feed = preg_replace('/^_+/', '', $feed);
 
-	if ($feed == '' || $feed == 'feed')
+	if ( $feed == '' || $feed == 'feed' )
     	$feed = 'rss2';
-
+	
 	$for_comments = false;
-	if ( 1 != get_query_var('withoutcomments') && ( is_singular() || get_query_var('withcomments') == 1 || $feed == 'comments-rss2' ) ) {
-		$feed = 'rss2';
-		$for_comments = true;	
-	}
+
+	if ( is_singular() || get_query_var('withcomments') == 1 )
+		$for_comments = true;
+
+	 if ( false !== strpos($feed, 'comments-') ) {
+	 	$for_comments = true;
+	 	$feed = str_replace('comments-', '', $feed);
+	 }
+
+	 if ( get_query_var('withoutcomments') == 1 )
+	 	$for_comments = false;
 
 	$hook = 'do_feed_' . $feed;
 	do_action($hook, $for_comments);
 }
 
 function do_feed_rdf() {
-	load_template(ABSPATH . 'wp-rdf.php');
+	load_template(ABSPATH . WPINC . '/feed-rdf.php');
 }
 
 function do_feed_rss() {
-	load_template(ABSPATH . 'wp-rss.php');
+	load_template(ABSPATH . WPINC . '/feed-rss.php');
 }
 
 function do_feed_rss2($for_comments) {
 	if ( $for_comments ) {
-		load_template(ABSPATH . 'wp-commentsrss2.php');
+		load_template(ABSPATH . WPINC . '/feed-rss2-comments.php');
 	} else {
-		load_template(ABSPATH . 'wp-rss2.php');
+		load_template(ABSPATH . WPINC . '/feed-rss2.php');
 	}
 }
 
-function do_feed_atom() {
-	load_template(ABSPATH . 'wp-atom.php');
+function do_feed_atom($for_comments) {
+	if ($for_comments) {
+		load_template(ABSPATH . WPINC . '/feed-atom-comments.php');
+	} else {
+		load_template(ABSPATH . WPINC . '/feed-atom.php');
+	}
 }
 
 function do_robots() {

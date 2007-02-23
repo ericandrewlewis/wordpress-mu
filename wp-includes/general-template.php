@@ -99,6 +99,8 @@ function get_bloginfo($show='') {
 		case 'atom_url':
 			$output = get_feed_link('atom');
 			break;
+		case 'comments_atom_url':
+			$output = get_feed_link('comments_atom');
 		case 'comments_rss2_url':
 			$output = get_feed_link('comments_rss2');
 			break;
@@ -488,7 +490,7 @@ function get_calendar($initial = true) {
 			ORDER	BY post_date ASC
 			LIMIT 1");
 
-	echo '<table id="wp-calendar">
+	echo '<table id="wp-calendar" summary="' . __('Calendar') . '">
 	<caption>' . $wp_locale->get_month($thismonth) . ' ' . date('Y', $unixmonth) . '</caption>
 	<thead>
 	<tr>';
