@@ -956,6 +956,7 @@ function bool_from_yn($yn) {
 }
 
 function do_feed() {
+	global $wp_query;
 	$feed = get_query_var('feed');
 
 	// Remove the pad, if present.
