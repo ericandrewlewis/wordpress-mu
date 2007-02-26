@@ -10,6 +10,11 @@ function bloginfo_rss($show = '') {
 	echo get_bloginfo_rss($show);
 }
 
+function get_wp_title_rss($sep = '&#187;') {
+	$title = wp_title($sep, false);
+	$title = apply_filters('get_wp_title_rss', $title);
+	return $title;
+}
 
 function get_the_title_rss() {
 	$title = get_the_title();
@@ -90,7 +95,7 @@ function comment_text_rss() {
 
 
 function comments_rss_link($link_text = 'Comments RSS', $commentsrssfilename = 'nolongerused') {
-	$url = get_post_comments_feed_link();;
+	$url = get_post_comments_feed_link();
 	echo "<a href='$url'>$link_text</a>";
 }
 
@@ -173,16 +178,26 @@ function rss_enclosure() {
 	if ( !empty($post->post_password) && ($_COOKIE['wp-postpass_'.COOKIEHASH] != $post->post_password) )
 		return;
 
-	$custom_fields = get_post_custom();
-	if ( is_array($custom_fields) ) {
-		while ( list($key, $val) = each($custom_fields) ) { 
-			if ( $key == 'enclosure' ) {
-				if ( is_array($val) ) {
-					foreach ( (array) $val as $enc ) {
-						$enclosure = split( "\n", $enc );
-						print "<enclosure url='".trim( htmlspecialchars($enclosure[ 0 ]) )."' length='".trim( $enclosure[ 1 ] )."' type='".trim( $enclosure[ 2 ] )."'/>\n";
-					}
-				}
+	foreach (get_post_custom() as $key => $val) {
+		if ($key == 'enclosure') {
+			foreach ((array)$val as $enc) {
+				$enclosure = split("\n", $enc);
+				echo apply_filters('rss_enclosure', '<enclosure url="' . trim(htmlspecialchars($enclosure[0])) . '" length="' . trim($enclosure[1]) . '" type="' . trim($enclosure[2]) . '" />' . "\n");
+			}
+		}
+	}
+}
+
+function atom_enclosure() {
+	global $id, $post;
+	if ( !empty($post->post_password) && ($_COOKIE['wp-postpass_'.COOKIEHASH] != $post->post_password) )
+		return;
+
+	foreach (get_post_custom() as $key => $val) {
+		if ($key == 'enclosure') {
+			foreach ((array)$val as $enc) {
+				$enclosure = split("\n", $enc);
+				echo apply_filters('atom_enclosure', '<link href="' . trim(htmlspecialchars($enclosure[0])) . '" rel="enclosure" length="' . trim($enclosure[1]) . '" type="' . trim($enclosure[2]) . '" />' . "\n");
 			}
 		}
 	}

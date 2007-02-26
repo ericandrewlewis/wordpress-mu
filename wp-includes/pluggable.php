@@ -162,13 +162,65 @@ endif;
 
 if ( !function_exists('wp_mail') ) :
 function wp_mail($to, $subject, $message, $headers = '') {
-	if( $headers == '' ) {
+	global $phpmailer;
+
+	if ( !is_object( $phpmailer ) ) {
+		require_once(ABSPATH . WPINC . '/class-phpmailer.php');
+		require_once(ABSPATH . WPINC . '/class-smtp.php');
+		$phpmailer = new PHPMailer();
+	}
+		
+	$mail = compact('to', 'subject', 'message', 'headers');
+	$mail = apply_filters('wp_mail', $mail);
+	extract($mail);
+
+	if ( $headers == '' ) {
 		$headers = "MIME-Version: 1.0\n" .
 			"From: " . get_option('admin_email') . "\n" . 
 			"Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 	}
 
-	return @mail($to, $subject, $message, $headers);
+	$phpmailer->ClearAddresses();
+	$phpmailer->ClearCCs();
+	$phpmailer->ClearBCCs();
+	$phpmailer->ClearReplyTos();
+	$phpmailer->ClearAllRecipients();
+	$phpmailer->ClearCustomHeaders();
+
+	$phpmailer->FromName = "WordPress";
+	$phpmailer->AddAddress("$to", "");
+	$phpmailer->Subject = $subject;
+	$phpmailer->Body    = $message;
+	$phpmailer->IsHTML(false);
+	$phpmailer->IsMail(); // set mailer to use php mail()
+
+	do_action_ref_array('phpmailer_init', array(&$phpmailer));
+
+	$mailheaders = (array) explode( "\n", $headers );
+	foreach ( $mailheaders as $line ) {
+		$header = explode( ":", $line );
+		switch ( trim( $header[0] ) ) {
+			case "From":
+				$from = trim( str_replace( '"', '', $header[1] ) );
+				if ( strpos( $from, '<' ) ) {
+					$phpmailer->FromName = str_replace( '"', '', substr( $header[1], 0, strpos( $header[1], '<' ) - 1 ) );
+					$from = trim( substr( $from, strpos( $from, '<' ) + 1 ) );
+					$from = str_replace( '>', '', $from );
+				} else {
+					$phpmailer->FromName = $from;
+				}
+				$phpmailer->From = trim( $from );
+				break;
+			default:
+				if ( $line != '' && $header[0] != 'MIME-Version' && $header[0] != 'Content-Type' )
+					$phpmailer->AddCustomHeader( $line );
+				break;
+		}
+	}
+
+	$result = @$phpmailer->Send();
+
+	return $result;
 }
 endif;
 
@@ -222,7 +274,6 @@ function auth_redirect() {
 				!wp_login($_COOKIE[USER_COOKIE], $_COOKIE[PASS_COOKIE], true)) ||
 			 (empty($_COOKIE[USER_COOKIE])) ) {
 		nocache_headers();
-
 		wp_clearcookie();
 
 		wp_redirect(get_option('siteurl') . '/wp-login.php?action=auth&redirect_to=' . urlencode($_SERVER['REQUEST_URI']));

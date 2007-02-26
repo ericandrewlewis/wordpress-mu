@@ -962,23 +962,10 @@ function do_feed() {
 	$feed = preg_replace('/^_+/', '', $feed);
 
 	if ( $feed == '' || $feed == 'feed' )
-    	$feed = 'rss2';
-	
-	$for_comments = false;
-
-	if ( is_singular() || get_query_var('withcomments') == 1 )
-		$for_comments = true;
-
-	 if ( false !== strpos($feed, 'comments-') ) {
-	 	$for_comments = true;
-	 	$feed = str_replace('comments-', '', $feed);
-	 }
-
-	 if ( get_query_var('withoutcomments') == 1 )
-	 	$for_comments = false;
+		$feed = 'rss2';
 
 	$hook = 'do_feed_' . $feed;
-	do_action($hook, $for_comments);
+	do_action($hook, $wp_query->is_comment_feed);
 }
 
 function do_feed_rdf() {

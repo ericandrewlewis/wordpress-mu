@@ -12,7 +12,9 @@ define('APP_REQUEST', true);
 require_once('wp-config.php');
 require_once('wp-includes/post-template.php');
 
-$use_querystring = 1;
+// Attempt to automatically detect whether to use querystring
+// or PATH_INFO, based on our environment:
+$use_querystring = $wp_version == 'MU' ? 1 : 0;
 
 // If using querystring, we need to put the path together manually:
 if ($use_querystring) {
@@ -556,7 +558,7 @@ EOD;
 		elseif ( isset( $_SERVER['HTTP_TITLE'] ) )
 			$slug = sanitize_file_name( $_SERVER['HTTP_TITLE'] );
 		elseif ( empty( $slug ) ) // just make a random name
-			$slug = substr( md5( uniqid( microtime() ) ), 0, 7);;
+			$slug = substr( md5( uniqid( microtime() ) ), 0, 7);
 		$ext = preg_replace( '|.*/([a-z]+)|', '$1', $_SERVER['CONTENT_TYPE'] );
 		$slug = "$slug.$ext";
 		$file = wp_upload_bits( $slug, NULL, $bits);
