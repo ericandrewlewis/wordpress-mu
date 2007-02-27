@@ -957,6 +957,7 @@ function bool_from_yn($yn) {
 
 function do_feed() {
 	global $wp_query;
+
 	$feed = get_query_var('feed');
 
 	// Remove the pad, if present.
@@ -1305,7 +1306,7 @@ function wp_nonce_ays($action) {
 		$html .= "\t\t<input type='hidden' name='_wpnonce' value='" . wp_create_nonce($action) . "' />\n";
 		$html .= "\t\t<div id='message' class='confirm fade'>\n\t\t<p>" . wp_specialchars(wp_explain_nonce($action)) . "</p>\n\t\t<p><a href='$adminurl'>" . __('No') . "</a> <input type='submit' value='" . __('Yes') . "' /></p>\n\t\t</div>\n\t</form>\n";
 	} else {
-		$html .= "\t<div id='message' class='confirm fade'>\n\t<p>" . wp_specialchars(wp_explain_nonce($action)) . "</p>\n\t<p><a href='$adminurl'>" . __('No') . "</a> <a href='" . add_query_arg( '_wpnonce', wp_create_nonce($action), $_SERVER['REQUEST_URI'] ) . "'>" . __('Yes') . "</a></p>\n\t</div>\n";
+		$html .= "\t<div id='message' class='confirm fade'>\n\t<p>" . wp_specialchars(wp_explain_nonce($action)) . "</p>\n\t<p><a href='$adminurl'>" . __('No') . "</a> <a href='" . attribute_escape(add_query_arg( '_wpnonce', wp_create_nonce($action), $_SERVER['REQUEST_URI'] )) . "'>" . __('Yes') . "</a></p>\n\t</div>\n";
 	}
 	$html .= "</body>\n</html>";
 	wp_die($html, $title);
