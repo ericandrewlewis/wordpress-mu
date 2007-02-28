@@ -119,7 +119,7 @@ foreach ( $menu as $id => $data ) {
 	if ( $new_parent != $old_parent ) {
 		$_wp_real_parent_file[$old_parent] = $new_parent;
 		$menu[$id][2] = $new_parent;
-		
+
 		foreach ($submenu[$old_parent] as $index => $data) {
 			$submenu[$new_parent][$index] = $submenu[$old_parent][$index];
 			unset($submenu[$old_parent][$index]);

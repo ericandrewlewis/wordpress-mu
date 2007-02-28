@@ -681,7 +681,7 @@ function get_nested_categories( $default = 0, $parent = 0 ) {
 		if ( count( $checked_categories ) == 0 ) {
 			// No selected categories, strange
 			$checked_categories[] = $default;
-		}	
+		}
 	} else {
 		$checked_categories[] = $default;
 	}
@@ -741,7 +741,7 @@ function get_nested_link_categories( $default = 0, $parent = 0 ) {
 		if ( count( $checked_categories ) == 0 ) {
 			// No selected categories, strange
 			$checked_categories[] = $default;
-		}	
+		}
 	} else {
 		$checked_categories[] = $default;
 	}
@@ -788,7 +788,7 @@ function cat_rows( $parent = 0, $level = 0, $categories = 0 ) {
 		}
 		$output = ob_get_contents();
 		ob_end_clean();
-		
+
 		$output = apply_filters('cat_rows', $output);
 
 		echo $output;
@@ -1329,7 +1329,7 @@ function user_can_access_admin_page() {
 
 	if ( isset( $plugin_page ) && isset( $_wp_submenu_nopriv[$parent][$plugin_page] ) )
 		return false;
-	
+
 	if ( empty( $parent) ) {
 		if ( isset( $_wp_menu_nopriv[$pagenow] ) )
 			return false;
@@ -1341,7 +1341,7 @@ function user_can_access_admin_page() {
 			if ( isset( $_wp_submenu_nopriv[$key][$pagenow] ) )
 				return false;
 			if ( isset( $plugin_page ) && isset( $_wp_submenu_nopriv[$key][$plugin_page] ) )
-			return false;	
+			return false;
 		}
 		return true;
 	}
@@ -1463,14 +1463,14 @@ function get_admin_page_parent() {
 			if ( isset( $_wp_real_parent_file[$parent_file] ) )
 					$parent_file = $_wp_real_parent_file[$parent_file];
 			return $parent_file;
-		}			
+		}
 	}
 
 	if ( isset( $plugin_page ) && isset( $_wp_submenu_nopriv[$pagenow][$plugin_page] ) ) {
 		$parent_file = $pagenow;
 		if ( isset( $_wp_real_parent_file[$parent_file] ) )
 			$parent_file = $_wp_real_parent_file[$parent_file];
-		return $parent_file;		
+		return $parent_file;
 	}
 
 	foreach (array_keys( $submenu ) as $parent) {
@@ -1910,7 +1910,7 @@ function wp_handle_upload( &$file, $overrides = false ) {
 
 	// Compute the URL
 	$url = $uploads['url'] . "/$filename";
-	
+
 	$return = apply_filters( 'wp_handle_upload', array( 'file' => $new_file, 'url' => $url, 'type' => $type ) );
 
 	return $return;
@@ -2069,7 +2069,7 @@ function update_home_siteurl( $old_value, $value ) {
 	// Clear cookies for old paths.
 	wp_clearcookie();
 	// Set cookies for new paths.
-	wp_setcookie( $user_login, $user_pass_md5, true, get_option( 'home' ), get_option( 'siteurl' ));	
+	wp_setcookie( $user_login, $user_pass_md5, true, get_option( 'home' ), get_option( 'siteurl' ));
 }
 
 add_action( 'update_option_home', 'update_home_siteurl', 10, 2 );

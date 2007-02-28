@@ -50,7 +50,7 @@ class wpdb {
 			$this->db_connect();
 		return $this->__construct($dbuser, $dbpassword, $dbname, $dbhost);
 	}
-	
+
 	function __construct($dbuser, $dbpassword, $dbname, $dbhost) {
 		register_shutdown_function(array(&$this, "__destruct"));
 
@@ -81,7 +81,7 @@ class wpdb {
 	}
 
 	function __destruct() {
-		return true;		
+		return true;	
 	}
 
 	/**
@@ -320,7 +320,7 @@ class wpdb {
 		$this->func_call = "\$db->get_row(\"$query\",$output,$y)";
 		if ( $query )
 			$this->query($query);
-		
+	
 		if ( !isset($this->last_result[$y]) )
 			return null;
 
