@@ -75,18 +75,18 @@ http://photomatt.net/2003/10/10/wildcard-dns-and-sub-domains/
 
 PHP
 ===
-For security reasons, it's very important that PHP be configured as follows:
-
 1. Don't display error messages to the browser. This is almost always
 turned off but sometimes when you're testing you turn this on and forget
 to reset it.
 
-2. GLOBAL variables must be turned off. This is one of the first things
+2. If your PHP is compiled with memory limit checks, the default is 8MB
+which is much too small. You should increase this to at least 32MB or 64MB
+to avoid PHP out of memory errors. Look for "memory_limit" in your php.ini
+file.
+
+3. GLOBAL variables must be turned off. This is one of the first things
 any security aware admin will do. These days the default is for it to
 be off!
-
-3. If you want to restrict blog signups, set the restrict domain email 
-setting in the admin.
 
 The easiest way of configuring it is via the .htaccess file that is
 created during the install. If you haven't installed WPMU yet then edit
@@ -122,6 +122,9 @@ register_globals = Off
 
 You'll have to restart Apache after you modify your php.ini for the 
 settings to be updated.
+
+4. If you want to restrict blog signups, set the restrict domain email 
+setting in the admin.
 
 
 UPGRADING
