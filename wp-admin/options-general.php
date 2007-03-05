@@ -47,7 +47,7 @@ if( $lang == false ) {
 	add_option( "WPLANG", $lang );
 }
 
-if( is_array( $lang_files ) && count($lang_files) > 1 ) {
+if( is_array( $lang_files ) && count($lang_files) => 1 ) {
 	?>
 		<tr valign="top"> 
 		<th width="33%" scope="row"><?php _e('Language:') ?></th> 
