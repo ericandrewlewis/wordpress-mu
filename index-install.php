@@ -237,7 +237,7 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     <input type='hidden' name='action' value='step2'>
     <h2>Blog Addresses</h2>
 	<p>Please choose whether you would like blogs for the MU install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
-	<p><label><input type='radio' name='vhost' value='yes' /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
+	<p><label><input type='radio' name='vhost' value='yes' checked /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
 	<label><input type='radio' name='vhost' value='no' /> Sub-directories (like <code>example.com/blog1</code></label></p>
 	
     <h2>Database</h2>
