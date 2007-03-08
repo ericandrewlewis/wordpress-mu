@@ -10,7 +10,13 @@ if( $_SERVER[ 'HTTP_HOST' ] == 'localhost' ) {
 define('WP_INSTALLING', true);
 
 function printheader() {
-    print '
+	if( substr( $_SERVER[ 'SERVER_NAME' ], 0, 4 ) == 'www.' ) {
+		$url = 'http://' . str_replace( 'www.', '', $_SERVER[ 'SERVER_NAME' ] ) . $_SERVER[ 'REQUEST_URI' ];
+		print "<html><head><title>WordPress MU Installer</title><body>";
+		print "<p style='margin-left: 20%; margin-right: 20%; margin-top: 5%; text-align: center'><strong>Warning!</strong> WordPress MU must be installed without the 'www.' in the URL.<br />Please click here to continue the install: <a href='$url'>$url</a></p></body></html>";
+		die();
+	}
+	print '
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -364,7 +370,7 @@ function step3() {
 	} 
 	$domain =   $wpdb->escape( $_POST[ 'basedomain' ] );
 	if( substr( $domain, 0, 4 ) == 'www.' )
-	$domain = substr( $domain, 4 );
+		$domain = substr( $domain, 4 );
 
 	$email = $wpdb->escape( $_POST[ 'email' ] );
 	$weblog_title = $wpdb->escape( $_POST[ 'weblog_title' ] );
