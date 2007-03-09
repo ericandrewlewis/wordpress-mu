@@ -797,7 +797,7 @@ function add_query_arg() {
 		$protocol = '';
 	}
 
-	if ( strstr($uri, '?') ) {
+	if (strpos($uri, '?') !== false) {
 		$parts = explode('?', $uri, 2);
 		if ( 1 == count($parts) ) {
 			$base = '?';
@@ -806,7 +806,7 @@ function add_query_arg() {
 			$base = $parts[0] . '?';
 			$query = $parts[1];
 		}
-	} else if ( !empty($protocol) || strstr($uri, '/') ) {
+	} elseif (!empty($protocol) || strpos($uri, '/') !== false) {
 		$base = $uri . '?';
 		$query = '';
 	} else {
@@ -1134,17 +1134,28 @@ function wp_upload_bits($name, $type, $bits, $overwrite = false) {
 		$ext = '';
 	else
 		$ext = ".$ext";
-	while ( file_exists($upload['path'] . "/$filename") && !$overwrite ) {
+	while ( file_exists($upload['path'] . "/$filename") ) {
 		if ( '' == "$number$ext" )
 			$filename = $filename . ++$number . $ext;
 		else
 			$filename = str_replace("$number$ext", ++$number . $ext, $filename);
 	}
 
-	$new_file = $upload['path'] . "/$filename";
-	if ( ! wp_mkdir_p( dirname($new_file) ) ) {
-		$message = sprintf(__('Unable to create directory %s. Is its parent directory writable by the server?'), dirname($new_file));
-		return array('error' => $message);
+	// If we are asked to over write the file then make sure
+	// the $name has the complete path and is writable.
+	if($overwrite) {
+		if(!is_writable($name)) {
+			return(array("error" => __("Can not over write file.")));
+		}
+		$new_file = $name;
+		$filename = basename($name);
+	}
+	else {
+		$new_file = $upload['path'] . "/$filename";
+		if ( ! wp_mkdir_p( dirname($new_file) ) ) {
+			$message = sprintf(__('Unable to create directory %s. Is its parent directory writable by the server?'), dirname($new_file));
+			return array('error' => $message);
+		}
 	}
 
 	$ifp = @ fopen($new_file, 'wb');
@@ -1159,8 +1170,11 @@ function wp_upload_bits($name, $type, $bits, $overwrite = false) {
 	$perms = $perms & 0000666;
 	@ chmod($new_file, $perms);
 
-	// Compute the URL
+	// Compute the URL if this is a new file.
 	$url = $upload['url'] . "/$filename";
+	if($overwrite) {
+		$url = $name;
+	}
 
 	return array('file' => $new_file, 'url' => $url, 'error' => false);
 }
@@ -1289,7 +1303,7 @@ function wp_nonce_ays($action) {
 
 	$adminurl = get_option('siteurl') . '/wp-admin';
 	if ( wp_get_referer() )
-		$adminurl = wp_specialchars(wp_get_referer(), 1);
+		$adminurl = attribute_escape(wp_get_referer());
 
 	$title = __('WordPress Confirmation');
 	// Remove extra layer of slashes.
@@ -1342,7 +1356,7 @@ function wp_die( $message, $title = '' ) {
 	if ( empty($title) )
 		$title = __('WordPress &rsaquo; Error');
 
-	if ( strstr($_SERVER['PHP_SELF'], 'wp-admin') )
+	if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
 		$admin_dir = '';
 	else
 		$admin_dir = 'wp-admin/';

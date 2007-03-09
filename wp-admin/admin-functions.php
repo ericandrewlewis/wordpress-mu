@@ -1156,7 +1156,7 @@ function insert_with_markers( $filename, $marker, $insertion ) {
 		if ( $markerdata ) {
 			$state = true;
 			foreach ( $markerdata as $n => $markerline ) {
-				if ( strstr( $markerline, "# BEGIN {$marker}" ))
+				if (strpos($markerline, '# BEGIN ' . $marker) !== false)
 					$state = false;
 				if ( $state ) {
 					if ( $n + 1 < count( $markerdata ) )
@@ -1164,7 +1164,7 @@ function insert_with_markers( $filename, $marker, $insertion ) {
 					else
 						fwrite( $f, "{$markerline}" );
 				}
-				if ( strstr( $markerline, "# END {$marker}" ) ) {
+				if (strpos($markerline, '# END ' . $marker) !== false) {
 					fwrite( $f, "# BEGIN {$marker}\n" );
 					if ( is_array( $insertion ))
 						foreach ( $insertion as $insertline )
@@ -1202,11 +1202,11 @@ function extract_from_markers( $filename, $marker ) {
 	{
 		$state = false;
 		foreach ( $markerdata as $markerline ) {
-			if ( strstr( $markerline, "# END {$marker}" ))
+			if (strpos($markerline, '# END ' . $marker) !== false)
 				$state = false;
 			if ( $state )
 				$result[] = $markerline;
-			if ( strstr( $markerline, "# BEGIN {$marker}" ))
+			if (strpos($markerline, '# BEGIN ' . $marker) !== false)
 				$state = true;
 		}
 	}
@@ -1558,6 +1558,14 @@ function add_theme_page( $page_title, $menu_title, $access_level, $file, $functi
 	return add_submenu_page( 'themes.php', $page_title, $menu_title, $access_level, $file, $function );
 }
 
+function add_users_page( $page_title, $menu_title, $access_level, $file, $function = '' ) {
+	if ( current_user_can('edit_users') )
+		$parent = 'users.php';
+	else
+		$parent = 'profile.php';
+	return add_submenu_page( $parent, $page_title, $menu_title, $access_level, $file, $function );
+}
+
 function validate_file( $file, $allowed_files = '' ) {
 	if ( false !== strpos( $file, './' ))
 		return 1;
@@ -1771,7 +1779,8 @@ function browse_happy() {
 		<p id="bh" style="text-align: center;"><a href="http://browsehappy.com/" title="'.$getit.'"><img src="images/browse-happy.gif" alt="Browse Happy" /></a></p>
 		';
 }
-if ( strstr( $_SERVER['HTTP_USER_AGENT'], 'MSIE' ))
+
+if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false)
 	add_action( 'admin_footer', 'browse_happy' );
 
 function documentation_link( $for ) {
@@ -1932,14 +1941,14 @@ function wp_import_cleanup( $id ) {
 function wp_import_upload_form( $action ) {
 	$size = strtolower( ini_get( 'upload_max_filesize' ) );
 	$bytes = 0;
-	if ( strstr( $size, 'k' ) )
+	if (strpos($size, 'k') !== false)
 		$bytes = $size * 1024;
-	if ( strstr( $size, 'm' ) )
+	if (strpos($size, 'm') !== false)
 		$bytes = $size * 1024 * 1024;
-	if ( strstr( $size, 'g' ) )
+	if (strpos($size, 'g') !== false)
 		$bytes = $size * 1024 * 1024 * 1024;
 ?>
-<form enctype="multipart/form-data" id="import-upload-form" method="post" action="<?php echo $action ?>">
+<form enctype="multipart/form-data" id="import-upload-form" method="post" action="<?php echo attribute_escape($action) ?>">
 <p>
 <label for="upload"><?php _e( 'Choose a file from your computer:' ); ?></label> (<?php printf( __('Maximum size: %s' ), $size ); ?> )
 <input type="file" id="upload" name="import" size="25" />

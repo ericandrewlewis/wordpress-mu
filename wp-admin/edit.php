@@ -21,14 +21,14 @@ if ($drafts || $other_drafts) {
 	foreach ($drafts as $draft) {
 		if (0 != $i)
 			echo ', ';
-		$draft->post_title = stripslashes($draft->post_title);
+		$draft->post_title = apply_filters('the_title', stripslashes($draft->post_title));
 		if ($draft->post_title == '')
 			$draft->post_title = sprintf(__('Post #%s'), $draft->ID);
 		echo "<a href='post.php?action=edit&amp;post=$draft->ID' title='" . __('Edit this draft') . "'>$draft->post_title</a>";
 		++$i;
 		}
 	?>
-	.</p>
+.</p>
 <?php } ?>
 
 <?php if ($other_drafts) { ?>
@@ -38,7 +38,7 @@ if ($drafts || $other_drafts) {
 	foreach ($other_drafts as $draft) {
 		if (0 != $i)
 			echo ', ';
-		$draft->post_title = stripslashes($draft->post_title);
+		$draft->post_title = apply_filters('the_title', stripslashes($draft->post_title));
 		if ($draft->post_title == '')
 			$draft->post_title = sprintf(__('Post #%s'), $draft->ID);
 		echo "<a href='post.php?action=edit&amp;post=$draft->ID' title='" . __('Edit this draft') . "'>$draft->post_title</a>";
@@ -177,7 +177,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'date':
 		?>
-		<td><?php if ( '0000-00-00 00:00:00' ==$post->post_modified ) _e('Unpublished'); else the_time(_('Y-m-d \<\b\r \/\> g:i:s a')); ?></td>
+		<td><?php if ( '0000-00-00 00:00:00' ==$post->post_modified ) _e('Unpublished'); else the_time(__('Y-m-d \<\b\r \/\> g:i:s a')); ?></td>
 		<?php
 		break;
 	case 'title':

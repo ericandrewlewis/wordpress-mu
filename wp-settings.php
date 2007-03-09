@@ -48,7 +48,7 @@ if ( isset($_SERVER['SCRIPT_FILENAME']) && ( strpos($_SERVER['SCRIPT_FILENAME'],
 	$_SERVER['SCRIPT_FILENAME'] = $_SERVER['PATH_TRANSLATED'];
 
 // Fix for Dreamhost and other PHP as CGI hosts
-if ( strstr( $_SERVER['SCRIPT_NAME'], 'php.cgi' ) )
+if (strpos($_SERVER['SCRIPT_NAME'], 'php.cgi') !== false)
 	unset($_SERVER['PATH_INFO']);
 
 // Fix empty PHP_SELF
@@ -107,29 +107,37 @@ if ( file_exists(ABSPATH . 'wp-content/db.php') )
 else
 	require_once (ABSPATH . WPINC . '/wp-db.php');
 
-$wpdb->blogs		= $table_prefix . 'blogs';
-$wpdb->users		= $table_prefix . 'users';
-$wpdb->usermeta		= $table_prefix . 'usermeta';
-$wpdb->site		= $table_prefix . 'site';
-$wpdb->sitemeta		= $table_prefix . 'sitemeta';
-$wpdb->sitecategories	= $table_prefix . 'sitecategories';
-$wpdb->signups		= $table_prefix . 'signups';
-$wpdb->registration_log	= $table_prefix . 'registration_log';
-$wpdb->blog_versions	= $table_prefix . 'blog_versions';
+// $table_prefix is deprecated as of 2.1
+$wpdb->prefix = $table_prefix;
+
+if ( preg_match('|[^a-z0-9_]|i', $wpdb->prefix) && !file_exists(ABSPATH . 'wp-content/db.php') )
+	die("<strong>ERROR</strong>: <code>$table_prefix</code> in <code>wp-config.php</code> can only contain numbers, letters, and underscores.");
+
+// Table names
+
+$wpdb->blogs		= $wpdb->prefix . 'blogs';
+$wpdb->site		= $wpdb->prefix . 'site';
+$wpdb->sitemeta		= $wpdb->prefix . 'sitemeta';
+$wpdb->sitecategories	= $wpdb->prefix . 'sitecategories';
+$wpdb->signups		= $wpdb->prefix . 'signups';
+$wpdb->registration_log	= $wpdb->prefix . 'registration_log';
+$wpdb->blog_versions	= $wpdb->prefix . 'blog_versions';
+$wpdb->users		= $wpdb->prefix . 'users';
+$wpdb->usermeta		= $wpdb->prefix . 'usermeta';
 
 require_once ( ABSPATH . 'wpmu-settings.php' );
+$wpdb->prefix           = $table_prefix;
+$wpdb->posts            = $wpdb->prefix . 'posts';
+$wpdb->categories       = $wpdb->prefix . 'categories';
+$wpdb->post2cat         = $wpdb->prefix . 'post2cat';
+$wpdb->comments         = $wpdb->prefix . 'comments';
+$wpdb->link2cat         = $wpdb->prefix . 'link2cat';
+$wpdb->links            = $wpdb->prefix . 'links';
+$wpdb->linkcategories   = $wpdb->prefix . 'linkcategories';
+$wpdb->options          = $wpdb->prefix . 'options';
+$wpdb->postmeta         = $wpdb->prefix . 'postmeta';
 $wpdb->siteid           = $site_id;
 $wpdb->blogid           = $blog_id;
-$wpdb->posts            = $table_prefix . 'posts';
-$wpdb->categories       = $table_prefix . 'categories';
-$wpdb->post2cat         = $table_prefix . 'post2cat';
-$wpdb->comments         = $table_prefix . 'comments';
-$wpdb->link2cat         = $table_prefix . 'link2cat';
-$wpdb->links            = $table_prefix . 'links';
-$wpdb->linkcategories   = $table_prefix . 'linkcategories';
-$wpdb->options          = $table_prefix . 'options';
-$wpdb->postmeta         = $table_prefix . 'postmeta';
-$wpdb->prefix           = $table_prefix;
 
 if ( defined('CUSTOM_USER_TABLE') )
 	$wpdb->users = CUSTOM_USER_TABLE;
@@ -163,16 +171,13 @@ include_once(ABSPATH . WPINC . '/streams.php');
 include_once(ABSPATH . WPINC . '/gettext.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
 
-$wpdb->hide_errors();
-$db_check = $wpdb->get_var("SELECT option_value FROM $wpdb->options WHERE option_name = 'siteurl'");
-if ( !$db_check && (!strstr($_SERVER['PHP_SELF'], 'install.php') && !defined('WP_INSTALLING')) ) {
-	if ( strstr($_SERVER['PHP_SELF'], 'wp-admin') )
+if ( !is_blog_installed() && (strpos($_SERVER['PHP_SELF'], 'install.php') === false && !defined('WP_INSTALLING')) ) {
+	if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
 		$link = 'install.php';
 	else
 		$link = 'wp-admin/install.php';
-	wp_die(sprintf(__("It doesn't look like you've installed WP yet. Try running <a href='%s'>install.php</a>."), $link));
+	wp_die(sprintf("It doesn't look like you've installed WP yet. Try running <a href='%s'>install.php</a>.", $link));
 }
-$wpdb->show_errors();
 
 require (ABSPATH . WPINC . '/formatting.php');
 require (ABSPATH . WPINC . '/capabilities.php');

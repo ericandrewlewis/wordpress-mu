@@ -451,7 +451,7 @@ function upgrade_160() {
 	if ( 0 == $wpdb->get_var("SELECT SUM(category_count) FROM $wpdb->categories") ) { // Create counts
 		$categories = $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories");
 		foreach ( $categories as $cat_id ) {
-			$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->post2cat, $wpdb->posts WHERE $wpdb->posts.ID=$wpdb->post2cat.post_id AND post_type='post' AND post_status='publish' AND category_id = '$cat_id'");
+			$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->post2cat, $wpdb->posts WHERE $wpdb->posts.ID=$wpdb->post2cat.post_id AND post_status='publish' AND category_id = '$cat_id'");
 			$wpdb->query("UPDATE $wpdb->categories SET category_count = '$count' WHERE cat_ID = '$cat_id'");
 		}
 	}
@@ -931,7 +931,7 @@ function make_site_theme_from_oldschool($theme_name, $template) {
 
 		if ($oldfile == 'index.php') { // Check to make sure it's not a new index
 			$index = implode('', file("$oldpath/$oldfile"));
-			if ( strstr( $index, 'WP_USE_THEMES' ) ) {
+			if (strpos($index, 'WP_USE_THEMES') !== false) {
 				if (! @copy(ABSPATH . 'wp-content/themes/default/index.php', "$site_dir/$newfile"))
 					return false;
 				continue; // Don't copy anything
@@ -1003,12 +1003,12 @@ function make_site_theme_from_default($theme_name, $template) {
 		$f = fopen("$site_dir/style.css", 'w');
 
 		foreach ($stylelines as $line) {
-			if (strstr($line, "Theme Name:")) $line = "Theme Name: $theme_name";
-			elseif (strstr($line, "Theme URI:")) $line = "Theme URI: " . __get_option('siteurl');
-			elseif (strstr($line, "Description:")) $line = "Description: Your theme";
-			elseif (strstr($line, "Version:")) $line = "Version: 1";
-			elseif (strstr($line, "Author:")) $line = "Author: You";
-			fwrite($f, "{$line}\n");
+			if (strpos($line, 'Theme Name:') !== false) $line = 'Theme Name: ' . $theme_name;
+			elseif (strpos($line, 'Theme URI:') !== false) $line = 'Theme URI: ' . __get_option('url');
+			elseif (strpos($line, 'Description:') !== false) $line = 'Description: Your theme.';
+			elseif (strpos($line, 'Version:') !== false) $line = 'Version: 1';
+			elseif (strpos($line, 'Author:') !== false) $line = 'Author: You';
+			fwrite($f, $line . "\n");
 		}
 		fclose($f);
 	}

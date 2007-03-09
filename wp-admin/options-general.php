@@ -42,18 +42,14 @@ include('./admin-header.php');
 <?php
 $lang_files = glob( ABSPATH . WPINC . "/languages/*" );
 $lang = get_option( "WPLANG" );
-if( $lang == false ) {
-	$lang = get_site_option( "WPLANG" );
-	add_option( "WPLANG", $lang );
-}
 
-if( is_array( $lang_files ) && count($lang_files) => 1 ) {
+if( is_array( $lang_files ) && count($lang_files) >= 1 ) {
 	?>
-		<tr valign="top"> 
-		<th width="33%" scope="row"><?php _e('Language:') ?></th> 
-		<td><select name="WPLANG" id="WPLANG">
-		<?php
-		echo "<option value=''>Default</option>";
+	<tr valign="top"> 
+	<th width="33%" scope="row"><?php _e('Language:') ?></th> 
+	<td><select name="WPLANG" id="WPLANG">
+	<?php
+	echo "<option value=''>Default</option>";
 	while( list( $key, $val ) = each( $lang_files ) ) { 
 		$l = basename( $val, ".mo" );
 		echo "<option value='$l'";

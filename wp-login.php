@@ -146,7 +146,7 @@ case 'retrievepassword' :
 		<input type="text" name="user_email" id="user_email" class="input" value="<?php echo attribute_escape(stripslashes($_POST['user_email'])); ?>" size="25" tabindex="20" /></label>
 	</p>
 <?php do_action('lostpassword_form'); ?>
-	<p class="submit"><input type="submit" name="submit" id="submit" value="<?php _e('Get New Password &raquo;'); ?>" tabindex="100" /></p>
+	<p class="submit"><input type="submit" name="wp-submit" id="wp-submit" value="<?php _e('Get New Password &raquo;'); ?>" tabindex="100" /></p>
 </form>
 </div>
 
@@ -154,9 +154,9 @@ case 'retrievepassword' :
 <?php if (get_option('users_can_register')) : ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Login') ?></a></li>
 	<li><a href="<?php bloginfo('wpurl'); ?>/signup/"><?php _e('Register') ?></a></li>
-	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>" class="fullwidth">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('url'); ?>/" title="<?php _e('Are you lost?') ?>"><?php printf(__('Back to %s'), get_bloginfo('title')); ?></a></li>
 <?php else : ?>
-	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('url'); ?>/" title="<?php _e('Are you lost?') ?>"><?php printf(__('Back to %s'), get_bloginfo('title')); ?></a></li>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Login') ?></a></li>
 <?php endif; ?>
 </ul>
@@ -208,7 +208,7 @@ default:
 	$user_pass = '';
 	$using_cookie = FALSE;
 
-	if ( !isset( $_REQUEST['redirect_to'] ) )
+	if ( !isset( $_REQUEST['redirect_to'] ) || is_user_logged_in() )
 		$redirect_to = 'wp-admin/';
 	else
 		$redirect_to = $_REQUEST['redirect_to'];
@@ -277,7 +277,7 @@ default:
 <?php do_action('login_form'); ?>
 	<p><label><input name="rememberme" type="checkbox" id="rememberme" value="forever" tabindex="90" /> <?php _e('Remember me'); ?></label></p>
 	<p class="submit">
-		<input type="submit" name="submit" id="submit" value="<?php _e('Login'); ?> &raquo;" tabindex="100" />
+		<input type="submit" name="wp-submit" id="wp-submit" value="<?php _e('Login'); ?> &raquo;" tabindex="100" />
 		<input type="hidden" name="redirect_to" value="<?php echo attribute_escape($redirect_to); ?>" />
 	</p>
 </form>
@@ -287,9 +287,9 @@ default:
 <?php if (get_option('users_can_register')) : ?>
 	<li><a href="<?php bloginfo('wpurl'); ?>/signup/"><?php _e('Register') ?></a></li>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a></li>
-	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>" class="fullwidth">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('url'); ?>/" title="<?php _e('Are you lost?') ?>"><?php printf(__('Back to %s'), get_bloginfo('title')); ?></a></li>
 <?php else : ?>
-	<li><a href="<?php bloginfo('home'); ?>/" title="<?php _e('Are you lost?') ?>">&laquo; <?php _e('Back to blog') ?></a></li>
+	<li><a href="<?php bloginfo('url'); ?>/" title="<?php _e('Are you lost?') ?>"><?php printf(__('Back to %s'), get_bloginfo('title')); ?></a></li>
 	<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a></li>
 <?php endif; ?>
 </ul>

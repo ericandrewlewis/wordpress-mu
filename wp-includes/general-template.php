@@ -60,9 +60,11 @@ function wp_meta() {
 
 function bloginfo($show='') {
 	$info = get_bloginfo($show);
-	if (!strstr($show, 'url') && //don't filter URLs
-		!strstr($show, 'directory') &&
-		!strstr($show, 'home')) {
+	
+	// Don't filter URL's.
+	if (strpos($show, 'url') === false || 
+		strpos($show, 'directory') === false || 
+		strpos($show, 'home') === false) {
 		$info = apply_filters('bloginfo', $info, $show);
 		$info = convert_chars($info);
 	} else {
@@ -72,13 +74,18 @@ function bloginfo($show='') {
 	echo $info;
 }
 
-
+/**
+ * Note: some of these values are DEPRECATED. Meaning they could be 
+ * taken out at any time and shouldn't be relied upon. Options 
+ * without "// DEPRECATED" are the preferred and recommended ways 
+ * to get the information.
+ */
 function get_bloginfo($show='') {
 
 	switch($show) {
 		case 'url' :
-		case 'home' :
-		case 'siteurl' :
+		case 'home' : // DEPRECATED
+		case 'siteurl' : // DEPRECATED
 			$output = get_option('home');
 			break;
 		case 'wpurl' :
@@ -149,8 +156,7 @@ function get_bloginfo($show='') {
 
 
 function wp_title($sep = '&raquo;', $display = true) {
-	global $wpdb;
-	global $m, $year, $monthnum, $day, $category_name, $wp_locale, $posts;
+	global $wpdb, $wp_locale, $wp_query;
 
 	$cat = get_query_var('cat');
 	$p = get_query_var('p');
@@ -158,6 +164,10 @@ function wp_title($sep = '&raquo;', $display = true) {
 	$category_name = get_query_var('category_name');
 	$author = get_query_var('author');
 	$author_name = get_query_var('author_name');
+	$m = get_query_var('m');
+	$year = get_query_var('year');
+	$monthnum = get_query_var('monthnum');
+	$day = get_query_var('day');
 	$title = '';
 
 	// If there's a category
@@ -165,8 +175,7 @@ function wp_title($sep = '&raquo;', $display = true) {
 			// category exclusion
 			if ( !stristr($cat,'-') )
 				$title = apply_filters('single_cat_title', get_the_category_by_ID($cat));
-	}
-	if ( !empty($category_name) ) {
+	} elseif ( !empty($category_name) ) {
 		if ( stristr($category_name,'/') ) {
 				$category_name = explode('/',$category_name);
 				if ( $category_name[count($category_name)-1] )
@@ -198,14 +207,15 @@ function wp_title($sep = '&raquo;', $display = true) {
 	if ( !empty($year) ) {
 		$title = $year;
 		if ( !empty($monthnum) )
-			$title .= " $sep ".$wp_locale->get_month($monthnum);
+			$title .= " $sep " . $wp_locale->get_month($monthnum);
 		if ( !empty($day) )
-			$title .= " $sep ".zeroise($day, 2);
+			$title .= " $sep " . zeroise($day, 2);
 	}
 
 	// If there is a post
 	if ( is_single() || is_page() ) {
-		$title = strip_tags($posts[0]->post_title);
+		$post = $wp_query->get_queried_object();
+		$title = strip_tags($post->post_title);
 		$title = apply_filters('single_post_title', $title);
 	}
 
@@ -258,7 +268,12 @@ function single_cat_title($prefix = '', $display = true ) {
 
 
 function single_month_title($prefix = '', $display = true ) {
-	global $m, $monthnum, $wp_locale, $year;
+	global $wp_locale;
+
+	$m = get_query_var('m');
+	$year = get_query_var('year');
+	$monthnum = get_query_var('monthnum');
+
 	if ( !empty($monthnum) && !empty($year) ) {
 		$my_year = $year;
 		$my_month = $wp_locale->get_month($monthnum);
@@ -336,12 +351,12 @@ function wp_get_archives($args = '') {
 	$add_hours = intval(get_option('gmt_offset'));
 	$add_minutes = intval(60 * (get_option('gmt_offset') - $add_hours));
 
+	//filters
+	$where = apply_filters('getarchives_where', "WHERE post_type = 'post' AND post_status = 'publish'", $r );
+	$join = apply_filters('getarchives_join', "", $r);
+
 	if ( 'monthly' == $type ) {
-		$arcresults = wp_cache_get( md5('archives' . $type . $limit), 'general');
-		if ( !$arcresults ) {
-			$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
-			wp_cache_set( md5('archives' . $type . $limit), $arcresults, 'general', 86400 );
-		}
+		$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date), MONTH(post_date) ORDER BY post_date DESC" . $limit);
 		if ( $arcresults ) {
 			$afterafter = $after;
 			foreach ( $arcresults as $arcresult ) {
@@ -353,7 +368,7 @@ function wp_get_archives($args = '') {
 			}
 		}
 	} elseif ('yearly' == $type) {
-         $arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, count(ID) as posts FROM $wpdb->posts WHERE post_type ='post' AND post_status = 'publish' GROUP BY YEAR(post_date) ORDER BY post_date DESC" . $limit);
+         $arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date) ORDER BY post_date DESC" . $limit);
 		if ($arcresults) {
 			$afterafter = $after;
 			foreach ($arcresults as $arcresult) {
@@ -365,7 +380,7 @@ function wp_get_archives($args = '') {
 			}
 		}
 	} elseif ( 'daily' == $type ) {
-		$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAYOFMONTH(post_date) AS `dayofmonth`, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY YEAR(post_date), MONTH(post_date), DAYOFMONTH(post_date) ORDER BY post_date DESC" . $limit);
+		$arcresults = $wpdb->get_results("SELECT DISTINCT YEAR(post_date) AS `year`, MONTH(post_date) AS `month`, DAYOFMONTH(post_date) AS `dayofmonth`, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY YEAR(post_date), MONTH(post_date), DAYOFMONTH(post_date) ORDER BY post_date DESC" . $limit);
 		if ( $arcresults ) {
 			$afterafter = $after;
 			foreach ( $arcresults as $arcresult ) {
@@ -379,7 +394,7 @@ function wp_get_archives($args = '') {
 		}
 	} elseif ( 'weekly' == $type ) {
 		$start_of_week = get_option('start_of_week');
-		$arcresults = $wpdb->get_results("SELECT DISTINCT WEEK(post_date, $start_of_week) AS `week`, YEAR(post_date) AS yr, DATE_FORMAT(post_date, '%Y-%m-%d') AS yyyymmdd, count(ID) as posts FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' GROUP BY WEEK(post_date, $start_of_week), YEAR(post_date) ORDER BY post_date DESC" . $limit);
+		$arcresults = $wpdb->get_results("SELECT DISTINCT WEEK(post_date, $start_of_week) AS `week`, YEAR(post_date) AS yr, DATE_FORMAT(post_date, '%Y-%m-%d') AS yyyymmdd, count(ID) as posts FROM $wpdb->posts $join $where GROUP BY WEEK(post_date, $start_of_week), YEAR(post_date) ORDER BY post_date DESC" . $limit);
 		$arc_w_last = '';
 		$afterafter = $after;
 		if ( $arcresults ) {
@@ -400,7 +415,7 @@ function wp_get_archives($args = '') {
 		}
 	} elseif ( ( 'postbypost' == $type ) || ('alpha' == $type) ) {
 		('alpha' == $type) ? $orderby = "post_title ASC " : $orderby = "post_date DESC ";
-		$arcresults = $wpdb->get_results("SELECT * FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' ORDER BY $orderby $limit");
+		$arcresults = $wpdb->get_results("SELECT * FROM $wpdb->posts $join $where $orderby $limit");
 		if ( $arcresults ) {
 			foreach ( $arcresults as $arcresult ) {
 				if ( $arcresult->post_date != '0000-00-00 00:00:00' ) {
@@ -552,9 +567,7 @@ function get_calendar($initial = true) {
 		$daywithpost = array();
 	}
 
-
-
-	if ( strstr($_SERVER['HTTP_USER_AGENT'], 'MSIE') || strstr(strtolower($_SERVER['HTTP_USER_AGENT']), 'camino') || strstr(strtolower($_SERVER['HTTP_USER_AGENT']), 'safari') )
+	if (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false || strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'camino') !== false || strpos(strtolower($_SERVER['HTTP_USER_AGENT']), 'safari') !== false)
 		$ak_title_separator = "\n";
 	else
 		$ak_title_separator = ', ';

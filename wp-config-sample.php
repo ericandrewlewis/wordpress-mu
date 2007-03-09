@@ -12,9 +12,8 @@ $base = 'BASE';
 // double check $base
 if( $base == 'BASE' )
 	die( 'Problem in wp-config.php - $base is set to BASE when it should be the path like "/" or "/blogs/"! Please fix it!' );
-
-// Change the prefix if you want to have multiple blogs in a single database.
-$table_prefix  = 'wp_';   // example: 'wp_' or 'b2' or 'mylogin_'
+// You can have multiple installations in one database if you give each a unique prefix
+$table_prefix  = 'wp_';   // Only numbers, letters, and underscores please!
 
 // Change this to localize WordPress.  A corresponding MO file for the
 // chosen language must be installed to wp-includes/languages.

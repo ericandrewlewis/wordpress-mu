@@ -1200,9 +1200,9 @@ function generate_page_uri_index() {
 //
 
 function is_local_attachment($url) {
-	if ( !strstr($url, get_bloginfo('home') ) )
+	if (strpos($url, get_bloginfo('url')) === false)
 		return false;
-	if ( strstr($url, get_bloginfo('home') . '/?attachment_id=') )
+	if (strpos($url, get_bloginfo('url') . '/?attachment_id=') !== false)
 		return true;
 	if ( $id = url_to_postid($url) ) {
 		$post = & get_post($id);

@@ -58,7 +58,7 @@ class WP {
 			// front.  For path info requests, this leaves us with the requesting
 			// filename, if any.  For 404 requests, this leaves us with the
 			// requested permalink.
-			$req_uri = str_replace($pathinfo, '', urldecode($req_uri));
+			$req_uri = str_replace($pathinfo, '', rawurldecode($req_uri));
 			$req_uri = trim($req_uri, '/');
 			$req_uri = preg_replace("|^$home_path|", '', $req_uri);
 			$req_uri = trim($req_uri, '/');
@@ -120,14 +120,14 @@ class WP {
 			}
 
 			// If req_uri is empty or if it is a request for ourself, unset error.
-			if ( empty($request) || $req_uri == $self || strstr($_SERVER['PHP_SELF'], 'wp-admin/') ) {
+			if (empty($request) || $req_uri == $self || strpos($_SERVER['PHP_SELF'], 'wp-admin/') !== false) {
 				if (isset($_GET['error']))
 					unset($_GET['error']);
 
 				if (isset($error))
 					unset($error);
 
-				if ( isset($perma_query_vars) && strstr($_SERVER['PHP_SELF'], 'wp-admin/') )
+				if (isset($perma_query_vars) && strpos($_SERVER['PHP_SELF'], 'wp-admin/') !== false)
 					unset($perma_query_vars);
 
 				$this->did_permalink = false;
@@ -148,6 +148,8 @@ class WP {
 				$this->query_vars[$wpvar] = $_GET[$wpvar];
 			elseif (!empty($perma_query_vars[$wpvar]))
 				$this->query_vars[$wpvar] = $perma_query_vars[$wpvar];
+
+			$this->query_vars[$wpvar] = (string) $this->query_vars[$wpvar];
 		}
 
 		foreach ($this->private_query_vars as $var) {
