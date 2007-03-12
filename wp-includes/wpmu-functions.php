@@ -227,19 +227,19 @@ function is_site_admin( $user_login = false ) {
 	return false;
 }
 
-function get_site_option( $option, $default = false, $use_cache = true ) {
+function get_site_option( $key, $default = false, $use_cache = true ) {
 	global $wpdb;
 
 	if( $use_cache == true ) {
-		$value = wp_cache_get($option, 'site-options');
+		$value = wp_cache_get($wpdb->siteid . $key, 'site-options');
 	} else {
 		$value = false;
 	}
 
 	if ( false === $value ) {
-		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$option' AND site_id = '$wpdb->siteid'");
+		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '{$wpdb->siteid}'");
 		if ( ! is_null($value) ) {
-			wp_cache_set($option, $value, 'site-options');
+			wp_cache_set($wpdb->siteid . $key, $value, 'site-options');
 		} elseif ( $default ) {
 			return $default;
 		} else {
@@ -266,8 +266,8 @@ function add_site_option( $key, $value ) {
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
 	$value = $wpdb->escape( $value );
-	wp_cache_delete($key, 'site-options');
-	$wpdb->query( "INSERT INTO $wpdb->sitemeta ( site_id , meta_key , meta_value ) VALUES ( '$wpdb->siteid', '$key', '$value')" );
+	wp_cache_delete($wpdb->siteid . $key, 'site-options');
+	$wpdb->query( "INSERT INTO $wpdb->sitemeta ( site_id , meta_key , meta_value ) VALUES ( '{$wpdb->siteid}', '$key', '$value')" );
 	return $wpdb->insert_id;
 }
 
@@ -284,8 +284,8 @@ function update_site_option( $key, $value ) {
 	if ( get_site_option( $key, false, false ) == false )
 		add_site_option( $key, $value );
 
-	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '".$wpdb->escape( $value )."' WHERE meta_key = '$key'" );
-	wp_cache_delete( $key, 'site-options' );
+	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '".$wpdb->escape( $value )."' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$key'" );
+	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
 }
 
 function get_blog_option( $id, $key, $default='na' ) {
