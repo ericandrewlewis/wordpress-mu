@@ -23,54 +23,59 @@ $path = preg_replace( '|([a-z0-9-]+.php.*)|', '', $_SERVER['REQUEST_URI'] );
 $path = str_replace ( '/wp-admin/', '/', $path );
 $path = preg_replace( '|(/[a-z0-9-]+?/).*|', '$1', $path );
 
+function wpmu_current_site() {
+	global $wpdb, $current_site, $domain, $path, $sites;
+	$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
+	if( constant( 'VHOST' ) == 'yes' ) {
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+		if( $current_site != null )
+			return $current_site;
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='/'" );
+		if( $current_site != null ) {
+			$path = '/';
+			return $current_site;
+		}
+		$sitedomain = substr( $domain, 1 + strpos( $domain, '.' ) );
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
+		if( $current_site != null )
+			return $current_site;
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='/'" );
+		if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
+			if( count( $sites ) == 1 ) {
+				$current_site = $sites[0];
+				die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
+			} else {
+				die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
+			}
+		} else {
+			$path = '/';
+		}
+	} else {
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+		if( $current_site != null )
+			return $current_site;
+		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='/'" );
+		if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
+			if( count( $sites ) == 1 ) {
+				$current_site = $sites[0];
+				die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
+			} else {
+				die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
+			}
+		} else {
+			$path = '/';
+		}
+	}
+	return $current_site;
+}
+
 $wpdb->hide_errors();
 $sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" ); // usually only one site
 if( count( $sites ) == 1 ) {
 	$current_site = $sites[0];
 	$path = $current_site->path;
-}
-
-if( isset( $current_site ) == false ) {
-	$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
-	if( constant( 'VHOST' ) == 'yes' ) {
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
-		if( $current_site == null ) {
-			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='/'" );
-			if( $current_site == null ) {
-				$sitedomain = substr( $domain, 1 + strpos( $domain, '.' ) );
-				$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
-				if( $current_site == null ) {
-					$path = '/';
-					$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
-					if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
-						if( count( $sites ) == 1 ) {
-							$current_site = $sites[0];
-							die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
-						} else {
-							die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
-						}
-					}
-				}
-			} else {
-				$path = '/';
-			}
-		}
-	} else {
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
-		if( $current_site == null ) {
-			$path = '/';
-			$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
-			if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
-				$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
-				if( count( $sites ) == 1 ) {
-					$current_site = $sites[0];
-					die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
-				} else {
-					die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
-				}
-			}
-		}
-	}
+} else {
+	$current_site = wpmu_current_site();
 }
 
 

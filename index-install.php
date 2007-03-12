@@ -10,20 +10,13 @@ if( $_SERVER[ 'HTTP_HOST' ] == 'localhost' ) {
 define('WP_INSTALLING', true);
 
 function printheader() {
-	if( substr( $_SERVER[ 'SERVER_NAME' ], 0, 4 ) == 'www.' ) {
-		$url = 'http://' . str_replace( 'www.', '', $_SERVER[ 'SERVER_NAME' ] ) . $_SERVER[ 'REQUEST_URI' ];
-		print "<html><head><title>WordPress MU Installer</title><body>";
-		print "<p style='margin-left: 20%; margin-right: 20%; margin-top: 5%; text-align: center'><strong>Warning!</strong> WordPress MU must be installed without the 'www.' in the URL.<br />Please click here to continue the install: <a href='$url'>$url</a></p></body></html>";
-		die();
-	}
-	print '
+?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
         <title>WordPress &rsaquo; Installation</title>
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
         <style media="screen" type="text/css">
-        <!--
         html {
                 background: #eee;
         }
@@ -66,13 +59,12 @@ text-align: center; border-top: 1px solid #ccc; padding-top: 1em; font-style: it
     color: #00a;
     text-decoration: underline;
 }
-        -->
         </style>
 </head>
 <body>
 
 <h1><img src="wp-includes/images/wordpress-mu.png" alt="WordPress MU" /></h1>
-';
+<?php
 }
 
 function check_writeable_dir( $dir, $ret ) {
@@ -234,17 +226,18 @@ function step1() {
 	return true;
 }
 
-function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'password', $dbhost = 'localhost', $prefix = 'wp_' ) {
+function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'password', $dbhost = 'localhost', $vhost = 'yes', $prefix = 'wp_' ) {
 	$weblog_title = 'My new WPMU Blog';
 	$email = '';
-	$hostname = str_replace( "www.", "", $_SERVER[ 'HTTP_HOST' ] );
-    print "
+	if( substr( $_SERVER[ 'HTTP_HOST' ], 0, 4 ) == 'www.' )
+		$hostname = str_replace( "www.", "", $_SERVER[ 'HTTP_HOST' ] );
+    ?>
     <form method='post' action='index.php'> 
     <input type='hidden' name='action' value='step2'>
     <h2>Blog Addresses</h2>
 	<p>Please choose whether you would like blogs for the MU install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
-	<p><label><input type='radio' name='vhost' value='yes' checked /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
-	<label><input type='radio' name='vhost' value='no' /> Sub-directories (like <code>example.com/blog1</code></label></p>
+	<p><label><input type='radio' name='vhost' value='yes' <?php if( $vhost == 'yes' ) echo 'checked '; ?> /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
+	<label><input type='radio' name='vhost' value='no' <?php if( $vhost == 'no' ) echo 'checked '; ?> /> Sub-directories (like <code>example.com/blog1</code></label></p>
 	
     <h2>Database</h2>
 
@@ -252,38 +245,39 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
   <table cellpadding='5'> 
     <tr> 
       <th scope='row' width='33%'>Database Name</th> 
-      <td><input name='dbname' type='text' size='45' value='$dbname' /></td>  
+      <td><input name='dbname' type='text' size='45' value='<?php echo $dbname ?>' /></td>  
     </tr> 
     <tr> 
       <th scope='row'>User Name</th> 
-      <td><input name='uname' type='text' size='45' value='$uname' /></td> 
+      <td><input name='uname' type='text' size='45' value='<?php echo $uname ?>' /></td> 
     </tr> 
     <tr> 
       <th scope='row'>Password</th> 
-      <td><input name='pwd' type='text' size='45' value='$pwd' /></td> 
+      <td><input name='pwd' type='text' size='45' value='<?php echo $pwd ?>' /></td> 
     </tr> 
     <tr> 
       <th scope='row'>Database Host</th> 
-      <td><input name='dbhost' type='text' size='45' value='$dbhost' /></td> 
+      <td><input name='dbhost' type='text' size='45' value='<?php echo $dbhost ?>' /></td> 
     </tr>
   </table> 
   <h2>Server Address</h2>
-  <p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.<br /><b>Server Address:</b> <input type='text' name='basedomain' value='{$hostname}'></label></p>
+  <p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.<br /><b>Server Address:</b> <input type='text' name='basedomain' value='<?php echo $hostname ?>'></label></p>
   <h2>Blog Details</h2>
   <table width='100%'> 
   <tr> 
   <th scope='row'>Weblog&nbsp;Title</th> 
-  <td><input name='weblog_title' type='text' size='45' value='".$weblog_title."' /></td> 
+  <td><input name='weblog_title' type='text' size='45' value='<?php echo $weblog_title ?>' /></td> 
   <td>What would you like to call your weblog? </td> 
   </tr> 
   <tr> 
   <th scope='row'>Email</th> 
-  <td><input name='email' type='text' size='45' value='".$email."' /></td> 
+  <td><input name='email' type='text' size='45' value='<?php echo $email ?>' /></td> 
   <td>Your email address.</td> 
   </tr> 
   </table> 
   <p class='submit'><input name='submit' type='submit' value='Submit' /> </p>
-</form> ";
+</form> 
+<?php
 }
 
 function step2() {
@@ -350,18 +344,6 @@ function step2() {
 	define( 'VHOST', $vhost );
 }
 
-function printuserdetailsform( $weblog_title = 'My new Blog', $username = '', $email = '' ) {
-    $hostname = str_replace( "www.", "", $_SERVER[ 'HTTP_HOST' ] );
-    print " 
-	<form method='post' action='index.php'> 
-	<input type='hidden' name='action' value='step3'>
-	<p>To finish setting up your blog, please fill in the following form and click <q>Submit</q>.</p>
-	<input name='submit' type='submit' value='Submit' /> 
-	</form> 
-	<br />
-	You will be sent an email with your password and login links and details.";
-}
-
 function step3() {
 	global $wpdb, $current_site;
 	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
@@ -420,14 +402,43 @@ We hope you enjoy your new weblog.
 	print "<p>Congrats! Your <a href='http://{$domain}{$base}'>WPMU site</a> has been set up and you have been sent details of your login and password in an email.</p>";
 }
 
+function nowww() {
+	$nowww = str_replace( 'www.', '', $_POST[ 'basedomain' ] );
+	?>
+	<h1>No-www</h1>
+	<p>WordPress MU strips the string "www" from the URLs of sites using this software. It is still possible to visit your site using the "www" prefix with an address like <em><?php echo $_POST[ 'basedomain' ] ?></em> but any links will not have the "www" prefix. They will instead point at <?php echo $nowww ?>.</p>
+	<p>The preferred method of hosting blogs is without the "www" prefix as it's more compact and simple.</p><p>You can still use "<?php echo $_POST[ 'basedomain' ] ?>" and URLs like "www.blog1.<?php echo $nowww; ?>" to address your site and blogs after installation but internal links will use the <?php echo $nowww ?> format.</p>
+	<p><a target='_blank' href="http://no-www.org/">www. is depreciated</a> has a lot more information on why 'www.' isn't needed any more.</p>
+	<p><form method='POST'>
+	<input type='hidden' name='dbname' value='<?php echo $_POST[ 'dbname' ]; ?>'>
+	<input type='hidden' name='uname' value='<?php echo $_POST[ 'uname' ]; ?>'>
+	<input type='hidden' name='pwd' value='<?php echo $_POST[ 'pwd' ]; ?>'>
+	<input type='hidden' name='dbhost' value='<?php echo $_POST[ 'dbhost' ]; ?>'>
+	<input type='hidden' name='vhost' value='<?php echo $_POST[ 'vhost' ]; ?>'>
+	<input type='hidden' name='weblog_title' value='<?php echo $_POST[ 'weblog_title' ]; ?>'>
+	<input type='hidden' name='email' value='<?php echo $_POST[ 'email' ]; ?>'>
+	<input type='hidden' name='action' value='step2'>
+	<input type='hidden' name='basedomain' value='<?echo $nowww ?>'>
+	<input type='submit' value='Continue'>
+	</form></p>
+	<?php
+}
+
 switch( $_POST[ 'action' ] ) {
 	case "step2":
+		if( substr( $_POST[ 'basedomain' ], 0, 4 ) == 'www.' ) {
+			printheader();
+			nowww();
+			continue;
+		}
 		// get blog username
 		// create wp-config.php 
 		step2();
 		// Install Blog!
 		include_once('./wp-config.php');
 		include_once('./wp-admin/upgrade-functions.php');
+		// normalise hostname - no www.
+		$_SERVER[ 'HTTP_HOST' ] = str_replace( 'www.', '', $_SERVER[ 'HTTP_HOST' ] );
 		make_db_current_silent();
 		populate_options();
 		do_htaccess( 'htaccess.dist', '.htaccess', $base, '');
