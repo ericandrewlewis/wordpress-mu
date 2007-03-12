@@ -441,9 +441,9 @@ function get_theme_mod($name, $default = false) {
 	$mods = get_option("mods_$theme");
 
 	if ( isset($mods[$name]) )
-		return $mods[$name];
+		return apply_filters( "theme_mod_$name", $mods[$name] );
 
-	return sprintf($default, get_template_directory_uri());
+	return apply_filters( "theme_mod_$name", sprintf($default, get_template_directory_uri()) );
 }
 
 function set_theme_mod($name, $value) {

@@ -78,42 +78,21 @@ switch( $_GET[ 'action' ] ) {
     </td></tr>
     <?php
     while( list( $key, $val ) = each( $options ) ) { 
-	$kellog = @unserialize( $val[ 'option_value' ] );
-	if( is_array( $kellog ) ) {
-		print '<tr valign="top"> 
-		       <th scope="row">' . ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) . '</th> 
-		       <td>';
-		print '<textarea rows="5" cols="40" disabled>';
-		reset( $kellog );
-		while( list( $key, $val ) = each( $kellog ) ) 
-		{ 
-		    if( is_array( $val ) ) {
-			print "$key:\n";
-			while( list( $k, $v ) = each( $val ) ) {
-			    if( is_array( $v ) ) {
-				print "    $k:\n";
-				while( list( $k1, $v1 ) = each( $v ) ) {
-				    print "      $k1 -> $v1\n"; 
-				}
-			    } else {
-				if( $v1 != '' )
-				    print "  $k1 -> $v1\n";
-			    }
-			}
-		    } else {
-			if( $val != '' )
-			    print "$key -> $val\n";
-		    }
+	$disabled = '';
+	if ( is_serialized($val[ 'option_value' ]) ) {
+		if ( is_serialized_string($val[ 'option_value' ]) ) {
+			$val[ 'option_value' ] = wp_specialchars(maybe_unserialize($val[ 'option_value' ]), 'single');
+		} else {
+			$val[ 'option_value' ] = "SERIALIZED DATA";
+			$disabled = ' disabled="disabled"';
 		}
-		print '</textarea></td></tr>';
-	} else {
-	    	?>
-		<tr valign="top"> 
-		<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
-		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo wp_specialchars( stripslashes( $val[ 'option_value' ] ), 1 ) ?>" size="40" /></td> 
-		</tr> 
-		<?php
 	}
+	?>
+	<tr valign="top"> 
+	<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
+	<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo wp_specialchars( stripslashes( $val[ 'option_value' ] ), 1 ) ?>" size="40" <?php echo $disabled ?>/></td> 
+	</tr> 
+	<?php
     }
     ?>
     </table>
