@@ -423,7 +423,7 @@ function get_blogs_of_user( $id, $all = false ) {
 	$i = 0;
 	foreach ( $user as $key => $value ) {
 		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
-			preg_match('/wp_(\d+)_capabilities/', $key, $match);
+			preg_match('/' . $wpmuBaseTablePrefix . '(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) && ( $all == true || $all == false && ( $blog->archived == 0 && $blog->spam == 0 && $blog->deleted == 0 ) ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
