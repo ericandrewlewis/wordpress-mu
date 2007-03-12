@@ -78,12 +78,7 @@ function get_blogaddress_by_id( $blog_id ) {
 	global $hostname, $domain, $base, $wpdb;
 
 	$bloginfo = get_blog_details( $blog_id, false ); // only get bare details!
-
-	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
-		return "http://" . $bloginfo->domain . $bloginfo->path;
-	} else {
-		return get_blogaddress_by_domain($bloginfo->domain, $bloginfo->path);
-	}
+	return "http://" . $bloginfo->domain . $bloginfo->path;
 }
 
 function get_blogaddress_by_name( $blogname ) {
@@ -258,7 +253,7 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 function add_site_option( $key, $value ) {
 	global $wpdb;
 
-	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '$wpdb->siteid'");
+	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '{$wpdb->siteid}'");
 
 	if ( null !== $exists ) // If we already have it
 		return false;
