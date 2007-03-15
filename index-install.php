@@ -229,6 +229,7 @@ function step1() {
 function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'password', $dbhost = 'localhost', $vhost = 'yes', $prefix = 'wp_' ) {
 	$weblog_title = 'My new WPMU Blog';
 	$email = '';
+	$hostname = $_SERVER[ 'HTTP_HOST' ];
 	if( substr( $_SERVER[ 'HTTP_HOST' ], 0, 4 ) == 'www.' )
 		$hostname = str_replace( "www.", "", $_SERVER[ 'HTTP_HOST' ] );
     ?>
