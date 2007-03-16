@@ -220,7 +220,10 @@ if( defined( "WP_INSTALLING" ) == false ) {
 }
 
 $wpdb->hide_errors();
-$plugins = glob( ABSPATH . 'wp-content/mu-plugins/*.php' );
+if( defined( 'MUPLUGINDIR' ) == false ) 
+	define( 'MUPLUGINDIR', 'wp-content/mu-plugins' );
+
+$plugins = glob( ABSPATH . MUPLUGINDIR . '/*.php' );
 if( is_array( $plugins ) ) {
 	foreach ( $plugins as $plugin ) {
 		if( is_file( $plugin ) )
