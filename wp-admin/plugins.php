@@ -123,10 +123,7 @@ if (empty($plugins)) {
 
 		if ( $style != '' )
 			$style = 'class="' . $style . '"';
-		if ( is_writable(ABSPATH . PLUGINDIR . '/' . $plugin_file) )
-			$edit = "<a href='plugin-editor.php?file=$plugin_file' title='".__('Open this file in the Plugin Editor')."' class='edit'>".__('Edit')."</a>";
-		else
-			$edit = '';
+		$edit = '';
 
 		echo "
 	<tr $style>
