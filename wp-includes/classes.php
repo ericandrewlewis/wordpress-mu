@@ -149,7 +149,7 @@ class WP {
 			elseif (!empty($perma_query_vars[$wpvar]))
 				$this->query_vars[$wpvar] = $perma_query_vars[$wpvar];
 
-			if( empty( $this->query_vars[$wpvar] ) == false )
+			if ( !empty( $this->query_vars[$wpvar] ) )
 				$this->query_vars[$wpvar] = (string) $this->query_vars[$wpvar];
 		}
 
