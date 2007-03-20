@@ -78,7 +78,7 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 <td><label><input type="checkbox" name="blog_public" value="1" checked="checked" /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?></label></td>
 </tr>
 <?php
-do_action('signup_blogform', $errors );
+do_action('signup_blogform', $errors);
 }
 
 function validate_blog_form() {
@@ -115,7 +115,7 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	} else {
 		print '<tr>';
 	}
-?><th valign="top"><?php _e('Email&nbsp;Address:') ?></th><td><?php
+?><th valign="top"><?php _e('Email&nbsp;Address:') ?></th><td valign="top"><?php
 
 	if ( $errmsg = $errors->get_error_message('user_email') ) {
 ?><p><strong><?php echo $errmsg ?></strong></p><?php
@@ -126,6 +126,7 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	<?php
 	if ( $errmsg = $errors->get_error_message('generic') )
 		print '<tr class="error"> <th colspan="2">'.$errmsg.'</th> </tr>';
+	do_action( 'signup_extra_fields' );
 }
 
 function validate_user_form() {
@@ -212,6 +213,11 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 
 	if ( ! is_wp_error($errors) )
 		$errors = new WP_Error();
+	if( isset( $_POST[ 'signup_for' ] ) ) {
+		$signup[ wp_specialchars( $_POST[ 'signup_for' ] ) ] = 'checked';
+	} else {
+		$signup[ 'blog' ] = 'checked';
+	}
 
 	// allow definition of default variables
 	$filtered_results = apply_filters('signup_user_init', array('user_name' => $user_name, 'user_email' => $user_email, 'errors' => $errors ));
@@ -224,15 +230,15 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
 <input type="hidden" name="stage" value="validate-user-signup">
 <?php do_action( "signup_hidden_fields" ); ?>
-<table border="0" width="100%" cellpadding="9">
+<table border="0" width="100%" cellpadding="9" cellspacing="4">
 <?php show_user_form($user_name, $user_email, $errors); ?>
 <th scope="row"  valign="top">&nbsp;</th>
 <td>
 <p>
-<input id="signupblog" type="radio" name="signup_for" value="blog" checked="checked" />
+<input id="signupblog" type="radio" name="signup_for" value="blog" <?php echo $signup[ 'blog' ] ?> />
 <label for="signupblog"><?php _e('Gimme a blog!') ?></label>
 <br />
-<input id="signupuser" type="radio" name="signup_for" value="user" />
+<input id="signupuser" type="radio" name="signup_for" value="user" <?php echo $signup[ 'user' ] ?> />
 <label for="signupuser"><?php _e('Just a username, please.') ?></label>
 </p>
 </td>
@@ -261,7 +267,7 @@ function validate_user_signup() {
 		return;
 	}
 
-	wpmu_signup_user($user_name, $user_email);
+	wpmu_signup_user($user_name, $user_email, apply_filters( "add_signup_meta", array() ) );
 
 	confirm_user_signup($user_name, $user_email);
 }
@@ -348,7 +354,7 @@ if( in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
 	header( "Location: http://{$current_site->domain}{$current_site->path}" );
 	die();
 }
-$blog_id = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
+$newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
 if( $_POST['blog_public'] != 1 )
 	$_POST['blog_public'] = 0;
 
@@ -366,15 +372,15 @@ switch ($_POST['stage']) {
 		$user_email = $_POST[ 'user_email' ];
 		do_action( "preprocess_signup_form" ); // populate the form from invites, elsewhere?
 		if ( is_user_logged_in() )
-			signup_another_blog($blog_id);
+			signup_another_blog($newblogname);
 		else
-			signup_user( $blog_id, $user_email );
+			signup_user( $newblogname, $user_email );
 
-		if ($blog_id) {
+		if ($newblogname) {
 			if( constant( "VHOST" ) == 'no' )
-				$newblog = 'http://' . $current_site->domain . $current_site->path . $blog_id . '/';
+				$newblog = 'http://' . $current_site->domain . $current_site->path . $newblogname . '/';
 			else
-				$newblog = 'http://' . $blog_id . '.' . $current_site->domain . $current_site->path;
+				$newblog = 'http://' . $newblogname . '.' . $current_site->domain . $current_site->path;
 			printf(__("<p><em>The blog you were looking for, <strong>%s</strong> doesn't exist but you can create it now!</em></p>"), $newblog );
 		}
 		break;
