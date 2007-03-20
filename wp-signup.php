@@ -126,7 +126,7 @@ function show_user_form($user_name = '', $user_email = '', $errors = '') {
 	<?php
 	if ( $errmsg = $errors->get_error_message('generic') )
 		print '<tr class="error"> <th colspan="2">'.$errmsg.'</th> </tr>';
-	do_action( 'signup_extra_fields' );
+	do_action( 'signup_extra_fields', $errors );
 }
 
 function validate_user_form() {
