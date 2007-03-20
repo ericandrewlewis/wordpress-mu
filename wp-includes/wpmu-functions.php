@@ -1063,7 +1063,7 @@ function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 	if( $admin_email == '' )
 		$admin_email = 'support@' . $_SERVER[ 'SERVER_NAME' ];
 	$message_headers = "MIME-Version: 1.0\n" . "From: " . get_site_option( "site_name" ) .  " <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), "http://{$current_site->domain}{$current_site->path}/wp-activate.php?key=$key" );
+	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), "http://{$current_site->domain}{$current_site->path}wp-activate.php?key=$key" );
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $user);
 	wp_mail($user_email, $subject, $message, $message_headers);
@@ -1103,6 +1103,7 @@ function wpmu_activate_signup($key) {
 		if ( isset($user_already_exists) )
 			return new WP_Error('user_already_exists', __('That username is already activated.'), $signup);
 		wpmu_welcome_user_notification($user_id, $password, $meta);
+		add_user_to_blog('1', $user_id, 'subscriber');
 		do_action('wpmu_activate_user', $user_id, $password, $meta);
 		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
 	}
