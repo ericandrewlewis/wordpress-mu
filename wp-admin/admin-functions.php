@@ -611,10 +611,10 @@ function edit_link( $link_id = '' ) {
 		wp_die( __( 'Cheatin&#8217; uh?' ));
 
 	$_POST['link_url'] = wp_specialchars( $_POST['link_url'] );
-	$_POST['link_url'] = preg_match('/^(https?|ftps?|mailto|news|irc|gopher|nntp|feed|telnet):/is', $_POST['link_url']) ? $_POST['link_url'] : 'http://' . $_POST['link_url'];
+	$_POST['link_url'] = clean_url($_POST['link_url']);
 	$_POST['link_name'] = wp_specialchars( $_POST['link_name'] );
 	$_POST['link_image'] = wp_specialchars( $_POST['link_image'] );
-	$_POST['link_rss'] = wp_specialchars( $_POST['link_rss'] );
+	$_POST['link_rss'] = clean_url($_POST['link_rss']);
 	$_POST['link_category'] = $_POST['post_category'];
 
 	if ( !empty( $link_id ) ) {
@@ -891,7 +891,7 @@ function user_row( $user_object, $style = '' ) {
 	}
 	$r .= "</td>\n\t\t<td>";
 	if ( ( is_site_admin() || $current_user->ID == $user_object->ID ) && current_user_can( 'edit_user', $user_object->ID ) ) {
-		$edit_link = clean_url( add_query_arg( 'wp_http_referer', urlencode( stripslashes( $_SERVER['REQUEST_URI'] ) ), "user-edit.php?user_id=$user_object->ID" ));
+		$edit_link = add_query_arg( 'wp_http_referer', urlencode( clean_url( stripslashes( $_SERVER['REQUEST_URI'] ) ) ), "user-edit.php?user_id=$user_object->ID" );
 		$r .= "<a href='$edit_link' class='edit'>".__( 'Edit' )."</a>";
 	}
 	$r .= "</td>\n\t</tr>";
@@ -2222,7 +2222,7 @@ function wp_create_thumbnail( $file, $max_side, $effect = '' ) {
 
 			// If no filters change the filename, we'll do a default transformation.
 			if ( basename( $file ) == $thumb = apply_filters( 'thumbnail_filename', basename( $file ) ) )
-				$thumb = preg_replace( '!(\.[^.]+)?$!', __( '.thumbnail' ).'$1', basename( $file ), 1 );
+				$thumb = preg_replace( '!(\.[^.]+)?$!', '.thumbnail' . '$1', basename( $file ), 1 );
 
 			$thumbpath = str_replace( basename( $file ), $thumb, $file );
 
