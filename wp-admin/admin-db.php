@@ -582,6 +582,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 			@ rmdir($dir);
 		}
 	}
+	$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key='wp_{$blog_id}_autosave_draft_ids'");
 
 	if ( $switch )
 		restore_current_blog();
