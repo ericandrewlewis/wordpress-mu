@@ -27,7 +27,6 @@ add_action('publish_post', 'wpmu_update_blogs_date');
 function wpmu_checkAvailableSpace($action) {
 	// Using the action.
 	// Set the action to 'not-writable' to block the upload
-	global $wpblog, $blog_id;
 
 	// Default space allowed is 10 MB
 	$spaceAllowed = get_site_option( "blog_upload_space" );
@@ -821,6 +820,8 @@ function is_email_address_unsafe( $user_email ) {
 	if ( is_array( $banned_names ) && empty( $banned_names ) == false ) {
 		$email_domain = strtolower( substr( $user_email, 1 + strpos( $user_email, '@' ) ) );
 		foreach( $banned_names as $banned_domain ) {
+			if( $banned_domain == '' )
+				continue;
 			if (
 				strstr( $email_domain, $banned_domain ) ||
 				(
