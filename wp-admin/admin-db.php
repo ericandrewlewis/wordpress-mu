@@ -250,7 +250,7 @@ function category_exists($cat_name) {
 	if (!$category_nicename = sanitize_title($cat_name))
 		return 0;
 
-	return $wpdb->get_var("SELECT cat_ID FROM $wpdb->categories WHERE category_nicename = '$category_nicename'");
+	return (int) $wpdb->get_var("SELECT cat_ID FROM $wpdb->categories WHERE category_nicename = '$category_nicename'");
 }
 
 function wp_delete_user($id, $reassign = 'novalue') {
@@ -302,6 +302,8 @@ function wp_insert_link($linkdata) {
 
 	if ( !empty($link_id) )
 		$update = true;
+
+	$link_id = (int) $link_id;
 
 	if( trim( $link_name ) == '' )
 		return 0;
@@ -364,7 +366,7 @@ function wp_insert_link($linkdata) {
 			WHERE link_id='$link_id'");
 	} else {
 		$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_description, link_visible, link_owner, link_rating, link_rel, link_notes, link_rss) VALUES('$link_url','$link_name', '$link_image', '$link_target', '$link_description', '$link_visible', '$link_owner', '$link_rating', '$link_rel', '$link_notes', '$link_rss')");
-		$link_id = $wpdb->insert_id;
+		$link_id = (int) $wpdb->insert_id;
 	}
 
 	wp_set_link_cats($link_id, $link_category);
@@ -447,7 +449,7 @@ function wp_set_link_cats($link_ID = 0, $link_categories = array()) {
 	$old_categories = $wpdb->get_col("
 		SELECT category_id
 		FROM $wpdb->link2cat
-		WHERE link_id = $link_ID");
+		WHERE link_id = '$link_ID'");
 
 	if (!$old_categories) {
 		$old_categories = array();
@@ -460,10 +462,11 @@ function wp_set_link_cats($link_ID = 0, $link_categories = array()) {
 
 	if ($delete_cats) {
 		foreach ($delete_cats as $del) {
+			$del = (int) $del;
 			$wpdb->query("
 				DELETE FROM $wpdb->link2cat
-				WHERE category_id = $del
-					AND link_id = $link_ID
+				WHERE category_id = '$del'
+					AND link_id = '$link_ID'
 				");
 		}
 	}

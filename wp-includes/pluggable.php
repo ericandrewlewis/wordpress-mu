@@ -532,7 +532,7 @@ endif;
 if ( !function_exists('wp_verify_nonce') ) :
 function wp_verify_nonce($nonce, $action = -1) {
 	$user = wp_get_current_user();
-	$uid = $user->id;
+	$uid = (int) $user->id;
 
 	$i = ceil(time() / 43200);
 
@@ -546,7 +546,7 @@ endif;
 if ( !function_exists('wp_create_nonce') ) :
 function wp_create_nonce($action = -1) {
 	$user = wp_get_current_user();
-	$uid = $user->id;
+	$uid = (int) $user->id;
 
 	$i = ceil(time() / 43200);
 

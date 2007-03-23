@@ -13,7 +13,7 @@ wp_reset_vars(array('action', 'redirect', 'profile', 'user_id', 'wp_http_referer
 $wp_http_referer = remove_query_arg(array('update', 'delete_count'), stripslashes($wp_http_referer));
 // Only allow site admins to edit every user.
 if ( !is_site_admin() && ($user_id != $current_user->ID) )
-	$errors = new WP_Error('head', __('You do not have permission to edit this user.'));
+	wp_die('You do not have permission to edit this user.');
 
 $user_id = (int) $user_id;
 

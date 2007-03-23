@@ -154,7 +154,7 @@ class MT_Import {
 			return;
 		}
 		$this->file = $file['file'];
-		$this->id = $file['id'];
+		$this->id = (int) $file['id'];
 
 		$this->get_entries();
 		$this->mt_authors_form();
@@ -278,7 +278,7 @@ class MT_Import {
 					}
 				}
 
-				$comment_post_ID = $post_id;
+				$comment_post_ID = (int) $post_id;
 				$comment_approved = 1;
 
 				// Now for comments
