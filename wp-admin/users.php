@@ -541,7 +541,7 @@ foreach ( (array) $roleclass as $user_object ) {
 
 	<h3><?php _e('Update Selected'); ?></h3>
 	<ul style="list-style:none;">
-		<li><input type="radio" name="action" id="action0" value="delete" /> <label for="action0"><?php _e('Delete checked users.'); ?></label></li>
+		<li><input type="radio" name="action" id="action0" value="removeuser" /> <label for="action0"><?php _e('Remove checked users.'); ?></label></li>
 		<li>
 			<input type="radio" name="action" id="action1" value="promote" /> <label for="action1"><?php _e('Set the Role of checked users to:'); ?></label>
 			<select name="new_role" onchange="getElementById('action1').checked = 'true'"><?php wp_dropdown_roles(); ?></select>
