@@ -144,7 +144,7 @@ switch( $_GET[ 'action' ] ) {
 		} elseif( $_GET[ 'sortby' ] == 'Name' ) {
 			$query .= ' ORDER BY display_name ';
 		} elseif( $_GET[ 'sortby' ] == 'Registered' ) {
-			$query .= ' ORDER BY registered ';
+			$query .= ' ORDER BY user_registered ';
 		}
 		if( $_GET[ 'order' ] == 'DESC' ) {
 			$query .= "DESC";
