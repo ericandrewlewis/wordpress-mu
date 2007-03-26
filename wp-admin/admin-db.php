@@ -627,4 +627,36 @@ function wpmu_delete_user($id) {
 	return true;
 }
 
+function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
+	$themes = get_themes();
+	if( $blog_id == 0 )
+		$blog_allowed_themes = get_option( "allowedthemes" );
+	else 
+		$blog_allowed_themes = get_blog_option( $blog_id, "allowedthemes" );
+	if( !is_array( $blog_allowed_themes ) || empty( $blog_allowed_themes ) ) { // convert old allowed_themes to new allowedthemes
+		if( $blog_id == 0 )
+			$blog_allowed_themes = get_option( "allowed_themes" );
+		else 
+			$blog_allowed_themes = get_blog_option( $blog_id, "allowed_themes" );
+		if( is_array( $blog_allowed_themes ) ) {
+			foreach( $themes as $key => $theme ) {
+				$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
+				if( isset( $blog_allowed_themes[ $key ] ) == true ) {
+					$blog_allowedthemes[ $theme_key ] = 1;
+				}
+			}
+			$blog_allowed_themes = $blog_allowedthemes;
+			if( $blog_id == 0 ) {
+				add_option( "allowedthemes", $blog_allowed_themes );
+				delete_option( "allowed_themes" );
+			} else {
+				add_blog_option( $blog_id, "allowedthemes", $blog_allowed_themes );
+				delete_blog_option( $blog_id, "allowed_themes" );
+			}
+		}
+	}
+
+	return $blog_allowed_themes;
+}
+
 ?>

@@ -3,24 +3,23 @@ require_once('admin.php');
 
 $themes = get_themes();
 $ct = current_theme_info();
-$allowed_themes = get_site_option( "allowed_themes" );
-if( $allowed_themes == false ) {
-    $allowed_themes = array();
-    if( $blog_id != 1 )
-	    unset( $allowed_themes[ "WordPress MU Home Default" ] );
-}
-$blog_allowed_themes = get_option( "allowed_themes" );
+$allowed_themes = get_site_option( "allowedthemes" );
+if( $allowed_themes == false )
+	$allowed_themes = array();
 
+$blog_allowed_themes = wpmu_get_blog_allowedthemes();
 if( is_array( $blog_allowed_themes ) )
 	$allowed_themes = array_merge( $allowed_themes, $blog_allowed_themes );
+if( $blog_id != 1 )
+	unset( $allowed_themes[ "h3" ] );
 
-if( isset( $allowed_themes[ $ct->title ] ) == false ) {
-    $allowed_themes[ $ct->title ] = true;
-}
+if( isset( $allowed_themes[ wp_specialchars( $ct->stylesheet ) ] ) == false )
+    $allowed_themes[ wp_specialchars( $ct->stylesheet ) ] = true;
+
 reset( $themes );
-while( list( $key, $val ) = each( $themes ) ) { 
-    if( isset( $allowed_themes[ $key ] ) == false ) {
-	unset( $themes[ $key ] );
+foreach( $themes as $key => $theme ) {
+    if( isset( $allowed_themes[ wp_specialchars( $theme[ 'Stylesheet' ] ) ] ) == false ) {
+		unset( $themes[ $key ] );
     }
 }
 reset( $themes );
@@ -75,6 +74,7 @@ require_once('admin-header.php');
 <p><?php echo $ct->description; ?></p>
 </div>
 
+<br style="clear: both" />
 <h2><?php _e('Available Themes'); ?></h2>
 <?php if ( 1 < count($themes) ) { ?>
 
@@ -118,7 +118,7 @@ $broken_themes = get_broken_themes();
 if ( is_site_admin() && count($broken_themes) ) {
 ?>
 
-<h2><?php _e('Broken Themes'); ?></h2>
+<h2><?php _e('Broken Themes'); ?> (Site admin only)</h2>
 <p><?php _e('The following themes are installed but incomplete.  Themes must have a stylesheet and a template.'); ?></p>
 
 <table width="100%" cellpadding="3" cellspacing="3">

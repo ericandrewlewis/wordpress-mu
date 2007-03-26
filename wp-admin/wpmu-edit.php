@@ -158,9 +158,9 @@ switch( $_REQUEST[ 'action' ] ) {
 		// themes
 		if( is_array( $_POST[ 'theme' ] ) ) {
 			$allowed_themes = $_POST[ 'theme' ];
-			$_POST[ 'option' ][ 'allowed_themes' ] = $_POST[ 'theme' ];
+			$_POST[ 'option' ][ 'allowedthemes' ] = $_POST[ 'theme' ];
 		} else {
-			$_POST[ 'option' ][ 'allowed_themes' ] = '';
+			$_POST[ 'option' ][ 'allowedthemes' ] = '';
 		}
 		if( is_array( $_POST[ 'option' ] ) ) {
 			$c = 1;
@@ -382,18 +382,17 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
     	case "updatethemes":
-		if( is_site_admin() == false ) {
+		if( is_site_admin() == false )
 			die( __('<p>You do not have permission to access this page.</p>') );
-		}
+
     		if( is_array( $_POST[ 'theme' ] ) ) {
-			$themes = array_flip( array_keys( get_themes() ) );
+			$themes = get_themes();
 			reset( $themes );
-			while( list( $key, $val ) = each( $themes ) ) 
-			{
-				if( $_POST[ 'theme' ][ addslashes( $key ) ] == 'enabled' )
-					$allowed_themes[ $key ] = true;
+			foreach( $themes as $key => $theme ) {
+				if( $_POST[ 'theme' ][ wp_specialchars( $theme[ 'Stylesheet' ] ) ] == 'enabled' )
+					$allowed_themes[ wp_specialchars( $theme[ 'Stylesheet' ] ) ] = true;
 			}
-			update_site_option( 'allowed_themes', $allowed_themes );
+			update_site_option( 'allowedthemes', $allowed_themes );
 		}
 		wp_redirect( add_query_arg( "updated", "themesupdated", $_SERVER[ 'HTTP_REFERER' ] ) );
 		die();

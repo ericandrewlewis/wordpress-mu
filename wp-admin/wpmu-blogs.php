@@ -13,12 +13,13 @@ if (isset($_GET['updated'])) {
 print '<div class="wrap">';
 switch( $_GET[ 'action' ] ) {
     case "editblog":
-	$options_table_name = $wpmuBaseTablePrefix . $_GET[ 'id' ] ."_options";
-	$options = $wpdb->get_results( "SELECT * FROM {$options_table_name} WHERE option_name NOT LIKE 'rss%' AND option_name NOT LIKE '%user_roles'", ARRAY_A );
-	$details = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$_GET[ 'id' ]}'", ARRAY_A );
+		$id = intval( $_GET[ 'id' ] );
+		$options_table_name = "$wpmuBaseTablePrefix{$id}_options";
+		$options = $wpdb->get_results( "SELECT * FROM {$options_table_name} WHERE option_name NOT LIKE 'rss%' AND option_name NOT LIKE '%user_roles'", ARRAY_A );
+		$details = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$_GET[ 'id' ]}'", ARRAY_A );
 
-    print "<h2>" . __('Edit Blog') . "</h2>";
-    print "<a href='http://{$details[ 'domain' ]}/'>{$details[ 'domain' ]}</a>";
+		print "<h2>" . __('Edit Blog') . "</h2>";
+		print "<a href='http://{$details[ 'domain' ]}/'>{$details[ 'domain' ]}</a>";
     ?>
     <form name="form1" method="post" action="wpmu-edit.php?action=updateblog"> 
     <?php wp_nonce_field( "editblog" ); ?>
@@ -103,40 +104,36 @@ switch( $_GET[ 'action' ] ) {
     </td>
     <td valign='top'>
     <?php
-    $themes = get_themes();
-    $query = "SELECT option_value
-              FROM   ".$options_table_name."
-	      WHERE  option_name = 'allowed_themes'";
-    $blog_allowed_themes = $wpdb->get_var( $query );
-    if( $blog_allowed_themes != false )
-	$blog_allowed_themes = unserialize( $blog_allowed_themes );
-    $allowed_themes = get_site_option( "allowed_themes" );
-    if( $allowed_themes == false ) {
-	$allowed_themes = array_keys( $themes );
-    }
-    $out = '';
-    while( list( $key, $val ) = each( $themes ) ) { 
-	if( isset( $allowed_themes[ $key ] ) == false ) {
-	    if( isset( $blog_allowed_themes[ $key ] ) == true ) {
-		$checked = 'checked ';
-	    } else {
-		$checked = '';
-	    }
-
-	    $out .= '
-		<tr valign="top"> 
-		<th title="' . htmlspecialchars( $val[ "Description" ] ) . '" scope="row">'.$key.'</th> 
-		<td><input name="theme['.$key.']" type="checkbox" id="'.$key.'" value="on" '.$checked.'/></td> 
-		</tr> ';
+	$themes = get_themes();
+	$blog_allowed_themes = wpmu_get_blog_allowedthemes( $id );
+	$allowed_themes = get_site_option( "allowedthemes" );
+	if( $allowed_themes == false ) {
+		$allowed_themes = array_keys( $themes );
 	}
+	$out = '';
+	foreach( $themes as $key => $theme ) {
+		$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
+		if( isset( $allowed_themes[ $theme_key ] ) == false ) {
+			if( isset( $blog_allowed_themes[ $theme_key ] ) == true ) {
+				$checked = 'checked ';
+			} else {
+				$checked = '';
+			}
+
+			$out .= '
+			<tr valign="top"> 
+			<th title="' . htmlspecialchars( $theme[ "Description" ] ) . '" scope="row">'.$key.'</th> 
+			<td><input name="theme['.$theme_key.']" type="checkbox" id="'.$key.'" value="on" '.$checked.'/></td> 
+			</tr> ';
+		}
     }
     if( $out != '' ) {
-	print "<div class='wrap'><h3>" . __('Blog Themes') . "</h3>";
-	print '<table width="100%" border="0" cellspacing="2" cellpadding="5" class="editform">';
-	print '<tr><th>' . __('Theme') . '</th><th>' . __('Enable') . '</th></tr>';
-	print $out;
-	print "</table></div>";
-    }
+		print "<div class='wrap'><h3>" . __('Blog Themes') . "</h3>";
+		print '<table width="100%" border="0" cellspacing="2" cellpadding="5" class="editform">';
+		print '<tr><th>' . __('Theme') . '</th><th>' . __('Enable') . '</th></tr>';
+		print $out;
+		print "</table></div>";
+	}
     $blogusers = get_users_of_blog( $_GET[ 'id' ] );
     print '<div class="wrap"><h3>' . __('Blog Users') . '</h3>';
     if( is_array( $blogusers ) ) {
