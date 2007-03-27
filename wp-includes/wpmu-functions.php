@@ -296,6 +296,11 @@ function add_blog_option( $id, $key, $value ) {
 	restore_current_blog();
 }
 
+function delete_blog_option( $id, $key ) {
+	switch_to_blog($id);
+	delete_option( $key );
+	restore_current_blog();
+}
 
 function update_blog_option( $id, $key, $value, $refresh = true ) {
 	switch_to_blog($id);
