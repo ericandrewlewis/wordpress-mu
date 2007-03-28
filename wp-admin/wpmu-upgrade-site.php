@@ -44,7 +44,7 @@ switch( $_GET[ 'action' ] ) {
 			}
 			print "</ul>";
 			?>
-			<p>If your browser doesn't start loading the next page automatically click this link: <a href="?action=upgrade&n=<?php echo ($n + 5) ?>">Next Blogs</a> </p>
+			<p><?php _e("If your browser doesn't start loading the next page automatically click this link:"); ?> <a href="?action=upgrade&n=<?php echo ($n + 5) ?>"><?php _e("Next Blogs"); ?></a> </p>
 			<script language='javascript'>
 			<!--
 
@@ -57,13 +57,13 @@ switch( $_GET[ 'action' ] ) {
 			</script>
 			<?php
 		} else {
-			print "All Done!";
+			_e("All Done!");
 		}
 	break;
 	default:
 	?>
-		<p>You can upgrade all the blogs on your site through this page. It works by calling the upgrade script of each blog automatically. Hit the link below to upgrade.</p>
-		<p><a href="wpmu-upgrade-site.php?action=upgrade">Upgrade Site</a></p>
+		<p><?php _e("You can upgrade all the blogs on your site through this page. It works by calling the upgrade script of each blog automatically. Hit the link below to upgrade."); ?></p>
+		<p><a href="wpmu-upgrade-site.php?action=upgrade"><?php _e("Upgrade Site"); ?></a></p>
 	<?php
 	break;
 

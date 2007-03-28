@@ -159,7 +159,7 @@ switch( $_GET[ 'action' ] ) {
 			$next = true;
 		}
 ?>
-<h2>Users</h2>
+<h2><?php _e("Users"); ?></h2>
 <form name="searchform" action="wpmu-users.php" method="get" style="float: left; width: 16em; margin-right: 3em;"> 
   <table><tr><td>
   <fieldset> 

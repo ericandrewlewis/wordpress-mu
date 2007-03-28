@@ -101,7 +101,7 @@ if (isset($_GET['updated'])) {
 			<th width="33%" scope="row"><?php _e('Default Language:') ?></th> 
 			<td><select name="WPLANG" id="WPLANG">
 			<?php
-			echo "<option value=''>Default</option>";
+			echo "<option value=''>".__('Default')."</option>";
 			while( list( $key, $val ) = each( $lang_files ) ) { 
 				$l = basename( $val, ".mo" );
 				echo "<option value='$l'";
@@ -119,7 +119,7 @@ if (isset($_GET['updated'])) {
 	<fieldset class="options">
 		<legend><?php _e('Menus <em>(Enable or disable WP Backend Menus)</em>') ?></legend> 
 		<table cellspacing="2" cellpadding="5" class="editform"> 
-		<tr><th scope='row'>Menu</th><th scope='row'>Enabled</th></tr>
+		<tr><th scope='row'><?php _e("Menu"); ?></th><th scope='row'><?php _e("Enabled"); ?></th></tr>
 		<?php
 		$menu_perms = get_site_option( "menu_items" );
 		$menu_items = array( "plugins" );

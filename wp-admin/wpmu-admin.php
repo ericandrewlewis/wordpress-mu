@@ -23,7 +23,7 @@ switch( $_GET[ 'action' ] ) {
 <p>
 <input name="action" value="users" type="hidden" />
 <input name="s" value="" size="17" type="text" /> 
-<input name="submit" value="Search Users &raquo;" type="submit" />
+<input name="submit" value="<?php _e("Search Users &raquo;"); ?>" type="submit" />
 </p> 
 </form>
 
@@ -31,7 +31,7 @@ switch( $_GET[ 'action' ] ) {
 <p>
 <input type='hidden' name='action' value='blogs' />
 <input type="text" name="s" value="" size="17" />
-<input type="submit" name="submit" value="Search Blogs &raquo;" />
+<input type="submit" name="submit" value="<?php _e("Search Blogs &raquo;"); ?>" />
 </p>
 </form>
 <?php

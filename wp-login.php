@@ -64,7 +64,7 @@ function login_header($title = 'Login', $message = '') {
 		}
 
 		echo '<div id="login_error">' . apply_filters('login_errors', $errors) . "</div>\n";
-		echo "<p align='center'><strong>Note:</strong> You must <a style=\"color: #fff;\" href='http://www.google.com/cookies.html'>enable cookies</a> to use this site.</p>";
+		echo "<p align='center'>".__("<strong>Note:</strong> You must <a style=\"color: #fff;\" href='http://www.google.com/cookies.html'>enable cookies</a> to use this site.")."</p>";
 	}
 } // End of login_header()
 
