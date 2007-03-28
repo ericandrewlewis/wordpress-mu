@@ -3,7 +3,6 @@ define( "WP_INSTALLING", true );
 require ('wp-config.php');
 require_once( ABSPATH . WPINC . '/registration.php');
 
-
 do_action("activate_header");
 
 get_header();
@@ -23,7 +22,7 @@ form { margin-top: 2em; }
 }
 </style>
 <?php
-	if ( empty($_GET['key']) && empty($_POST['key']) ) {
+if ( empty($_GET['key']) && empty($_POST['key']) ) {
 ?>
 <h2><?php _e('Activation Key Required') ?></h2>
 <form name="activateform" id="activateform" method="post" action="<?php echo get_option( 'siteurl' ) ?>/wp-activate.php">
@@ -39,22 +38,22 @@ form { margin-top: 2em; }
 </table>
 </form>
 <?php
+} else {
+	if ( ! empty($_GET['key']) )
+		$key = $_GET['key'];
+	else
+		$key = $_POST['key'];
+
+	$result = wpmu_activate_signup($key);
+	if ( is_wp_error($result) ) {
+		if ( 'already_active' == $result->get_error_code() )
+			echo __('You have already activated your account. Please check your email inbox for your username, password, and login instructions.');
+		else 
+			echo $result->get_error_message();
 	} else {
-		if ( ! empty($_GET['key']) )
-			$key = $_GET['key'];
-		else
-			$key = $_POST['key'];
-			
-		$result = wpmu_activate_signup($key);
-		if ( is_wp_error($result) ) {
-			if ( 'already_active' == $result->get_error_code() )
-				echo __('The blog is already active.  Please check your email inbox for your username, password, and login instructions.');
-			else 
-				echo $result->get_error_message();
-		} else {
-			extract($result);
-			$url = get_blogaddress_by_id($blog_id);
-			$user = new WP_User($user_id);
+		extract($result);
+		$url = get_blogaddress_by_id($blog_id);
+		$user = new WP_User($user_id);
 ?>
 <h2><?php _e('All set!'); ?></h2>
 <table border="0" id="signup-welcome">
@@ -68,10 +67,13 @@ form { margin-top: 2em; }
 </td>
 </tr>
 </table>
-<h3 class="view"><?php printf(__('<a href="%1$s">View your site</a> or <a href="%2$s">Login</a>'), $url, $url . 'wp-login.php' ); ?></h3>
-<?php
+		<?php if( $url != 'http://' . $current_site->domain . $current_site->path ) { ?>
+<p class="view"><?php printf(__('Your account is now activate. <a href="%1$s">View your site</a> or <a href="%2$s">Login</a>'), $url, $url . 'wp-login.php' ); ?></p> <?php 
+		} else { 
+?> <p class="view"><?php printf( __( 'Your account is now activate. <a href="%1$s">Login</a> or go back to the <a href="%2$s">homepage</a>.' ), 'http://' . $current_site->domain . $current_site->path . 'wp-login.php', 'http://' . $current_site->domain . $current_site->path ); ?></p> <?php
 		}
 	}
+}
 ?>
 </div>
 <?php get_footer(); ?>
