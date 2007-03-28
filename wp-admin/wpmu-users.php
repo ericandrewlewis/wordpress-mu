@@ -244,7 +244,7 @@ function check_all_rows() {
 	<tr>
 
 <?php foreach($posts_columns as $column_id => $column_display_name) { ?>
-	<th scope="col"><?php if( $column_display_name == 'Blogs' ) { echo "Blogs"; } else { ?><a href="wpmu-users.php?sortby=<?php echo $column_id ?>&<?php if( $_GET[ 'sortby' ] == $column_id ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th><?php } ?>
+	<th scope="col"><?php if( $column_id == 'blogs' ) { _e( "Blogs" ); } else { ?><a href="wpmu-users.php?sortby=<?php echo $column_id ?>&<?php if( $_GET[ 'sortby' ] == $column_id ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th><?php } ?>
 <?php } ?>
 
 	</tr>
