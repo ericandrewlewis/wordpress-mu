@@ -25,7 +25,7 @@ form { margin-top: 2em; }
 if ( empty($_GET['key']) && empty($_POST['key']) ) {
 ?>
 <h2><?php _e('Activation Key Required') ?></h2>
-<form name="activateform" id="activateform" method="post" action="<?php echo get_option( 'siteurl' ) ?>/wp-activate.php">
+<form name="activateform" id="activateform" method="post" action="<?php echo 'http://' . $current_site->domain . $current_site->path ?>wp-activate.php">
 <table border="0" width="100%" cellpadding="9">
 <tr>
 <th valign="top"><?php _e('Activation Key:') ?></th>
@@ -46,16 +46,23 @@ if ( empty($_GET['key']) && empty($_POST['key']) ) {
 
 	$result = wpmu_activate_signup($key);
 	if ( is_wp_error($result) ) {
-		if ( 'already_active' == $result->get_error_code() )
-			echo __('You have already activated your account. Please check your email inbox for your username, password, and login instructions.');
-		else 
+		if ( 'already_active' == $result->get_error_code() || 'blog_taken' == $result->get_error_code() ) {
+			$signup = $result->get_error_data();
+			_e( '<h2>Your account is now active!</h2>' );
+			if( $signup->domain . $signup->path == '' ) {
+				printf(__('<p class="lead-in">Your account has been activaed. You may now <a href="%1$s">login</a> to the site using your chosen username of "%2$s".  Please check your email inbox at %3$s for your password and login instructions. If you do not receive an email, please check your junk or spam folder. If you still do not receive an email within an hour, you can <a href="%4$s">reset your password</a>.</p>'), 'http://' . $current_site->domain . $current_site->path . 'wp-login.php', $signup->user_login, $signup->user_email, 'http://' . $current_site->domain . $current_site->path . 'wp-login.php?action=lostpassword');
+			} else {
+				printf(__('<p class="lead-in">Your blog at <a href="%1$s">%2$s</a> is active. You may now login to your blog using your chosen username of "%3$s".  Please check your email inbox at %4$s for your password and login instructions.  If you do not receive an email, please check your junk or spam folder.  If you still do not receive an email within an hour, you can <a href="%5$s">reset your password</a>.</p>'), 'http://' . $signup->domain, $signup->domain, $signup->user_login, $signup->user_email, 'http://' . $current_site->domain . $current_site->path . 'wp-login.php?action=lostpassword');
+			}
+		} else {
 			echo $result->get_error_message();
+		}
 	} else {
 		extract($result);
 		$url = get_blogaddress_by_id($blog_id);
 		$user = new WP_User($user_id);
 ?>
-<h2><?php _e('All set!'); ?></h2>
+<h2><?php _e('Your account is now active!'); ?></h2>
 <table border="0" id="signup-welcome">
 <tr>
 <td width="50%" align="center">
