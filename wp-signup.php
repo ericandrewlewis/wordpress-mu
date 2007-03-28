@@ -1,12 +1,11 @@
 <?php
-
 define( "WP_INSTALLING", true );
-require ('wp-config.php');
-require('./wp-blog-header.php');
-
-require_once( ABSPATH . WPINC . '/registration.php');
+require( 'wp-config.php' );
+require( 'wp-blog-header.php' );
+require_once( ABSPATH . WPINC . '/registration.php' );
 
 do_action("signup_header");
+
 if( $current_blog->domain != $current_site->domain ) {
 	header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php" );
 	die();
@@ -14,7 +13,6 @@ if( $current_blog->domain != $current_site->domain ) {
 
 get_header();
 ?>
-<div id="content" class="widecolumn">
 <style type="text/css">
 form { margin-top: 2em; }
 #submit, #blog_title, #user_email {
@@ -25,6 +23,7 @@ form { margin-top: 2em; }
 	background-color: #f66;
 }
 </style>
+<div id="content" class="widecolumn">
 <?php
 function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 	global $current_site;
@@ -167,7 +166,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 ?>
 <p><?php _e("If you&#8217;re not going to use a great blog domain, leave it for a new user. Now have at it!") ?></p>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
-<input type="hidden" name="stage" value="gimmeanotherblog">
+<input type="hidden" name="stage" value="gimmeanotherblog" />
 <?php do_action( "signup_hidden_fields" ); ?>
 <table border="0" width="100%" cellpadding="9">
 <?php
@@ -214,9 +213,9 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 	if ( ! is_wp_error($errors) )
 		$errors = new WP_Error();
 	if( isset( $_POST[ 'signup_for' ] ) ) {
-		$signup[ wp_specialchars( $_POST[ 'signup_for' ] ) ] = 'checked';
+		$signup[ wp_specialchars( $_POST[ 'signup_for' ] ) ] = 'checked="checked"';
 	} else {
-		$signup[ 'blog' ] = 'checked';
+		$signup[ 'blog' ] = 'checked="checked"';
 	}
 
 	// allow definition of default variables
@@ -228,10 +227,11 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <h2><?php printf( __('Get your own %s account in seconds'), $current_site->site_name ) ?></h2>
 <p><?php _e( "Fill out this one-step form and you'll be blogging seconds later!" ); ?></p>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
-<input type="hidden" name="stage" value="validate-user-signup">
+<input type="hidden" name="stage" value="validate-user-signup" />
 <?php do_action( "signup_hidden_fields" ); ?>
 <table border="0" width="100%" cellpadding="9" cellspacing="4">
 <?php show_user_form($user_name, $user_email, $errors); ?>
+<tr>
 <th scope="row"  valign="top">&nbsp;</th>
 <td>
 <p>
@@ -297,9 +297,9 @@ function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_tit
 		$blog_id = $user_name;
 ?>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
-<input type="hidden" name="stage" value="validate-blog-signup">
-<input type="hidden" name="user_name" value="<?php echo $user_name ?>">
-<input type="hidden" name="user_email" value="<?php echo $user_email ?>">
+<input type="hidden" name="stage" value="validate-blog-signup" />
+<input type="hidden" name="user_name" value="<?php echo $user_name ?>" />
+<input type="hidden" name="user_email" value="<?php echo $user_email ?>" />
 <?php do_action( "signup_hidden_fields" ); ?>
 <table border="0" width="100%" cellpadding="9">
 <?php show_blog_form($blog_id, $blog_title, $errors); ?>
