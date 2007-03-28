@@ -230,15 +230,15 @@ switch( $_GET[ 'action' ] ) {
 				AND   wp_registration_log.IP LIKE ('%".$_GET[ 'ip_address' ]."%')";
 		}
 		if( isset( $_GET[ 'sortby' ] ) == false ) {
-			$_GET[ 'sortby' ] = 'ID';
+			$_GET[ 'sortby' ] = 'id';
 		}
-		if( $_GET[ 'sortby' ] == 'Registered' ) {
+		if( $_GET[ 'sortby' ] == 'registered' ) {
 			$query .= ' ORDER BY registered ';
-		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
+		} elseif( $_GET[ 'sortby' ] == 'id' ) {
 			$query .= ' ORDER BY ' . $wpdb->blogs . '.blog_id ';
-		} elseif( $_GET[ 'sortby' ] == 'LastUpdated' ) {
+		} elseif( $_GET[ 'sortby' ] == 'lastupdated' ) {
 			$query .= ' ORDER BY last_updated ';
-		} elseif( $_GET[ 'sortby' ] == 'BlogName' ) {
+		} elseif( $_GET[ 'sortby' ] == 'blogname' ) {
 			$query .= ' ORDER BY domain ';
 		}
 		if( $_GET[ 'order' ] == 'DESC' ) {
@@ -329,7 +329,7 @@ function check_all_rows() {
 $posts_columns = array(
   'id'           => __('ID'),
   'blogname'     => __('Blog Name'),
-  'last_updated' => __('Last Updated'),
+  'lastupdated'  => __('Last Updated'),
   'registered'   => __('Registered'),
   'users'        => __('Users'),
   'plugins'      => __('Actions')
@@ -353,8 +353,8 @@ $sortby_url = "s=" . $_GET[ 's' ] . "&ip_address=" . $_GET[ 'ip_address' ];
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
-<?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&sortby=<?php echo urlencode( str_replace( ' ', '', $column_display_name ) ) ?>&<?php if( $_GET[ 'sortby' ] == str_replace( ' ', '', $column_display_name ) ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
+<?php foreach($posts_columns as $column_id => $column_display_name) { ?>
+	<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&sortby=<?php echo $column_id ?>&<?php if( $_GET[ 'sortby' ] == $column_id ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
 <?php } ?>
 
 	</tr>
@@ -395,7 +395,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		<?php
 		break;
 
-	case 'last_updated':
+	case 'lastupdated':
 		?>
 		<td valign='top'><?php echo $blog[ 'last_updated' ] == '0000-00-00 00:00:00' ? __("Never") : $blog[ 'last_updated' ] ?></td>
 		<?php

@@ -133,17 +133,17 @@ switch( $_GET[ 'action' ] ) {
 			$query .= " WHERE user_login LIKE '$search' OR user_email LIKE '$search'";
 		}
 		if( isset( $_GET[ 'sortby' ] ) == false ) {
-			$_GET[ 'sortby' ] = 'ID';
+			$_GET[ 'sortby' ] = 'id';
 		}
-		if( $_GET[ 'sortby' ] == 'Email' ) {
+		if( $_GET[ 'sortby' ] == 'email' ) {
 			$query .= ' ORDER BY user_email ';
-		} elseif( $_GET[ 'sortby' ] == 'ID' ) {
+		} elseif( $_GET[ 'sortby' ] == 'id' ) {
 			$query .= ' ORDER BY ID ';
-		} elseif( $_GET[ 'sortby' ] == 'Login' ) {
+		} elseif( $_GET[ 'sortby' ] == 'login' ) {
 			$query .= ' ORDER BY user_login ';
-		} elseif( $_GET[ 'sortby' ] == 'Name' ) {
+		} elseif( $_GET[ 'sortby' ] == 'name' ) {
 			$query .= ' ORDER BY display_name ';
-		} elseif( $_GET[ 'sortby' ] == 'Registered' ) {
+		} elseif( $_GET[ 'sortby' ] == 'registered' ) {
 			$query .= ' ORDER BY user_registered ';
 		}
 		if( $_GET[ 'order' ] == 'DESC' ) {
@@ -203,12 +203,12 @@ switch( $_GET[ 'action' ] ) {
 
 // define the columns to display, the syntax is 'internal name' => 'display name'
 $posts_columns = array(
-  'ID'              => __('ID'),
-  'user_login'      => __('Login'),
-  'user_email'      => __('Email'),
-  'display_name'    => __('Name'),
-  'user_registered' => __('Registered'),
-  'blogs'           => __('Blogs')
+  'id'         => __('ID'),
+  'login'      => __('Login'),
+  'remail'     => __('Email'),
+  'name'       => __('Name'),
+  'registered' => __('Registered'),
+  'blogs'      => __('Blogs')
 );
 $posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 
@@ -243,8 +243,8 @@ function check_all_rows() {
 <table width="100%" cellpadding="3" cellspacing="3"> 
 	<tr>
 
-<?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><?php if( $column_display_name == 'Blogs' ) { echo "Blogs"; } else { ?><a href="wpmu-users.php?sortby=<?php echo urlencode( $column_display_name ) ?>&<?php if( $_GET[ 'sortby' ] == $column_display_name ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th><?php } ?>
+<?php foreach($posts_columns as $column_id => $column_display_name) { ?>
+	<th scope="col"><?php if( $column_display_name == 'Blogs' ) { echo "Blogs"; } else { ?><a href="wpmu-users.php?sortby=<?php echo $column_id ?>&<?php if( $_GET[ 'sortby' ] == $column_id ) { if( $_GET[ 'order' ] == 'DESC' ) { echo "order=ASC&" ; } else { echo "order=DESC&"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th><?php } ?>
 <?php } ?>
 
 	</tr>
@@ -262,32 +262,32 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	switch($column_name) {
 	
-	case 'ID':
+	case 'id':
 		?>
 		<th scope="row"><input type='checkbox' id='<?php echo $user[ 'ID' ] ?>' name='allusers[]' value='<?php echo $user[ 'ID' ] ?>' /> <label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'ID' ] ?></label></th>
 		<?php
 		break;
 
-	case 'user_login':
+	case 'login':
 		?>
 		<td><label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'user_login' ] ?></label>
 		</td>
 		<?php
 		break;
 
-	case 'display_name':
+	case 'name':
 		?>
 		<td><?php echo $user[ 'display_name' ] ?></td>
 		<?php
 		break;
 
-	case 'user_email':
+	case 'email':
 		?>
 		<td><?php echo $user[ 'user_email' ] ?></td>
 		<?php
 		break;
 
-	case 'user_registered':
+	case 'registered':
 		?>
 		<td><?php echo $user[ 'user_registered' ] ?></td>
 		<?php
