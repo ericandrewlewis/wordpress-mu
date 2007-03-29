@@ -10,10 +10,10 @@ if( is_site_admin() == false ) {
 if (isset($_GET['updated'])) {
 	?><div id="message" class="updated fade"><p><?php _e('Options saved.') ?></p></div><?php
 }
-print '<div class="wrap">';
 $themes = get_themes();
-$allowed_themes = get_site_option( "allowed_themes" );
+$allowed_themes = get_site_allowed_themes();
 ?>
+<div class="wrap">
 
 <form action='wpmu-edit.php?action=updatethemes' method='POST'>
 <h3><?php _e('Site Themes') ?></h3>
@@ -21,11 +21,12 @@ $allowed_themes = get_site_option( "allowed_themes" );
 <caption><?php _e('Disable themes site-wide. You can enable themes on a blog by blog basis.') ?></caption>
 <tr><th width="100"><?php _e('Active') ?></th><th><?php _e('Theme') ?></th><th><?php _e('Description') ?></th></tr>
 <?php
-while( list( $key, $val ) = each( $themes ) ) {
+foreach( $themes as $key => $theme ) {
+	$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
 	$i++;
 	$enabled = '';
 	$disabled = '';
-	if( isset( $allowed_themes[ $key ] ) == true ) {
+	if( isset( $allowed_themes[ $theme_key ] ) == true ) {
 		$enabled = 'checked ';
 	} else {
 		$disabled = 'checked ';
@@ -34,12 +35,12 @@ while( list( $key, $val ) = each( $themes ) ) {
 
 <tr valign="top" style="<?php if ($i%2) echo 'background: #eee'; ?>">
 <td>
-<label><input name="theme[<?php echo $key ?>]" type="radio" id="<?php echo $key ?>" value="disabled" <?php echo $disabled ?>/><?php _e('No') ?></label>
+<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="<?php echo $theme_key ?>" value="disabled" <?php echo $disabled ?>/><?php _e('No') ?></label>
 &nbsp;&nbsp;&nbsp; 
-<label><input name="theme[<?php echo $key ?>]" type="radio" id="<?php echo $key ?>" value="enabled" <?php echo $enabled ?>/><?php _e('Yes') ?></label>
+<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="<?php echo $theme_key ?>" value="enabled" <?php echo $enabled ?>/><?php _e('Yes') ?></label>
 </td>
 <th scope="row" align="left"><?php echo $key ?></th> 
-<td><?php echo $val[ 'Description' ] ?></td>
+<td><?php echo $theme[ 'Description' ] ?></td>
 </tr> 
 <?php
 }

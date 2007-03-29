@@ -3,7 +3,7 @@ require_once('admin.php');
 
 $themes = get_themes();
 $ct = current_theme_info();
-$allowed_themes = get_site_option( "allowedthemes" );
+$allowed_themes = get_site_allowed_themes();
 if( $allowed_themes == false )
 	$allowed_themes = array();
 
