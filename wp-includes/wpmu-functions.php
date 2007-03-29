@@ -254,8 +254,10 @@ function add_site_option( $key, $value ) {
 
 	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '{$wpdb->siteid}'");
 
-	if ( null !== $exists ) // If we already have it
+	if ( null !== $exists ) {// If we already have it
+		update_site_option( $key, $value );
 		return false;
+	}
 
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
@@ -659,6 +661,8 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 	$user->set_role($role);
 
 	do_action('add_user_to_blog', $user_id, $role, $blog_id);
+
+	wp_cache_delete( $user_id, 'users' );
 
 	restore_current_blog();
 }
