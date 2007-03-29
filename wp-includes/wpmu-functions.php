@@ -1179,11 +1179,11 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 	// Need to get blog_id from wp_blogs, and create new table names.
 	// Must restore table names at the end of function.
 
-	if ( ! $blog_id = insert_blog($domain, $path, $site_id) )
-		return new WP_Error('insert_blog', __('Could not create blog.'));
-
 	if ( !defined("WP_INSTALLING") )
 		define( "WP_INSTALLING", true );
+
+	if ( ! $blog_id = insert_blog($domain, $path, $site_id) )
+		return new WP_Error('insert_blog', __('Could not create blog.'));
 
 	switch_to_blog($blog_id);
 
