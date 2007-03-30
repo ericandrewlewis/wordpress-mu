@@ -252,7 +252,11 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('deleteblog');
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id, true );
-		wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
+		if( $_POST[ 'ref' ] ) {
+			wp_redirect( add_query_arg( "updated", "blogdeleted", $_POST[ 'ref' ] ) );
+		} else {
+			wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
+		}
 		die();
 	break;
 	case "allblogs":
