@@ -227,7 +227,7 @@ function step1() {
 }
 
 function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'password', $dbhost = 'localhost', $vhost = 'yes', $prefix = 'wp_' ) {
-	$weblog_title = 'My new WPMU Blog';
+	$weblog_title = 'My new WPMU Site';
 	$email = '';
 	$hostname = $_SERVER[ 'HTTP_HOST' ];
 	if( substr( $_SERVER[ 'HTTP_HOST' ], 0, 4 ) == 'www.' )
@@ -263,12 +263,12 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
   </table> 
   <h2>Server Address</h2>
   <p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.<br /><b>Server Address:</b> <input type='text' name='basedomain' value='<?php echo $hostname ?>'></label></p>
-  <h2>Blog Details</h2>
+  <h2>Site Details</h2>
   <table width='100%'> 
   <tr> 
-  <th scope='row'>Weblog&nbsp;Title</th> 
+  <th scope='row'>Site&nbsp;Title</th> 
   <td><input name='weblog_title' type='text' size='45' value='<?php echo $weblog_title ?>' /></td> 
-  <td>What would you like to call your weblog? </td> 
+  <td>What would you like to call your site? </td> 
   </tr> 
   <tr> 
   <th scope='row'>Email</th> 
