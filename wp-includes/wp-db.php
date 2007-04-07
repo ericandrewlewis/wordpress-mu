@@ -129,10 +129,13 @@ class wpdb {
 		// Is error output turned on or not..
 		if ( $this->show_errors ) {
 			// If there is an error then take note of it
-			print "<div id='error'>
-			<p class='wpdberror'><strong>WordPress database error:</strong> [$str]<br />
-			<code>$query</code></p>
-			</div>";
+			$msg = "WordPress database error: [$str]\n$query\n";
+			if( defined( 'ERRORLOGFILE' ) )
+				error_log( $msg, 3, CONSTANT( 'ERRORLOGFILE' ) );
+			else
+				error_log( $msg, 0 );
+			if( defined( 'DIEONDBERROR' ) )
+				die( $msg );
 		} else {
 			return false;
 		}
