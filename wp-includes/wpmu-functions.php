@@ -284,6 +284,7 @@ function update_site_option( $key, $value ) {
 	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
 }
 
+/*
 function get_blog_option( $id, $key, $default='na' ) {
 	switch_to_blog($id);
 	$opt = get_option( $key );
@@ -291,17 +292,55 @@ function get_blog_option( $id, $key, $default='na' ) {
 
 	return $opt;
 }
+*/
+
+function get_blog_option( $blog_id, $setting, $default='na' ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	$key = $blog_id."-".$setting."-blog_option";
+	$value = wp_cache_get( $key, "site-options" );
+	if( $value == null ) {
+		$row = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '{$setting}'" );
+		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
+			$value = $row->option_value;
+			if( $value == false )
+				$value = 'falsevalue';
+			wp_cache_set($key, $value, 'site-options');
+		} else { // option does not exist, so we must cache its non-existence
+			wp_cache_set($key, 'noop', 'site-options');
+		}
+	} elseif( $value == 'noop' ) {
+		return false;
+	} elseif( $value == 'falsevalue' ) {
+		return false;
+	}
+	// If home is not set use siteurl.
+	if ( 'home' == $setting && '' == $value )
+		return get_blog_option($blog_id, 'siteurl');
+
+	if ( 'siteurl' == $setting || 'home' == $setting || 'category_base' == $setting )
+		$value = preg_replace('|/+$|', '', $value);
+
+	if (! unserialize($value) )
+		$value = stripslashes( $value );
+
+	return apply_filters( 'option_' . $setting, maybe_unserialize($value) );
+}
 
 function add_blog_option( $id, $key, $value ) {
 	switch_to_blog($id);
 	add_option( $key, $value );
 	restore_current_blog();
+	$opt = $id."-".$key."-blog_option";
+	wp_cache_set($opt, $value, 'site-options');
 }
 
 function delete_blog_option( $id, $key ) {
 	switch_to_blog($id);
 	delete_option( $key );
 	restore_current_blog();
+	$opt = $id."-".$key."-blog_option";
+	wp_cache_set($opt, '', 'site-options');
 }
 
 function update_blog_option( $id, $key, $value, $refresh = true ) {
@@ -310,6 +349,8 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 	restore_current_blog();
 	if( $refresh == true )
 		refresh_blog_details( $id );
+	$opt = $id."-".$key."-blog_option";
+	wp_cache_set($opt, $value, 'site-options');
 }
 
 function switch_to_blog( $new_blog ) {
