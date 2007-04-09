@@ -208,7 +208,7 @@ function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $u
 }
 
 function signup_user($user_name = '', $user_email = '', $errors = '') {
-	global $current_site;
+	global $current_site, $active_signup;
 
 	if ( ! is_wp_error($errors) )
 		$errors = new WP_Error();
@@ -235,11 +235,17 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 <th scope="row"  valign="top">&nbsp;</th>
 <td>
 <p>
+<?php if( $active_signup == 'blog' ) { ?>
+<input id="signupblog" type="hidden" name="signup_for" value="blog" />
+<?php } elseif( $active_signup == 'user' ) { ?>
+<input id="signupblog" type="hidden" name="signup_for" value="user" />
+<?php } else { ?>
 <input id="signupblog" type="radio" name="signup_for" value="blog" <?php echo $signup[ 'blog' ] ?> />
 <label for="signupblog"><?php _e('Gimme a blog!') ?></label>
 <br />
 <input id="signupuser" type="radio" name="signup_for" value="user" <?php echo $signup[ 'user' ] ?> />
 <label for="signupuser"><?php _e('Just a username, please.') ?></label>
+<?php } ?>
 </p>
 </td>
 </tr>
@@ -354,16 +360,29 @@ if( in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
 	header( "Location: http://{$current_site->domain}{$current_site->path}" );
 	die();
 }
+
+$active_signup = 'all';
+$active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
+
 $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
 if( $_POST['blog_public'] != 1 )
 	$_POST['blog_public'] = 0;
 
+if( $active_signup == "none" ) {
+	_e( "Registration has been disabled." );
+} else {
 switch ($_POST['stage']) {
 	case 'validate-user-signup' :
-		validate_user_signup();
+		if( $active_signup == 'all' || $_POST[ 'signup_for' ] == 'blog' && $active_signup == 'blog' || $_POST[ 'signup_for' ] == 'user' && $active_signup == 'user' )
+			validate_user_signup();
+		else
+			_e( "User registration has been disabled." );
 		break;
 	case 'validate-blog-signup':
-		validate_blog_signup();
+		if( $active_signup == 'all' || $active_signup == 'blog' )
+			validate_blog_signup();
+		else
+			_e( "Blog registration has been disabled." );
 		break;
 	case 'gimmeanotherblog':
 		validate_another_blog_signup();
@@ -384,6 +403,7 @@ switch ($_POST['stage']) {
 			printf(__("<p><em>The blog you were looking for, <strong>%s</strong> doesn't exist but you can create it now!</em></p>"), $newblog );
 		}
 		break;
+}
 }
 ?>
 </div>
