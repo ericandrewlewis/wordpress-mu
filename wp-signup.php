@@ -356,7 +356,7 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_emai
 }
 
 // Main
-if( in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
+if( !empty( get_site_option( 'illegal_names' ) ) && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
 	header( "Location: http://{$current_site->domain}{$current_site->path}" );
 	die();
 }
