@@ -390,10 +390,13 @@ switch ($_POST['stage']) {
 	default :
 		$user_email = $_POST[ 'user_email' ];
 		do_action( "preprocess_signup_form" ); // populate the form from invites, elsewhere?
-		if ( is_user_logged_in() )
+		if ( is_user_logged_in() && ( $active_signup == 'all' || $active_signup == 'blog' ) ) {
 			signup_another_blog($newblogname);
-		else
+		} elseif( is_user_logged_in() == false && ( $active_signup == 'all' || $active_signup == 'user' ) ) {
 			signup_user( $newblogname, $user_email );
+		} else {
+			_e( "You're logged in already. No need to register again!" );
+		}
 
 		if ($newblogname) {
 			if( constant( "VHOST" ) == 'no' )
