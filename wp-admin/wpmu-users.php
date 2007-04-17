@@ -205,7 +205,7 @@ switch( $_GET[ 'action' ] ) {
 $posts_columns = array(
   'id'         => __('ID'),
   'login'      => __('Login'),
-  'remail'     => __('Email'),
+  'email'     => __('Email'),
   'name'       => __('Name'),
   'registered' => __('Registered'),
   'blogs'      => __('Blogs')
