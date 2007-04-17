@@ -40,7 +40,7 @@ include('./admin-header.php');
 </tr>
 
 <?php
-$lang_files = glob( ABSPATH . WPINC . "/languages/*" );
+$lang_files = glob( ABSPATH . LANGDIR . "/*" );
 $lang = get_option( "WPLANG" );
 
 if( is_array( $lang_files ) && count($lang_files) >= 1 ) {
