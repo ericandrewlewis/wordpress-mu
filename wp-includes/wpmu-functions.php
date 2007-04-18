@@ -175,10 +175,10 @@ function get_blog_details( $id, $all = true ) {
 		$details->post_count = get_blog_option($id, 'post_count');
 		$wpdb->show_errors();
 
-		wp_cache_set( $id, serialize( $details ), 'blog-details' );
+		wp_cache_add( $id, serialize( $details ), 'blog-details' );
 
 		$key = md5( $details->domain . $details->path );
-		wp_cache_set( $key, serialize( $details ), 'blog-lookup' );
+		wp_cache_add( $key, serialize( $details ), 'blog-lookup' );
 	}
 
 	return $details;
@@ -231,10 +231,12 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 	if ( false === $value ) {
 		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '{$wpdb->siteid}'");
 		if ( ! is_null($value) ) {
-			wp_cache_set($wpdb->siteid . $key, $value, 'site-options');
+			wp_cache_add($wpdb->siteid . $key, $value, 'site-options');
 		} elseif ( $default ) {
+			wp_cache_add($wpdb->siteid . $key, $default, 'site-options');
 			return $default;
 		} else {
+			wp_cache_add($wpdb->siteid . $key, false, 'site-options');
 			return false;
 		}
 	}
@@ -469,6 +471,7 @@ function get_blogs_of_user( $id, $all = false ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
 				$blogs[$match[1]]->domain      = $blog->domain;
 				$blogs[$match[1]]->path        = $blog->path;
+				$blogs[$match[1]]->site_id     = $blog->site_id;
 			}
 		}
 	}
@@ -668,7 +671,7 @@ function get_blog_post( $blog_id, $post_id ) {
 	$post = wp_cache_get( $key, "site-options" );
 	if( $post == false ) {
 		$post = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
-		wp_cache_set( $key, $post, "site-options", 120 );
+		wp_cache_add( $key, $post, "site-options", 120 );
 	}
 
 	return $post;
@@ -784,7 +787,7 @@ function get_blog_permalink( $blog_id, $post_id ) {
 		switch_to_blog( $blog_id );
 		$link = get_permalink( $post_id );
 		restore_current_blog();
-		wp_cache_set( $key, $link, "site-options", 30 );
+		wp_cache_add( $key, $link, "site-options", 30 );
 	}
 	return $link;
 }
