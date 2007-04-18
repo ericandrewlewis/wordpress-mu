@@ -11,7 +11,7 @@ if( $current_blog->domain != $current_site->domain ) {
 	die();
 }
 
-get_header();
+function wpmu_signup_stylesheet() {
 ?>
 <style type="text/css">
 form { margin-top: 2em; }
@@ -23,6 +23,12 @@ form { margin-top: 2em; }
 	background-color: #f66;
 }
 </style>
+<?php
+}
+
+add_action( 'wp_head', 'wpmu_signup_stylesheet' );
+get_header();
+?>
 <div id="content" class="widecolumn">
 <?php
 function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
