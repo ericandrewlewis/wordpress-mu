@@ -13,22 +13,25 @@ function get_all_category_ids() {
 
 function &get_categories($args = '') {
 	global $wpdb, $category_links;
-
-	if ( is_array($args) )
-		$r = &$args;
-	else
-		parse_str($args, $r);
-
-	$defaults = array('type' => 'post', 'child_of' => 0, 'orderby' => 'name', 'order' => 'ASC',
-		'hide_empty' => true, 'include_last_update_time' => false, 'hierarchical' => 1, 'exclude' => '', 'include' => '',
-		'number' => '', 'pad_counts' => false);
-	$r = array_merge($defaults, $r);
-	if ( 'count' == $r['orderby'] )
+	
+	$defaults = array(
+		'type' => 'post', 'child_of' => 0, 
+		'orderby' => 'name', 'order' => 'ASC', 
+		'hide_empty' => true, 'include_last_update_time' => false, 
+		'hierarchical' => 1, 'exclude' => '', 
+		'include' => '', 'number' => '', 
+		'pad_counts' => false
+	);
+	
+	$r = wp_parse_args( $args, $defaults );
+	
+	if ( $r['orderby'] == 'count' ) {
 		$r['orderby'] = 'category_count';
-	else
-		$r['orderby'] = "cat_" . $r['orderby'];  // restricts order by to cat_ID and cat_name fields
-	$r['number'] = (int) $r['number'];
-	extract($r);
+	} else {
+		$r['orderby'] = 'cat_' . $r['orderby'];
+	}
+	
+	extract( $r );
 
 	$key = md5( serialize( $r ) );
 	if ( $cache = wp_cache_get( 'get_categories', 'category' ) )
@@ -79,6 +82,8 @@ function &get_categories($args = '') {
 			$where .= ' AND category_count > 0';
 	}
 
+	
+
 	if ( !empty($number) )
 		$number = 'LIMIT ' . $number;
 	else
@@ -105,8 +110,11 @@ function &get_categories($args = '') {
 		unset($cat_stamps);
 	}
 
-	if ( $child_of || $hierarchical )
-		$categories = & _get_cat_children($child_of, $categories);
+	if ( $child_of || $hierarchical ) {
+		$children = _get_category_hierarchy();
+		if ( ! empty($children) )
+			$categories = & _get_cat_children($child_of, $categories);
+	}
 
 	// Update category counts to include children.
 	if ( $pad_counts )
@@ -131,7 +139,8 @@ function &get_categories($args = '') {
 	$cache[ $key ] = $categories;
 	wp_cache_set( 'get_categories', $cache, 'category' );
 
-	return apply_filters('get_categories', $categories, $r);
+	$categories = apply_filters('get_categories', $categories, $r);
+	return $categories;
 }
 
 // Retrieves category data given a category ID or category object.
@@ -146,6 +155,7 @@ function &get_category(&$category, $output = OBJECT) {
 		wp_cache_add($category->cat_ID, $category, 'category');
 		$_category = $category;
 	} else {
+		$category = (int) $category;
 		if ( ! $_category = wp_cache_get($category, 'category') ) {
 			$_category = $wpdb->get_row("SELECT * FROM $wpdb->categories WHERE cat_ID = '$category' LIMIT 1");
 			wp_cache_set($category, $_category, 'category');
@@ -201,6 +211,15 @@ function get_category_by_path($category_path, $full_match = true, $output = OBJE
 	return NULL;
 }
 
+function get_category_by_slug( $slug  ) {
+	global $wpdb;
+	$slug = sanitize_title( $slug );
+	if ( empty( $slug ) )
+		return false;
+	$category = $wpdb->get_var( "SELECT * FROM $wpdb->categories WHERE category_nicename = '$slug' " );
+	return get_category( $category );
+}
+
 // Get the ID of a category from its name
 function get_cat_ID($cat_name='General') {
 	global $wpdb;
@@ -246,12 +265,21 @@ function &_get_cat_children($category_id, $categories) {
 		return array();
 
 	$category_list = array();
+	$has_children = _get_category_hierarchy();
+
+	if  ( ( 0 != $category_id ) && ! isset($has_children[$category_id]) )
+		return array();
+
 	foreach ( $categories as $category ) {
 		if ( $category->cat_ID == $category_id )
 			continue;
 
 		if ( $category->category_parent == $category_id ) {
 			$category_list[] = $category;
+
+			if ( !isset($has_children[$category->cat_ID]) )
+				continue;
+
 			if ( $children = _get_cat_children($category->cat_ID, $categories) )
 				$category_list = array_merge($category_list, $children);
 		}
@@ -297,6 +325,22 @@ function _pad_category_counts($type, &$categories) {
 	foreach ( (array) $cat_items as $id => $items )
 		if ( isset($cats[$id]) )
 			$cats[$id]->{'link' == $type ? 'link_count' : 'category_count'} = count($items);
+}
+
+function _get_category_hierarchy() {
+	$children = get_option('category_children');
+	if ( is_array($children) )
+		return $children;
+
+	$children = array();
+	$categories = get_categories('hide_empty=0&hierarchical=0');
+	foreach ( $categories as $cat ) {
+		if ( $cat->category_parent > 0 )
+			$children[$cat->category_parent][] = $cat->cat_ID;
+	}
+	update_option('category_children', $children);
+
+	return $children;
 }
 
 ?>

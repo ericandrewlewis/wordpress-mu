@@ -59,7 +59,7 @@ foreach ( $wp_upload_tabs as $t => $tab_array ) {
 
 if ( 'inline' == $style ) : ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" <?php language_attributes(); ?>>
+<html xmlns="http://www.w3.org/1999/xhtml" <?php do_action('admin_xml_ns'); ?> <?php language_attributes(); ?>>
 <head>
 <meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_option('blog_charset'); ?>" />
 <title><?php bloginfo('name') ?> &rsaquo; <?php _e('Uploads'); ?> &#8212; WordPress</title>
@@ -89,7 +89,7 @@ echo "<ul id='upload-menu'>\n";
 foreach ( $wp_upload_tabs as $t => $tab_array ) { // We've already done the current_user_can check
 	$href = add_query_arg( array('tab' => $t, 'ID' => '', 'action' => '', 'paged' => '') );
 	if ( isset($tab_array[4]) && is_array($tab_array[4]) )
-		add_query_arg( $tab_array[4], $href );
+		$href = add_query_arg( $tab_array[4], $href );
 	$_href = clean_url( $href);
 	$page_links = '';
 	$class = 'upload-tab alignleft';

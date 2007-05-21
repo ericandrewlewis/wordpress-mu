@@ -355,4 +355,5 @@ function wp_upload_admin_head() {
 		echo "</style>";
 	}
 }
+
 ?>

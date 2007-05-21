@@ -77,7 +77,7 @@ function timer_stop($display = 0, $precision = 3) { //if called like timer_stop(
 	$mtime = $mtime[1] + $mtime[0];
 	$timeend = $mtime;
 	$timetotal = $timeend-$timestart;
-	$r = number_format($timetotal, $precision);
+	$r = number_format_i18n($timetotal, $precision);
 	if ( $display )
 		echo $r;
 	return $r;
@@ -89,7 +89,7 @@ error_reporting(E_ALL ^ E_NOTICE);
 
 // For an advanced caching plugin to use, static because you would only want one
 if ( defined('WP_CACHE') )
-	require (ABSPATH . 'wp-content/advanced-cache.php');
+	@include ABSPATH . 'wp-content/advanced-cache.php';
 
 define('WPINC', 'wp-includes');
 
@@ -148,9 +148,9 @@ if ( defined('CUSTOM_USER_META_TABLE') )
 $tableposts = $tableusers = $tablecategories = $tablepost2cat = $tablecomments = $tablelink2cat = $tablelinks = $tablelinkcategories = $tableoptions = $tablepostmeta = '';
 
 if ( file_exists(ABSPATH . 'wp-content/object-cache.php') )
-	require (ABSPATH . 'wp-content/object-cache.php');
+	require_once (ABSPATH . 'wp-content/object-cache.php');
 else
-	require (ABSPATH . WPINC . '/cache.php');
+	require_once (ABSPATH . WPINC . '/cache.php');
 
 // To disable persistant caching, add the below line to your wp-config.php file, uncommented of course.
 // define('DISABLE_CACHE', true);

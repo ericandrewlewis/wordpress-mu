@@ -5,6 +5,12 @@ define('XMLRPC_REQUEST', true);
 // Some browser-embedded clients send cookies. We don't want them.
 $_COOKIE = array();
 
+// A bug in PHP < 5.2.2 makes $HTTP_RAW_POST_DATA not set by default, 
+// but we can do it ourself.
+if ( !isset( $HTTP_RAW_POST_DATA ) ) {
+	$HTTP_RAW_POST_DATA = file_get_contents( 'php://input' );
+}
+
 # fix for mozBlog and other cases where '<?xml' isn't on the very first line
 if ( isset($HTTP_RAW_POST_DATA) )
 	$HTTP_RAW_POST_DATA = trim($HTTP_RAW_POST_DATA);
@@ -202,7 +208,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			$allow_pings = ("open" == $page->ping_status) ? 1 : 0;
 
 			// Format page date.
-			$page_date = mysql2date("Ymd\TH:i:s", $page->post_date);
+			$page_date = mysql2date("Ymd\TH:i:s", $page->post_date_gmt);
 
 			// Pull the categories info together.
 			$categories = array();
@@ -423,7 +429,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			SELECT ID page_id,
 				post_title page_title,
 				post_parent page_parent_id,
-				post_date
+				post_date_gmt
 			FROM {$wpdb->posts}
 			WHERE post_type = 'page'
 			ORDER BY ID
@@ -432,10 +438,10 @@ class wp_xmlrpc_server extends IXR_Server {
 		// The date needs to be formated properly.
 		$num_pages = count($page_list);
 		for($i = 0; $i < $num_pages; $i++) {
-			$post_date = mysql2date("Ymd\TH:i:s", $page_list[$i]->post_date);
+			$post_date = mysql2date("Ymd\TH:i:s", $page_list[$i]->post_date_gmt);
 			$page_list[$i]->dateCreated = new IXR_Date($post_date);
 
-			unset($page_list[$i]->post_date);
+			unset($page_list[$i]->post_date_gmt);
 		}
 
 		return($page_list);
@@ -569,8 +575,9 @@ class wp_xmlrpc_server extends IXR_Server {
 		$user_login = $args[1];
 		$user_pass  = $args[2];
 
-		if (!$this->login_pass_ok($user_login, $user_pass))
+		if (!$this->login_pass_ok($user_login, $user_pass)) {
 			return $this->error;
+		}
 
 		$user = set_current_user(0, $user_login);
 
@@ -949,12 +956,12 @@ class wp_xmlrpc_server extends IXR_Server {
 		// Let WordPress generate the post_name (slug) unless
 		// one has been provided.
 		$post_name = "";
-		if(!empty($content_struct["wp_slug"])) {
+		if(isset($content_struct["wp_slug"])) {
 			$post_name = $content_struct["wp_slug"];
 		}
 
 		// Only use a password if one was given.
-		if(!empty($content_struct["wp_password"])) {
+		if(isset($content_struct["wp_password"])) {
 			$post_password = $content_struct["wp_password"];
 		}
 
@@ -964,14 +971,17 @@ class wp_xmlrpc_server extends IXR_Server {
 		}
 
 		// Only set the menu_order if it was provided.
-		if(!empty($content_struct["wp_page_order"])) {
+		if(isset($content_struct["wp_page_order"])) {
 			$menu_order = $content_struct["wp_page_order"];
 		}
 
 	  $post_author = $user->ID;
 
 		// If an author id was provided then use it instead.
-		if(!empty($content_struct["wp_author_id"])) {
+		if(
+			isset($content_struct["wp_author_id"])
+			&& ($user->ID != $content_struct["wp_author_id"])
+		) {
 			switch($post_type) {
 				case "post":
 					if(!current_user_can("edit_others_posts")) {
@@ -999,13 +1009,33 @@ class wp_xmlrpc_server extends IXR_Server {
 	  $post_excerpt = $content_struct['mt_excerpt'];
 	  $post_more = $content_struct['mt_text_more'];
 
-	  $comment_status = (!isset($content_struct['mt_allow_comments'])) ?
-	    get_option('default_comment_status')
-	    : $content_struct['mt_allow_comments'];
+		if(isset($content_struct["mt_allow_comments"])) {
+			switch((int) $content_struct["mt_allow_comments"]) {
+				case 0:
+					$comment_status = "closed";
+					break;
+				case 1:
+					$comment_status = "open";
+					break;
+				default:
+					$comment_status = get_option("default_comment_status");
+					break;
+			}
+		}
 
-	  $ping_status = (!isset($content_struct['mt_allow_pings'])) ?
-	    get_option('default_ping_status')
-	    : $content_struct['mt_allow_pings'];
+		if(isset($content_struct["mt_allow_pings"])) {
+			switch((int) $content_struct["mt_allow_pings"]) {
+				case 0:
+					$ping_status = "closed";
+					break;
+				case 1:
+					$ping_status = "open";
+					break;
+				default:
+					$ping_status = get_option("default_ping_status");
+					break;
+			}
+		}
 
 	  if ($post_more) {
 	    $post_content = $post_content . "\n<!--more-->\n" . $post_more;
@@ -1020,7 +1050,7 @@ class wp_xmlrpc_server extends IXR_Server {
 	  if (!empty($dateCreatedd)) {
 	    $dateCreated = $dateCreatedd->getIso();
 	    $post_date     = get_date_from_gmt(iso8601_to_datetime($dateCreated));
-	    $post_date_gmt = iso8601_to_datetime($dateCreated, GMT);
+	    $post_date_gmt = iso8601_to_datetime($dateCreated. "Z", GMT);
 	  } else {
 	    $post_date     = current_time('mysql');
 	    $post_date_gmt = current_time('mysql', 1);
@@ -1083,7 +1113,7 @@ class wp_xmlrpc_server extends IXR_Server {
 	    return $this->error;
 	  }
 
-	  set_current_user(0, $user_login);
+		$user = set_current_user(0, $user_login);
 
 		// The post_type defaults to post, but could also be page.
 		$post_type = "post";
@@ -1112,12 +1142,12 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		// Let WordPress manage slug if none was provided.
 		$post_name = "";
-		if(!empty($content_struct["wp_slug"])) {
+		if(isset($content_struct["wp_slug"])) {
 			$post_name = $content_struct["wp_slug"];
 		}
 
 		// Only use a password if one was given.
-		if(!empty($content_struct["wp_password"])) {
+		if(isset($content_struct["wp_password"])) {
 			$post_password = $content_struct["wp_password"];
 		}
 
@@ -1127,12 +1157,17 @@ class wp_xmlrpc_server extends IXR_Server {
 		}
 
 		// Only set the menu_order if it was given.
-		if(!empty($content_struct["wp_page_order"])) {
+		if(isset($content_struct["wp_page_order"])) {
 			$menu_order = $content_struct["wp_page_order"];
 		}
 
+		$post_author = $user->ID;
+
 		// Only set the post_author if one is set.
-		if(!empty($content_struct["wp_author_id"])) {
+		if(
+			isset($content_struct["wp_author_id"])
+			&& ($user->ID != $content_struct["wp_author_id"])
+		) {
 			switch($post_type) {
 				case "post":
 					if(!current_user_can("edit_others_posts")) {
@@ -1155,11 +1190,11 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		// Only set ping_status if it was provided.
 		if(isset($content_struct["mt_allow_pings"])) {
-			switch($content_struct["mt_allow_pings"]) {
-				case "0":
+			switch((int) $content_struct["mt_allow_pings"]) {
+				case 0:
 					$ping_status = "closed";
 					break;
-				case "1":
+				case 1:
 					$ping_status = "open";
 					break;
 			}
@@ -1197,7 +1232,7 @@ class wp_xmlrpc_server extends IXR_Server {
 	  	$to_ping = implode(' ', $to_ping);
 
       if(isset($content_struct["mt_allow_comments"])) {
-		$comment_status = $content_struct["mt_allow_comments"];
+		$comment_status = (int) $content_struct["mt_allow_comments"];
       }
 	  
 	  // Do some timestamp voodoo
@@ -1205,7 +1240,7 @@ class wp_xmlrpc_server extends IXR_Server {
 	  if (!empty($dateCreatedd)) {
 	    $dateCreated = $dateCreatedd->getIso();
 	    $post_date     = get_date_from_gmt(iso8601_to_datetime($dateCreated));
-	    $post_date_gmt = iso8601_to_datetime($dateCreated, GMT);
+	    $post_date_gmt = iso8601_to_datetime($dateCreated . "Z", GMT);
 	  } else {
 	    $post_date     = $postdata['post_date'];
 	    $post_date_gmt = $postdata['post_date_gmt'];
@@ -1245,7 +1280,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 	  if ($postdata['post_date'] != '') {
 
-	    $post_date = mysql2date('Ymd\TH:i:s', $postdata['post_date']);
+	    $post_date = mysql2date('Ymd\TH:i:s', $postdata['post_date_gmt']);
 
 	    $categories = array();
 	    $catids = wp_get_post_categories($post_ID);
@@ -1313,7 +1348,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		foreach ($posts_list as $entry) {
 
-			$post_date = mysql2date('Ymd\TH:i:s', $entry['post_date']);
+			$post_date = mysql2date('Ymd\TH:i:s', $entry['post_date_gmt']);
 			$categories = array();
 			$catids = wp_get_post_categories($entry['ID']);
 			foreach($catids as $catid) {
@@ -1498,7 +1533,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		foreach ($posts_list as $entry) {
 
-			$post_date = mysql2date('Ymd\TH:i:s', $entry['post_date']);
+			$post_date = mysql2date('Ymd\TH:i:s', $entry['post_date_gmt']);
 
 			$struct[] = array(
 				'dateCreated' => new IXR_Date($post_date),

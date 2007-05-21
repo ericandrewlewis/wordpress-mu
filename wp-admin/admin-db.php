@@ -125,6 +125,11 @@ function wp_insert_category($catarr) {
 	else
 		$links_private = 0;
 
+
+	// Let's check if we have this category already, if so just do an update
+	if ( !$update && $cat_ID = category_object_exists( $category_nicename ) )
+		$update = true;
+
 	if (!$update) {
 		$maxcat = $wpdb->get_var( "SELECT max(cat_ID) FROM {$wpdb->categories}" );
 		$cat_ID = mt_rand( $maxcat+100, $maxcat+4000 );
@@ -153,6 +158,11 @@ function wp_insert_category($catarr) {
 
 	clean_category_cache($cat_ID);
 
+	if ($update)
+		do_action('edited_category', $cat_ID);
+	else
+		do_action('created_category', $cat_ID);
+	
 	return $cat_ID;
 }
 
@@ -243,6 +253,14 @@ function wp_create_categories($categories, $post_id = '') {
 		wp_set_post_categories($post_id, $cat_ids);
 
 	return $cat_ids;
+}
+
+function category_object_exists($cat_name) {
+	global $wpdb;
+	if (!$category_nicename = sanitize_title($cat_name))
+		return 0;
+
+	return (int) $wpdb->get_var("SELECT cat_ID FROM $wpdb->categories WHERE category_nicename = '$category_nicename'");
 }
 
 function category_exists($cat_name) {
@@ -419,6 +437,8 @@ function wp_delete_link($link_id) {
 
 	$wpdb->query("DELETE FROM $wpdb->link2cat WHERE link_id = '$link_id'");
 	return $wpdb->query("DELETE FROM $wpdb->links WHERE link_id = '$link_id'");
+	
+	do_action('deleted_link', $link_id);
 }
 
 function wp_get_link_cats($link_ID = 0) {

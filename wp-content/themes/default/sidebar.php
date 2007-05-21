@@ -1,6 +1,7 @@
 	<div id="sidebar">
 		<ul>
-
+			<?php 	/* Widgetized sidebar, if you have the plugin installed. */
+					if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar() ) : ?>
 <?php if ( function_exists('dynamic_sidebar') && dynamic_sidebar() ) : ?>
 
 		</ul>
@@ -19,7 +20,10 @@
 			</li>
 			-->
 
-			<li>
+			<?php if ( is_404() || is_category() || is_day() || is_month() ||
+						is_year() || is_search() || is_paged() ) {
+			?> <li>
+
 			<?php /* If this is a 404 page */ if (is_404()) { ?>
 			<?php /* If this is a category archive */ } elseif (is_category()) { ?>
 			<p>You are currently browsing the archives for the <?php single_cat_title(''); ?> category.</p>
@@ -44,7 +48,8 @@
 			<p>You are currently browsing the <a href="<?php echo bloginfo('url'); ?>/"><?php echo bloginfo('name'); ?></a> weblog archives.</p>
 
 			<?php } ?>
-			</li>
+				
+			</li> <?php }?>
 
 			<?php wp_list_pages('title_li=<h2>Pages</h2>' ); ?>
 
@@ -73,7 +78,8 @@
 				</ul>
 				</li>
 			<?php } ?>
-
+			
+			<?php endif; ?>
 		</ul>
 	</div>
 

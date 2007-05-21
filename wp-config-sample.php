@@ -16,8 +16,8 @@ if( $base == 'BASE' )
 $table_prefix  = 'wp_';   // Only numbers, letters, and underscores please!
 
 // Change this to localize WordPress.  A corresponding MO file for the
-// chosen language must be installed to wp-includes/languages.
-// For example, install de.mo to wp-includes/languages and set WPLANG to 'de'
+// chosen language must be installed to wp-content/languages.
+// For example, install de.mo to wp-content/languages and set WPLANG to 'de'
 // to enable German language support.
 define ('WPLANG', '');
 

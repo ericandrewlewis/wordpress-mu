@@ -514,7 +514,7 @@ class Walker_Page extends Walker {
 		elseif ( $_current_page && $page->ID == $_current_page->post_parent )
 			$css_class .= ' current_page_parent';
 
-		$output .= $indent . '<li class="' . $css_class . '"><a href="' . get_page_link($page->ID) . '" title="' . attribute_escape($page->post_title) . '">' . $page->post_title . '</a>';
+		$output .= $indent . '<li class="' . $css_class . '"><a href="' . get_page_link($page->ID) . '" title="' . attribute_escape(apply_filters('the_title', $page->post_title)) . '">' . apply_filters('the_title', $page->post_title) . '</a>';
 
 		if ( !empty($show_date) ) {
 			if ( 'modified' == $show_date )
@@ -687,16 +687,14 @@ class WP_Ajax_Response {
 
 	// a WP_Error object can be passed in 'id' or 'data'
 	function add( $args = '' ) {
-		if ( is_array($args) )
-			$r = &$args;
-		else
-			parse_str($args, $r);
-
-		$defaults = array('what' => 'object', 'action' => false, 'id' => '0', 'old_id' => false,
-				'data' => '', 'supplemental' => array());
-
-		$r = array_merge($defaults, $r);
-		extract($r);
+		$defaults = array(
+			'what' => 'object', 'action' => false, 
+			'id' => '0', 'old_id' => false, 
+			'data' => '', 'supplemental' => array()
+		);
+		
+		$r = wp_parse_args( $args, $defaults );
+		extract( $r );
 
 		if ( is_wp_error($id) ) {
 			$data = $id;

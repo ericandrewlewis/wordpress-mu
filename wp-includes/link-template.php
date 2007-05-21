@@ -109,7 +109,7 @@ function get_permalink($id = 0) {
 }
 
 // get permalink from post ID
-function post_permalink($post_id = 0, $mode = '') { // $mode legacy
+function post_permalink($post_id = 0, $deprecated = '') {
 	return get_permalink($post_id);
 }
 
@@ -273,39 +273,80 @@ function get_post_comments_feed_link($post_id = '', $feed = 'rss2') {
 	return apply_filters('post_comments_feed_link', $url);
 }
 
-function edit_post_link($link = 'Edit This', $before = '', $after = '') {
-	global $post;
-
-	if ( is_attachment() )
+function get_edit_post_link( $id = 0 ) {
+	$post = &get_post( $id );
+	
+	if ( $post->post_type == 'attachment' ) {
 		return;
-
-	if( $post->post_type == 'page' ) {
-		if ( ! current_user_can('edit_page', $post->ID) )
+	} elseif ( $post->post_type == 'page' ) {
+		if ( !current_user_can( 'edit_page', $post->ID ) )
 			return;
+		
 		$file = 'page';
 	} else {
-		if ( ! current_user_can('edit_post', $post->ID) )
+		if ( !current_user_can( 'edit_post', $post->ID ) )
 			return;
+		
+		$file = 'post';
+	}
+	
+	return apply_filters( 'get_edit_post_link', get_bloginfo( 'wpurl' ) . '/wp-admin/' . $file . '.php?action=edit&amp;post=' . $post->ID, $post->ID );
+}
+
+function edit_post_link( $link = 'Edit This', $before = '', $after = '' ) {
+	global $post;
+
+	if ( $post->post_type == 'attachment' ) {
+		return;
+	} elseif ( $post->post_type == 'page' ) {
+		if ( !current_user_can( 'edit_page', $post->ID ) )
+			return;
+		
+		$file = 'page';
+	} else {
+		if ( !current_user_can( 'edit_post', $post->ID ) )
+			return;
+		
 		$file = 'post';
 	}
 
-	$location = get_option('siteurl') . "/wp-admin/{$file}.php?action=edit&amp;post=$post->ID";
-	echo $before . "<a href=\"$location\">$link</a>" . $after;
+	$link = '<a href="' . get_edit_post_link( $post->ID ) . '" title="' . __( 'Edit post' ) . '">' . $link . '</a>';
+	echo $before . apply_filters( 'edit_post_link', $link, $post->ID ) . $after;
 }
 
-function edit_comment_link($link = 'Edit This', $before = '', $after = '') {
-	global $post, $comment;
-
-	if( $post->post_type == 'page' ){
-		if ( ! current_user_can('edit_page', $post->ID) )
+function get_edit_comment_link( $comment_id = 0 ) {
+	$comment = &get_comment( $comment_id );
+	$post = &get_post( $comment->comment_post_ID );
+	
+	if ( $post->post_type == 'attachment' ) {
+		return;
+	} elseif ( $post->post_type == 'page' ) {
+		if ( !current_user_can( 'edit_page', $post->ID ) )
 			return;
 	} else {
-		if ( ! current_user_can('edit_post', $post->ID) )
+		if ( !current_user_can( 'edit_post', $post->ID ) )
 			return;
 	}
 
-	$location = get_option('siteurl') . "/wp-admin/comment.php?action=editcomment&amp;c=$comment->comment_ID";
-	echo $before . "<a href='$location'>$link</a>" . $after;
+	$location = get_bloginfo( 'wpurl' ) . '/wp-admin/comment.php?action=editcomment&amp;c=' . $comment->comment_ID;
+	return apply_filters( 'get_edit_comment_link', $location );
+}
+
+function edit_comment_link( $link = 'Edit This', $before = '', $after = '' ) {
+	global $comment, $post;
+
+	if ( $post->post_type == 'attachment' ) {
+		return;
+	} elseif ( $post->post_type == 'page' ) {
+		if ( !current_user_can( 'edit_page', $post->ID ) )
+			return;
+	} else {
+		if ( !current_user_can( 'edit_post', $post->ID ) )
+			return;
+	}
+
+	$link = '<a href="' . get_edit_comment_link( $comment->comment_ID ) . '" title="' . __( 'Edit comment' ) . '">' . $link . '</a>';
+	echo $before . apply_filters( 'edit_comment_link', $link, $comment->comment_ID ) . $after;
 }
 
 // Navigation links
@@ -422,73 +463,55 @@ function next_post_link($format='%link &raquo;', $link='%title', $in_same_cat = 
 
 function get_pagenum_link($pagenum = 1) {
 	global $wp_rewrite;
-
-	$qstr = $_SERVER['REQUEST_URI'];
-
-	$page_querystring = "paged";
-	$page_modstring = "page/";
-	$page_modregex = "page/?";
-	$permalink = 0;
-
+	
+	$pagenum = (int) $pagenum;
+	
+	$request = remove_query_arg( 'paged' );
+	
 	$home_root = parse_url(get_option('home'));
 	$home_root = $home_root['path'];
-	$home_root = trailingslashit($home_root);
-	$qstr = preg_replace('|^'. $home_root . '|', '', $qstr);
-	$qstr = preg_replace('|^/+|', '', $qstr);
-
-	$index = $_SERVER['PHP_SELF'];
-	$index = preg_replace('|^'. $home_root . '|', '', $index);
-	$index = preg_replace('|^/+|', '', $index);
-
-	// if we already have a QUERY style page string
-	if ( stristr( $qstr, $page_querystring ) ) {
-		$replacement = "$page_querystring=$pagenum";
-		$qstr = preg_replace("/".$page_querystring."[^\d]+\d+/", $replacement, $qstr);
-		// if we already have a mod_rewrite style page string
-	} elseif ( preg_match( '|'.$page_modregex.'\d+|', $qstr ) ) {
-		$permalink = 1;
-		$qstr = preg_replace('|'.$page_modregex.'\d+|',"$page_modstring$pagenum",$qstr);
-
-		// if we don't have a page string at all ...
-		// lets see what sort of URL we have...
-	} else {
-		// we need to know the way queries are being written
-		// if there's a querystring_start (a "?" usually), it's definitely not mod_rewritten
-		if ( stristr( $qstr, '?' ) ) {
-			// so append the query string (using &, since we already have ?)
-			$qstr .=	'&amp;' . $page_querystring . '=' . $pagenum;
-			// otherwise, it could be rewritten, OR just the default index ...
-		} elseif( '' != get_option('permalink_structure') && ! is_admin() ) {
-			$permalink = 1;
-			$index = $wp_rewrite->index;
-			// If it's not a path info permalink structure, trim the index.
-			if ( !$wp_rewrite->using_index_permalinks() ) {
-				$qstr = preg_replace("#/*" . $index . "/*#", '/', $qstr);
-			} else {
-				// If using path info style permalinks, make sure the index is in
-				// the URL.
-				if ( strpos($qstr, $index) === false )
-					$qstr = '/' . $index . $qstr;
-			}
-
-			$qstr =	trailingslashit($qstr) . $page_modstring . $pagenum;
+	$home_root = preg_quote( trailingslashit( $home_root ), '|' );
+	
+	$request = preg_replace('|^'. $home_root . '|', '', $request);
+	$request = preg_replace('|^/+|', '', $request);
+	
+	if ( !$wp_rewrite->using_permalinks() ) {
+		$base = trailingslashit( get_bloginfo( 'home' ) );
+		
+		if ( $pagenum > 1 ) {
+			$result = add_query_arg( 'paged', $pagenum, $base . $request );
 		} else {
-			$qstr = $index . '?' . $page_querystring . '=' . $pagenum;
+			$result = $base . $request;
 		}
+	} else {
+		$request = preg_replace( '|/?page/(.+)/?$|', '', $request);
+		
+		$qs_regex = '|\?.*?$|';
+		preg_match( $qs_regex, $request, $qs_match );
+		
+		if ( $qs_match[0] ) {
+			$query_string = $qs_match[0];
+			$request = preg_replace( $qs_regex, '', $request );
+		} else {
+			$query_string = '';
+		}
+		
+		$base = trailingslashit( get_bloginfo( 'url' ) );
+		
+		if ( $wp_rewrite->using_index_permalinks() && $pagenum > 1 ) {
+			$base .= 'index.php/';
+		}
+		
+		if ( $pagenum > 1 ) {
+			$request = ( ( !empty( $request ) ) ? trailingslashit( $request ) : $request ) . user_trailingslashit( 'page/' . $pagenum, 'paged' );
+		} else {
+			$request = user_trailingslashit( $request );
+		}
+		
+		$result = $base . $request . $query_string;
 	}
-
-	$qstr = preg_replace('|^/+|', '', $qstr);
-	if ( $permalink )
-		$qstr = user_trailingslashit($qstr, 'paged');
-	$qstr = preg_replace('/&([^#])(?![a-z]{1,8};)/', '&#038;$1', trailingslashit( get_option('home') ) . $qstr );
-
-	// showing /page/1/ or ?paged=1 is redundant
-	if ( 1 === $pagenum ) {
-		$qstr = str_replace(user_trailingslashit('index.php/page/1', 'paged'), '', $qstr); // for PATHINFO style
-		$qstr = str_replace(user_trailingslashit('page/1', 'paged'), '', $qstr); // for mod_rewrite style
-		$qstr = remove_query_arg('paged', $qstr); // for query style
-	}
-	return $qstr;
+	
+	return $result;
 }
 
 function get_next_posts_page_link($max_page = 0) {

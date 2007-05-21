@@ -130,6 +130,7 @@ class MT_Import {
 		$authors = $this->get_mt_authors();
 		echo '<ol id="authors">';
 		echo '<form action="?import=mt&amp;step=2&amp;id=' . $this->id . '" method="post">';
+		wp_nonce_field('import-mt');
 		$j = -1;
 		foreach ($authors as $author) {
 			++ $j;
@@ -400,9 +401,11 @@ class MT_Import {
 				$this->greet();
 				break;
 			case 1 :
+				check_admin_referer('import-upload');
 				$this->select_authors();
 				break;
 			case 2:
+				check_admin_referer('import-mt');
 				$this->import();
 				break;
 		}

@@ -18,253 +18,207 @@ if (!defined('CUSTOM_TAGS'))
 
 // You can override this in your my-hacks.php file
 if (!CUSTOM_TAGS) {
-	$allowedposttags = array (
-		'address' => array (),
-		'a' => array (
-			'class' => array (),
-			'href' => array (),
-			'id' => array (),
-			'title' => array (),
-			'rel' => array (),
-			'rev' => array (),
-			'name' => array (),
-			'target' => array()),
-		'abbr' => array (
-			'title' => array ()),
-		'acronym' => array (
-			'title' => array ()),
-		'b' => array (),
-		'big' => array (), 
-		'blockquote' => array (
-			'id' => array (),
-			'cite' => array ()),
-		'br' => array (
-			'class' => array ()),
-		'button' => array (
-			'disabled' => array (),
-			'name' => array (),
-			'type' => array (),
-			'value' => array ()),
-		'caption' => array (
-			'align' => array (),
-			'class' => array ()),
-		'cite' => array (
-			'class' => array(),
-			'dir' => array(),
-			'lang' => array(),
-			'title' => array ()),
-		'code' => array (),
-		'col' => array (
-			'align' => array (),
-			'char' => array (),
-			'charoff' => array (),
-			'span' => array (),
-			'dir' => array(),
-			'valign' => array (),
-			'width' => array ()),
-		'del' => array (
-			'datetime' => array ()),
-		'dd' => array (),
-		'div' => array (
-			'align' => array (),
-			'class' => array (),
-			'dir' => array ()),
-		'dl' => array (),
-		'dt' => array (),
-		'em' => array (),
-		'fieldset' => array (),
-		'font' => array (
-			'color' => array (),
-			'face' => array (),
-			'size' => array ()),
-		'form' => array (
-			'action' => array (),
-			'accept' => array (),
-			'accept-charset' => array (),
-			'enctype' => array (),
-			'method' => array (),
-			'name' => array (),
-			'target' => array ()),
-		'h1' => array (
-			'align' => array (),
-			'class' => array ()),
-		'h2' => array (
-			'align' => array (),
-			'class' => array ()),
-		'h3' => array (
-			'align' => array (),
-			'class' => array ()),
-		'h4' => array (
-			'align' => array (),
-			'class' => array ()),
-		'h5' => array (
-			'align' => array (),
-			'class' => array ()),
-		'h6' => array (
-			'align' => array (),
-			'class' => array ()),
-		'hr' => array (
-			'align' => array (),
-			'class' => array (),
-			'noshade' => array (),
-			'size' => array (),
-			'width' => array ()),
-		'i' => array (),
-		'img' => array (
-			'alt' => array (),
-			'align' => array (),
-			'border' => array (),
-			'class' => array (),
-			'height' => array (),
-			'hspace' => array (),
-			'longdesc' => array (),
-			'vspace' => array (),
-			'src' => array (),
-			'width' => array ()),
-		'ins' => array (
-			'datetime' => array (),
-			'cite' => array ()),
-		'kbd' => array (),
-		'label' => array (
-			'for' => array ()),
-		'legend' => array (
-			'align' => array ()),
-		'li' => array (
-			'align' => array (),
-			'class' => array ()),
-		'p' => array (
-			'class' => array (),
-			'align' => array (),
-			'dir' => array()),
-		'pre' => array (
-			'width' => array ()),
-		'q' => array (
-			'cite' => array ()),
-		's' => array (),
-		'span' => array (
-			'class' => array (),
-			'dir' => array (),
-			'align' => array ()),
-		'strike' => array (),
-		'strong' => array (),
-		'sub' => array (),
-		'sup' => array (),
-		'table' => array (
-			'align' => array (),
-			'bgcolor' => array (),
-			'border' => array (),
-			'cellpadding' => array (),
-			'cellspacing' => array (),
-			'class' => array (),
-			'dir' => array(),
-			'rules' => array (),
-			'summary' => array (),
-			'width' => array ()),
-		'tbody' => array (
-			'align' => array (),
-			'char' => array (),
-			'charoff' => array (),
-			'valign' => array ()),
-		'td' => array (
-			'abbr' => array (),
-			'align' => array (),
-			'axis' => array (),
-			'bgcolor' => array (),
-			'char' => array (),
-			'charoff' => array (),
-			'class' => array (),
-			'colspan' => array (),
-			'dir' => array(),
-			'headers' => array (),
-			'height' => array (),
-			'nowrap' => array (),
-			'rowspan' => array (),
-			'scope' => array (),
-			'valign' => array (),
-			'width' => array ()),
-		'textarea' => array (
-			'cols' => array (),
-			'rows' => array (),
-			'disabled' => array (),
-			'name' => array (),
-			'readonly' => array ()),
-		'tfoot' => array (
-			'align' => array (),
-			'char' => array (),
-			'class' => array (),
-			'charoff' => array (),
-			'valign' => array ()),
-		'th' => array (
-			'abbr' => array (),
-			'align' => array (),
-			'axis' => array (),
-			'bgcolor' => array (),
-			'char' => array (),
-			'charoff' => array (),
-			'class' => array (),
-			'colspan' => array (),
-			'headers' => array (),
-			'height' => array (),
-			'nowrap' => array (),
-			'rowspan' => array (),
-			'scope' => array (),
-			'valign' => array (),
-			'width' => array ()),
-		'thead' => array (
-			'align' => array (),
-			'char' => array (),
-			'charoff' => array (),
-			'class' => array (),
-			'valign' => array ()),
-		'title' => array (),
-		'tr' => array (
-			'align' => array (),
-			'bgcolor' => array (),
-			'char' => array (),
-			'charoff' => array (),
-			'class' => array (),
-			'valign' => array ()),
-		'tt' => array (),
-		'u' => array (),
-		'ul' => array (
-			'class' => array ()),
-		'ol' => array (
-			'class' => array ()),
-		'var' => array ());
-	$allowedtags = array (
-		'a' => array (
-			'href' => array (),
-			'title' => array ()),
-		'abbr' => array (
-			'title' => array ()),
-		'acronym' => array (
-			'title' => array ()),
-		'b' => array (),
-		'blockquote' => array (
-			'cite' => array ()),
-	//	'br' => array(),
-		'cite' => array (),
-		'code' => array (),
+	$allowedposttags = array(
+		'address' => array(), 
+		'a' => array(
+			'href' => array(), 'title' => array(), 
+			'rel' => array(), 'rev' => array(), 
+			'name' => array()
+			), 
+		'abbr' => array(
+			'title' => array(), 'class' => array()
+			), 
+		'acronym' => array(
+			'title' => array()
+			), 
+		'b' => array(), 
+		'big' => array(), 
+		'blockquote' => array(
+			'cite' => array(), 'xml:lang' => array(), 
+			'lang' => array()
+			), 
+		'br' => array(), 
+		'button' => array(
+			'disabled' => array(), 'name' => array(), 
+			'type' => array(), 'value' => array()
+			), 
+		'caption' => array(
+			'align' => array()
+			), 
+		'code' => array(), 
+		'col' => array(
+			'align' => array(), 'char' => array(), 
+			'charoff' => array(), 'span' => array(), 
+			'valign' => array(), 'width' => array()
+			), 
 		'del' => array(
-			'datetime' => array ()),
-	//	'dd' => array(),
-	//	'dl' => array(),
-	//	'dt' => array(),
-		'em' => array (), 'i' => array (),
-	//	'ins' => array('datetime' => array(), 'cite' => array()),
-	//	'li' => array(),
-	//	'ol' => array(),
-	//	'p' => array(),
+			'datetime' => array()
+			), 
+		'dd' => array(), 
+		'div' => array(
+			'align' => array(), 'xml:lang' => array(), 
+			'lang' => array()
+			), 
+		'dl' => array(), 
+		'dt' => array(), 
+		'em' => array(), 
+		'fieldset' => array(), 
+		'font' => array(
+			'color' => array(), 'face' => array(), 
+			'size' => array()
+			), 
+		'form' => array(
+			'action' => array(), 'accept' => array(), 
+			'accept-charset' => array(), 'enctype' => array(), 
+			'method' => array(), 'name' => array(), 
+			'target' => array()
+			), 
+		'h1' => array(
+			'align' => array()
+			), 
+		'h2' => array(
+			'align' => array()
+			), 
+		'h3' => array(
+			'align' => array()
+			), 
+		'h4' => array(
+			'align' => array()
+			), 
+		'h5' => array(
+			'align' => array()
+			), 
+		'h6' => array(
+			'align' => array()
+			), 
+		'hr' => array(
+			'align' => array(), 'noshade' => array(), 
+			'size' => array(), 'width' => array()
+			), 
+		'i' => array(), 
+		'img' => array(
+			'alt' => array(), 'align' => array(), 
+			'border' => array(), 'height' => array(), 
+			'hspace' => array(), 'longdesc' => array(), 
+			'vspace' => array(), 'src' => array(), 
+			'width' => array()
+			), 
+		'ins' => array(
+			'datetime' => array(), 'cite' => array()
+			), 
+		'kbd' => array(), 
+		'label' => array(
+			'for' => array()
+			), 
+		'legend' => array(
+			'align' => array()
+			), 
+		'li' => array(), 
+		'p' => array(
+			'align' => array(), 'xml:lang' => array(), 
+			'lang' => array()
+			), 
+		'pre' => array(
+			'width' => array()
+			), 
 		'q' => array(
-			'cite' => array ()),
-		'strike' => array (),
-		'strong' => array (),
-	//	'sub' => array(),
-	//	'sup' => array(),
-	//	'u' => array(),
-	//	'ul' => array(),
+			'cite' => array()
+			), 
+		's' => array(), 
+		'strike' => array(), 
+		'strong' => array(), 
+		'sub' => array(), 
+		'sup' => array(), 
+		'table' => array(
+			'align' => array(), 'bgcolor' => array(), 
+			'border' => array(), 'cellpadding' => array(), 
+			'cellspacing' => array(), 'rules' => array(), 
+			'summary' => array(), 'width' => array()
+			), 
+		'tbody' => array(
+			'align' => array(), 'char' => array(), 
+			'charoff' => array(), 'valign' => array()
+			), 
+		'td' => array(
+			'abbr' => array(), 'align' => array(), 
+			'axis' => array(), 'bgcolor' => array(), 
+			'char' => array(), 'charoff' => array(), 
+			'colspan' => array(), 'headers' => array(), 
+			'height' => array(), 'nowrap' => array(), 
+			'rowspan' => array(), 'scope' => array(), 
+			'valign' => array(), 'width' => array()
+			), 
+		'textarea' => array(
+			'cols' => array(), 'rows' => array(), 
+			'disabled' => array(), 'name' => array(), 
+			'readonly' => array()
+			), 
+		'tfoot' => array(
+			'align' => array(), 'char' => array(), 
+			'charoff' => array(), 'valign' => array()
+			), 
+		'th' => array(
+			'abbr' => array(), 'align' => array(), 
+			'axis' => array(), 'bgcolor' => array(), 
+			'char' => array(), 'charoff' => array(), 
+			'colspan' => array(), 'headers' => array(), 
+			'height' => array(), 'nowrap' => array(), 
+			'rowspan' => array(), 'scope' => array(), 
+			'valign' => array(), 'width' => array()
+			), 
+		'thead' => array(
+			'align' => array(), 'char' => array(), 
+			'charoff' => array(), 'valign' => array()
+			), 
+		'title' => array(), 
+		'tr' => array(
+			'align' => array(), 'bgcolor' => array(), 
+			'char' => array(), 'charoff' => array(), 
+			'valign' => array()
+			), 
+		'tt' => array(), 
+		'u' => array(), 
+		'ul' => array(), 
+		'ol' => array(), 
+		'var' => array()
+	);
+	
+	$allowedtags = array(
+		'a' => array(
+			'href' => array(), 'title' => array()
+			), 
+		'abbr' => array(
+			'title' => array()
+			), 
+		'acronym' => array(
+			'title' => array()
+			), 
+		'b' => array(), 
+		'blockquote' => array(
+			'cite' => array()
+			),
+		//	'br' => array(),
+		'code' => array(),
+		//	'del' => array('datetime' => array()),
+		//	'dd' => array(),
+		//	'dl' => array(),
+		//	'dt' => array(),
+		'em' => array(), 
+		'i' => array(),
+		//	'ins' => array('datetime' => array(), 'cite' => array()),
+		//	'li' => array(),
+		//	'ol' => array(),
+		//	'p' => array(),
+		//	'q' => array(),
+		'strike' => array(), 
+		'strong' => array(),
+		//	'sub' => array(),
+		//	'sup' => array(),
+		//	'u' => array(),
+		//	'ul' => array(),
 	);
 }
+
 function wp_kses($string, $allowed_html, $allowed_protocols = array ('http', 'https', 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet'))
 	###############################################################################
 		# This function makes sure that only the allowed HTML element names, attribute

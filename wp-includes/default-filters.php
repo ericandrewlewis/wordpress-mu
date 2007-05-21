@@ -45,7 +45,7 @@ add_filter('comment_flood_filter', 'wp_throttle_comment_flood', 10, 3);
 add_filter('comment_url', 'clean_url');
 
 add_filter('comment_text', 'convert_chars');
-add_filter('comment_text', 'make_clickable');
+add_filter('comment_text', 'make_clickable', 9);
 add_filter('comment_text', 'force_balance_tags', 25);
 add_filter('comment_text', 'wpautop', 30);
 add_filter('comment_text', 'convert_smilies', 20);
@@ -173,4 +173,7 @@ add_action('sanitize_comment_cookies', 'sanitize_comment_cookies');
 add_action('admin_print_scripts', 'wp_print_scripts', 20);
 add_action('mce_options', '_mce_set_direction');
 add_action('init', 'smilies_init', 5);
+add_action( 'plugins_loaded', 'wp_maybe_load_widgets', 0 );
+add_action( 'shutdown', 'wp_ob_end_flush_all', 1);
+
 ?>

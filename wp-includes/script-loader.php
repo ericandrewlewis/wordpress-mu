@@ -11,14 +11,32 @@ class WP_Scripts {
 
 	function default_scripts() {
 		$this->add( 'dbx', '/wp-includes/js/dbx.js', false, '2.05' );
+		
 		$this->add( 'fat', '/wp-includes/js/fat.js', false, '1.0-RC1_3660' );
+		
 		$this->add( 'sack', '/wp-includes/js/tw-sack.js', false, '1.6.1' );
-		$this->add( 'quicktags', '/wp-includes/js/quicktags.js', false, '3517' );
+		
+		$this->add( 'quicktags', '/wp-includes/js/quicktags.js', false, '3958' );
+		$this->localize( 'quicktags', 'quicktagsL10n', array(
+			'quickLinks' => __('(Quick Links)'),
+			'wordLookup' => __('Enter a word to look up:'),
+			'dictionaryLookup' => attribute_escape(__('Dictionary lookup')),
+			'lookup' => attribute_escape(__('lookup')),
+			'closeAllOpenTags' => attribute_escape(__('Close all open tags')),
+			'closeTags' => attribute_escape(__('close tags')),
+			'enterURL' => __('Enter the URL'),
+			'enterImageURL' => __('Enter the URL of the image'),
+			'enterImageDescription' => __('Enter a description of the image')
+		) );
+		
 		$this->add( 'colorpicker', '/wp-includes/js/colorpicker.js', false, '3517' );
+		
 		$this->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_gzip.php', false, '20070326' );
 		$mce_config = apply_filters('tiny_mce_config_url', '/wp-includes/js/tinymce/tiny_mce_config.php');
 		$this->add( 'wp_tiny_mce', $mce_config, array('tiny_mce'), '20070225' );
-		$this->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.5.0-0');
+		
+		$this->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.5.1');
+		
 		$this->add( 'autosave', '/wp-includes/js/autosave.js', array('prototype', 'sack'), '20070306');
 		$this->localize( 'autosave', 'autosaveL10n', array(
 			'autosaveInterval' => apply_filters('autosave_interval', '120'),
@@ -27,6 +45,7 @@ class WP_Scripts {
 			'requestFile' => get_option( 'siteurl' ) . '/wp-admin/admin-ajax.php',
 			'savingText' => __('Saving Draft...')
 		) );
+		
 		$this->add( 'wp-ajax', '/wp-includes/js/wp-ajax.js', array('prototype'), '20070306');
 		$this->localize( 'wp-ajax', 'WPAjaxL10n', array(
 			'defaultUrl' => get_option( 'siteurl' ) . '/wp-admin/admin-ajax.php',
@@ -34,21 +53,27 @@ class WP_Scripts {
 			'strangeText' => __("Something strange happened.  Try refreshing the page."),
 			'whoaText' => __("Slow down, I'm still sending your data!")
 		) );
-		$this->add( 'listman', '/wp-includes/js/list-manipulation.js', array('wp-ajax', 'fat'), '20070306');
+		
+		$this->add( 'listman', '/wp-includes/js/list-manipulation.js', array('wp-ajax', 'fat'), '20070306' );
 		$this->localize( 'listman', 'listManL10n', array(
 			'jumpText' => __('Jump to new item'),
 			'delText' => __('Are you sure you want to delete this %thing%?')
 		) );
-		$this->add( 'scriptaculous-root', '/wp-includes/js/scriptaculous/wp-scriptaculous.js', array('prototype'), '1.7.0');
-		$this->add( 'scriptaculous-builder', '/wp-includes/js/scriptaculous/builder.js', array('scriptaculous-root'), '1.7.0');
-		$this->add( 'scriptaculous-dragdrop', '/wp-includes/js/scriptaculous/dragdrop.js', array('scriptaculous-builder', 'scriptaculous-effects'), '1.7.0');
-		$this->add( 'scriptaculous-effects', '/wp-includes/js/scriptaculous/effects.js', array('scriptaculous-root'), '1.7.0');
-		$this->add( 'scriptaculous-slider', '/wp-includes/js/scriptaculous/slider.js', array('scriptaculous-effects'), '1.7.0');
-		$this->add( 'scriptaculous-controls', '/wp-includes/js/scriptaculous/controls.js', array('scriptaculous-root'), '1.7.0');
-		$this->add( 'scriptaculous', '', array('scriptaculous-dragdrop', 'scriptaculous-slider', 'scriptaculous-controls'), '1.7.0');
+		
+		$this->add( 'scriptaculous-root', '/wp-includes/js/scriptaculous/wp-scriptaculous.js', array('prototype'), '1.7.1-b2');
+		$this->add( 'scriptaculous-builder', '/wp-includes/js/scriptaculous/builder.js', array('scriptaculous-root'), '1.7.1-b2');
+		$this->add( 'scriptaculous-dragdrop', '/wp-includes/js/scriptaculous/dragdrop.js', array('scriptaculous-builder', 'scriptaculous-effects'), '1.7.1-b2');
+		$this->add( 'scriptaculous-effects', '/wp-includes/js/scriptaculous/effects.js', array('scriptaculous-root'), '1.7.1-b2');
+		$this->add( 'scriptaculous-slider', '/wp-includes/js/scriptaculous/slider.js', array('scriptaculous-effects'), '1.7.1-b2');
+		$this->add( 'scriptaculous-sound', '/wp-includes/js/scriptaculous/sound.js', array( 'scriptaculous-root' ), '1.7.1-b2' );
+		$this->add( 'scriptaculous-controls', '/wp-includes/js/scriptaculous/controls.js', array('scriptaculous-root'), '1.7.1-b2');
+		$this->add( 'scriptaculous', '', array('scriptaculous-dragdrop', 'scriptaculous-slider', 'scriptaculous-controls'), '1.7.1-b2');
+		
 		$this->add( 'cropper', '/wp-includes/js/crop/cropper.js', array('scriptaculous-dragdrop'), '20070118');
-		$this->add( 'jquery', '/wp-includes/js/jquery/jquery.js', false, '1.1.1');
-		$this->add( 'interface', '/wp-includes/js/jquery/interface.js', array('jquery'), '1.1.1');
+		
+		$this->add( 'jquery', '/wp-includes/js/jquery/jquery.js', false, '1.1.2');
+		$this->add( 'interface', '/wp-includes/js/jquery/interface.js', array('jquery'), '1.2');
+		
 		if ( is_admin() ) {
 			global $pagenow;
 			$man = false;
@@ -67,7 +92,7 @@ class WP_Scripts {
 				break;
 			endswitch;
 			if ( $man ) {
-				$this->add( 'dbx-admin-key', '/wp-admin/dbx-admin-key.js', array('dbx'), '20070306' );
+				$this->add( 'dbx-admin-key', '/wp-admin/dbx-admin-key.js', array('dbx'), '20070417' );
 				$this->localize( 'dbx-admin-key', 'dbxL10n', array(
 					'manager' => $man,
 					'open' => __('open'),
@@ -78,14 +103,14 @@ class WP_Scripts {
 					'toggleKey' => __(', or press the enter key to %toggle% it'),
 				) );
 			}
-			$this->add( 'ajaxcat', '/wp-admin/cat.js', array('listman'), '20070306' );
+			$this->add( 'ajaxcat', '/wp-admin/cat.js', array('listman'), '20070417' );
 			$this->localize( 'ajaxcat', 'catL10n', array(
 				'add' => attribute_escape(__('Add')),
 				'how' => __('Separate multiple categories with commas.')
 			) );
 			$this->add( 'admin-categories', '/wp-admin/categories.js', array('listman'), '3684' );
 			$this->add( 'admin-custom-fields', '/wp-admin/custom-fields.js', array('listman'), '3733' );
-			$this->add( 'admin-comments', '/wp-admin/edit-comments.js', array('listman'), '3847' );
+			$this->add( 'admin-comments', '/wp-admin/edit-comments.js', array('listman'), '20070327' );
 			$this->add( 'admin-users', '/wp-admin/users.js', array('listman'), '4583' );
 			$this->add( 'xfn', '/wp-admin/xfn.js', false, '3517' );
 			$this->add( 'upload', '/wp-admin/upload.js', array('prototype'), '20070306' );
@@ -150,6 +175,12 @@ class WP_Scripts {
 					if ( isset($this->args[$handle]) )
 						$ver .= '&amp;' . $this->args[$handle];
 					$src = 0 === strpos($this->scripts[$handle]->src, 'http://') ? $this->scripts[$handle]->src : get_option( 'siteurl' ) . $this->scripts[$handle]->src;
+					$src = $this->scripts[$handle]->src;
+					
+					if (!preg_match('|^https?://|', $src)) {
+						$src = get_option('siteurl') . $src;
+					}
+					
 					$src = add_query_arg('ver', $ver, $src);
 					$src = clean_url(apply_filters( 'script_loader_src', $src ));
 					echo "<script type='text/javascript' src='$src'></script>\n";

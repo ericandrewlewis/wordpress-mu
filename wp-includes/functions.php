@@ -8,7 +8,10 @@ function mysql2date($dateformatstring, $mysqlstring, $translate = true) {
 	if ( empty($m) ) {
 		return false;
 	}
-	$i = mktime(substr($m,11,2),substr($m,14,2),substr($m,17,2),substr($m,5,2),substr($m,8,2),substr($m,0,4));
+	$i = mktime( 
+		(int) substr( $m, 11, 2 ), (int) substr( $m, 14, 2 ), (int) substr( $m, 17, 2 ), 
+		(int) substr( $m, 5, 2 ), (int) substr( $m, 8, 2 ), (int) substr( $m, 0, 4 ) 
+	);
 
 	if( 'U' == $dateformatstring )
 		return $i;
@@ -78,6 +81,14 @@ function date_i18n($dateformatstring, $unixtimestamp) {
 	}
 	$j = @date($dateformatstring, $i);
 	return $j;
+}
+
+function number_format_i18n($number, $decimals = null) {
+	global $wp_locale;
+	// let the user override the precision only
+	$decimals = is_null($decimals)? $wp_locale->number_format['decimals'] : intval($decimals);
+
+	return number_format($number, $decimals, $wp_locale->number_format['decimal_point'], $wp_locale->number_format['thousands_sep']);
 }
 
 function get_weekstartend($mysqlstring, $start_of_week) {
@@ -328,7 +339,7 @@ function update_option($option_name, $newvalue) {
 	}
 
 	$notoptions = wp_cache_get('notoptions', 'options');
-	if ( isset($notoptions[$option_name]) ) {
+	if ( is_array($notoptions) && isset($notoptions[$option_name]) ) {
 		unset($notoptions[$option_name]);
 		wp_cache_set('notoptions', $notoptions, 'options');
 	}
@@ -362,7 +373,7 @@ function add_option($name, $value = '', $description = '', $autoload = 'yes') {
 
 	// Make sure the option doesn't already exist we can check the cache before we ask for a db query
 	$notoptions = wp_cache_get('notoptions', 'options');
-	if ( isset($notoptions[$name]) ) {
+	if ( is_array($notoptions) && isset($notoptions[$name]) ) {
 		unset($notoptions[$name]);
 		wp_cache_set('notoptions', $notoptions, 'options');
 	} elseif ( false !== get_option($name) ) {
@@ -759,6 +770,7 @@ function clean_category_cache($id) {
 	wp_cache_delete($id, 'category');
 	wp_cache_delete('all_category_ids', 'category');
 	wp_cache_delete('get_categories', 'category');
+	delete_option('category_children');
 }
 
 /*
@@ -815,6 +827,9 @@ function add_query_arg() {
 	}
 
 	parse_str($query, $qs);
+	if ( get_magic_quotes_gpc() )
+		$qs = stripslashes_deep($qs); // parse_str() adds slashes if magicquotes is on.  See: http://php.net/parse_str
+	$qs = urlencode_deep($qs);
 	if ( is_array(func_get_arg(0)) ) {
 		$kayvees = func_get_arg(0);
 		$qs = array_merge($qs, $kayvees);
@@ -832,10 +847,10 @@ function add_query_arg() {
 				$ret .= "$k=$v";
 		}
 	}
+	$ret = trim($ret, '?');
 	$ret = $protocol . $base . $ret . $frag;
-	if ( get_magic_quotes_gpc() )
-		$ret = stripslashes($ret); // parse_str() adds slashes if magicquotes is on.  See: http://php.net/parse_str
-	return trim($ret, '?');
+	$ret = trim($ret, '?');
+	return $ret;
 }
 
 /*
@@ -911,24 +926,35 @@ function wp($query_vars = '') {
 	$wp->main($query_vars);
 }
 
-function status_header( $header ) {
-	if ( 200 == $header )
-		$text = 'OK';
-	elseif ( 301 == $header )
-		$text = 'Moved Permanently';
-	elseif ( 302 == $header )
-		$text = 'Moved Temporarily';
-	elseif ( 304 == $header )
-		$text = 'Not Modified';
-	elseif ( 404 == $header )
-		$text = 'Not Found';
-	elseif ( 410 == $header )
-		$text = 'Gone';
+function get_status_header_desc( $code ) {
+	global $wp_header_to_desc;
+	
+	$code = (int) $code;
+	
+	if ( isset( $wp_header_to_desc[$code] ) ) {
+		return $wp_header_to_desc[$code];
+	} else {
+		return '';
+	}
+}
 
-	if ( version_compare(phpversion(), '4.3.0', '>=') )
-		@header("HTTP/1.1 $header $text", true, $header);
-	else
-		@header("HTTP/1.1 $header $text");
+function status_header( $header ) {
+	$text = get_status_header_desc( $header );
+	
+	if ( empty( $text ) )
+		return false;
+
+	$protocol = $_SERVER["SERVER_PROTOCOL"];
+	if ( ('HTTP/1.1' != $protocol) && ('HTTP/1.0' != $protocol) )
+		$protocol = 'HTTP/1.0';
+	$status_header = "$protocol $header $text";
+	$status_header = apply_filters('status_header', $status_header, $header, $text, $protocol);
+
+	if ( version_compare( phpversion(), '4.3.0', '>=' ) ) {
+		return @header( $status_header, true, $header );
+	} else {
+		return @header( $status_header );
+	}
 }
 
 function nocache_headers() {
@@ -996,6 +1022,8 @@ function do_feed_atom($for_comments) {
 
 function do_robots() {
 	global $current_blog;
+	header('Content-type: text/plain; charset=utf-8');
+
 	do_action('do_robotstxt');
 
 	if ( '0' == $current_blog->public ) {
@@ -1196,6 +1224,7 @@ function wp_check_filetype($filename, $mimes = null) {
 		'js' => 'application/javascript',
 		'pdf' => 'application/pdf',
 		'doc' => 'application/msword',
+		'odt' => 'application/vnd.oasis.opendocument.text',
 		'pot|pps|ppt' => 'application/vnd.ms-powerpoint',
 		'wri' => 'application/vnd.ms-write',
 		'xla|xls|xlt|xlw' => 'application/vnd.ms-excel',
@@ -1243,10 +1272,10 @@ function wp_explain_nonce($action) {
 		$trans['bulk']['comments'] = array(__('Are you sure you want to bulk modify comments?'), false);
 		$trans['moderate']['comments'] = array(__('Are you sure you want to moderate comments?'), false);
 
-		$trans['add']['bookmark'] = array(__('Are you sure you want to add this bookmark?'), false);
-		$trans['delete']['bookmark'] = array(__('Are you sure you want to delete this bookmark: &quot;%s&quot;?'), 'use_id');
-		$trans['update']['bookmark'] = array(__('Are you sure you want to edit this bookmark: &quot;%s&quot;?'), 'use_id');
-		$trans['bulk']['bookmarks'] = array(__('Are you sure you want to bulk modify bookmarks?'), false);
+		$trans['add']['bookmark'] = array(__('Are you sure you want to add this link?'), false);
+		$trans['delete']['bookmark'] = array(__('Are you sure you want to delete this link: &quot;%s&quot;?'), 'use_id');
+		$trans['update']['bookmark'] = array(__('Are you sure you want to edit this link: &quot;%s&quot;?'), 'use_id');
+		$trans['bulk']['bookmarks'] = array(__('Are you sure you want to bulk modify links?'), false);
 
 		$trans['add']['page'] = array(__('Are you sure you want to add this page?'), false);
 		$trans['delete']['page'] = array(__('Are you sure you want to delete this page: &quot;%s&quot;?'), 'get_the_title');
@@ -1341,15 +1370,18 @@ function wp_die( $message, $title = '' ) {
 		$message = "<p>$message</p>";
 	}
 
+	if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
+		$admin_dir = '';
+	else
+		$admin_dir = 'wp-admin/';
+
+	if ( !did_action('admin_head') ) :
 	header('Content-Type: text/html; charset=utf-8');
 
 	if ( empty($title) )
 		$title = __('WordPress &rsaquo; Error');
 
-	if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
-		$admin_dir = '';
-	else
-		$admin_dir = 'wp-admin/';
+
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -1358,11 +1390,13 @@ function wp_die( $message, $title = '' ) {
 	<title><?php echo $title ?></title>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	<link rel="stylesheet" href="<?php echo $admin_dir; ?>install.css" type="text/css" />
-<?php if ( ('rtl' == $wp_locale->text_direction) ) : ?>
+<?php 
+if ( ( $wp_locale ) && ('rtl' == $wp_locale->text_direction) ) : ?>
 	<link rel="stylesheet" href="<?php echo $admin_dir; ?>install-rtl.css" type="text/css" />
 <?php endif; ?>
 </head>
 <body>
+<?php endif; ?>
 	<h1 id="logo"><img alt="WordPress" src="<?php echo $admin_dir; ?>images/wordpress-logo.png" /></h1>
 	<?php echo $message; ?>
 
@@ -1469,11 +1503,49 @@ function smilies_init() {
 		);
 	}
 
+	$siteurl = get_option('siteurl');
 	foreach ( (array) $wpsmiliestrans as $smiley => $img ) {
 		$wp_smiliessearch[] = '/(\s|^)'.preg_quote($smiley, '/').'(\s|$)/';
 		$smiley_masked = htmlspecialchars(trim($smiley), ENT_QUOTES);
-		$wp_smiliesreplace[] = " <img src='" . get_option('siteurl') . "/wp-includes/images/smilies/$img' alt='$smiley_masked' class='wp-smiley' /> ";
+		$wp_smiliesreplace[] = " <img src='$siteurl/wp-includes/images/smilies/$img' alt='$smiley_masked' class='wp-smiley' /> ";
 	}
+}
+
+function wp_parse_args( $args, $defaults = '' ) {
+	if ( is_array( $args ) ) {
+		$r =& $args;
+	} else {
+		parse_str( $args, $r );
+		if ( get_magic_quotes_gpc() ) {
+			$r = stripslashes_deep( $r );
+		}
+	}
+	
+	if ( is_array( $defaults ) ) {
+		return array_merge( $defaults, $r );
+	} else {
+		return $r;
+	}
+}
+
+function wp_maybe_load_widgets() {
+	if ( !function_exists( 'dynamic_sidebar' ) ) {
+		require_once ABSPATH . WPINC . '/widgets.php';
+		add_action( '_admin_menu', 'wp_widgets_add_menu' );
+	}
+}
+
+function wp_widgets_add_menu() {
+	global $submenu;
+	$submenu['themes.php'][7] = array( __( 'Widgets' ), 'switch_themes', 'widgets.php' );
+	ksort($submenu['themes.php'], SORT_NUMERIC);
+}
+
+// For PHP 5.2, make sure all output buffers are flushed
+// before our singletons our destroyed.
+function wp_ob_end_flush_all()
+{
+	while ( @ob_end_flush() );
 }
 
 ?>

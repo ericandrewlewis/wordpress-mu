@@ -21,6 +21,7 @@ function get_footer() {
 
 
 function get_sidebar() {
+	do_action( 'get_sidebar' );
 	if ( file_exists( TEMPLATEPATH . '/sidebar.php') )
 		load_template( TEMPLATEPATH . '/sidebar.php');
 	else
@@ -200,7 +201,7 @@ function wp_title($sep = '&raquo;', $display = true) {
 	// If there's a month
 	if ( !empty($m) ) {
 		$my_year = substr($m, 0, 4);
-		$my_month = $wp_locale->get_month($m);
+		$my_month = $wp_locale->get_month(substr($m, 4, 2));
 		$my_day = intval(substr($m, 6, 2));
 		$title = "$my_year" . ($my_month ? "$sep $my_month" : "") . ($my_day ? "$sep $my_day" : "");
 	}
@@ -312,16 +313,16 @@ function get_archives_link($url, $text, $format = 'html', $before = '', $after =
 
 
 function wp_get_archives($args = '') {
-	global $wp_locale, $wpdb;
-
-	if ( is_array($args) )
-		$r = &$args;
-	else
-		parse_str($args, $r);
-
-	$defaults = array('type' => 'monthly', 'limit' => '', 'format' => 'html', 'before' => '', 'after' => '', 'show_post_count' => false);
-	$r = array_merge($defaults, $r);
-	extract($r);
+	global $wpdb, $wp_locale;
+	
+	$defaults = array(
+		'type' => 'monthly', 'limit' => '', 
+		'format' => 'html', 'before' => '', 
+		'after' => '', 'show_post_count' => false
+	);
+	
+	$r = wp_parse_args( $args, $defaults );
+	extract( $r );
 
 	if ( '' == $type )
 		$type = 'monthly';
@@ -424,7 +425,7 @@ function wp_get_archives($args = '') {
 					$url  = get_permalink($arcresult);
 					$arc_title = $arcresult->post_title;
 					if ( $arc_title )
-						$text = strip_tags($arc_title);
+						$text = strip_tags(apply_filters('the_title', $arc_title));
 					else
 						$text = $arcresult->ID;
 					echo get_archives_link($url, $text, $format, $before, $after);
@@ -634,7 +635,7 @@ function get_calendar($initial = true) {
 	ob_end_clean();
 	echo $output;
 	$cache[ $key ] = $output;
-	wp_cache_set( 'get_calendar', $cache, 'calendar' );
+	wp_cache_add( 'get_calendar', $cache, 'calendar' );
 }
 
 function delete_get_calendar_cache() {
@@ -809,9 +810,16 @@ function rich_edit_exists() {
 
 function user_can_richedit() {
 	global $wp_rich_edit, $pagenow;
-
-	if ( !isset($wp_rich_edit) )
-		$wp_rich_edit = ( 'true' == get_user_option('rich_editing') && !preg_match('!opera[ /][2-8]|konqueror|safari!i', $_SERVER['HTTP_USER_AGENT']) && 'comment.php' != $pagenow && rich_edit_exists() ) ? true : false;
+	
+	if ( !isset( $wp_rich_edit) ) {
+		if ( get_user_option( 'rich_editing' ) == 'true' && 
+			( ( preg_match( '!AppleWebKit/(\d+)!', $_SERVER['HTTP_USER_AGENT'], $match ) && intval($match[1]) >= 420 ) || 
+				!preg_match( '!opera[ /][2-8]|konqueror|safari!i', $_SERVER['HTTP_USER_AGENT'] ) ) ) {
+			$wp_rich_edit = true;
+		} else {
+			$wp_rich_edit = false;
+		}
+	}
 
 	return apply_filters('user_can_richedit', $wp_rich_edit);
 }

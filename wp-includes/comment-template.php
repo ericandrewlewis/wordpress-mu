@@ -228,7 +228,7 @@ function get_trackback_url() {
 	if ( '' != get_option('permalink_structure') )
 		$tb_url = trailingslashit(get_permalink()) . user_trailingslashit('trackback', 'single_trackback');
 
-	return $tb_url;
+	return apply_filters('trackback_url', $tb_url);
 }
 function trackback_url( $display = true ) {
 	if ( $display)
@@ -288,7 +288,9 @@ function comments_template( $file = '/comments.php' ) {
 	extract($commenter);
 
 	// TODO: Use API instead of SELECTs.
-	if ( empty($comment_author) ) {
+	if ( $user_ID) {
+		$comments = $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_post_ID = '$post->ID' AND (comment_approved = '1' OR ( user_id = '$user_ID' AND comment_approved = '0' ) )  ORDER BY comment_date");
+	} else if ( empty($comment_author) ) { 
 		$comments = $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_post_ID = '$post->ID' AND comment_approved = '1' ORDER BY comment_date");
 	} else {
 		$author_db = $wpdb->escape($comment_author);
@@ -331,7 +333,7 @@ function comments_popup_link($zero='No Comments', $one='1 Comment', $more='% Com
 	$number = get_comments_number($id);
 
 	if ( 0 == $number && 'closed' == $post->comment_status && 'closed' == $post->ping_status ) {
-		echo $none;
+		echo '<span' . ((!empty($CSSclass)) ? ' class="' . $CSSclass . '"' : '') . '>' . $none . '</span>';
 		return;
 	}
 

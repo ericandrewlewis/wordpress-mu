@@ -2,18 +2,22 @@
 
 function get_bloginfo_rss($show = '') {
 	$info = strip_tags(get_bloginfo($show));
-	return apply_filters('bloginfo_rss', convert_chars($info));
+	return apply_filters('get_bloginfo_rss', convert_chars($info));
 }
 
 
 function bloginfo_rss($show = '') {
-	echo get_bloginfo_rss($show);
+	echo apply_filters('bloginfo_rss', get_bloginfo_rss($show));
 }
 
 function get_wp_title_rss($sep = '&#187;') {
 	$title = wp_title($sep, false);
 	$title = apply_filters('get_wp_title_rss', $title);
 	return $title;
+}
+
+function wp_title_rss($sep = '&#187;') {
+	echo apply_filters('wp_title_rss', get_wp_title_rss($sep));
 }
 
 function get_the_title_rss() {

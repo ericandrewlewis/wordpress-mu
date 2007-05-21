@@ -3,22 +3,14 @@
 <div id="menu">
 
 <ul>
-<?php if ( function_exists('dynamic_sidebar') && dynamic_sidebar() ) : ?>
-
-</ul>
-
-</div>
-
-<?php return; ?>
-
-<?php endif; ?>
-
+<?php 	/* Widgetized sidebar, if you have the plugin installed. */
+		if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar() ) : ?>
 	<?php wp_list_pages('title_li=' . __('Pages:')); ?>
 	<?php wp_list_bookmarks('title_after=&title_before='); ?>
 	<?php wp_list_categories('title_li=' . __('Categories:')); ?>
  <li id="search">
    <label for="s"><?php _e('Search:'); ?></label>
-   <form id="searchform" method="get" action="<?php echo $_SERVER['PHP_SELF']; ?>">
+   <form id="searchform" method="get" action="<?php bloginfo('home'); ?>">
 	<div>
 		<input type="text" name="s" id="s" size="15" /><br />
 		<input type="submit" value="<?php _e('Search'); ?>" />
@@ -42,6 +34,7 @@
 		<?php wp_meta(); ?>
 	</ul>
  </li>
+<?php endif; ?>
 
 </ul>
 

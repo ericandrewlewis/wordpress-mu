@@ -27,23 +27,25 @@ function update_attached_file( $attachment_id, $file ) {
 
 function &get_children($args = '', $output = OBJECT) {
 	global $post_cache, $wpdb, $blog_id;
-
-	if ( empty($args) ) {
-		if ( isset($GLOBALS['post']) )
-			$r = array('post_parent' => & $GLOBALS['post']->post_parent);
-		else
+	
+	if ( empty( $args ) ) {
+		if ( isset( $GLOBALS['post'] ) ) {
+			$args = 'post_parent=' . (int) $GLOBALS['post']->post_parent;
+		} else {
 			return false;
-	} elseif ( is_object($args) )
-		$r = array('post_parent' => $post->post_parent);
-	elseif ( is_numeric($args) )
-		$r = array('post_parent' => $args);
-	elseif ( is_array($args) )
-		$r = &$args;
-	else
-		parse_str($args, $r);
-
-	$defaults = array('numberposts' => -1, 'post_type' => '', 'post_status' => '', 'post_parent' => 0);
-	$r = array_merge($defaults, $r);
+		}
+	} elseif ( is_object( $args ) ) {
+		$args = 'post_parent=' . (int) $args->post_parent;
+	} elseif ( is_numeric( $args ) ) {
+		$args = 'post_parent=' . (int) $args;
+	}
+	
+	$defaults = array(
+		'numberposts' => -1, 'post_type' => '', 
+		'post_status' => '', 'post_parent' => 0
+	);
+	
+	$r = wp_parse_args( $args, $defaults );
 
 	$children = get_posts( $r );
 
@@ -74,7 +76,7 @@ function &get_children($args = '', $output = OBJECT) {
 // get extended entry info (<!--more-->)
 function get_extended($post) {
 	//Match the new style more links
-	if ( preg_match('/<!--more(.*?)-->/', $post, $matches) ) {
+	if ( preg_match('/<!--more(.*?)?-->/', $post, $matches) ) {
 		list($main, $extended) = explode($matches[0], $post, 2);
 	} else {
 		$main = $post;
@@ -172,17 +174,19 @@ function get_post_type($post = false) {
 
 function get_posts($args) {
 	global $wpdb;
-
-	if ( is_array($args) )
-		$r = &$args;
-	else
-		parse_str($args, $r);
-
-	$defaults = array('numberposts' => 5, 'offset' => 0, 'category' => 0,
-		'orderby' => 'post_date', 'order' => 'DESC', 'include' => '', 'exclude' => '',
-		'meta_key' => '', 'meta_value' =>'', 'post_type' => 'post', 'post_status' => 'publish', 'post_parent' => 0);
-	$r = array_merge($defaults, $r);
-	extract($r);
+	
+	$defaults = array(
+		'numberposts' => 5, 'offset' => 0, 
+		'category' => 0, 'orderby' => 'post_date', 
+		'order' => 'DESC', 'include' => '', 
+		'exclude' => '', 'meta_key' => '', 
+		'meta_value' =>'', 'post_type' => 'post', 
+		'post_status' => 'publish', 'post_parent' => 0
+	);
+	
+	$r = wp_parse_args( $args, $defaults );
+	extract( $r );
+	
 	$numberposts = (int) $numberposts;
 	$offset = (int) $offset;
 	$category = (int) $category;
@@ -224,14 +228,6 @@ function get_posts($args) {
 	}
 	if (!empty($exclusions))
 		$exclusions .= ')';
-
-	$query ="SELECT DISTINCT * FROM $wpdb->posts " ;
-	$query .= ( empty( $category ) ? "" : ", $wpdb->post2cat " );
-	$query .= ( empty( $meta_key ) ? "" : ", $wpdb->postmeta " );
-	$query .= " WHERE (post_type = 'post' AND post_status = 'publish') $exclusions $inclusions ";
-	$query .= ( empty( $category ) ? "" : "AND ($wpdb->posts.ID = $wpdb->post2cat.post_id AND $wpdb->post2cat.category_id = " . $category. ") " );
-	$query .= ( empty( $meta_key ) | empty($meta_value)  ? "" : " AND ($wpdb->posts.ID = $wpdb->postmeta.post_id AND $wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value = '$meta_value' )" );
-	$query .= " GROUP BY $wpdb->posts.ID ORDER BY " . $orderby . " " . $order . " LIMIT " . $offset . ',' . $numberposts;
 
 	$query  = "SELECT DISTINCT * FROM $wpdb->posts ";
 	$query .= empty( $category ) ? '' : ", $wpdb->post2cat "; 
@@ -443,8 +439,8 @@ function wp_delete_post($postid = 0) {
 		$wp_rewrite->flush_rules();
 	}
 
-	do_action('post_deleted', $postid);
-
+	do_action('deleted_post', $postid);
+	
 	return $post;
 }
 
@@ -653,7 +649,7 @@ function wp_insert_post($postarr = array()) {
 		$wpdb->query( "UPDATE $wpdb->posts SET post_name = '$post_name' WHERE ID = '$post_ID'" );
 	}
 
-	wp_set_post_categories($post_ID, $post_category);
+	wp_set_post_categories( $post_ID, $post_category );
 
 	if ( 'page' == $post_type ) {
 		clean_page_cache($post_ID);
@@ -1066,16 +1062,17 @@ function get_page_uri($page_id) {
 
 function &get_pages($args = '') {
 	global $wpdb;
-
-	if ( is_array($args) )
-		$r = &$args;
-	else
-		parse_str($args, $r);
-
-	$defaults = array('child_of' => 0, 'sort_order' => 'ASC', 'sort_column' => 'post_title',
-				'hierarchical' => 1, 'exclude' => '', 'include' => '', 'meta_key' => '', 'meta_value' => '', 'authors' => '');
-	$r = array_merge($defaults, $r);
-	extract($r);
+	
+	$defaults = array(
+		'child_of' => 0, 'sort_order' => 'ASC', 
+		'sort_column' => 'post_title', 'hierarchical' => 1, 
+		'exclude' => '', 'include' => '', 
+		'meta_key' => '', 'meta_value' => '', 
+		'authors' => ''
+	);
+	
+	$r = wp_parse_args( $args, $defaults );
+	extract( $r );
 
 	$key = md5( serialize( $r ) );
 	if ( $cache = wp_cache_get( 'get_pages', 'page' ) )
@@ -1566,6 +1563,52 @@ function wp_check_for_changed_slugs($post_id) {
 		delete_post_meta($post_id, '_wp_old_slug', $post->post_name);
 
 	return $post_id;
+}
+
+/**
+ * This function provides a standardized way to appropriately select on
+ * the post_status of posts/pages. The function will return a piece of
+ * SQL code that can be added to a WHERE clause; this SQL is constructed
+ * to allow all published posts, and all private posts to which the user
+ * has access.
+ * 
+ * @param string $post_type currently only supports 'post' or 'page'.
+ * @return string SQL code that can be added to a where clause.
+ */
+function get_private_posts_cap_sql($post_type) {
+	global $user_ID;
+	$cap = '';
+
+	// Private posts
+	if ($post_type == 'post') {
+		$cap = 'read_private_posts';
+	// Private pages
+	} elseif ($post_type == 'page') {
+		$cap = 'read_private_pages';
+	// Dunno what it is, maybe plugins have their own post type?
+	} else {
+		$cap = apply_filters('pub_priv_sql_capability', $cap);
+
+		if (empty($cap)) {
+			// We don't know what it is, filters don't change anything,
+			// so set the SQL up to return nothing.
+			return '1 = 0';
+		}
+	}
+
+	$sql = '(post_status = \'publish\'';
+
+	if (current_user_can($cap)) {
+		// Does the user have the capability to view private posts? Guess so.
+		$sql .= ' OR post_status = \'private\'';
+	} elseif (is_user_logged_in()) {
+		// Users can view their own private posts.
+		$sql .= ' OR post_status = \'private\' AND post_author = \'' . $user_ID . '\'';
+	}
+
+	$sql .= ')';
+
+	return $sql;
 }
 
 ?>

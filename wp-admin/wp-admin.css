@@ -120,7 +120,6 @@ a:visited {
 }
 
 a:hover {
-/*	border-bottom: 1px solid #3a75ae;*/
 	color: #069;
 }
 
@@ -132,7 +131,7 @@ body	{
 }
 
 body, td {
-	font: 13px "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana;
+	font: 13px "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana, sans-serif;
 }
 
 fieldset {
@@ -170,10 +169,10 @@ form, label input {
 }
 
 h2 {
-	border-bottom: .5em solid #e5f3ff;
 	color: #333;
-	font: normal 32px/5px serif;
+	font: normal 32px serif;
 	margin: 5px 10px;
+	background: url( images/heading-bg.gif ) repeat-x bottom;
 }
 
 img, #footer a {
@@ -437,7 +436,7 @@ form#upload #post_content {
 }
 
 .wrap h2 {
-	margin: .4em 0 .5em;
+	margin: 0 0 .5em;
 	clear: both;
 }
 
@@ -538,7 +537,7 @@ input.disabled, textarea.disabled {
 	border: none;
 }
 
-#postdiv, #titlediv, #guiddiv {
+#postdiv, #titlediv, #guiddiv, #tagdiv {
 	margin: 0 8px 0 0;
 	padding: 0;
 }
@@ -554,11 +553,11 @@ input.disabled, textarea.disabled {
 }
 
 #postdivrich #content {
-	padding: .7em;
+	padding: 5px;
 	line-height: 140%;
 }
 
-#titlediv input, #guiddiv input {
+#titlediv input, #guiddiv input, #tagdiv input {
 	margin: 0;
 	width: 100%;
 }
@@ -629,7 +628,7 @@ input.delete:hover {
 
 #title {
 	font-size: 1.7em;
-	padding: 4px;
+	padding: 4px 3px;
 }
 
 #postexcerpt div, #attachmentlinks div {
@@ -912,15 +911,11 @@ input.delete:hover {
 }
 
 #zeitgeist h2, fieldset legend a {
-	border-bottom: none;
+	background: none;
 }
 
 * html #zeitgeist h2 {
 	padding-top: 10px;
-}
-
-#zeitgeist h2 {
-	margin-top: .4em;
 }
 
 #zeitgeist h3 {
@@ -1331,4 +1326,11 @@ a.page-numbers:hover {
 .pagenav span {
 	font-weight: bold;
 	margin: 0 6px;
+}
+
+a.view-link {
+	position: absolute;
+	right: 5%;
+	margin-right: 220px;
+	text-decoration:underline;
 }

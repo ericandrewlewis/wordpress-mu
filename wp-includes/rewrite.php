@@ -46,11 +46,11 @@ define('EP_ROOT',       64  );
 define('EP_COMMENTS',   128 );
 define('EP_SEARCH',     256 );
 define('EP_CATEGORIES', 512 );
-define('EP_AUTHORS',    1024);
-define('EP_PAGES',      2048);
+define('EP_AUTHORS',    2048);
+define('EP_PAGES',      4096);
 //pseudo-places
 define('EP_NONE',       0  );
-define('EP_ALL',        255);
+define('EP_ALL',        8191);
 
 //and an endpoint, like /trackback/
 function add_rewrite_endpoint($name, $places) {
@@ -62,6 +62,8 @@ function add_rewrite_endpoint($name, $places) {
 // determine the post ID it represents.
 function url_to_postid($url) {
 	global $wp_rewrite;
+	
+	$url = apply_filters('url_to_postid', $url);
 
 	// First, check to see if there is a 'p=N' or 'page_id=N' to match against
 	preg_match('#[?&](p|page_id)=(\d+)#', $url, $values);
@@ -196,6 +198,7 @@ class WP_Rewrite {
 					'([0-9]{1,2})',
 					'([^/]+)',
 					'([0-9]+)',
+					'(.+?)',
 					'(.+?)',
 					'([^/]+)',
 					'([^/]+)',
@@ -582,6 +585,16 @@ class WP_Rewrite {
 			if ($paged) //...and /page/xx ones
 				$rewrite = array_merge($rewrite, array($pagematch => $pagequery));
 
+			//do endpoints
+			if ($endpoints) {
+				foreach ($ep_query_append as $regex => $ep) {
+					//add the endpoints on if the mask fits
+					if ($ep[0] & $ep_mask || $ep[0] & $ep_mask_specific) {
+						$rewrite[$match . $regex] = $index . '?' . $query . $ep[1] . $this->preg_index($num_toks + 2);
+					}
+				}
+			}
+
 			//if we've got some tags in this dir
 			if ($num_toks) {
 				$post = false;
@@ -597,16 +610,6 @@ class WP_Rewrite {
 					$post = true;
 					if (strpos($struct, '%pagename%') !== false)
 						$page = true;
-				}
-
-				//do endpoints
-				if ($endpoints) {
-					foreach ($ep_query_append as $regex => $ep) {
-						//add the endpoints on if the mask fits
-						if ($ep[0] & $ep_mask || $ep[0] & $ep_mask_specific) {
-							$rewrite[$match . $regex] = $index . '?' . $query . $ep[1] . $this->preg_index($num_toks + 2);
-						}
-					}
 				}
 
 				//if we're creating rules for a permalink, do all the endpoints like attachments etc
@@ -869,7 +872,7 @@ class WP_Rewrite {
 		if ($this->using_index_permalinks()) {
 			$this->root = $this->index . '/';
 		}
-		$this->category_base = get_option('category_base');
+		$this->category_base = get_option( 'category_base' );
 		unset($this->category_structure);
 		unset($this->author_structure);
 		unset($this->date_structure);
