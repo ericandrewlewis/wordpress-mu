@@ -598,6 +598,8 @@ class wp_xmlrpc_server extends IXR_Server {
 				'blogid'   => $blog_id,
 				'blogName' => get_option('blogname')
 			);
+
+			restore_current_blog();
 		}
 
 	  return array($struct);
