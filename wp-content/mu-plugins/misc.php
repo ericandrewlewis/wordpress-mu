@@ -31,7 +31,6 @@ text-align: center;
 endif;
 
 function fix_upload_details( $uploads ) {
-
 	$uploads[ 'url' ] = str_replace( UPLOADS, "files", $uploads[ 'url' ] );
 	return $uploads;
 }
@@ -73,7 +72,7 @@ function upload_is_user_over_quota( $ret ) {
 	$size = get_dirsize($dirName) / 1024 / 1024;
 	
 	if( ($spaceAllowed-$size) < 0 ) { 
-		return "Sorry, you have used your space allocation. Please delete some files to upload more files."; //No space left
+		return __("Sorry, you have used your space allocation. Please delete some files to upload more files."); //No space left
 	} else {
 		return false;
 	}
@@ -83,7 +82,7 @@ add_filter( "pre_upload_error", "upload_is_user_over_quota" );
 // Use wporg wp_upload_dir() filter
 function filter_upload_dir_size( $uploads ) { 
 	if( upload_is_user_over_quota( 1 ) ) {
-		$uploads[ 'error' ] = 'Sorry, you have used your upload quota.';
+		$uploads[ 'error' ] = __('Sorry, you have used your upload quota.');
 	}
 
 	return $uploads;
@@ -91,9 +90,10 @@ function filter_upload_dir_size( $uploads ) {
 add_filter( 'upload_dir', 'filter_upload_dir_size' );
 
 function upload_is_file_too_big( $ret ) {
-	if( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
-		$ret = "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.<br />";
-
+	if( $_FILES[ 'image' ][ 'size' ] > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
+		$file_maxk = get_site_option( 'fileupload_maxk', 1500 );
+		$ret = sprintf(__('This file is too big. Files must be less than %1$s Kb in size.<br />'), $file_maxk);
+	}
 	return $ret;
 }
 add_filter( "check_uploaded_file", "upload_is_file_too_big" );

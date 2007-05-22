@@ -27,12 +27,13 @@ class delete_blog {
 		if( $_POST[ 'action' ] == "deleteblog" && $_POST[ 'confirmdelete' ] == '1' ) {
 			$hash = substr( md5( $_SERVER[ 'REQUEST_URI' ] . time() ), 0, 6 );
 			update_option( "delete_blog_hash", $hash );
-			$msg = "Dear User,
+			$url_delete = get_option( "siteurl" ) . "/wp-admin/options-general.php?page=delete-blog&h=" . $hash;
+			$msg = __("Dear User,
 You recently clicked the 'Delete Blog' link on your blog and filled in a 
 form on that page.
 If you really want to delete your blog, click the link below. You will not
 be asked to confirm again so only click this link if you are 100% certain:
-" . get_option( "siteurl" ) . "/wp-admin/options-general.php?page=delete-blog&h=" . $hash . "
+URL_DELETE
 
 If you delete your blog, please consider opening a new blog here
 some time in the future! (But remember your current blog and username 
@@ -40,9 +41,11 @@ are gone forever.)
 
 Thanks for using the site,
 Webmaster
-{$current_site->site_name}
-";
-			wp_mail( get_option( "admin_email" ), "[ " . get_option( "blogname" ) . " ] Delete My Blog", $msg );
+SITE_NAME
+");
+			$msg = str_replace( "URL_DELETE", $url_delete, $msg );
+			$msg = str_replace( "SITE_NAME", $current_site->site_name, $msg );
+			wp_mail( get_option( "admin_email" ), "[ " . get_option( "blogname" ) . " ] ".__("Delete My Blog"), $msg );
 			?>
 			<p><?php _e('Thank you. Please check your email for a link to confirm your action. Your blog will not be deleted until this link is clicked.') ?></p>
 			<?php
