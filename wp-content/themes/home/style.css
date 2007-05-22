@@ -1,7 +1,7 @@
 /*  
-Theme Name: WordPress Default
-Theme URI: http://wordpress.org/
-Description: The default WordPress theme based on the famous <a href="http://binarybonsai.com/kubrick/">Kubrick</a>.
+Theme Name: WordPress mu Default
+Theme URI: http://mu.wordpress.org/
+Description: The default WordPress mu theme based on the famous <a href="http://binarybonsai.com/kubrick/">Kubrick</a>.
 Version: 1.6
 Author: Michael Heilemann
 Author URI: http://binarybonsai.com/
@@ -186,7 +186,7 @@ a:hover {
 	text-decoration: underline;
 	}
 
-#wp-calendar #prev a {
+#wp-calendar #prev a, #wp-calendar #next a {
 	font-size: 9pt;
 	}
 
@@ -251,6 +251,10 @@ body {
 .post {
 	margin: 0 0 40px;
 	text-align: justify;
+	}
+
+.post hr {
+	display: block;
 	}
 
 .widecolumn .post {
