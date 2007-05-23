@@ -2,6 +2,17 @@
 /*
 	Helper functions for WPMU
 */
+function load_muplugin_textdomain($domain, $path = false) {
+	$locale = get_locale();
+	if ( empty($locale) )
+		$locale = 'en_US';
+
+	if ( false === $path )
+		$path = MUPLUGINDIR;
+
+	$mofile = ABSPATH . "$path/$domain-$locale.mo";
+	load_textdomain($domain, $mofile);
+}
 
 function wpmu_update_blogs_date() {
 	global $wpdb;
@@ -49,10 +60,9 @@ function wpmu_checkAvailableSpace($action) {
 	}
 	$dir->close();
 	$size = $size / 1024 / 1024;
+	$spaceAvailable = sprintf( "%2.2f", ( ($spaceAllowed-$size) ) );
+	echo sprintf(__('Space Available (<i>%2.2fMB</i>)'), $spaceAvailable);
 
-	?>
-	Space Available (<?php printf( "%2.2f", ( ($spaceAllowed-$size) ) ) ?><i>MB)</i>
-	<?php
 
 	if (($spaceAllowed-$size)>0) {
 		return $action;
