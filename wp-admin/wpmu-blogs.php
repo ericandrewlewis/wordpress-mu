@@ -409,7 +409,15 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'users':
 		?>
-		<td valign='top'><?php $blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); if( is_array( $blogusers ) ) while( list( $key, $val ) = each( $blogusers ) ) { print '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a> ('.$val->user_email.')<BR>'; }  ?></td>
+		<td valign='top'><?php 
+		$blogusers = get_users_of_blog( $blog[ 'blog_id' ] ); 
+		if( is_array( $blogusers ) ) {
+			if( $blog[ 'blog_id' ] == 1 && count( $blogusers ) > 10 )
+				$blogusers = array_slice( $blogusers, 0, 10 );
+			while( list( $key, $val ) = each( $blogusers ) ) 
+				print '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a> ('.$val->user_email.')<BR>'; 
+		}
+		?></td>
 		<?php
 		break;
 
