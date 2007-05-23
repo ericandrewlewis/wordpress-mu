@@ -17,7 +17,13 @@ switch( $_REQUEST[ 'action' ] ) {
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
 		if( is_email( $_POST[ 'admin_email' ] ) )
 			update_site_option( "admin_email", $_POST[ 'admin_email' ] );
-		update_site_option( "illegal_names", split( ' ', $_POST[ 'illegal_names' ] ) );
+		$illegal_names = split( ' ', $_POST[ 'illegal_names' ] );
+		foreach( $illegal_names as $name ) {
+			$name = trim( $name );
+			if( $name != '' )
+				$names[] = trim( $name );
+		}
+		update_site_option( "illegal_names", $names );
 		if( $_POST[ 'limited_email_domains' ] != '' ) {
 			update_site_option( "limited_email_domains", split( ' ', $_POST[ 'limited_email_domains' ] ) );
 		} else {
