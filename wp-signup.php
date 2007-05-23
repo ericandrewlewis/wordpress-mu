@@ -4,6 +4,11 @@ require( 'wp-config.php' );
 require( 'wp-blog-header.php' );
 require_once( ABSPATH . WPINC . '/registration.php' );
 
+if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
+	header( "Location: http://{$current_site->domain}{$current_site->path}" );
+	die();
+}
+
 do_action("signup_header");
 
 if( $current_blog->domain != $current_site->domain ) {
@@ -362,11 +367,6 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_emai
 }
 
 // Main
-if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
-	header( "Location: http://{$current_site->domain}{$current_site->path}" );
-	die();
-}
-
 $active_signup = 'all';
 $active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
 
