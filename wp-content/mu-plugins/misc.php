@@ -132,4 +132,17 @@ function scriptaculous_admin_loader() {
 }
 add_action( 'admin_print_scripts', 'scriptaculous_admin_loader' );
 
+function fix_import_form_size( $size ) {
+	if( upload_is_user_over_quota() == false )
+		return 0;
+	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
+	$dirsize = get_dirsize($dirName) / 1024;
+	if( $size > $dirsize ) {
+		return $dirsize;
+	} else {
+		return $size;
+	}
+}
+add_filter( 'import_upload_size_limit', 'fix_import_form_size' );
+
 ?>
