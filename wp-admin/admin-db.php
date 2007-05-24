@@ -510,6 +510,7 @@ function wp_set_link_cats($link_ID = 0, $link_categories = array()) {
 		$count = $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->link2cat, $wpdb->links WHERE $wpdb->links.link_id = $wpdb->link2cat.link_id AND category_id = '$cat_id'");
 		$wpdb->query("UPDATE $wpdb->categories SET link_count = '$count' WHERE cat_ID = '$cat_id'");
 		wp_cache_delete($cat_id, 'category');
+		clean_category_cache($cat_id);
 		do_action('edit_category', $cat_id);
 	}
 
