@@ -14,15 +14,14 @@ Install
 =======
 1. Download and unzip the WordPress MU package, if you haven't already.
    The unzipped files will be created in a directory named "wordpressmu"
-   followed by a version or "wpmu" followed by a date. For the sake of
-   convenience, rename this folder "wordpressmu" before continuing.
+   followed by a version number.
 2. Create a database for WordPress MU on your web server, as well as a 
    MySQL user who has all privileges for accessing and modifying it.
 3. Place the WordPress MU files in the desired location on your web server:
    * If you want to integrate WordPress MU into the root of your 
-     domain (e.g. http://example.com/), move or upload all contents of 
-     the unzipped WordPress MU directory (but excluding the directory 
-     itself) into the root directory of your web server.
+     domain (e.g. http://example.com/), move or upload all the files and
+     directories of the unzipped WordPress MU directory into the root 
+     directory of your web server.
    * If you want to have your WordPress MU installation in its own 
      subdirectory on your web site (e.g. http://example.com/blogs/), 
      rename the directory wordpressmu to the name you'd like the 
@@ -31,7 +30,9 @@ Install
      subdirectory called "blog", you should rename the directory called 
      "wordpressmu" to "blogs" and upload it to the root directory of your 
      web server. 
-4. Run the WordPress MU installation script by accessing index.php
+4. Make sure your install directory and the wp-contents directory are
+   writeable by the webserver.
+5. Run the WordPress MU installation script by accessing index.php
    in your favorite web browser.
    * If you installed WordPress MU in the root directory, you should 
      visit: http://example.com/index.php
@@ -125,6 +126,21 @@ settings to be updated.
 
 4. If you want to restrict blog signups, set the restrict domain email 
 setting in the admin.
+
+ERROR LOGGING
+=============
+If you are developing a site based on WPMU it is recommended that you
+turn on PHP error logging. Look in your php.ini for the section marked
+"Error handling and logging" where you can configure it.
+
+Mysql database errors are logged to the PHP error log if enabled or it
+can also send error reports to a file of your choice. After installing,
+edit wp-config.php and define a constant, "ERRORLOGFILE", pointing at
+your MySQL error log. This file must be writeable by your webserver.
+Please don't log to a file visible by your webserver or people may 
+figure out they can download it.
+Example definition:
+define( "ERRORLOGFILE", "/tmp/mysql.log" );
 
 
 UPGRADING
