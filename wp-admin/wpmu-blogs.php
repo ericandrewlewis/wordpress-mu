@@ -279,7 +279,7 @@ function check_all_rows() {
 //  -->
 </script>
 
-<h2><?php _e ('Blogs') ?></h2>
+<h2><?php _e('Blogs') ?></h2>
 <form name="searchform" action="wpmu-blogs.php" method="get" style="float: left; margin-right: 3em;"> 
   <table><td>
   <fieldset> 

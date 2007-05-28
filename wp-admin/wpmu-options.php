@@ -93,7 +93,7 @@ if (isset($_GET['updated'])) {
 		<legend><?php _e('Site Wide Settings <em>(These settings may be overridden by blog owners)</em>') ?></legend> 
 		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 		<?php
-		$lang_files = glob( ABSPATH . WPINC . "/languages/*" );
+		$lang_files = glob( ABSPATH . WPINC . "/languages/*.mo" );
 		$lang = get_site_option( "WPLANG" );
 		if( is_array( $lang_files ) ) {
 			?>

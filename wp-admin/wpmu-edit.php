@@ -87,7 +87,7 @@ switch( $_REQUEST[ 'action' ] ) {
 			}
 			print "</ul>";
 		} else {
-			print "No Users Found";
+			_e('No Users Found');
 		}
 		exit;
 	break;
@@ -145,7 +145,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
 			$wpdb->show_errors();
 			if( !is_wp_error($blog_id) ) {
-				@wp_mail( get_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), "New blog created by {$current_user->user_login}\n\nAddress: http://{$newdomain}{$path}\nName: ".wp_specialchars( $blog['title'] ) );
+				$content_mail = sprintf(__('New blog created by %1s\n\nAddress: http://%2s\nName: %3s'), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
+				@wp_mail( get_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail );
 				wp_redirect( add_query_arg( "updated", "blogadded", $_SERVER[ 'HTTP_REFERER' ] ) );
 				die();
 			} else {
@@ -181,8 +182,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			}
 		}
 		// update blogs table
-		$query = "UPDATE $wpdb->blogs
-				SET    domain       = '".$_POST[ 'blog' ][ 'domain' ]."',
+		$query = "UPDATE $wpdb->blogs SET
+				domain       = '".$_POST[ 'blog' ][ 'domain' ]."',
 				path         = '".$_POST[ 'blog' ][ 'path' ]."',
 				registered   = '".$_POST[ 'blog' ][ 'registered' ]."',
 				public       = '".$_POST[ 'blog' ][ 'public' ]."',
