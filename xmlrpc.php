@@ -602,7 +602,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			restore_current_blog();
 		}
 
-	  return array($struct);
+	  return $struct;
 	}
 
 
