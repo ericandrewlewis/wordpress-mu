@@ -223,7 +223,7 @@ function is_site_admin( $user_login = false ) {
 		$user_login = $current_user->user_login;
 
 	$site_admins = get_site_option( 'site_admins', array('admin') );
-	if( in_array( $user_login, $site_admins ) )
+	if( is_array( $site_admins ) && in_array( $user_login, $site_admins ) )
 		return true;
 
 	return false;
