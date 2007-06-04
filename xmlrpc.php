@@ -18,7 +18,7 @@ if ( isset($HTTP_RAW_POST_DATA) )
 include('./wp-config.php');
 
 if ( isset( $_GET['rsd'] ) ) { // http://archipelago.phrasewise.com/rsd 
-header('Content-type: text/xml; charset=' . get_option('blog_charset'), true);
+header('Content-Type: text/xml; charset=' . get_option('blog_charset'), true);
 
 ?>
 <?php echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>'; ?>
@@ -28,10 +28,10 @@ header('Content-type: text/xml; charset=' . get_option('blog_charset'), true);
     <engineLink>http://wordpress.org/</engineLink>
     <homePageLink><?php bloginfo_rss('url') ?></homePageLink>
     <apis>
-      <api name="WordPress" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('url') ?>/xmlrpc.php" />
-      <api name="Movable Type" blogID="1" preferred="true" apiLink="<?php bloginfo_rss('url') ?>/xmlrpc.php" />
-      <api name="MetaWeblog" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('url') ?>/xmlrpc.php" />
-      <api name="Blogger" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('url') ?>/xmlrpc.php" />
+      <api name="WordPress" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
+      <api name="Movable Type" blogID="1" preferred="true" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
+      <api name="MetaWeblog" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
+      <api name="Blogger" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
     </apis>
   </service>
 </rsd>
@@ -208,7 +208,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			$allow_pings = ("open" == $page->ping_status) ? 1 : 0;
 
 			// Format page date.
-			$page_date = mysql2date("Ymd\TH:i:s", $page->post_date_gmt);
+			$page_date = mysql2date("Ymd\TH:i:s\Z", $page->post_date_gmt);
 
 			// Pull the categories info together.
 			$categories = array();
@@ -438,7 +438,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		// The date needs to be formated properly.
 		$num_pages = count($page_list);
 		for($i = 0; $i < $num_pages; $i++) {
-			$post_date = mysql2date("Ymd\TH:i:s", $page_list[$i]->post_date_gmt);
+			$post_date = mysql2date("Ymd\TH:i:s\Z", $page_list[$i]->post_date_gmt);
 			$page_list[$i]->dateCreated = new IXR_Date($post_date);
 
 			unset($page_list[$i]->post_date_gmt);
@@ -538,7 +538,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		$username				= $args[1];
 		$password				= $args[2];
 		$category				= $args[3];
-		$max_results			= $args[4];
+		$max_results			= (int) $args[4];
 
 		if(!$this->login_pass_ok($username, $password)) {
 			return($this->error);
@@ -942,8 +942,9 @@ class wp_xmlrpc_server extends IXR_Server {
 	    return $this->error;
 	  }
 
+      $cap = ($publish) ? 'publish_posts' : 'edit_posts';
 	  $user = set_current_user(0, $user_login);
-	  if ( !current_user_can('publish_posts') )
+	  if ( !current_user_can($cap) )
 	    return new IXR_Error(401, __('Sorry, you can not post on this weblog or category.'));
 
 		// The post_type defaults to post, but could also be page.
@@ -987,14 +988,12 @@ class wp_xmlrpc_server extends IXR_Server {
 			switch($post_type) {
 				case "post":
 					if(!current_user_can("edit_others_posts")) {
-						return(new IXR_Error(401, "You are not allowed to " .
-							"post as this user"));
+						return(new IXR_Error(401, __("You are not allowed to post as this user")));
 					}
 					break;
 				case "page":
 					if(!current_user_can("edit_others_pages")) {
-						return(new IXR_Error(401, "You are not allowed to " .
-							"create pages as this user"));
+						return(new IXR_Error(401, __("You are not allowed to create pages as this user")));
 					}
 					break;
 				default:
@@ -1163,7 +1162,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			$menu_order = $content_struct["wp_page_order"];
 		}
 
-		$post_author = $user->ID;
+		$post_author = $postdata["post_author"];
 
 		// Only set the post_author if one is set.
 		if(
@@ -1173,14 +1172,12 @@ class wp_xmlrpc_server extends IXR_Server {
 			switch($post_type) {
 				case "post":
 					if(!current_user_can("edit_others_posts")) {
-						return(new IXR_Error(401, "You are not allowed to " .
-							"change the post author as this user."));
+						return(new IXR_Error(401, __("You are not allowed to change the post author as this user.")));
 					}
 					break;
 				case "page":
 					if(!current_user_can("edit_others_pages")) {
-						return(new IXR_Error(401, "You are not allowed to " .
-							"change the page author as this user."));
+						return(new IXR_Error(401, __("You are not allowed to change the page author as this user.")));
 					}
 					break;
 				default:
@@ -1282,7 +1279,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 	  if ($postdata['post_date'] != '') {
 
-	    $post_date = mysql2date('Ymd\TH:i:s', $postdata['post_date_gmt']);
+	    $post_date = mysql2date('Ymd\TH:i:s\Z', $postdata['post_date_gmt']);
 
 	    $categories = array();
 	    $catids = wp_get_post_categories($post_ID);
@@ -1350,7 +1347,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		foreach ($posts_list as $entry) {
 
-			$post_date = mysql2date('Ymd\TH:i:s', $entry['post_date_gmt']);
+			$post_date = mysql2date('Ymd\TH:i:s\Z', $entry['post_date_gmt']);
 			$categories = array();
 			$catids = wp_get_post_categories($entry['ID']);
 			foreach($catids as $catid) {
@@ -1484,7 +1481,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		$upload = wp_upload_bits($name, $type, $bits, $overwrite);
 		if ( ! empty($upload['error']) ) {
-			$errorString = 'Could not write file ' . $name . ' (' . $upload['error'] . ')';
+			$errorString = sprintf(__('Could not write file %1$s (%2$s)'), $name, $upload['error']);
 			logIO('O', '(MW) ' . $errorString);
 			return new IXR_Error(500, $errorString);
 		}
@@ -1535,7 +1532,7 @@ class wp_xmlrpc_server extends IXR_Server {
 
 		foreach ($posts_list as $entry) {
 
-			$post_date = mysql2date('Ymd\TH:i:s', $entry['post_date_gmt']);
+			$post_date = mysql2date('Ymd\TH:i:s\Z', $entry['post_date_gmt']);
 
 			$struct[] = array(
 				'dateCreated' => new IXR_Date($post_date),
@@ -1795,7 +1792,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			}
 		} else {
 			// TODO: Attempt to extract a post ID from the given URL
-	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
+	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
 		}
 		$post_ID = (int) $post_ID;
 
@@ -1805,14 +1802,14 @@ class wp_xmlrpc_server extends IXR_Server {
 		$post = get_post($post_ID);
 
 		if ( !$post ) // Post_ID not found
-	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
+	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
 
 		if ( $post_ID == url_to_postid($pagelinkedfrom) )
 			return new IXR_Error(0, __('The source URL and the target URL cannot both point to the same resource.'));
 
 		// Check if pings are on
 		if ( 'closed' == $post->ping_status )
-	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
+	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
 
 		// Let's check that the remote site didn't already pingback this entry
 		$result = $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_post_ID = '$post_ID' AND comment_author_url = '$pagelinkedfrom'");
@@ -1894,7 +1891,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		$comment_ID = wp_new_comment($commentdata);
 		do_action('pingback_post', $comment_ID);
 
-		return "Pingback from $pagelinkedfrom to $pagelinkedto registered. Keep the web talking! :-)";
+		return sprintf(__('Pingback from %1$s to %2$s registered. Keep the web talking! :-)'), $pagelinkedfrom, $pagelinkedto);
 	}
 
 
@@ -1912,7 +1909,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		$post_ID = url_to_postid($url);
 		if (!$post_ID) {
 			// We aren't sure that the resource is available and/or pingback enabled
-	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
+	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
 		}
 
 		$actual_post = wp_get_single_post($post_ID, ARRAY_A);
