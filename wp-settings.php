@@ -125,6 +125,9 @@ $wpdb->blog_versions	= $wpdb->prefix . 'blog_versions';
 $wpdb->users		= $wpdb->prefix . 'users';
 $wpdb->usermeta		= $wpdb->prefix . 'usermeta';
 
+if( defined( 'SUNRISE' ) )
+	include_once( ABSPATH . 'wp-content/sunrise.php' );
+
 require_once ( ABSPATH . 'wpmu-settings.php' );
 $wpdb->prefix           = $table_prefix;
 $wpdb->posts            = $wpdb->prefix . 'posts';
@@ -136,8 +139,8 @@ $wpdb->links            = $wpdb->prefix . 'links';
 $wpdb->linkcategories   = $wpdb->prefix . 'linkcategories';
 $wpdb->options          = $wpdb->prefix . 'options';
 $wpdb->postmeta         = $wpdb->prefix . 'postmeta';
-$wpdb->siteid           = $site_id;
-$wpdb->blogid           = $blog_id;
+$wpdb->siteid           = $current_blog->site_id;
+$wpdb->blogid           = $current_blog->blog_id;
 
 if ( defined('CUSTOM_USER_TABLE') )
 	$wpdb->users = CUSTOM_USER_TABLE;

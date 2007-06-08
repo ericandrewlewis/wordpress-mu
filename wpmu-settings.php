@@ -1,6 +1,6 @@
 <?php
-if( defined( 'ABSPATH' ) == false )
-	die();
+if( $current_site && $current_blog )
+	return;
 
 $wpmuBaseTablePrefix = $table_prefix;
 

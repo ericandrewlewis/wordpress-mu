@@ -18,8 +18,10 @@ $table_prefix  = 'wp_';   // Only numbers, letters, and underscores please!
 // Change this to localize WordPress.  A corresponding MO file for the
 // chosen language must be installed to wp-content/languages.
 // For example, install de.mo to wp-content/languages and set WPLANG to 'de'
-// to enable German language support.
-define ('WPLANG', '');
+// to enable language support.
+define('WPLANG', '');
+// uncomment this to enable wp-content/sunrise.php support
+//define( 'SUNRISE', 'on' );
 
 define( "WP_USE_MULTIPLE_DB", false );
 
