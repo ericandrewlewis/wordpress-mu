@@ -1,5 +1,12 @@
 <?php
 
+add_action( 'admin_print_scripts', 'switcher_scripts' );
+
+function switcher_scripts() {
+	wp_enqueue_script('jquery');
+}
+
+
 function switcher_css() {
 ?>
 <style type="text/css">
@@ -35,16 +42,13 @@ function switcher_css() {
 	z-index: 1;
 }
 </style>
-<?php
-	wp_enqueue_script('interface');
-?>
 <script type="text/javascript">
 jQuery( function($) {
 var switchTime;
 var w = false;
 var h = $( '#blog-title' )
 	.css({
-		background: 'transparent url( images/bullet_arrow_down.gif ) no-repeat scroll 100% .2em;',
+		background: 'transparent url( ../wp-content/mu-plugins/bullet_arrow_down.gif ) no-repeat scroll 100% .2em;',
 		padding: '0 25px 2px 5px',
 		cursor: 'pointer',
 		border: '1px solid #14568a',
