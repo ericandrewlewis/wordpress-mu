@@ -1301,6 +1301,7 @@ function install_blog($blog_id, $blog_title = '') {
 	update_option('siteurl', $url);
 	update_option('home', $url);
 	update_option('fileupload_url', $url . "files" );
+	update_option('upload_path', "wp-content/blogs.dir/" . $blog_id . "/files");
 	update_option('blogname', $blog_title);
 
 	$wpdb->query("UPDATE $wpdb->options SET option_value = '' WHERE option_name = 'admin_email'");
