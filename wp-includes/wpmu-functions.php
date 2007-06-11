@@ -479,6 +479,7 @@ function get_blogs_of_user( $id, $all = false ) {
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) && ( $all == true || $all == false && ( $blog->archived == 0 && $blog->spam == 0 && $blog->deleted == 0 ) ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
+				$blogs[$match[1]]->blogname    = $blog->blogname;
 				$blogs[$match[1]]->domain      = $blog->domain;
 				$blogs[$match[1]]->path        = $blog->path;
 				$blogs[$match[1]]->site_id     = $blog->site_id;
