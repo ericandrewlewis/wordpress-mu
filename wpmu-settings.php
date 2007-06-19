@@ -110,10 +110,12 @@ if( defined( "WP_INSTALLING" ) == false ) {
 }
 
 function is_blogname_page( $blogname ) {
-	global $wpdb, $table_prefix;
+	global $wpdb, $table_prefix, $domain, $path;
+
+	$blog_id = $wpdb->get_var("SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
 
 	// is the request for a page of the main blog? We need to cache this information somewhere to save a request
-	$pages = $wpdb->get_col( "SELECT LOWER(post_name) FROM {$table_prefix}1_posts WHERE post_type='page'" ); 
+	$pages = $wpdb->get_col( "SELECT LOWER(post_name) FROM {$table_prefix}{$blog_id}_posts WHERE post_type='page'" ); 
 
 	if( is_array( $pages ) == false ) 
 		return false;
