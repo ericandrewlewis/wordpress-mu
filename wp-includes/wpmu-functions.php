@@ -1298,6 +1298,8 @@ function install_blog($blog_id, $blog_title = '') {
 	populate_roles();
 	$wp_roles->_init();
 	// fix url.
+	wp_cache_delete('notoptions', 'options');
+	wp_cache_delete('alloptions', 'options');
 	update_option('siteurl', $url);
 	update_option('home', $url);
 	update_option('fileupload_url', $url . "files" );
