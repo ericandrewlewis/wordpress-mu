@@ -246,7 +246,7 @@ function get_option($setting) {
 
 			if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 				$value = $row->option_value;
-				wp_cache_set($setting, $value, 'options');
+				wp_cache_add($setting, $value, 'options');
 			} else { // option does not exist, so we must cache its non-existence
 				$notoptions[$setting] = true;
 				wp_cache_set('notoptions', $notoptions, 'options');
@@ -314,7 +314,7 @@ function wp_load_alloptions() {
 		$alloptions = array();
 		foreach ( (array) $alloptions_db as $o )
 			$alloptions[$o->option_name] = $o->option_value;
-		wp_cache_set('alloptions', $alloptions, 'options');
+		wp_cache_add('alloptions', $alloptions, 'options');
 	}
 	return $alloptions;
 }
@@ -405,14 +405,7 @@ function delete_option($name) {
 
 	// Get the ID, if no ID then return
 	$option = $wpdb->get_row("SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'");
-	if ( !$option->option_id ) {
-		$alloptions = wp_load_alloptions();
-		if ( isset($alloptions[$name]) ) {
-			unset($alloptions[$name]);
-			wp_cache_set('alloptions', $alloptions, 'options');
-		}
-		return false;
-	}
+	if ( !$option->option_id ) return false;
 	$wpdb->query("DELETE FROM $wpdb->options WHERE option_name = '$name'");
 	if ( 'yes' == $option->autoload ) {
 		$alloptions = wp_load_alloptions();
@@ -420,10 +413,9 @@ function delete_option($name) {
 			unset($alloptions[$name]);
 			wp_cache_set('alloptions', $alloptions, 'options');
 		}
+	} else {
+		wp_cache_delete($name, 'options');
 	}
-
-	wp_cache_delete($name, 'options');
-
 	return true;
 }
 
