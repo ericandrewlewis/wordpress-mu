@@ -118,7 +118,6 @@ cat_rows();
 </div>
 
 <?php include('edit-category-form.php'); ?>
-
 <?php endif; ?>
 
 <?php

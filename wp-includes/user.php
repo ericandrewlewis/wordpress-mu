@@ -56,7 +56,7 @@ function update_user_option( $user_id, $option_name, $newvalue, $global = false 
 function get_users_of_blog( $id = '' ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 	if ( empty($id) )
-	$id = (int) $wpdb->blogid;
+		$id = (int) $wpdb->blogid;
 	$users = $wpdb->get_results( "SELECT user_id, user_login, display_name, user_email, meta_value FROM $wpdb->users, $wpdb->usermeta WHERE " . $wpdb->users . ".ID = " . $wpdb->usermeta . ".user_id AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities' ORDER BY {$wpdb->usermeta}.user_id" );
 	return $users;
 }

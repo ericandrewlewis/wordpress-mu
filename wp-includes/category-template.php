@@ -86,6 +86,15 @@ function _get_the_category_usort($a, $b) {
 	return strcmp($a->category_name, $b->category_name);
 }
 
+function _get_the_category_usort_by_ID($a, $b) {
+	if ( $a->cat_ID > $b->cat_ID )
+		return 1;
+	elseif ( $a->cat_ID < $b->cat_ID )
+		return -1;
+	else
+		return 0;
+}
+
 function get_the_category_by_ID($cat_ID) {
 	$cat_ID = (int) $cat_ID;
 	$category = &get_category($cat_ID);
@@ -172,21 +181,20 @@ function category_description($category = 0) {
 }
 
 function wp_dropdown_categories($args = '') {
-	$defaults = array(
-		'show_option_all' => '', 'show_option_none' => '', 
-		'orderby' => 'ID', 'order' => 'ASC', 
-		'show_last_update' => 0, 'show_count' => 0, 
-		'hide_empty' => 1, 'child_of' => 0, 
-		'exclude' => '', 'echo' => 1, 
-		'selected' => 0, 'hierarchical' => 0, 
-		'name' => 'cat', 'class' => 'postform'
-	);
-	
+	if ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
+
+	$defaults = array('show_option_all' => '', 'show_option_none' => '', 'orderby' => 'ID',
+		'order' => 'ASC', 'show_last_update' => 0, 'show_count' => 0,
+		'hide_empty' => 1, 'child_of' => 0, 'exclude' => '', 'echo' => 1,
+		'selected' => 0, 'hierarchical' => 0, 'name' => 'cat',
+		'class' => 'postform');
 	$defaults['selected'] = ( is_category() ) ? get_query_var('cat') : 0;
-	
-	$r = wp_parse_args( $args, $defaults );
+	$r = array_merge($defaults, $r);
 	$r['include_last_update_time'] = $r['show_last_update'];
-	extract( $r );
+	extract($r, EXTR_SKIP);
 
 	$categories = get_categories($r);
 
@@ -222,28 +230,23 @@ function wp_dropdown_categories($args = '') {
 }
 
 function wp_list_categories($args = '') {
-	$defaults = array(
-		'show_option_all' => '', 'orderby' => 'name', 
-		'order' => 'ASC', 'show_last_update' => 0, 
-		'style' => 'list', 'show_count' => 0, 
-		'hide_empty' => 1, 'use_desc_for_title' => 1, 
-		'child_of' => 0, 'feed' => '', 
-		'feed_image' => '', 'exclude' => '', 
-		'hierarchical' => true, 'title_li' => __('Categories')
-	);
-	
-	$r = wp_parse_args( $args, $defaults );
-	
-	if ( !isset( $r['pad_counts'] ) && $r['show_count'] && $r['hierarchical'] ) {
+	if ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
+
+	$defaults = array('show_option_all' => '', 'orderby' => 'name',
+		'order' => 'ASC', 'show_last_update' => 0, 'style' => 'list',
+		'show_count' => 0, 'hide_empty' => 1, 'use_desc_for_title' => 1,
+		'child_of' => 0, 'feed' => '', 'feed_image' => '', 'exclude' => '',
+		'hierarchical' => true, 'title_li' => __('Categories'));
+	$r = array_merge($defaults, $r);
+	if ( !isset($r['pad_counts']) && $r['show_count'] && $r['hierarchical'] )
 		$r['pad_counts'] = true;
-	}
-	
-	if ( isset( $r['show_date'] ) ) {
+	if ( isset($r['show_date']) )
 		$r['include_last_update_time'] = $r['show_date'];
-	}
-	
-	extract( $r );
-	
+	extract($r, EXTR_SKIP);
+
 	$categories = get_categories($r);
 
 	$output = '';

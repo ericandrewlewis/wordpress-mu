@@ -76,7 +76,7 @@ if ( is_month() ) {
 <form name="searchform" id="searchform" action="" method="get">
   <fieldset> 
   <legend><?php _e('Search Posts&hellip;') ?></legend> 
-  <input type="text" name="s" id="s" value="<?php if (isset($s)) echo attribute_escape($s); ?>" size="17" /> 
+  <input type="text" name="s" value="<?php if (isset($s)) echo attribute_escape($s); ?>" size="17" /> 
   <input type="submit" name="submit" value="<?php _e('Search') ?>" class="button" /> 
   </fieldset>
 </form>
@@ -196,7 +196,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 	case 'comments':
 		?>
 		<td style="text-align: center">
-			<?php comments_number("<a href='edit.php?p=$id&amp;c=1'>" . __('0') . '</a>', "<a href='edit.php?p=$id&amp;c=1'>" . __('1') . '</a>', "<a href='edit.php?p=$id&amp;c=1'>" . __('%') . '</a>') ?>
+			<?php comments_number(__('0'), "<a href='edit.php?p=$id&amp;c=1'>" . __('1') . '</a>', "<a href='edit.php?p=$id&amp;c=1'>" . __('%') . '</a>') ?>
 			</td>
 		<?php
 		break;

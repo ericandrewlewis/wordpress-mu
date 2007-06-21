@@ -4,10 +4,6 @@ if (navigator.userAgent.indexOf('Mac OS') != -1) {
 // Mac OS browsers use Ctrl to hit accesskeys
 	var metaKey = 'Ctrl';
 }
-else if (navigator.userAgent.indexOf('Firefox/2') != -1) {
-// Firefox 2.x uses Alt+Shift to hit accesskeys
-	var metaKey = 'Alt+Shift';
-}
 else {
 	var metaKey = 'Alt';
 }
@@ -35,3 +31,4 @@ numlist_desc : 'Ordered list (' + metaKey + '+o)',
 outdent_desc : 'Outdent (' + metaKey + '+w)',
 indent_desc : 'Indent list/blockquote (' + metaKey + '+q)'
 });
+

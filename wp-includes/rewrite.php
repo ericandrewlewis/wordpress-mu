@@ -46,11 +46,11 @@ define('EP_ROOT',       64  );
 define('EP_COMMENTS',   128 );
 define('EP_SEARCH',     256 );
 define('EP_CATEGORIES', 512 );
-define('EP_AUTHORS',    2048);
-define('EP_PAGES',      4096);
+define('EP_AUTHORS',    1024);
+define('EP_PAGES',      2048);
 //pseudo-places
 define('EP_NONE',       0  );
-define('EP_ALL',        8191);
+define('EP_ALL',        4095);
 
 //and an endpoint, like /trackback/
 function add_rewrite_endpoint($name, $places) {
@@ -198,7 +198,6 @@ class WP_Rewrite {
 					'([0-9]{1,2})',
 					'([^/]+)',
 					'([0-9]+)',
-					'(.+?)',
 					'(.+?)',
 					'([^/]+)',
 					'([^/]+)',
@@ -872,7 +871,7 @@ class WP_Rewrite {
 		if ($this->using_index_permalinks()) {
 			$this->root = $this->index . '/';
 		}
-		$this->category_base = get_option( 'category_base' );
+		$this->category_base = get_option('category_base');
 		unset($this->category_structure);
 		unset($this->author_structure);
 		unset($this->date_structure);

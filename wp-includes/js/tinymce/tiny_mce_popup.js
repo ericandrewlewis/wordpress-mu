@@ -1,5 +1,3 @@
-
-
 // Some global instances, this will be filled later
 var tinyMCE = null, tinyMCELang = null;
 

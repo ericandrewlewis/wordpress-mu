@@ -175,6 +175,8 @@ function upgrade_all() {
 		upgrade_110();
 		upgrade_130();
 	}
+	
+	maybe_disable_automattic_widgets();
 
 	if ( $wp_current_db_version < 3308 )
 		upgrade_160();
@@ -184,8 +186,6 @@ function upgrade_all() {
 
 	if ( $wp_current_db_version < 4351 )
 		upgrade_old_slugs();
-	
-	maybe_disable_automattic_widgets();
 
 	$wp_rewrite->flush_rules();
 

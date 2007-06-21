@@ -83,14 +83,6 @@ function date_i18n($dateformatstring, $unixtimestamp) {
 	return $j;
 }
 
-function number_format_i18n($number, $decimals = null) {
-	global $wp_locale;
-	// let the user override the precision only
-	$decimals = is_null($decimals)? $wp_locale->number_format['decimals'] : intval($decimals);
-
-	return number_format($number, $decimals, $wp_locale->number_format['decimal_point'], $wp_locale->number_format['thousands_sep']);
-}
-
 function get_weekstartend($mysqlstring, $start_of_week) {
 	$my = substr($mysqlstring,0,4);
 	$mm = substr($mysqlstring,8,2);
@@ -778,12 +770,12 @@ add_query_arg(associative_array, oldquery_or_uri)
 function add_query_arg() {
 	$ret = '';
 	if ( is_array(func_get_arg(0)) ) {
-		if ( @func_num_args() < 2 || '' == @func_get_arg(1) )
+		if ( @func_num_args() < 2 || false === @func_get_arg(1) )
 			$uri = $_SERVER['REQUEST_URI'];
 		else
 			$uri = @func_get_arg(1);
 	} else {
-		if ( @func_num_args() < 3 || '' == @func_get_arg(2) )
+		if ( @func_num_args() < 3 || false === @func_get_arg(2) )
 			$uri = $_SERVER['REQUEST_URI'];
 		else
 			$uri = @func_get_arg(2);
@@ -818,9 +810,7 @@ function add_query_arg() {
 		$query = $uri;
 	}
 
-	parse_str($query, $qs);
-	if ( get_magic_quotes_gpc() )
-		$qs = stripslashes_deep($qs); // parse_str() adds slashes if magicquotes is on.  See: http://php.net/parse_str
+	wp_parse_str($query, $qs);
 	$qs = urlencode_deep($qs);
 	if ( is_array(func_get_arg(0)) ) {
 		$kayvees = func_get_arg(0);
@@ -841,7 +831,7 @@ function add_query_arg() {
 	}
 	$ret = trim($ret, '?');
 	$ret = $protocol . $base . $ret . $frag;
-	$ret = trim($ret, '?');
+	$ret = rtrim($ret, '?');
 	return $ret;
 }
 
@@ -855,7 +845,7 @@ remove_query_arg(removekey, [oldquery_or_uri]) or
 remove_query_arg(removekeyarray, [oldquery_or_uri])
 */
 
-function remove_query_arg($key, $query='') {
+function remove_query_arg($key, $query=FALSE) {
 	if ( is_array($key) ) { // removing multiple keys
 		foreach ( (array) $key as $k )
 			$query = add_query_arg($k, FALSE, $query);
@@ -918,23 +908,19 @@ function wp($query_vars = '') {
 	$wp->main($query_vars);
 }
 
-function get_status_header_desc( $code ) {
-	global $wp_header_to_desc;
-	
-	$code = (int) $code;
-	
-	if ( isset( $wp_header_to_desc[$code] ) ) {
-		return $wp_header_to_desc[$code];
-	} else {
-		return '';
-	}
-}
-
 function status_header( $header ) {
-	$text = get_status_header_desc( $header );
-	
-	if ( empty( $text ) )
-		return false;
+	if ( 200 == $header )
+		$text = 'OK';
+	elseif ( 301 == $header )
+		$text = 'Moved Permanently';
+	elseif ( 302 == $header )
+		$text = 'Moved Temporarily';
+	elseif ( 304 == $header )
+		$text = 'Not Modified';
+	elseif ( 404 == $header )
+		$text = 'Not Found';
+	elseif ( 410 == $header )
+		$text = 'Gone';
 
 	$protocol = $_SERVER["SERVER_PROTOCOL"];
 	if ( ('HTTP/1.1' != $protocol) && ('HTTP/1.0' != $protocol) )
@@ -1216,7 +1202,6 @@ function wp_check_filetype($filename, $mimes = null) {
 		'js' => 'application/javascript',
 		'pdf' => 'application/pdf',
 		'doc' => 'application/msword',
-		'odt' => 'application/vnd.oasis.opendocument.text',
 		'pot|pps|ppt' => 'application/vnd.ms-powerpoint',
 		'wri' => 'application/vnd.ms-write',
 		'xla|xls|xlt|xlw' => 'application/vnd.ms-excel',
@@ -1504,20 +1489,15 @@ function smilies_init() {
 }
 
 function wp_parse_args( $args, $defaults = '' ) {
-	if ( is_array( $args ) ) {
+	if ( is_array( $args ) )
 		$r =& $args;
-	} else {
-		parse_str( $args, $r );
-		if ( get_magic_quotes_gpc() ) {
-			$r = stripslashes_deep( $r );
-		}
-	}
-	
-	if ( is_array( $defaults ) ) {
+	else
+		wp_parse_str( $args, $r );
+
+	if ( is_array( $defaults ) )
 		return array_merge( $defaults, $r );
-	} else {
+	else
 		return $r;
-	}
 }
 
 function wp_maybe_load_widgets() {

@@ -199,19 +199,6 @@ if ( $links ) {
 </form>
 
 <?php } ?>
-<?php
-if( wp_cache_get( "checked_bookmarks_table", "options" ) == false ) {
-	$results = $wpdb->get_results( "SELECT link_id, category_id, count( * ) AS c FROM {$wpdb->link2cat} GROUP BY link_id, category_id" );
-	if( $results != null ) {
-		foreach( $results as $link ) {
-			if( $link->c > 1 ) {
-				$wpdb->query( "DELETE FROM {$wpdb->link2cat} WHERE link_id='{$link->link_id}' AND category_id='{$link->category_id}'" );
-				$wpdb->query( "INSERT INTO {$wpdb->link2cat} VALUES ( 0, '{$link->link_id}', '{$link->category_id}' )" );
-			}
-		}
-	}
-	wp_cache_set( "checked_bookmarks_table", "1", "options" );
-} ?>
 
 </div>
 

@@ -83,7 +83,7 @@ function get_nonauthor_user_ids() {
 function wp_insert_category($catarr) {
 	global $wpdb;
 
-	extract($catarr);
+	extract($catarr, EXTR_SKIP);
 
 	if( trim( $cat_name ) == '' )
 		return 0;
@@ -124,11 +124,6 @@ function wp_insert_category($catarr) {
 		$links_private = (int) $links_private;
 	else
 		$links_private = 0;
-
-
-	// Let's check if we have this category already, if so just do an update
-	if ( !$update && $cat_ID = category_object_exists( $category_nicename ) )
-		$update = true;
 
 	if (!$update) {
 		$maxcat = $wpdb->get_var( "SELECT max(cat_ID) FROM {$wpdb->categories}" );
@@ -255,14 +250,6 @@ function wp_create_categories($categories, $post_id = '') {
 	return $cat_ids;
 }
 
-function category_object_exists($cat_name) {
-	global $wpdb;
-	if (!$category_nicename = sanitize_title($cat_name))
-		return 0;
-
-	return (int) $wpdb->get_var("SELECT cat_ID FROM $wpdb->categories WHERE category_nicename = '$category_nicename'");
-}
-
 function category_exists($cat_name) {
 	global $wpdb;
 	if (!$category_nicename = sanitize_title($cat_name))
@@ -314,7 +301,7 @@ function wp_revoke_user($id) {
 function wp_insert_link($linkdata) {
 	global $wpdb, $current_user;
 
-	extract($linkdata);
+	extract($linkdata, EXTR_SKIP);
 
 	$update = false;
 

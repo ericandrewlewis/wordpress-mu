@@ -97,14 +97,12 @@ function merge_filters($tag) {
  * @return boolean Whether the function is removed.
  */
 function remove_filter($tag, $function_to_remove, $priority = 10, $accepted_args = 1) {
-	$function_to_remove = serialize($function_to_remove);
+	global $wp_filter, $merged_filters;
 
-	$r = isset($GLOBALS['wp_filter'][$tag][$priority][$function_to_remove]);
+	unset($GLOBALS['wp_filter'][$tag][$priority][serialize($function_to_remove)]);
+	unset( $merged_filters[ $tag ] );
 
-	unset($GLOBALS['wp_filter'][$tag][$priority][$function_to_remove]);
-	unset($GLOBALS['merged_filters'][$tag]);
-
-	return $r;
+	return true;
 }
 
 /**
@@ -222,7 +220,7 @@ function do_action_ref_array($tag, $args) {
  * @return boolean Whether the function is removed.
  */
 function remove_action($tag, $function_to_remove, $priority = 10, $accepted_args = 1) {
-	return remove_filter($tag, $function_to_remove, $priority, $accepted_args);
+	remove_filter($tag, $function_to_remove, $priority, $accepted_args);
 }
 
 //

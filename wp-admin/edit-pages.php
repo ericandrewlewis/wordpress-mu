@@ -10,15 +10,13 @@ require_once('admin-header.php');
 <h2><?php _e('Page Management'); ?></h2>
 <p><?php _e('Pages are like posts except they live outside of the normal blog chronology and can be hierarchical. You can use pages to organize and manage any amount of content.'); ?> <a href="page-new.php"><?php _e('Create a new page &raquo;'); ?></a></p>
 
-<form name="searchform" id="searchform" action="" method="get">
+<form name="searchform" action="" method="get">
 	<fieldset>
 	<legend><?php _e('Search Pages&hellip;') ?></legend>
-	<input type="text" name="s" id="s" value="<?php if (isset($_GET['s'])) echo attribute_escape($_GET['s']); ?>" size="17" />
+	<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo attribute_escape($_GET['s']); ?>" size="17" />
 	<input type="submit" name="submit" value="<?php _e('Search') ?>"  />
 	</fieldset>
 </form>
-
-<br style="clear:both;" />
 
 <?php
 wp('post_type=page&orderby=menu_order&what_to_show=posts&posts_per_page=-1&posts_per_archive_page=-1&order=asc');

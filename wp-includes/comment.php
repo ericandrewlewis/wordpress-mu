@@ -73,20 +73,16 @@ function get_approved_comments($post_id) {
 function &get_comment(&$comment, $output = OBJECT) {
 	global $comment_cache, $wpdb;
 
-	if ( empty($comment) ) {
-		if ( isset($GLOBALS['comment']) )
-			$_comment = & $GLOBALS['comment'];
-		else
-			$_comment = null;
-	} elseif ( is_object($comment) ) {
+	if ( empty($comment) )
+		return null;
+
+	if ( is_object($comment) ) {
 		if ( !isset($comment_cache[$comment->comment_ID]) )
 			$comment_cache[$comment->comment_ID] = &$comment;
 		$_comment = & $comment_cache[$comment->comment_ID];
 	} else {
 		$comment = (int) $comment;
-		if ( isset($GLOBALS['comment']) && ($GLOBALS['comment']->comment_ID == $comment) ) {
-			$_comment = & $GLOBALS['comment'];
-		} elseif ( !isset($comment_cache[$comment]) ) {
+		if ( !isset($comment_cache[$comment]) ) {
 			$_comment = $wpdb->get_row("SELECT * FROM $wpdb->comments WHERE comment_ID = '$comment' LIMIT 1");
 			$comment_cache[$comment->comment_ID] = & $_comment;
 		} else {
@@ -182,7 +178,7 @@ function sanitize_comment_cookies() {
 
 function wp_allow_comment($commentdata) {
 	global $wpdb;
-	extract($commentdata);
+	extract($commentdata, EXTR_SKIP);
 
 	// Simple duplicate check
 	$dupe = "SELECT comment_ID FROM $wpdb->comments WHERE comment_post_ID = '$comment_post_ID' AND ( comment_author = '$comment_author' ";
@@ -329,7 +325,7 @@ function wp_get_current_commenter() {
 
 function wp_insert_comment($commentdata) {
 	global $wpdb;
-	extract($commentdata);
+	extract($commentdata, EXTR_SKIP);
 
 	if ( ! isset($comment_author_IP) )
 		$comment_author_IP = preg_replace( '/[^0-9., ]/', '',$_SERVER['REMOTE_ADDR'] );
@@ -461,7 +457,7 @@ function wp_update_comment($commentarr) {
 	$commentarr = wp_filter_comment( $commentarr );
 
 	// Now extract the merged array.
-	extract($commentarr);
+	extract($commentarr, EXTR_SKIP);
 
 	$comment_content = apply_filters('comment_save_pre', $comment_content);
 
@@ -521,7 +517,7 @@ function discover_pingback_server_uri($url, $timeout_bytes = 2048) {
 	$x_pingback_str = 'x-pingback: ';
 	$pingback_href_original_pos = 27;
 
-	extract(parse_url($url));
+	extract(parse_url($url), EXTR_SKIP);
 
 	if ( !isset($host) ) // Not an URL. This should never happen.
 		return false;
@@ -676,7 +672,9 @@ function pingback($content, $post_ID) {
 	include_once(ABSPATH . WPINC . '/class-IXR.php');
 
 	// original code by Mort (http://mort.mine.nu:8080)
+	$log = debug_fopen(ABSPATH . '/pingback.log', 'a');
 	$post_links = array();
+	debug_fwrite($log, 'BEGIN ' . date('YmdHis', time()) . "\n");
 
 	$pung = get_pung($post_ID);
 
@@ -691,6 +689,10 @@ function pingback($content, $post_ID) {
 	// This regexp comes straight from phpfreaks.com
 	// http://www.phpfreaks.com/quickcode/Extract_All_URLs_on_a_Page/15.php
 	preg_match_all("{\b http : [$any] +? (?= [$punc] * [^$any] | $)}x", $content, $post_links_temp);
+
+	// Debug
+	debug_fwrite($log, 'Post contents:');
+	debug_fwrite($log, $content."\n");
 
 	// Step 2.
 	// Walking thru the links array
@@ -715,12 +717,16 @@ function pingback($content, $post_ID) {
 	do_action_ref_array('pre_ping', array(&$post_links, &$pung));
 
 	foreach ( (array) $post_links as $pagelinkedto ) {
+		debug_fwrite($log, "Processing -- $pagelinkedto\n");
 		$pingback_server_url = discover_pingback_server_uri($pagelinkedto, 2048);
 
 		if ( $pingback_server_url ) {
 			@ set_time_limit( 60 );
 			 // Now, the RPC call
+			debug_fwrite($log, "Page Linked To: $pagelinkedto \n");
+			debug_fwrite($log, 'Page Linked From: ');
 			$pagelinkedfrom = get_permalink($post_ID);
+			debug_fwrite($log, $pagelinkedfrom."\n");
 
 			// using a timeout of 3 seconds should be enough to cover slow servers
 			$client = new IXR_Client($pingback_server_url);
@@ -732,8 +738,13 @@ function pingback($content, $post_ID) {
 
 			if ( $client->query('pingback.ping', $pagelinkedfrom, $pagelinkedto ) )
 				add_ping( $post_ID, $pagelinkedto );
+			else
+				debug_fwrite($log, "Error.\n Fault code: ".$client->getErrorCode()." : ".$client->getErrorMessage()."\n");
 		}
 	}
+
+	debug_fwrite($log, "\nEND: ".time()."\n****************************\n");
+	debug_fclose($log);
 }
 
 
@@ -770,6 +781,16 @@ function trackback($trackback_url, $title, $excerpt, $ID) {
 		$trackback_url['port'] = 80;
 	$fs = @fsockopen($trackback_url['host'], $trackback_url['port'], $errno, $errstr, 4);
 	@fputs($fs, $http_request);
+/*
+	$debug_file = 'trackback.log';
+	$fp = fopen($debug_file, 'a');
+	fwrite($fp, "\n*****\nRequest:\n\n$http_request\n\nResponse:\n\n");
+	while(!@feof($fs)) {
+		fwrite($fp, @fgets($fs, 4096));
+	}
+	fwrite($fp, "\n\n");
+	fclose($fp);
+*/
 	@fclose($fs);
 
 	$tb_url = addslashes( $tb_url );

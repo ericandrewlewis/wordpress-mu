@@ -5,7 +5,7 @@ function get_all_category_ids() {
 
 	if ( ! $cat_ids = wp_cache_get('all_category_ids', 'category') ) {
 		$cat_ids = $wpdb->get_col("SELECT cat_ID FROM $wpdb->categories");
-		wp_cache_set('all_category_ids', $cat_ids, 'category');
+		wp_cache_add('all_category_ids', $cat_ids, 'category');
 	}
 
 	return $cat_ids;
@@ -13,25 +13,22 @@ function get_all_category_ids() {
 
 function &get_categories($args = '') {
 	global $wpdb, $category_links;
-	
-	$defaults = array(
-		'type' => 'post', 'child_of' => 0, 
-		'orderby' => 'name', 'order' => 'ASC', 
-		'hide_empty' => true, 'include_last_update_time' => false, 
-		'hierarchical' => 1, 'exclude' => '', 
-		'include' => '', 'number' => '', 
-		'pad_counts' => false
-	);
-	
-	$r = wp_parse_args( $args, $defaults );
-	
-	if ( $r['orderby'] == 'count' ) {
+
+	if ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
+
+	$defaults = array('type' => 'post', 'child_of' => 0, 'orderby' => 'name', 'order' => 'ASC',
+		'hide_empty' => true, 'include_last_update_time' => false, 'hierarchical' => 1, 'exclude' => '', 'include' => '',
+		'number' => '', 'pad_counts' => false);
+	$r = array_merge($defaults, $r);
+	if ( 'count' == $r['orderby'] )
 		$r['orderby'] = 'category_count';
-	} else {
-		$r['orderby'] = 'cat_' . $r['orderby'];
-	}
-	
-	extract( $r );
+	else
+		$r['orderby'] = "cat_" . $r['orderby'];  // restricts order by to cat_ID and cat_name fields
+	$r['number'] = (int) $r['number'];
+	extract($r, EXTR_SKIP);
 
 	$key = md5( serialize( $r ) );
 	if ( $cache = wp_cache_get( 'get_categories', 'category' ) )
@@ -81,8 +78,6 @@ function &get_categories($args = '') {
 		else
 			$where .= ' AND category_count > 0';
 	}
-
-	
 
 	if ( !empty($number) )
 		$number = 'LIMIT ' . $number;
@@ -137,7 +132,7 @@ function &get_categories($args = '') {
 	reset ( $categories );
 
 	$cache[ $key ] = $categories;
-	wp_cache_set( 'get_categories', $cache, 'category' );
+	wp_cache_add( 'get_categories', $cache, 'category' );
 
 	$categories = apply_filters('get_categories', $categories, $r);
 	return $categories;
@@ -158,7 +153,7 @@ function &get_category(&$category, $output = OBJECT) {
 		$category = (int) $category;
 		if ( ! $_category = wp_cache_get($category, 'category') ) {
 			$_category = $wpdb->get_row("SELECT * FROM $wpdb->categories WHERE cat_ID = '$category' LIMIT 1");
-			wp_cache_set($category, $_category, 'category');
+			wp_cache_add($category, $_category, 'category');
 		}
 	}
 
@@ -209,15 +204,6 @@ function get_category_by_path($category_path, $full_match = true, $output = OBJE
 		return get_category($categories[0]->cat_ID, $output);
 
 	return NULL;
-}
-
-function get_category_by_slug( $slug  ) {
-	global $wpdb;
-	$slug = sanitize_title( $slug );
-	if ( empty( $slug ) )
-		return false;
-	$category = $wpdb->get_var( "SELECT * FROM $wpdb->categories WHERE category_nicename = '$slug' " );
-	return get_category( $category );
 }
 
 // Get the ID of a category from its name
@@ -342,5 +328,4 @@ function _get_category_hierarchy() {
 
 	return $children;
 }
-
 ?>

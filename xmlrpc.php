@@ -18,7 +18,7 @@ if ( isset($HTTP_RAW_POST_DATA) )
 include('./wp-config.php');
 
 if ( isset( $_GET['rsd'] ) ) { // http://archipelago.phrasewise.com/rsd 
-header('Content-Type: text/xml; charset=' . get_option('blog_charset'), true);
+header('Content-type: text/xml; charset=' . get_option('blog_charset'), true);
 
 ?>
 <?php echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>'; ?>
@@ -862,7 +862,7 @@ class wp_xmlrpc_server extends IXR_Server {
 	  if ( !current_user_can('edit_post', $post_ID) )
 	    return new IXR_Error(401, __('Sorry, you do not have the right to edit this post.'));
 
-	  extract($actual_post);
+	  extract($actual_post, EXTR_SKIP);
 
 	  if ( ('publish' == $post_status) && !current_user_can('publish_posts') )
 	  	return new IXR_Error(401, __('Sorry, you do not have the right to publish this post.'));
@@ -988,12 +988,14 @@ class wp_xmlrpc_server extends IXR_Server {
 			switch($post_type) {
 				case "post":
 					if(!current_user_can("edit_others_posts")) {
-						return(new IXR_Error(401, __("You are not allowed to post as this user")));
+						return(new IXR_Error(401, "You are not allowed to " .
+							"post as this user"));
 					}
 					break;
 				case "page":
 					if(!current_user_can("edit_others_pages")) {
-						return(new IXR_Error(401, __("You are not allowed to create pages as this user")));
+						return(new IXR_Error(401, "You are not allowed to " .
+							"create pages as this user"));
 					}
 					break;
 				default:
@@ -1011,31 +1013,67 @@ class wp_xmlrpc_server extends IXR_Server {
 	  $post_more = $content_struct['mt_text_more'];
 
 		if(isset($content_struct["mt_allow_comments"])) {
-			switch((int) $content_struct["mt_allow_comments"]) {
-				case 0:
-					$comment_status = "closed";
-					break;
-				case 1:
-					$comment_status = "open";
-					break;
-				default:
-					$comment_status = get_option("default_comment_status");
-					break;
+			if(!is_numeric($content_struct["mt_allow_comments"])) {
+				switch($content_struct["mt_allow_comments"]) {
+					case "closed":
+						$comment_status = "closed";
+						break;
+					case "open":
+						$comment_status = "open";
+						break;
+					default:
+						$comment_status = get_option("default_comment_status");
+						break;
+				}
 			}
+			else {
+				switch((int) $content_struct["mt_allow_comments"]) {
+					case 0:
+						$comment_status = "closed";
+						break;
+					case 1:
+						$comment_status = "open";
+						break;
+					default:
+						$comment_status = get_option("default_comment_status");
+						break;
+				}
+			}
+		}
+		else {
+			$comment_status = get_option("default_comment_status");
 		}
 
 		if(isset($content_struct["mt_allow_pings"])) {
-			switch((int) $content_struct["mt_allow_pings"]) {
-				case 0:
-					$ping_status = "closed";
-					break;
-				case 1:
-					$ping_status = "open";
-					break;
-				default:
-					$ping_status = get_option("default_ping_status");
-					break;
+			if(!is_numeric($content_struct["mt_allow_pings"])) {
+				switch($content["mt_allow_pings"]) {
+					case "closed":
+						$ping_status = "closed";
+						break;
+					case "open":
+						$ping_status = "open";
+						break;
+					default:
+						$ping_status = get_option("default_ping_status");
+						break;
+				}
 			}
+			else {
+				switch((int) $content_struct["mt_allow_pings"]) {
+					case 0:
+						$ping_status = "closed";
+						break;
+					case 1:
+						$ping_status = "open";
+						break;
+					default:
+						$ping_status = get_option("default_ping_status");
+						break;
+				}
+			}
+		}
+		else {
+			$ping_status = get_option("default_ping_status");
 		}
 
 	  if ($post_more) {
@@ -1138,8 +1176,8 @@ class wp_xmlrpc_server extends IXR_Server {
 			return(new IXR_Error(404, __("Invalid post id.")));
 		}
 
-	  extract($postdata);
 		$this->escape($postdata);
+		extract($postdata, EXTR_SKIP);
 
 		// Let WordPress manage slug if none was provided.
 		$post_name = "";
@@ -1172,12 +1210,14 @@ class wp_xmlrpc_server extends IXR_Server {
 			switch($post_type) {
 				case "post":
 					if(!current_user_can("edit_others_posts")) {
-						return(new IXR_Error(401, __("You are not allowed to change the post author as this user.")));
+						return(new IXR_Error(401, "You are not allowed to " .
+							"change the post author as this user."));
 					}
 					break;
 				case "page":
 					if(!current_user_can("edit_others_pages")) {
-						return(new IXR_Error(401, __("You are not allowed to change the page author as this user.")));
+						return(new IXR_Error(401, "You are not allowed to " .
+							"change the page author as this user."));
 					}
 					break;
 				default:
@@ -1187,15 +1227,61 @@ class wp_xmlrpc_server extends IXR_Server {
 			$post_author = $content_struct["wp_author_id"];
 		}
 
-		// Only set ping_status if it was provided.
+		if(isset($content_struct["mt_allow_comments"])) {
+			if(!is_numeric($content_struct["mt_allow_comments"])) {
+				switch($content_struct["mt_allow_comments"]) {
+					case "closed":
+						$comment_status = "closed";
+						break;
+					case "open":
+						$comment_status = "open";
+						break;
+					default:
+						$comment_status = get_option("default_comment_status");
+						break;
+				}
+			}
+			else {
+				switch((int) $content_struct["mt_allow_comments"]) {
+					case 0:
+						$comment_status = "closed";
+						break;
+					case 1:
+						$comment_status = "open";
+						break;
+					default:
+						$comment_status = get_option("default_comment_status");
+						break;
+				}
+			}
+		}
+
 		if(isset($content_struct["mt_allow_pings"])) {
-			switch((int) $content_struct["mt_allow_pings"]) {
-				case 0:
-					$ping_status = "closed";
-					break;
-				case 1:
-					$ping_status = "open";
-					break;
+			if(!is_numeric($content_struct["mt_allow_pings"])) {
+				switch($content["mt_allow_pings"]) {
+					case "closed":
+						$ping_status = "closed";
+						break;
+					case "open":
+						$ping_status = "open";
+						break;
+					default:
+						$ping_status = get_option("default_ping_status");
+						break;
+				}
+			}
+			else {
+				switch((int) $content_struct["mt_allow_pings"]) {
+					case 0:
+						$ping_status = "closed";
+						break;
+					case 1:
+						$ping_status = "open";
+						break;
+					default:
+						$ping_status = get_option("default_ping_status");
+						break;
+				}
 			}
 		}
 
@@ -1230,10 +1316,6 @@ class wp_xmlrpc_server extends IXR_Server {
 	  if ( is_array($to_ping) )
 	  	$to_ping = implode(' ', $to_ping);
 
-      if(isset($content_struct["mt_allow_comments"])) {
-		$comment_status = (int) $content_struct["mt_allow_comments"];
-      }
-	  
 	  // Do some timestamp voodoo
 	  $dateCreatedd = $content_struct['dateCreated'];
 	  if (!empty($dateCreatedd)) {
@@ -1446,6 +1528,21 @@ class wp_xmlrpc_server extends IXR_Server {
 		$type = $data['type'];
 		$bits = $data['bits'];
 
+		logIO('O', '(MW) Received '.strlen($bits).' bytes');
+
+		if ( !$this->login_pass_ok($user_login, $user_pass) )
+			return $this->error;
+
+		set_current_user(0, $user_login);
+		if ( !current_user_can('upload_files') ) {
+			logIO('O', '(MW) User does not have upload_files capability');
+			$this->error = new IXR_Error(401, __('You are not allowed to upload files to this site.'));
+			return $this->error;
+		}
+
+		if ( $upload_err = apply_filters( "pre_upload_error", false ) )
+			return new IXR_Error(500, $upload_err);
+
 		if(!empty($data["overwrite"]) && ($data["overwrite"] == true)) {
 			// Get postmeta info on the object.
 			$old_file = $wpdb->get_row("
@@ -1464,24 +1561,9 @@ class wp_xmlrpc_server extends IXR_Server {
 			$name = "wpid{$old_file->ID}-{$filename}";
 		}
 
-		logIO('O', '(MW) Received '.strlen($bits).' bytes');
-
-		if ( !$this->login_pass_ok($user_login, $user_pass) )
-			return $this->error;
-
-		set_current_user(0, $user_login);
-		if ( !current_user_can('upload_files') ) {
-			logIO('O', '(MW) User does not have upload_files capability');
-			$this->error = new IXR_Error(401, __('You are not allowed to upload files to this site.'));
-			return $this->error;
-		}
-
-		if ( $upload_err = apply_filters( "pre_upload_error", false ) )
-			return new IXR_Error(500, $upload_err);
-
 		$upload = wp_upload_bits($name, $type, $bits, $overwrite);
 		if ( ! empty($upload['error']) ) {
-			$errorString = sprintf(__('Could not write file %1$s (%2$s)'), $name, $upload['error']);
+			$errorString = 'Could not write file ' . $name . ' (' . $upload['error'] . ')';
 			logIO('O', '(MW) ' . $errorString);
 			return new IXR_Error(500, $errorString);
 		}
@@ -1792,7 +1874,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			}
 		} else {
 			// TODO: Attempt to extract a post ID from the given URL
-	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
+	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
 		}
 		$post_ID = (int) $post_ID;
 
@@ -1802,14 +1884,14 @@ class wp_xmlrpc_server extends IXR_Server {
 		$post = get_post($post_ID);
 
 		if ( !$post ) // Post_ID not found
-	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
+	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
 
 		if ( $post_ID == url_to_postid($pagelinkedfrom) )
 			return new IXR_Error(0, __('The source URL and the target URL cannot both point to the same resource.'));
 
 		// Check if pings are on
 		if ( 'closed' == $post->ping_status )
-	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
+	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
 
 		// Let's check that the remote site didn't already pingback this entry
 		$result = $wpdb->get_results("SELECT * FROM $wpdb->comments WHERE comment_post_ID = '$post_ID' AND comment_author_url = '$pagelinkedfrom'");
@@ -1891,7 +1973,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		$comment_ID = wp_new_comment($commentdata);
 		do_action('pingback_post', $comment_ID);
 
-		return sprintf(__('Pingback from %1$s to %2$s registered. Keep the web talking! :-)'), $pagelinkedfrom, $pagelinkedto);
+		return "Pingback from $pagelinkedfrom to $pagelinkedto registered. Keep the web talking! :-)";
 	}
 
 
@@ -1909,7 +1991,7 @@ class wp_xmlrpc_server extends IXR_Server {
 		$post_ID = url_to_postid($url);
 		if (!$post_ID) {
 			// We aren't sure that the resource is available and/or pingback enabled
-	  		return new IXR_Error(33, __('The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.'));
+	  		return new IXR_Error(33, 'The specified target URL cannot be used as a target. It either doesn\'t exist, or it is not a pingback-enabled resource.');
 		}
 
 		$actual_post = wp_get_single_post($post_ID, ARRAY_A);

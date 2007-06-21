@@ -27,25 +27,23 @@ function update_attached_file( $attachment_id, $file ) {
 
 function &get_children($args = '', $output = OBJECT) {
 	global $post_cache, $wpdb, $blog_id;
-	
-	if ( empty( $args ) ) {
-		if ( isset( $GLOBALS['post'] ) ) {
-			$args = 'post_parent=' . (int) $GLOBALS['post']->post_parent;
-		} else {
+
+	if ( empty($args) ) {
+		if ( isset($GLOBALS['post']) )
+			$r = array('post_parent' => & $GLOBALS['post']->post_parent);
+		else
 			return false;
-		}
-	} elseif ( is_object( $args ) ) {
-		$args = 'post_parent=' . (int) $args->post_parent;
-	} elseif ( is_numeric( $args ) ) {
-		$args = 'post_parent=' . (int) $args;
-	}
-	
-	$defaults = array(
-		'numberposts' => -1, 'post_type' => '', 
-		'post_status' => '', 'post_parent' => 0
-	);
-	
-	$r = wp_parse_args( $args, $defaults );
+	} elseif ( is_object($args) )
+		$r = array('post_parent' => $post->post_parent);
+	elseif ( is_numeric($args) )
+		$r = array('post_parent' => $args);
+	elseif ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
+
+	$defaults = array('numberposts' => -1, 'post_type' => '', 'post_status' => '', 'post_parent' => 0);
+	$r = array_merge($defaults, $r);
 
 	$children = get_posts( $r );
 
@@ -174,19 +172,17 @@ function get_post_type($post = false) {
 
 function get_posts($args) {
 	global $wpdb;
-	
-	$defaults = array(
-		'numberposts' => 5, 'offset' => 0, 
-		'category' => 0, 'orderby' => 'post_date', 
-		'order' => 'DESC', 'include' => '', 
-		'exclude' => '', 'meta_key' => '', 
-		'meta_value' =>'', 'post_type' => 'post', 
-		'post_status' => 'publish', 'post_parent' => 0
-	);
-	
-	$r = wp_parse_args( $args, $defaults );
-	extract( $r );
-	
+
+	if ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
+
+	$defaults = array('numberposts' => 5, 'offset' => 0, 'category' => 0,
+		'orderby' => 'post_date', 'order' => 'DESC', 'include' => '', 'exclude' => '',
+		'meta_key' => '', 'meta_value' =>'', 'post_type' => 'post', 'post_status' => 'publish', 'post_parent' => 0);
+	$r = array_merge($defaults, $r);
+	extract($r, EXTR_SKIP);
 	$numberposts = (int) $numberposts;
 	$offset = (int) $offset;
 	$category = (int) $category;
@@ -494,7 +490,7 @@ function wp_insert_post($postarr = array()) {
 		$postarr = get_object_vars($postarr);
 
 	// export array as variables
-	extract($postarr);
+	extract($postarr, EXTR_SKIP);
 
 	// Are we updating or creating?
 	$update = false;
@@ -649,7 +645,7 @@ function wp_insert_post($postarr = array()) {
 		$wpdb->query( "UPDATE $wpdb->posts SET post_name = '$post_name' WHERE ID = '$post_ID'" );
 	}
 
-	wp_set_post_categories( $post_ID, $post_category );
+	wp_set_post_categories($post_ID, $post_category);
 
 	if ( 'page' == $post_type ) {
 		clean_page_cache($post_ID);
@@ -885,7 +881,7 @@ function trackback_url_list($tb_list, $post_id) {
 		$postdata = wp_get_single_post($post_id, ARRAY_A);
 
 		// import postdata as variables
-		extract($postdata);
+		extract($postdata, EXTR_SKIP);
 
 		// form an excerpt
 		$excerpt = strip_tags($post_excerpt?$post_excerpt:$post_content);
@@ -911,7 +907,7 @@ function get_all_page_ids() {
 
 	if ( ! $page_ids = wp_cache_get('all_page_ids', 'pages') ) {
 		$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type = 'page'");
-		wp_cache_set('all_page_ids', $page_ids, 'pages');
+		wp_cache_add('all_page_ids', $page_ids, 'pages');
 	}
 
 	return $page_ids;
@@ -954,7 +950,7 @@ function &get_page(&$page, $output = OBJECT) {
 					return get_post($_page, $output);
 				// Potential issue: we're not checking to see if the post_type = 'page'
 				// So all non-'post' posts will get cached as pages.
-				wp_cache_set($_page->ID, $_page, 'pages');
+				wp_cache_add($_page->ID, $_page, 'pages');
 			}
 		}
 	}
@@ -1062,17 +1058,16 @@ function get_page_uri($page_id) {
 
 function &get_pages($args = '') {
 	global $wpdb;
-	
-	$defaults = array(
-		'child_of' => 0, 'sort_order' => 'ASC', 
-		'sort_column' => 'post_title', 'hierarchical' => 1, 
-		'exclude' => '', 'include' => '', 
-		'meta_key' => '', 'meta_value' => '', 
-		'authors' => ''
-	);
-	
-	$r = wp_parse_args( $args, $defaults );
-	extract( $r );
+
+	if ( is_array($args) )
+		$r = &$args;
+	else
+		parse_str($args, $r);
+
+	$defaults = array('child_of' => 0, 'sort_order' => 'ASC', 'sort_column' => 'post_title',
+				'hierarchical' => 1, 'exclude' => '', 'include' => '', 'meta_key' => '', 'meta_value' => '', 'authors' => '');
+	$r = array_merge($defaults, $r);
+	extract($r, EXTR_SKIP);
 
 	$key = md5( serialize( $r ) );
 	if ( $cache = wp_cache_get( 'get_pages', 'page' ) )
@@ -1226,7 +1221,7 @@ function wp_insert_attachment($object, $file = false, $post_parent = 0) {
 		$object = get_object_vars($object);
 
 	// Export array as variables
-	extract($object);
+	extract($object, EXTR_SKIP);
 
 	// Get the basics.
 	$post_content    = apply_filters('content_save_pre',   $post_content);
