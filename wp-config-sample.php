@@ -1,4 +1,5 @@
 <?php
+/* Don't try to create this file by hand. Read the README.txt and run the installer. */
 // ** MySQL settings ** //
 define('DB_NAME', 'wordpress');    // The name of the database
 define('DB_USER', 'username');     // Your MySQL username
