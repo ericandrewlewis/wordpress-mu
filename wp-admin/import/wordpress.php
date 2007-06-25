@@ -37,14 +37,15 @@ class WP_Import {
 	function get_tag( $string, $tag ) {
 		global $wpdb;
 		preg_match("|<$tag.*?>(.*?)</$tag>|is", $string, $return);
-		$return = $wpdb->escape( trim( $return[1] ) );
+		$return = preg_replace('|^<!\[CDATA\[(.*)\]\]>$|s', '$1', $return[1]);
+		$return = $wpdb->escape( trim( $return ) );
 		return $return;
 	}
 
 	function users_form($n) {
 		global $wpdb, $testing;
 		$users = get_users_of_blog($wpdb->blogid);
-?><select name="userselect[<?php echo $n; ?>]">
+?><select name="userselect[<?php echo attribute_escape($n); ?>]">
 	<option value="#NONE#">- Select -</option>
 	<?php
 		foreach ($users as $user) {
@@ -58,7 +59,7 @@ class WP_Import {
 	//function to check the authorname and do the mapping
 	function checkauthor($author) {
 		global $wpdb;
-		
+
 		$map = $_POST['userselect'];
 
 		$user_id = username_exists($map[$author]); //use that key to get the value of the author's name from $newauthornames
@@ -127,32 +128,6 @@ class WP_Import {
 		return $authors;
 	}
 
-	function get_authors_from_post() {
-		$formnames = array ();
-		$selectnames = array ();
-
-		foreach ($_POST['user'] as $key => $line) {
-			$newname = trim(stripslashes($line));
-			if ($newname == '')
-				$newname = 'left_blank'; //passing author names from step 1 to step 2 is accomplished by using POST. left_blank denotes an empty entry in the form.
-			array_push($formnames, "$newname");
-		} // $formnames is the array with the form entered names
-
-		foreach ($_POST['userselect'] as $user => $key) {
-			$selected = trim(stripslashes($key));
-			array_push($selectnames, "$selected");
-		}
-
-		$count = count($formnames);
-		for ($i = 0; $i < $count; $i ++) {
-			if ($selectnames[$i] != '#NONE#') { //if no name was selected from the select menu, use the name entered in the form
-				array_push($this->newauthornames, "$selectnames[$i]");
-			} else {
-				array_push($this->newauthornames, "$formnames[$i]");
-			}
-		}
-	}
-
 	function wp_authors_form() {
 ?>
 <h2><?php _e('Assign Authors'); ?></h2>
@@ -198,7 +173,7 @@ class WP_Import {
 		$cat_names = (array) $wpdb->get_col("SELECT cat_name FROM $wpdb->categories");
 
 		while ( $c = array_shift($this->categories) ) {
-			$cat_name = trim(str_replace(array ('<![CDATA[', ']]>'), '', $this->get_tag( $c, 'wp:cat_name' )));
+			$cat_name = trim($this->get_tag( $c, 'wp:cat_name' ));
 
 			// If the category exists we leave it alone
 			if ( in_array($cat_name, $cat_names) )
@@ -234,14 +209,14 @@ class WP_Import {
 
 		echo '<h3>'.sprintf(__('All done.').' <a href="%s">'.__('Have fun!').'</a>', get_option('home')).'</h3>';
 	}
-  
+
 	function process_post($post) {
 		global $wpdb;
 
 		$post_ID = (int) $this->get_tag( $post, 'wp:post_id' );
   		if ( $post_ID && !empty($this->posts_processed[$post_ID][1]) ) // Processed already
 			return 0;
-      
+
 		// There are only ever one of these
 		$post_title     = $this->get_tag( $post, 'title' );
 		$post_date      = $this->get_tag( $post, 'wp:post_date' );
@@ -257,7 +232,6 @@ class WP_Import {
 		$post_author    = $this->get_tag( $post, 'dc:creator' );
 
 		$post_content = $this->get_tag( $post, 'content:encoded' );
-		$post_content = str_replace(array ('<![CDATA[', ']]>'), '', $post_content);
 		$post_content = preg_replace('|<(/?[A-Z]+)|e', "'<' . strtolower('$1')", $post_content);
 		$post_content = str_replace('<br>', '<br />', $post_content);
 		$post_content = str_replace('<hr>', '<hr />', $post_content);
@@ -294,7 +268,7 @@ class WP_Import {
 			// Memorize old and new ID.
 			if ( $post_id && $post_ID && $this->posts_processed[$post_ID] )
 				$this->posts_processed[$post_ID][1] = $post_id; // New ID.
-			
+
 			// Add categories.
 			if (count($categories) > 0) {
 				$post_cats = array();
@@ -350,7 +324,6 @@ class WP_Import {
 		$this->id = (int) $_GET['id'];
 
 		$this->file = get_attached_file($this->id);
-		$this->get_authors_from_post();
 		$this->get_entries();
 		$this->process_categories();
 		$this->process_posts();
