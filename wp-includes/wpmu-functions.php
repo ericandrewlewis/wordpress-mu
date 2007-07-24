@@ -170,13 +170,21 @@ function get_blog_details( $id, $all = true ) {
 
 	$details = wp_cache_get( $id, 'blog-details' );
 
-	if ( $details )
-		return unserialize( $details );
+	if ( $details ) {
+		if ( $details == -1 )
+			return false;
+		elseif ( !is_object($details) ) // Clear old pre-serialized objects. Cache clients do better with that.
+			wp_cache_delete( $id, 'blog-details' );
+		else
+			return $details;
+	}
 
 	$details = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id' /* get_blog_details */" );
 
-	if ( !$details )
+	if ( !$details ) {
+		wp_cache_set( $id, -1, 'blog-details' );
 		return false;
+	}
 
 	if( $all == true ) {
 		$wpdb->hide_errors();
@@ -287,7 +295,7 @@ function update_site_option( $key, $value ) {
 		$value = serialize($value);
 	$value = $wpdb->escape( $value );
 
-	if ( get_site_option( $key, false, false ) == false )
+	if ( get_site_option( $key, false, false ) === false )
 		add_site_option( $key, $value );
 
 	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '".$wpdb->escape( $value )."' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$key'" );
@@ -373,9 +381,6 @@ function switch_to_blog( $new_blog ) {
 		$switched_stack = array();
 
 	$switched_stack[] = $blog_id;
-
-	if ( $new_blog == $blog_id )
-		return;
 
 	// backup
 	$tmpoldblogdetails[ 'blogid' ]         = $wpdb->blogid;
@@ -483,6 +488,7 @@ function get_blogs_of_user( $id, $all = false ) {
 				$blogs[$match[1]]->domain      = $blog->domain;
 				$blogs[$match[1]]->path        = $blog->path;
 				$blogs[$match[1]]->site_id     = $blog->site_id;
+				$blogs[$match[1]]->siteurl     = $blog->siteurl;
 			}
 		}
 	}
@@ -701,14 +707,6 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 		update_usermeta($user_id, 'primary_blog', $blog_id);
 		$details = get_blog_details($blog_id);
 		update_usermeta($user_id, 'source_domain', $details->domain);
-	}
-
-	if ( empty($user->user_url) ) {
-		$userdata = array();
-		$userdata['ID'] = $user->id;
-		$userdata['user_url'] = get_blogaddress_by_id($blog_id);
-		$userdata['user_login'] = $user->user_login;
-		wp_update_user($userdata);
 	}
 
 	$user->set_role($role);
@@ -1147,6 +1145,7 @@ function wpmu_activate_signup($key) {
 	$meta = unserialize($signup->meta);
 	$user_login = $wpdb->escape($signup->user_login);
 	$user_email = $wpdb->escape($signup->user_email);
+	wpmu_validate_user_signup($user_login, $user_email);
 	$password = generate_random_password();
 
 	$user_id = username_exists($user_login);
@@ -1171,6 +1170,7 @@ function wpmu_activate_signup($key) {
 		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
 	}
 
+	wpmu_validate_blog_signup($signup->domain, $signup->title);
 	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta);
 
 	// TODO: What to do if we create a user but cannot create a blog?
@@ -1465,6 +1465,43 @@ function get_user_id_from_string( $string ) {
 	}
 
 	return $user_id;
+}
+
+function get_most_recent_post_of_user( $user_id ) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	$user_id = (int) $user_id;
+
+	$user_blogs = get_blogs_of_user($user_id);
+	$most_recent_post = array();
+
+	// Walk through each blog and get the most recent post
+	// published by $user_id
+	foreach ( $user_blogs as $blog ) {
+		$recent_post = $wpdb->get_row("SELECT ID, post_date_gmt FROM {$wpmuBaseTablePrefix}{$blog->userblog_id}_posts WHERE post_author = '{$user_id}' AND post_type = 'post' AND post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1", ARRAY_A);
+
+		// Make sure we found a post
+		if ( isset($recent_post['ID']) ) {
+			$post_gmt_ts = strtotime($recent_post['post_date_gmt']);
+
+			// If this is the first post checked or if this post is
+			// newer than the current recent post, make it the new
+			// most recent post.
+			if (
+				!isset($most_recent_post['post_gmt_ts'])
+				|| ($post_gmt_ts > $most_recent_post['post_gmt_ts'])
+			) {
+				$most_recent_post = array(
+					'blog_id'		=> $blog->userblog_id,
+					'post_id'		=> $recent_post['ID'],
+					'post_date_gmt'	=> $recent_post['post_date_gmt'],
+					'post_gmt_ts'	=> $post_gmt_ts
+				);
+			}
+		}
+	}
+
+	return $most_recent_post;
 }
 
 ?>
