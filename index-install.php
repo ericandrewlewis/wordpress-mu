@@ -401,6 +401,7 @@ We hope you enjoy your new weblog.
 	$msg = "Your new WPMU site has been created at\nhttp://{$domain}{$base}\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$domain}{$base}wp-login.php\n";
 	wp_mail( $email, "Your new WPMU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
 	print "<p>Congrats! Your <a href='http://{$domain}{$base}'>WPMU site</a> has been set up and you have been sent details of your login and password in an email.</p>";
+	print "<p>You can <a href='wp-login.php'>log in</a> using the username 'admin' and password '{$pass}'</p>";
 }
 
 function nowww() {
