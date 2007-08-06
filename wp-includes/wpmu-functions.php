@@ -237,8 +237,11 @@ function is_site_admin( $user_login = false ) {
 	return false;
 }
 
+// expects key not to be SQL escaped
 function get_site_option( $key, $default = false, $use_cache = true ) {
 	global $wpdb;
+
+	$safe_key = $wpdb->escape( $key );
 
 	if( $use_cache == true ) {
 		$value = wp_cache_get($wpdb->siteid . $key, 'site-options');
@@ -247,7 +250,8 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 	}
 
 	if ( false === $value ) {
-		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '{$wpdb->siteid}'");
+		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$safe_key' AND site_id = '{$wpdb->siteid}'");
+		$value = stripslashes( $value );
 		if ( ! is_null($value) ) {
 			wp_cache_add($wpdb->siteid . $key, $value, 'site-options');
 		} elseif ( $default ) {
@@ -259,7 +263,6 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 		}
 	}
 
-	$value = stripslashes( $value );
 	@ $kellogs = unserialize($value);
 	if ( $kellogs !== FALSE )
 		return $kellogs;
@@ -267,10 +270,13 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 		return $value;
 }
 
+// expects $key, $value not to be SQL escaped
 function add_site_option( $key, $value ) {
 	global $wpdb;
 
-	$exists = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$key' AND site_id = '{$wpdb->siteid}'");
+	$safe_key = $wpdb->escape( $key );
+
+	$exists = $wpdb->get_row("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$safe_key' AND site_id = '{$wpdb->siteid}'");
 
 	if ( null !== $exists ) {// If we already have it
 		update_site_option( $key, $value );
@@ -279,26 +285,27 @@ function add_site_option( $key, $value ) {
 
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
-	$value = $wpdb->escape( $value );
 	wp_cache_delete($wpdb->siteid . $key, 'site-options');
-	$wpdb->query( "INSERT INTO $wpdb->sitemeta ( site_id , meta_key , meta_value ) VALUES ( '{$wpdb->siteid}', '$key', '$value')" );
+	$wpdb->query( "INSERT INTO $wpdb->sitemeta ( site_id , meta_key , meta_value ) VALUES ( '{$wpdb->siteid}', '$safe_key', '" . $wpdb->escape( $value ) . "')" );
 	return $wpdb->insert_id;
 }
 
+// expects $key, $value not to be SQL escaped
 function update_site_option( $key, $value ) {
 	global $wpdb;
 
 	if ( $value == get_site_option( $key ) )
 	 	return;
 
-	if ( is_array($value) || is_object($value) )
-		$value = serialize($value);
-	$value = $wpdb->escape( $value );
-
 	if ( get_site_option( $key, false, false ) === false )
 		add_site_option( $key, $value );
 
-	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '".$wpdb->escape( $value )."' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$key'" );
+	if ( is_array($value) || is_object($value) )
+		$value = serialize($value);
+
+	$safe_key = $wpdb->escape( $key );
+
+	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '" . $wpdb->escape( $value ) . "' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$safe_key'" );
 	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
 }
 
