@@ -251,11 +251,10 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 
 	if ( false === $value ) {
 		$value = $wpdb->get_var("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$safe_key' AND site_id = '{$wpdb->siteid}'");
-		$value = stripslashes( $value );
 		if ( ! is_null($value) ) {
 			wp_cache_add($wpdb->siteid . $key, $value, 'site-options');
 		} elseif ( $default ) {
-			wp_cache_add($wpdb->siteid . $key, $default, 'site-options');
+			wp_cache_add($wpdb->siteid . $key, addslashes( $default ), 'site-options');
 			return $default;
 		} else {
 			wp_cache_add($wpdb->siteid . $key, false, 'site-options');
@@ -263,6 +262,7 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 		}
 	}
 
+	$value = stripslashes( $value );
 	@ $kellogs = unserialize($value);
 	if ( $kellogs !== FALSE )
 		return $kellogs;
