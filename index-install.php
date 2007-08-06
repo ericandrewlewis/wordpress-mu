@@ -9,6 +9,8 @@ if( $_SERVER[ 'HTTP_HOST' ] == 'localhost' ) {
 }
 define('WP_INSTALLING', true);
 
+$dirs = array( dirname(__FILE__), dirname(__FILE__) . "/wp-content/" );
+
 function printheader() {
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
@@ -63,26 +65,13 @@ text-align: center; border-top: 1px solid #ccc; padding-top: 1em; font-style: it
 </head>
 <body>
 
-<h1><img src="wp-includes/images/wordpress-mu.png" alt="WordPress MU" /></h1>
+<h1><img src="wp-includes/images/wordpress-mu.png" alt="WordPress &micro;" /></h1>
 <?php
-}
-
-function check_writeable_dir( $dir, $ret ) {
-	if( is_writeable( $dir  ) == false ) {
-		print $dir." : <b style='color: #f55'>FAILED</b><br />Quick Fix: <code>chmod 777 $dir</code><br />";
-		return false;
-	} else {
-		if( $ret == true ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
 }
 
 function filestats( $err ) {
 	print "<h1>Server Summary</h1>";
-	print "<p>If you post a message to the MU support forum at <a target='_blank' href='http://mu.wordpress.org/forums/'>http://mu.wordpress.org/forums/</a> then copy and paste the following information into your message:</p>";
+	print "<p>If you post a message to the &micro; support forum at <a target='_blank' href='http://mu.wordpress.org/forums/'>http://mu.wordpress.org/forums/</a> then copy and paste the following information into your message:</p>";
 
 	print "<blockquote style='background: #eee; border: 1px solid #333; padding: 5px;'>";
 	print "<br /><strong>ERROR: $err</strong></br >";
@@ -172,17 +161,28 @@ function do_htaccess( $oldfilename, $newfilename, $base, $url ) {
 }
 
 function checkdirs() {
-	$ret = true;
-	$ret = check_writeable_dir( dirname(__FILE__), $ret );
-	$ret = check_writeable_dir( dirname(__FILE__) . "/wp-content/", $ret );
+	global $dirs;
 
-	if( $ret == false ) {
-		print "<h2>Warning!</h2>";
-		print "<div style='border: 1px solid #ccc'>";
-		print "<p style='font-weight: bold; padding-left: 10px'>One or more of the above directories must be made writeable by the webserver.<br>";
-		print "Please <code>chmod 777 <q>directory-name</q></code> or <code>chown</code> that directory to the user the web server runs as (usually nobody, apache, or www-data)<br>";
-		print "Refresh this page when you're done!<br></p>";
-		print "</div>";
+	$ret = true;
+	foreach( $dirs as $dir ) {
+		if( false == is_writeable( $dir ) ) {
+			$err[] = $dir;
+		}
+	}
+
+	if( is_array( $err ) ) {
+		?><h2>Warning!</h2>
+		<div style='border: 1px solid #ccc'>
+		<p style='font-weight: bold; padding-left: 10px'>One or more of the directories must be made writeable by the webserver. You will be reminded to reset the permissions at the end of the install.<br>
+		Please <code>chmod 777 <q>directory-name</q></code> or <code>chown</code> that directory to the user the web server runs as (usually nobody, apache, or www-data)<br>
+		Refresh this page when you're done!<br></p>
+		</div>
+		<p>Quick fix:<br /> <code>chmod&nbsp;777&nbsp;<?php
+		foreach( $err as $dir ) {
+			echo "$dir&nbsp;";
+		}
+		?></code></p><?php
+		$ret = false;
 	}
 	if( file_exists( "./.htaccess" ) && is_writeable( "./.htaccess" ) == false ) {
 		$ret = false;
@@ -196,7 +196,12 @@ function checkdirs() {
 }
 
 function step1() {
-	print "<h2>Installing WP&micro;</h2>";
+	?><h2>Installing WordPress &micro;</h2>
+	<p><strong>Welcome to WordPress &micro;.</strong> I will help you install this software by asking you a few questions and asking that you change the permissions on a few directories so I can create configuration files and make a directory to store all your uploaded files.</p>
+	<p>If you have installed the single-blog version of WordPress before, please note that the WordPress &micro; installer is different and trying to create the configuration file wp-config.php youself may result in a broken site. It's much easier to use this installer to get the job done.</p>
+	<h3>What do I need?</h3>
+	<p><ul><li>Access to your server to change directory permissions. This can be done through ssh or ftp for example.</li><li>A valid email where your password and administrative emails will be sent.</li><li>An empty MySQL database.Tables are prefixed with <code>wp_</code> which may conflict with an existing WordPress install.</li><li> Wildcard dns records if you're going to use the virtual host functionality. Check the <a href='http://trac.mu.wordpress.org/browser/trunk/README.txt'>README</a> for further details.</li></ul><p>
+	<?php
 	$mod_rewrite_msg = "<p>If the <code>mod_rewrite</code> module is disabled ask your administrator to enable that module, or look at the <a href='http://httpd.apache.org/docs/mod/mod_rewrite.html'>Apache documentation</a> or <a href='http://www.google.com/search?q=apache+mod_rewrite'>elsewhere</a> for help setting it up.</p>";
 	if( function_exists( "apache_get_modules" ) ) {
 		$modules = apache_get_modules();
@@ -227,7 +232,7 @@ function step1() {
 }
 
 function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'password', $dbhost = 'localhost', $vhost = 'yes', $prefix = 'wp_' ) {
-	$weblog_title = 'My new WPMU Site';
+	$weblog_title = 'My new WordPress MU Site';
 	$email = '';
 	$hostname = $_SERVER[ 'HTTP_HOST' ];
 	if( substr( $_SERVER[ 'HTTP_HOST' ], 0, 4 ) == 'www.' )
@@ -236,7 +241,7 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
     <form method='post' action='index.php'> 
     <input type='hidden' name='action' value='step2'>
     <h2>Blog Addresses</h2>
-	<p>Please choose whether you would like blogs for the MU install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
+	<p>Please choose whether you would like blogs for the WordPress &micro; install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
 	<p><label><input type='radio' name='vhost' value='yes' <?php if( $vhost == 'yes' ) echo 'checked '; ?> /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
 	<label><input type='radio' name='vhost' value='no' <?php if( $vhost == 'no' ) echo 'checked '; ?> /> Sub-directories (like <code>example.com/blog1</code></label></p>
 	
@@ -307,8 +312,6 @@ function step2() {
 	require_once('wp-includes/wp-db.php');
 	printheader();
 
-	print "Creating Database Config File: ";
-
 	$handle = fopen('wp-config.php', 'w');
 
 	foreach ($configFile as $line_num => $line) {
@@ -341,12 +344,11 @@ function step2() {
 	}
 	fclose($handle);
 	chmod('wp-config.php', 0644);
-	print "<b style='color: #00aa00; font-weight: bold'>DONE</b><br />";
 	define( 'VHOST', $vhost );
 }
 
 function step3() {
-	global $wpdb, $current_site;
+	global $wpdb, $current_site, $dirs, $wp_version;
 	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
 	if( $base != "/") {
 		$base .= "/";
@@ -398,17 +400,40 @@ We hope you enjoy your new weblog.
 	update_blog_option( 1, 'stylesheet', 'home');
 	update_blog_option( 1, 'permalink_structure', '/blog/%year%/%monthnum%/%day%/%postname%/');
 	update_blog_option( 1, 'rewrite_rules', '');
-	$msg = "Your new WPMU site has been created at\nhttp://{$domain}{$base}\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$domain}{$base}wp-login.php\n";
-	wp_mail( $email, "Your new WPMU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
-	print "<p>Congrats! Your <a href='http://{$domain}{$base}'>WPMU site</a> has been set up and you have been sent details of your login and password in an email.</p>";
-	print "<p>You can <a href='wp-login.php'>log in</a> using the username 'admin' and password '{$pass}'</p>";
+	$msg = "Your new WordPress MU site has been created at\nhttp://{$domain}{$base}\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$domain}{$base}wp-login.php\n";
+	wp_mail( $email, "Your new WordPress MU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
+	?><h2>Installation Finished!</h2>
+	<p>Congratulations! Your <a href='http://<?php echo $domain . $base; ?>'>WordPress &micro; site</a> has been configured.</p>
+	<p>You can <a href='wp-login.php'>log in</a> using the username "admin" and password "<?php echo $pass; ?>"</p>
+	<h3>Directory Permissions</h3>
+	<p>Please remember to reset the permissions on the following directories:<ul>
+	<?php
+	reset( $dirs );
+	foreach( $dirs as $dir ) {
+		echo "<li> $dir</li>";
+	}
+	?></ul></p>
+	<p>You can probably use the following command to fix the permissions but check with your host if it doubt:<br /><code>chmod&nbsp;755&nbsp;<?php
+	reset( $dirs );
+	foreach( $dirs as $dir ) {
+		echo "$dir&nbsp;";
+	}
+	?></code></p>
+	<h3>Further reading</h3>
+	<p><ul><li>If you run into problems, please search the <a href='http://mu.wordpress.org/forums/'>WordPress &micro; Forums</a> where you will most likely find a solution. Please don't post there before searching. It's not polite.</li>
+	<li>There is also the <a href='http://trac.mu.wordpress.org/'>WordPress &micro; Trac</a>. That's our bug tracker.</li></ul></p>
+	<p>Thanks for installing WordPress &micro;!<br /><br />
+	
+	Donncha<br />
+	<code>wpmu version: <?php echo $wp_version ?></code></p>
+	<?php
 }
 
 function nowww() {
 	$nowww = str_replace( 'www.', '', $_POST[ 'basedomain' ] );
 	?>
 	<h1>No-www</h1>
-	<p>WordPress MU strips the string "www" from the URLs of sites using this software. It is still possible to visit your site using the "www" prefix with an address like <em><?php echo $_POST[ 'basedomain' ] ?></em> but any links will not have the "www" prefix. They will instead point at <?php echo $nowww ?>.</p>
+	<p>WordPress &micro; strips the string "www" from the URLs of sites using this software. It is still possible to visit your site using the "www" prefix with an address like <em><?php echo $_POST[ 'basedomain' ] ?></em> but any links will not have the "www" prefix. They will instead point at <?php echo $nowww ?>.</p>
 	<p>The preferred method of hosting blogs is without the "www" prefix as it's more compact and simple.</p><p>You can still use "<?php echo $_POST[ 'basedomain' ] ?>" and URLs like "www.blog1.<?php echo $nowww; ?>" to address your site and blogs after installation but internal links will use the <?php echo $nowww ?> format.</p>
 	<p><a target='_blank' href="http://no-www.org/">www. is depreciated</a> has a lot more information on why 'www.' isn't needed any more.</p>
 	<p><form method='POST'>
