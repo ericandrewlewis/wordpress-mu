@@ -1222,7 +1222,6 @@ function wpmu_create_user( $user_name, $password, $email) {
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
 	$domain = addslashes( $domain );
-	$title = addslashes( $title );
 	$user_id = (int) $user_id;
 
 	if( empty($path) )
