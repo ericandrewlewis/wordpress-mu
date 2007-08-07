@@ -111,7 +111,6 @@ if (empty($plugins)) {
 		<th><?php _e('Plugin'); ?></th>
 		<th style="text-align: center"><?php _e('Version'); ?></th>
 		<th><?php _e('Description'); ?></th>
-		<th style="text-align: center"<?php if ( current_user_can('edit_plugins') ) echo ' colspan="2"'; ?>><?php _e('Action'); ?></th>
 	</tr>
 	</thead>
 <?php
@@ -138,10 +137,6 @@ if (empty($plugins)) {
 
 		if ( $style != '' )
 			$style = 'class="' . $style . '"';
-		if ( is_writable(ABSPATH . PLUGINDIR . '/' . $plugin_file) )
-			$edit = "<a href='plugin-editor.php?file=$plugin_file' title='".__('Open this file in the Plugin Editor')."' class='edit'>".__('Edit')."</a>";
-		else
-			$edit = '';
 
 		echo "
 	<tr $style>
@@ -149,9 +144,6 @@ if (empty($plugins)) {
 		<td class='vers'>{$plugin_data['Version']}</td>
 		<td class='desc'><p>{$plugin_data['Description']} <cite>".sprintf(__('By %s'), $plugin_data['Author']).".</cite></p></td>
 		<td class='togl'>$toggle</td>";
-		if ( current_user_can('edit_plugins') )
-		echo "
-		<td>$edit</td>";
 		echo"
 	</tr>";
 	}
