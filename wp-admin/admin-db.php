@@ -676,15 +676,15 @@ function get_site_allowed_themes() {
 		$allowed_themes = get_site_option( "allowed_themes" ); // convert old allowed_themes format
 		if( !is_array( $allowed_themes ) ) {
 			$allowed_themes = array();
-			continue;
-		}
-		foreach( $themes as $key => $theme ) {
-			$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
-			if( isset( $allowed_themes[ $key ] ) == true ) {
-				$allowedthemes[ $theme_key ] = 1;
+		} else {
+			foreach( $themes as $key => $theme ) {
+				$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
+				if( isset( $allowed_themes[ $key ] ) == true ) {
+					$allowedthemes[ $theme_key ] = 1;
+				}
 			}
+			$allowed_themes = $allowedthemes;
 		}
-		$allowed_themes = $allowedthemes;
 	}
 
 	return $allowed_themes;
