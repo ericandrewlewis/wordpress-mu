@@ -354,9 +354,11 @@ function step3() {
 		$base .= "/";
 	} 
 	$domain =   $wpdb->escape( $_POST[ 'basedomain' ] );
+	$domain = str_replace( 'http://', '', $domain );
 	if( substr( $domain, 0, 4 ) == 'www.' )
 		$domain = substr( $domain, 4 );
-
+	if( strpos( $domain, '/' ) )
+		$domain = substr( $domain, 0, strpos( $domain, '/' ) );
 	$email = $wpdb->escape( $_POST[ 'email' ] );
 	$weblog_title = $wpdb->escape( $_POST[ 'weblog_title' ] );
 
