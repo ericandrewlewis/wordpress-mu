@@ -100,8 +100,6 @@ if ( !defined('LANGDIR') ) {
 		define('LANGDIR', WPINC . '/languages'); // no leading slash, no trailing slash
 }
 
-if ( !defined('PLUGINDIR') )
-	define('PLUGINDIR', 'wp-content/plugins'); // no leading slash, no trailing slash
 if ( file_exists(ABSPATH . 'wp-content/db.php') )
 	require (ABSPATH . 'wp-content/db.php');
 else
@@ -266,6 +264,8 @@ if ( !defined('COOKIE_DOMAIN') )
 
 require (ABSPATH . WPINC . '/vars.php');
 
+if ( !defined('PLUGINDIR') )
+	define('PLUGINDIR', 'wp-content/plugins'); // no leading slash, no trailing slash
 if ( get_option('active_plugins') ) {
 	$current_plugins = get_option('active_plugins');
 	if ( is_array($current_plugins) ) {
