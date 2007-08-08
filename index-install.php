@@ -451,7 +451,8 @@ function nowww() {
 	<?php
 }
 
-switch( $_POST[ 'action' ] ) {
+$action = isset($_POST[ 'action' ]) ? $_POST[ 'action' ] : null; 
+switch($action) {
 	case "step2":
 		if( substr( $_POST[ 'basedomain' ], 0, 4 ) == 'www.' ) {
 			printheader();
