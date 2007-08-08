@@ -51,7 +51,7 @@ var h = $( '#blog-title' )
 		background: 'transparent url( ../wp-content/mu-plugins/bullet_arrow_down.gif ) no-repeat scroll 100% .2em;',
 		padding: '0 25px 2px 5px',
 		cursor: 'pointer',
-		border: '1px solid #14568a',
+		border: '1px solid #14568a'
 	})
 	.parent().css( { position: 'relative' }).end()
 	.append( $('#switchermenu') )
