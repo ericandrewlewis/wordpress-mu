@@ -88,12 +88,21 @@ switch( $_GET[ 'action' ] ) {
 			$disabled = ' disabled="disabled"';
 		}
 	}
-	?>
-	<tr valign="top"> 
-	<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
-	<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo wp_specialchars( stripslashes( $val[ 'option_value' ] ), 1 ) ?>" size="40" <?php echo $disabled ?>/></td> 
-	</tr> 
-	<?php
+		if ( stristr($val[ 'option_value' ], "\r") or stristr($val[ 'option_value' ], "\n") or stristr($val[ 'option_value' ], "\r\n") ) {
+		?>
+		<tr valign="top"> 
+		<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
+		<td><textarea rows="5" cols="40" name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>"<?php echo $disabled ?>><?php echo wp_specialchars( stripslashes( $val[ 'option_value' ] ), 1 ) ?></textarea></td>
+		</tr>
+		<?php
+		} else {
+		?>
+		<tr valign="top"> 
+		<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val[ 'option_name' ] ) ) ?></th> 
+		<td><input name="option[<?php echo $val[ 'option_name' ] ?>]" type="text" id="<?php echo $val[ 'option_name' ] ?>" value="<?php echo wp_specialchars( stripslashes( $val[ 'option_value' ] ), 1 ) ?>" size="40" <?php echo $disabled ?>/></td> 
+		</tr> 
+		<?php
+		}
     }
     ?>
     </table>
