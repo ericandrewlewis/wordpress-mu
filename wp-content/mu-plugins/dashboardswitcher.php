@@ -78,7 +78,7 @@ function add_switcher() {
 	$out .= '<ul id="switchermenu">';
 	$blogs = get_blogs_of_user($current_user->ID);
 	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
-		$out .= '<li><a href="http://' . $blog->domain . $blog->path . 'wp-admin/">' . $blog->blogname . '</a></li>';
+		$out .= '<li><a href="http://' . $blog->domain . $blog->path . 'wp-admin/">' . addslashes( $blog->blogname ) . '</a></li>';
 	}
 	$out .= "</ul>";
 	?>
