@@ -298,7 +298,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		?>
 		<td><?php if( is_array( $blogs ) ) 
 				while( list( $key, $val ) = each( $blogs ) ) { 
-					print '<a href="wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain ) . '</a> (<a '; 
+					print '<a href="wpmu-blogs.php?action=editblog&id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain . $val->path ) . '</a> (<a '; 
 					if( get_blog_status( $val->userblog_id, 'spam' ) == 1 )
 						print 'style="background-color: #f66" ';
 					print 'target="_new" href="http://'.$val->domain . $val->path.'">' . __('View') . '</a>)<BR>'; 
