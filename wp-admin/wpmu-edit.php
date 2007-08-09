@@ -145,8 +145,8 @@ switch( $_REQUEST[ 'action' ] ) {
 			$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
 			$wpdb->show_errors();
 			if( !is_wp_error($blog_id) ) {
-				$content_mail = sprintf(__('New blog created by %1s\n\nAddress: http://%2s\nName: %3s'), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
-				@wp_mail( get_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail );
+				$content_mail = sprintf(__("New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
+				@wp_mail( get_site_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <' . get_site_option( 'admin_email' ) . '>' );
 				wp_redirect( add_query_arg( "updated", "blogadded", $_SERVER[ 'HTTP_REFERER' ] ) );
 				die();
 			} else {
