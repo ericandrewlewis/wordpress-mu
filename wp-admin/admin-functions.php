@@ -2359,25 +2359,25 @@ function update_option_new_admin_email($old_value, $value) {
 
 	$hash = md5( $value.time().mt_rand() );
 	$newadminemail = array( 
-			"hash" => $hash,
-			"newemail" => $value
+		"hash" => $hash,
+		"newemail" => $value
 	);
 	update_option( 'adminhash', $newadminemail );
-	// TODO: gettext
-	wp_mail( $value, "[ " . get_option( 'blogname' ) . " ] New Admin Email Address", "Dear User,
-
+	
+	$content = __("Dear user,\n\n
 You recently requested to have the administration email address on 
-your blog changed. 
-If this is correct, please click on the following link to change it:
-" . get_option( "siteurl" ) . "/wp-admin/options.php?adminhash={$hash}
-
-You can safely ignore and delete this email if you do not want to
-take this action.
-
-This email has been sent to '{$value}'
-
-Regards,
-The Webmaster" );
+your blog changed.\n
+If this is correct, please click on the following link to change it:\n
+###ADMIN_URL###\n\n
+You can safely ignore and delete this email if you do not want to take this action.\n\n
+This email has been sent to ###EMAIL###\n\n
+Regards,\n
+The Webmaster");
+	
+	$content = str_replace('###ADMIN_URL###', get_option( "siteurl" ).'/wp-admin/options.php?adminhash='.$hash, $content);
+	$content = str_replace('###EMAIL###', $value, $content);
+	
+	wp_mail( $value, sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
 }			
 
 add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
