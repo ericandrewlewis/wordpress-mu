@@ -914,6 +914,7 @@ function dbDelta($queries, $execute = true) {
 function make_db_current() {
 	global $wp_queries;
 
+	populate_queries();
 	$alterations = dbDelta($wp_queries);
 	echo "<ol>\n";
 	foreach($alterations as $alteration) echo "<li>$alteration</li>\n";
@@ -923,6 +924,7 @@ function make_db_current() {
 function make_db_current_silent() {
 	global $wp_queries;
 
+	populate_queries();
 	$alterations = dbDelta($wp_queries);
 }
 
