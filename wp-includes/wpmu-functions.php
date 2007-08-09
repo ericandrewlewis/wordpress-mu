@@ -1340,9 +1340,8 @@ function install_blog_defaults($blog_id, $user_id) {
 	$wpdb->hide_errors();
 
 	// Default links
-	$wpdb->query("INSERT INTO $wpdb->linkcategories (cat_id, cat_name) VALUES (1, '".addslashes(__('Blogroll'))."')");
-	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', 1, '$user_id', 'http://wordpress.com/feed/');");
-	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', 1, '$user_id', 'http://wordpress.org/development/feed/');");
+	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_category, link_description, link_visible, link_owner, link_rating, link_updated, link_rel, link_notes, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', '', '', 1, '', 'Y', '$user_id', 0, 0, '', '', 'http://wordpress.com/feed/')");
+	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_category, link_description, link_visible, link_owner, link_rating, link_updated, link_rel, link_notes, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', '', '', 1, '', 'Y', '$user_id', 0, 0, '', '', 'http://wordpress.org/development/feed/')");
 
 	// First post
 	$now = date('Y-m-d H:i:s');
@@ -1355,7 +1354,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	$first_post = str_replace( "SITE_NAME", $current_site->site_name, $first_post );
 	$first_post = stripslashes( $first_post );
 
-	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, comment_count) VALUES ('".$user_id."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt', '1')");
+	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count) VALUES ('".$user_id."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '', 'publish', 'open', 'open', '', '".addslashes(__('hello-world'))."', to_ping, pinged, '$now', '$now_gmt', '', 0, '', 0, 'post', '', 1)");
 	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
 	update_option( "post_count", 1 );
 
