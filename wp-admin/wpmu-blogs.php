@@ -16,14 +16,15 @@ switch( $_GET[ 'action' ] ) {
 		$id = intval( $_GET[ 'id' ] );
 		$options_table_name = "$wpmuBaseTablePrefix{$id}_options";
 		$options = $wpdb->get_results( "SELECT * FROM {$options_table_name} WHERE option_name NOT LIKE 'rss%' AND option_name NOT LIKE '%user_roles'", ARRAY_A );
-		$details = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$_GET[ 'id' ]}'", ARRAY_A );
+		$details = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$id}'", ARRAY_A );
+		$editblog_roles = get_blog_option( $id, "$wpmuBaseTablePrefix{$id}_user_roles" );
 
 		print "<h2>" . __('Edit Blog') . "</h2>";
 		print "<a href='http://{$details[ 'domain' ]}/'>{$details[ 'domain' ]}</a>";
     ?>
     <form name="form1" method="post" action="wpmu-edit.php?action=updateblog"> 
     <?php wp_nonce_field( "editblog" ); ?>
-    <input type="hidden" name="id" value="<?php echo $_GET[ 'id' ] ?>" /> 
+    <input type="hidden" name="id" value="<?php echo $id ?>" /> 
     <table><td valign='top'>
     <div class="wrap">
     <table width="100%" border='0' cellspacing="2" cellpadding="5" class="editform"> 
@@ -78,16 +79,19 @@ switch( $_GET[ 'action' ] ) {
     <br />
     </td></tr>
     <?php
-    while( list( $key, $val ) = each( $options ) ) { 
-	$disabled = '';
-	if ( is_serialized($val[ 'option_value' ]) ) {
-		if ( is_serialized_string($val[ 'option_value' ]) ) {
-			$val[ 'option_value' ] = wp_specialchars(maybe_unserialize($val[ 'option_value' ]), 'single');
-		} else {
-			$val[ 'option_value' ] = "SERIALIZED DATA";
-			$disabled = ' disabled="disabled"';
+	$editblog_default_role = 'subscriber';
+	while( list( $key, $val ) = each( $options ) ) { 
+		if( $val[ 'option_name' ] == 'default_role' )
+			$editblog_default_role = $val[ 'option_value' ];
+		$disabled = '';
+		if ( is_serialized($val[ 'option_value' ]) ) {
+			if ( is_serialized_string($val[ 'option_value' ]) ) {
+				$val[ 'option_value' ] = wp_specialchars(maybe_unserialize($val[ 'option_value' ]), 'single');
+			} else {
+				$val[ 'option_value' ] = "SERIALIZED DATA";
+				$disabled = ' disabled="disabled"';
+			}
 		}
-	}
 		if ( stristr($val[ 'option_value' ], "\r") or stristr($val[ 'option_value' ], "\n") or stristr($val[ 'option_value' ], "\r\n") ) {
 		?>
 		<tr valign="top"> 
@@ -143,7 +147,7 @@ switch( $_GET[ 'action' ] ) {
 		print $out;
 		print "</table></div>";
 	}
-    $blogusers = get_users_of_blog( $_GET[ 'id' ] );
+    $blogusers = get_users_of_blog( $id );
     print '<div class="wrap"><h3>' . __('Blog Users') . '</h3>';
     if( is_array( $blogusers ) ) {
 	    print '<table width="100%"><caption>' . __('Current Users') . '</caption>';
@@ -160,11 +164,11 @@ switch( $_GET[ 'action' ] ) {
 		    if( $val->user_id != $current_user->data->ID ) {
 			    ?>
 			    <td><select name="role[<?php echo $val->user_id ?>]" id="new_role"><?php 
-				    foreach($wp_roles->role_names as $role => $name) {
+				    foreach( $editblog_roles as $role => $role_assoc ){
 					    $selected = '';
 					    if( $role == $existing_role )
 						    $selected = 'selected="selected"';
-					    echo "<option {$selected} value=\"{$role}\">{$name}</option>";
+					    echo "<option {$selected} value=\"{$role}\">{$role_assoc['name']}</option>";
 				    }
 			    ?></select></td><td><input type='text' name='user_password[<?php echo $val->user_id ?>]'></td><?php
 			    print '<td><input title="' . __('Click to remove user') . '" type="checkbox" name="blogusers[' . $val->user_id . ']"></td>';
@@ -184,11 +188,12 @@ switch( $_GET[ 'action' ] ) {
 	<tr>
 		<th scope="row"><?php _e('Role:') ?></th>
 		<td><select name="new_role" id="new_role"><?php 
-		foreach($wp_roles->role_names as $role => $name) {
+		reset( $editblog_roles );
+		foreach( $editblog_roles as $role => $role_assoc ){
 			$selected = '';
-			if( $role == 'subscriber' )
+			if( $role == $editblog_default_role )
 				$selected = 'selected="selected"';
-			echo "<option {$selected} value=\"{$role}\">{$name}</option>";
+			echo "<option {$selected} value=\"{$role}\">{$role_assoc['name']}</option>";
 		}
 		?></select></td>
 	</tr>
