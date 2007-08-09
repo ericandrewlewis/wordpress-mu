@@ -225,7 +225,7 @@ switch( $_GET[ 'action' ] ) {
 				FROM $wpdb->blogs, $wpdb->site 
 				WHERE site_id = '$wpdb->siteid'
 				AND   {$wpdb->blogs}.site_id = {$wpdb->site}.id
-				AND   {$wpdb->blogs}.domain like '%". trim( $_GET[ 's' ] )."%'";
+				AND   ( {$wpdb->blogs}.domain LIKE '%". trim( $_GET[ 's' ] )."%' OR {$wpdb->blogs}.path LIKE '%". trim( $_GET[ 's' ] )."%' )";
 		} elseif( $_GET[ 'blog_id' ] != '' ) {
 			$query = "SELECT * 
 				FROM $wpdb->blogs 
