@@ -4,6 +4,9 @@ $title = __('WPMU Admin: Users');
 $parent_file = 'wpmu-admin.php';
 
 $id = intval( $_REQUEST[ 'id' ] );
+if( is_site_admin() == false ) {
+	die( __('<p>You do not have permission to access this page.</p>') );
+}
 
 switch( $_REQUEST[ 'action' ] ) {
 	case "confirm":
@@ -22,9 +25,6 @@ switch( $_REQUEST[ 'action' ] ) {
 	break;
 	case "allusers":
 		check_admin_referer('allusers');
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		if( is_array( $_POST[ 'allusers' ] ) ) {
 			while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
 				if( $val != '' && $val != '0' && $val != '1' ) {
@@ -51,9 +51,6 @@ switch( $_REQUEST[ 'action' ] ) {
 $title = __('WPMU Admin');
 $parent_file = 'wpmu-admin.php';
 require_once('admin-header.php');
-if( is_site_admin() == false ) {
-    die( __('<p>You do not have permission to access this page.</p>') );
-}
 if (isset($_GET['updated'])) {
 	?><div id="message" class="updated fade"><p><?php _e('Options saved.') ?></p></div><?php
 }
