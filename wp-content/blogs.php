@@ -69,15 +69,17 @@ function wp_check_filetype($filename, $mimes = null) {
 endif;
 
 
-$file = $_GET[ 'file' ];
-
-$file = constant( "ABSPATH" ) . constant( "UPLOADS" ) . $file;
+$file = constant( "ABSPATH" ) . constant( "UPLOADS" ) . str_replace( '..', '', $_GET[ 'file' ] );
 if ( !is_file( $file ) ) {
 	header("HTTP/1.1 404 Not Found");
 	die('404 &#8212; File not found.');
 }
 
-$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
+if( function_exists( "mime_content_type" ) ) {
+	$mime[ 'type' ] = mime_content_type( $_SERVER[ 'REQUEST_URI' ] );
+} else {
+	$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
+}
 if( $mime[ 'type' ] != false ) {
 	$mimetype = $mime[ 'type' ];
 } else {
