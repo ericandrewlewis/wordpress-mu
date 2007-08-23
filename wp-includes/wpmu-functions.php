@@ -1513,4 +1513,503 @@ function get_most_recent_post_of_user( $user_id ) {
 	return $most_recent_post;
 }
 
+/* Misc functions */
+
+function is_upload_too_big( $file ) {
+	if( filesize($file[ 'file' ]) > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
+		$file[ 'error' ] = sprintf(__('This file is too big. Files must be less than %1$s Kb in size.<br />'), get_site_option( 'fileupload_maxk', 1500 ) );
+	if( upload_is_user_over_quota( false ) ) {
+		$file[ 'error' ] = __('You have used your space quota. Please delete files before uploading.<br />');
+	}
+	return $file;
+}
+add_filter( 'wp_handle_upload', 'is_upload_too_big' );
+
+function fix_upload_details( $uploads ) {
+	$uploads[ 'url' ] = str_replace( UPLOADS, "files", $uploads[ 'url' ] );
+	return $uploads;
+}
+add_filter( "upload_dir", "fix_upload_details" );
+
+
+function get_dirsize($directory) {
+	$size = 0;
+	if(substr($directory,-1) == '/') $directory = substr($directory,0,-1);
+	if(!file_exists($directory) || !is_dir($directory) || !is_readable($directory)) return false;
+	if($handle = opendir($directory)) {
+		while(($file = readdir($handle)) !== false) {
+			$path = $directory.'/'.$file;
+			if($file != '.' && $file != '..') {
+				if(is_file($path)) {
+					$size += filesize($path);
+				} elseif(is_dir($path)) {
+					$handlesize = get_dirsize($path);
+					if($handlesize >= 0) {
+						$size += $handlesize;
+					} else {
+						return false;
+					}
+				}
+			}
+		}
+		closedir($handle);
+	}
+	return $size;
+}
+
+function upload_is_user_over_quota( $echo = true ) {
+	global $wpdb;
+	
+	// Default space allowed is 10 MB 
+	$spaceAllowed = get_site_option("blog_upload_space");
+	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 10;
+	
+	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
+	$size = get_dirsize($dirName) / 1024 / 1024;
+	
+	if( ($spaceAllowed-$size) < 0 ) { 
+		if( $echo )
+			_e( "Sorry, you have used your space allocation. Please delete some files to upload more files." ); //No space left
+		return true;
+	} else {
+		return false;
+	}
+}
+add_action( 'upload_files_upload', 'upload_is_user_over_quota' );
+add_action( 'upload_files_browse', 'upload_is_user_over_quota' );
+add_action( 'upload_files_browse-all', 'upload_is_user_over_quota' );
+
+function check_upload_mimes($mimes) {
+	$site_exts = explode( " ", get_site_option( "upload_filetypes" ) );
+	foreach ( $site_exts as $ext )
+		foreach ( $mimes as $ext_pattern => $mime )
+			if ( preg_match("/$ext_pattern/", $ext) )
+				$site_mimes[$ext_pattern] = $mime;
+	return $site_mimes;
+}
+add_filter('upload_mimes', 'check_upload_mimes');
+
+add_filter('the_title', 'wp_filter_kses');
+
+function update_posts_count( $post_id ) {
+	global $wpdb;
+	$post_id = intval( $post_id );
+	$c = $wpdb->get_var( "SELECT count(*) FROM {$wpdb->posts} WHERE post_status = 'publish' and post_type='post'" );
+	update_option( "post_count", $c );
+}
+add_action( "publish_post", "update_posts_count" );
+
+function wpmu_log_new_registrations( $blog_id, $user_id ) {
+	global $wpdb;
+	$user = new WP_User($user_id);
+	$email = $wpdb->escape($user->user_email);
+	$IP = preg_replace( '/[^0-9., ]/', '',$_SERVER['REMOTE_ADDR'] );
+	$wpdb->query( "INSERT INTO {$wpdb->registration_log} ( email , IP , blog_id, date_registered ) VALUES ( '{$email}', '{$IP}', '{$blog_id}', NOW( ))" );
+}
+
+add_action( "wpmu_new_blog" ,"wpmu_log_new_registrations", 10, 2 );
+
+function scriptaculous_admin_loader() {
+	        wp_enqueue_script('scriptaculous');
+}
+add_action( 'admin_print_scripts', 'scriptaculous_admin_loader' );
+
+function fix_import_form_size( $size ) {
+	if( upload_is_user_over_quota( false ) == false )
+		return 0;
+	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
+	$dirsize = get_dirsize($dirName) / 1024;
+	if( $size > $dirsize ) {
+		return $dirsize;
+	} else {
+		return $size;
+	}
+}
+add_filter( 'import_upload_size_limit', 'fix_import_form_size' );
+
+if ( !function_exists('graceful_fail') ) :
+function graceful_fail( $message ) {
+	die('
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><head profile="http://gmpg.org/xfn/11">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Error!</title>
+<style type="text/css">
+img {
+	border: 0;
+}
+body {
+line-height: 1.6em; font-family: Georgia, serif; width: 390px; margin: auto;
+text-align: center;
+}
+.message {
+	font-size: 22px;
+	width: 350px;
+	margin: auto;
+}
+</style>
+</head>
+<body>
+<p class="message">' . $message . '</p>
+</body>
+</html>
+	');
+}
+endif;
+
+/* Delete blog */
+
+class delete_blog {
+
+	function delete_blog() {
+		$this->reallydeleteblog = false;
+		add_action('admin_menu', array(&$this, 'admin_menu'));
+		add_action('admin_footer', array(&$this, 'admin_footer'));
+	}
+
+	function admin_footer() {
+		global $wpdb;
+
+		if( $this->reallydeleteblog == true ) {
+			wpmu_delete_blog( $wpdb->blogid ); 
+		}
+	}
+
+	function admin_menu() {
+		add_submenu_page('options-general.php', __('Delete Blog'), __('Delete Blog'), 'manage_options', 'delete-blog', array(&$this, 'plugin_content'));
+	}
+
+	function plugin_content() {
+		global $wpdb, $current_blog, $current_site;
+		$this->delete_blog_hash = get_settings('delete_blog_hash');
+		echo '<div class="wrap"><h2>' . __('Delete Blog') . '</h2>';
+		if( $_POST[ 'action' ] == "deleteblog" && $_POST[ 'confirmdelete' ] == '1' ) {
+			$hash = substr( md5( $_SERVER[ 'REQUEST_URI' ] . time() ), 0, 6 );
+			update_option( "delete_blog_hash", $hash );
+			$url_delete = get_option( "siteurl" ) . "/wp-admin/options-general.php?page=delete-blog&h=" . $hash;
+			$msg = __("Dear User,
+You recently clicked the 'Delete Blog' link on your blog and filled in a 
+form on that page.
+If you really want to delete your blog, click the link below. You will not
+be asked to confirm again so only click this link if you are 100% certain:
+URL_DELETE
+
+If you delete your blog, please consider opening a new blog here
+some time in the future! (But remember your current blog and username 
+are gone forever.)
+
+Thanks for using the site,
+Webmaster
+SITE_NAME
+");
+			$msg = str_replace( "URL_DELETE", $url_delete, $msg );
+			$msg = str_replace( "SITE_NAME", $current_site->site_name, $msg );
+			wp_mail( get_option( "admin_email" ), "[ " . get_option( "blogname" ) . " ] ".__("Delete My Blog"), $msg );
+			?>
+			<p><?php _e('Thank you. Please check your email for a link to confirm your action. Your blog will not be deleted until this link is clicked.') ?></p>
+			<?php
+		} elseif( isset( $_GET[ 'h' ] ) && $_GET[ 'h' ] != '' && get_option('delete_blog_hash') != false ) {
+			if( get_option('delete_blog_hash') == $_GET[ 'h' ] ) {
+				$this->reallydeleteblog = true;
+				echo "<p>" . sprintf(__('Thank you for using %s, your blog has been deleted. Happy trails to you until we meet again.'), $current_site->site_name) . "</p>";
+			} else {
+				$this->reallydeleteblog = false;
+				echo "<p>" . __("I'm sorry, the link you clicked is stale. Please select another option.") . "</p>";
+			}
+		} else {
+?>
+			<p><?php printf(__('If you do not want to use your %s blog any more, you can delete it using the form below. When you click <strong>Delete My Blog</strong> you will be sent an email with a link in it. Click on this link to delete your blog.'), $current_site->site_name); ?></p>
+			<p><?php _e('Remember, once deleted your blog cannot be restored.') ?></p>
+			<form method='post' name='deletedirect'>
+			<input type="hidden" name="page" value="<?php echo $_GET['page'] ?>" />
+			<input type='hidden' name='action' value='deleteblog' />
+			<p><input id='confirmdelete' type='checkbox' name='confirmdelete' value='1' /> <label for='confirmdelete'><strong><?php printf( __("I'm sure I want to permanently disable my blog, and I am aware I can never get it back or use %s again."), $current_blog->domain); ?></strong></label></p>
+			<p class="submit"><input type='submit' value='<?php _e('Delete My Blog Permanently &raquo;') ?>' /></p>
+			</form>
+<?php
+		}
+		echo "</div>";
+	}
+}
+
+$delete_blog_obj = new delete_blog();
+
+/* Dashboard Switcher */
+
+add_action( 'admin_print_scripts', 'switcher_scripts' );
+
+function switcher_scripts() {
+	wp_enqueue_script('jquery');
+}
+
+
+function switcher_css() {
+?>
+<style type="text/css">
+#switchermenu a {
+	font-size: 20px;
+	padding: 0 1.5em 0 10px;
+	display: block;
+	color: #c3def1;
+}
+
+#switchermenu a:hover {
+	background: #1a70b4;
+	color: #fff;
+}
+
+#switchermenu li {
+	margin: 0;
+	padding: 2px;
+}
+
+#switchermenu {
+	display: none;
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+	border-top: 1px solid #1a70b4;
+	border-left: 1px solid #1a70b4;
+	position: absolute;
+	left: 0;
+	top: 1em;
+	background: #14568a;
+	z-index: 1;
+}
+</style>
+<script type="text/javascript">
+jQuery( function($) {
+var switchTime;
+var w = false;
+var h = $( '#blog-title' )
+	.css({
+		background: 'transparent url( ../wp-content/mu-plugins/bullet_arrow_down.gif ) no-repeat scroll 100% .2em',
+		padding: '0 25px 2px 5px',
+		cursor: 'pointer',
+		border: '1px solid #14568a'
+	})
+	.parent().css( { position: 'relative' }).end()
+	.append( $('#switchermenu') )
+	.hover( function() {
+		$(this).css({ border: '1px solid #1a70b4'});
+		switchTime = window.setTimeout( function() {
+			$('#switchermenu').fadeIn('fast').css( 'top', h ).find('a').width( w = w ? w : $('#switchermenu').width() );
+		}, 300 );
+	}, function() {
+		window.clearTimeout( switchTime );
+		$(this).css({ border: '1px solid #14568a' }) ;
+		$('#switchermenu').hide();
+	})
+	.height() - 3;
+});
+</script>
+<?php
+}
+add_action( "admin_head", "switcher_css" );
+
+function add_switcher() {
+	global $current_user;
+	$out = '<h1><span id="blog-title">' . wptexturize(get_bloginfo(("name"))) . '</span><span id="viewsite">(<a href="' . get_option("home") . "/" . '">' . __("View site &raquo;") . '</a>)</span></h1>';
+	$out .= '<ul id="switchermenu">';
+	$blogs = get_blogs_of_user($current_user->ID);
+	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
+		$out .= '<li><a href="http://' . $blog->domain . $blog->path . 'wp-admin/">' . addslashes( $blog->blogname ) . '</a></li>';
+	}
+	$out .= "</ul>";
+	?>
+	<script type="text/javascript">
+	document.getElementById('wphead').innerHTML = '<?php echo $out ?>'
+	</script>
+	<?php
+}
+add_action( 'admin_footer', 'add_switcher' );
+
+/* Global Categories */
+
+function global_categories( $cat_ID ) {
+	global $wpdb;
+
+	$cat_ID = intval( $cat_ID );
+	$c = $wpdb->get_row( "SELECT * FROM $wpdb->categories WHERE cat_ID = '$cat_ID'" );
+
+	$global_category = $wpdb->get_row( "SELECT * FROM $wpdb->sitecategories WHERE category_nicename = '" . $wpdb->escape( $c->category_nicename ) . "'" );
+
+	if ( $global_category ) {
+		$global_id = $global_category->cat_ID;
+	} else {
+		$wpdb->query( "INSERT INTO $wpdb->sitecategories ( cat_name, category_nicename ) VALUES ( '" . $wpdb->escape( $c->cat_name ) . "', '" . $wpdb->escape( $c->category_nicename ) . "' )" );
+		$global_id = $wpdb->insert_id;
+	}
+	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$global_id' WHERE cat_id = '$cat_ID'" );
+	$wpdb->query( "UPDATE $wpdb->categories SET category_parent = '$global_id' WHERE category_parent = '$cat_ID'" );
+	$wpdb->query( "UPDATE $wpdb->post2cat SET category_id = '$global_id' WHERE category_id = '$cat_ID'" );
+	$wpdb->query( "UPDATE $wpdb->link2cat SET category_id = '$global_id' WHERE category_id = '$cat_ID'" );
+	wp_cache_delete($cat_ID, 'category');
+	wp_cache_delete($global_id, 'category');
+	wp_cache_delete('all_category_ids', 'category');
+
+	do_action('update_cat_id', $global_id, $cat_ID);
+
+	return $global_id;
+}
+
+add_filter( 'cat_id_filter', 'global_categories' );
+
+/* Pluggable */
+
+function wp_login($username, $password, $already_md5 = false) {
+	global $wpdb, $error, $current_user;
+
+	$username = strtolower($username);
+
+	if ( !$username )
+		return false;
+
+	if ( !$password ) {
+		$error = __('<strong>Error</strong>: The password field is empty.');
+		return false;
+	}
+
+	if ($current_user->data->user_login == $username)
+		return true;
+
+	$login = get_userdatabylogin($username);
+
+	if (!$login) {
+		if( is_site_admin( $username ) ) {
+			unset( $login );
+			$userdetails = get_userdatabylogin( $username );
+			$login->user_login = $username;
+			$login->user_pass = $userdetails->user_pass;
+		} else {
+			$admins = get_admin_users_for_domain();
+			reset( $admins );
+			while( list( $key, $val ) = each( $admins ) ) 
+			{ 
+				if( $val[ 'user_login' ] == $username ) {
+					unset( $login );
+					$login->user_login = $username;
+					$login->user_pass  = $val[ 'user_pass' ];
+				}
+			}
+		}
+	}
+	if (!$login) {
+		$error = __('<strong>Error</strong>: Wrong username.');
+		return false;
+	} else {
+		if( is_site_admin( $username ) == false && ( $primary_blog = get_usermeta( $login->ID, "primary_blog" ) ) ) {
+			$details = get_blog_details( $primary_blog );
+			if( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
+				$error = __('<strong>Error</strong>: Blog suspended.');
+				return false;
+			}
+		}
+		// If the password is already_md5, it has been double hashed.
+		// Otherwise, it is plain text.
+		if ( ($already_md5 && $login->user_login == $username && md5($login->user_pass) == $password) || ($login->user_login == $username && $login->user_pass == md5($password)) ) {
+			return true;
+		} else {
+			$error = __('<strong>Error</strong>: Incorrect password.');
+			$pwd = '';
+			return false;
+		}
+	}
+}
+
+function get_userdata( $user_id ) {
+	global $wpdb, $cache_userdata, $wpmuBaseTablePrefix;
+	$user_id = (int) $user_id;
+	if ( $user_id == 0 )
+		return false;
+
+	$user = wp_cache_get($user_id, 'users');
+	$user_level = $wpmuBaseTablePrefix . $wpdb->blogid . '_user_level';
+	if ( $user && is_site_admin( $user->user_login ) ) {
+		$user->$user_level = 10;
+		$user->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$user->{$cap_key} = array( 'administrator' => '1' );
+		return $user;
+	} elseif ( $user ) {
+		return $user;
+	}
+
+	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id'") )
+		return false;
+
+	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id' /* pluggable get_userdata */");
+
+	if ($metavalues) {
+		foreach ( $metavalues as $meta ) {
+			@ $value = unserialize($meta->meta_value);
+			if ($value === FALSE)
+				$value = $meta->meta_value;
+			$user->{$meta->meta_key} = $value;
+
+			// We need to set user_level from meta, not row
+			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
+				$user->user_level = $meta->meta_value;
+		} // end foreach
+	} //end if
+
+	if( is_site_admin( $user->user_login ) == true ) {
+	    $user->user_level = 10;
+	    $cap_key = $wpdb->prefix . 'capabilities';
+	    $user->{$cap_key} = array( 'administrator' => '1' );
+	}
+
+	wp_cache_add($user_id, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'userlogins');
+
+	return $user;
+}
+
+function get_userdatabylogin($user_login) {
+	global $wpdb;
+	$user_login = sanitize_user( $user_login );
+
+	if ( empty( $user_login ) )
+		return false;
+		
+	$userdata = wp_cache_get($user_login, 'userlogins');
+	if( $userdata && is_site_admin( $user_login ) == true ) {
+		$userdata->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$userdata->{$cap_key} = array( 'administrator' => '1' );
+		return $userdata;
+	} elseif( $userdata )
+		return $userdata;
+
+	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE user_login = '$user_login'") )
+		return false;
+
+	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user->ID'");
+
+	if ($metavalues) {
+		foreach ( $metavalues as $meta ) {
+			@ $value = unserialize($meta->meta_value);
+			if ($value === FALSE)
+				$value = $meta->meta_value;
+			$user->{$meta->meta_key} = $value;
+
+			// We need to set user_level from meta, not row
+			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
+				$user->user_level = $meta->meta_value;
+		}
+	}
+	if( is_site_admin( $user_login ) == true ) {
+		$user->user_level = 10;
+		$cap_key = $wpdb->prefix . 'capabilities';
+		$user->{$cap_key} = array( 'administrator' => '1' );
+	}
+
+	wp_cache_add($user->ID, $user, 'users');
+	wp_cache_add($user->user_login, $user, 'userlogins');
+
+	return $user;
+
+}
+
 ?>
