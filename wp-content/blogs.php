@@ -76,7 +76,7 @@ if ( !is_file( $file ) ) {
 }
 
 if( function_exists( "mime_content_type" ) ) {
-	$mime[ 'type' ] = mime_content_type( $_SERVER[ 'REQUEST_URI' ] );
+	$mime[ 'type' ] = mime_content_type( $file );
 } else {
 	$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
 }
