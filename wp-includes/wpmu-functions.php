@@ -908,6 +908,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	$errors = new WP_Error();
 
 	$user_name = sanitize_title($user_name);
+	$user_email = sanitize_email( $user_email );
 
 	if ( empty( $user_name ) )
 	   	$errors->add('user_name', __("Please enter a username"));
@@ -1000,6 +1001,9 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 
 function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	global $wpdb, $domain, $base;
+
+	$blog_id = sanitize_user( $blog_id );
+	$blog_title = sanitize_title( $blog_title );
 
 	$errors = new WP_Error();
 	$illegal_names = get_site_option( "illegal_names" );
@@ -1095,6 +1099,9 @@ function wpmu_signup_blog($domain, $path, $title, $user, $user_email, $meta = ''
 
 function wpmu_signup_user($user, $user_email, $meta = '') {
 	global $wpdb;
+
+	$user = sanitize_user( $user );
+	$user_email = sanitize_email( $user_email );
 
 	$key = substr( md5( time() . rand() . $user_email ), 0, 16 );
 	$registered = current_time('mysql', true);
@@ -1230,7 +1237,8 @@ function wpmu_create_user( $user_name, $password, $email) {
 }
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
-	$domain = addslashes( $domain );
+	$domain = sanitize_user( $domain );
+	$title = sanitize_title( $title );
 	$user_id = (int) $user_id;
 
 	if( empty($path) )
@@ -1239,10 +1247,6 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 	// Check if the domain has been used already. We should return an error message.
 	if ( domain_exists($domain, $path, $site_id) )
 		return new WP_Error('blog_taken', __('Blog already exists.'));
-
-	// Need to backup wpdb table names, and create a new wp_blogs entry for new blog.
-	// Need to get blog_id from wp_blogs, and create new table names.
-	// Must restore table names at the end of function.
 
 	if ( !defined("WP_INSTALLING") )
 		define( "WP_INSTALLING", true );
