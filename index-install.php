@@ -360,6 +360,8 @@ function step3() {
 	if( strpos( $domain, '/' ) )
 		$domain = substr( $domain, 0, strpos( $domain, '/' ) );
 	$email = $wpdb->escape( $_POST[ 'email' ] );
+	if( $email == '' )
+		die( 'You must enter an email address!' );
 	$weblog_title = $wpdb->escape( $_POST[ 'weblog_title' ] );
 
 	// set up site tables
