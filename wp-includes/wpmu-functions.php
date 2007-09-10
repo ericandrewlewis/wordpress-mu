@@ -1593,8 +1593,6 @@ function check_upload_mimes($mimes) {
 }
 add_filter('upload_mimes', 'check_upload_mimes');
 
-add_filter('the_title', 'wp_filter_kses');
-
 function update_posts_count( $post_id ) {
 	global $wpdb;
 	$post_id = intval( $post_id );
@@ -1859,6 +1857,10 @@ function global_categories( $cat_ID ) {
 }
 
 add_filter( 'cat_id_filter', 'global_categories' );
+
+/* WordPress MU Default Filters */
+add_filter('the_title', 'wp_filter_kses');
+add_filter('the_title', 'sanitize_title');
 
 /* Pluggable */
 
