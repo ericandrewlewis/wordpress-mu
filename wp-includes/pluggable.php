@@ -327,8 +327,18 @@ function wp_redirect($location, $status = 302) {
 	$location = preg_replace('|[^a-z0-9-~+_.?#=&;,/:%]|i', '', $location);
 	$location = wp_kses_no_null($location);
 
+	// remove %0d and %0a from location
 	$strip = array('%0d', '%0a');
-	$location = str_replace($strip, '', $location);
+	$found = true;
+	while($found) {
+		$found = false;
+		foreach($strip as $val) {
+			while(strpos($location, $val) !== false) {
+				$found = true;
+				$location = str_replace($val, '', $location);
+			}
+		}
+	}
 
 	if ( $is_IIS ) {
 		header("Refresh: 0;url=$location");
@@ -436,14 +446,14 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 	$notify_message .= sprintf( __('Delete it: %s'), get_option('siteurl')."/wp-admin/comment.php?action=cdc&c=$comment_id" ) . "\r\n";
 	$notify_message .= sprintf( __('Spam it: %s'), get_option('siteurl')."/wp-admin/comment.php?action=cdc&dt=spam&c=$comment_id" ) . "\r\n";
 
-	$admin_email = get_option('admin_email');
+	$wp_email = get_option('admin_email');
 
 	if ( '' == $comment->comment_author ) {
-		$from = "From: \"$blogname\" <$admin_email>";
+		$from = "From: \"$blogname\" <$wp_email>";
 		if ( '' != $comment->comment_author_email )
 			$reply_to = "Reply-To: $comment->comment_author_email";
 	} else {
-		$from = "From: \"$comment->comment_author\" <$admin_email>";
+		$from = "From: \"$comment->comment_author\" <$wp_email>";
 		if ( '' != $comment->comment_author_email )
 			$reply_to = "Reply-To: \"$comment->comment_author_email\" <$comment->comment_author_email>";
 	}

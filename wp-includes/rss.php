@@ -9,7 +9,7 @@
 
 define('RSS', 'RSS');
 define('ATOM', 'Atom');
-define('MAGPIE_USER_AGENT', 'WordPressMU/' . $wp_version);
+define('MAGPIE_USER_AGENT', 'WordPressMU/' . $GLOBALS['wp_version']);
 
 class MagpieRSS {
 	var $parser;
@@ -591,7 +591,7 @@ function init () {
 	}
 
 	if ( !defined('MAGPIE_USER_AGENT') ) {
-		$ua = 'WordPress/' . $wp_version;
+		$ua = 'WordPress/' . $GLOBALS['wp_version'];
 
 		if ( MAGPIE_CACHE_ON ) {
 			$ua = $ua . ')';
