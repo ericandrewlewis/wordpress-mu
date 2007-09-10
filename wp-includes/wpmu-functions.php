@@ -907,7 +907,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 
 	$errors = new WP_Error();
 
-	$user_name = sanitize_title($user_name);
+	$user_name = sanitize_user($user_name);
 	$user_email = sanitize_email( $user_email );
 
 	if ( empty( $user_name ) )
@@ -1003,7 +1003,7 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	global $wpdb, $domain, $base;
 
 	$blog_id = sanitize_user( $blog_id );
-	$blog_title = sanitize_title( $blog_title );
+	$blog_title = strip_tags( $blog_title );
 
 	$errors = new WP_Error();
 	$illegal_names = get_site_option( "illegal_names" );
@@ -1011,8 +1011,6 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	    $illegal_names = array( "www", "web", "root", "admin", "main", "invite", "administrator" );
 	    add_site_option( "illegal_names", $illegal_names );
 	}
-
-	$blog_id = sanitize_title($blog_id);
 
 	if ( empty( $blog_id ) )
 	    $errors->add('blog_id', __("Please enter a blog name"));
@@ -1238,7 +1236,7 @@ function wpmu_create_user( $user_name, $password, $email) {
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
 	$domain = sanitize_user( $domain );
-	$title = sanitize_title( $title );
+	$title = strip_tags( $title );
 	$user_id = (int) $user_id;
 
 	if( empty($path) )
@@ -1860,7 +1858,6 @@ add_filter( 'cat_id_filter', 'global_categories' );
 
 /* WordPress MU Default Filters */
 add_filter('the_title', 'wp_filter_kses');
-add_filter('the_title', 'sanitize_title');
 
 /* Pluggable */
 
