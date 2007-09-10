@@ -11,7 +11,7 @@ if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_
 
 do_action("signup_header");
 
-if( $current_blog->domain != $current_site->domain ) {
+if( $current_blog->domain . $current_blog->path != $current_site->domain . $current_site->path ) {
 	header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php" );
 	die();
 }
