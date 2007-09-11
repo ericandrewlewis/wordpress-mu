@@ -787,8 +787,8 @@ function wp_filter_post_display_kses($data) {
 
 function kses_init() {
 	global $allowedposttags, $allowedtags;
-	apply_filters( 'edit_allowedposttags', $allowedposttags );
-	apply_filters( 'edit_allowedtags', $allowedtags );
+	$allowedposttags = apply_filters( 'edit_allowedposttags', $allowedposttags );
+	$allowedtags = apply_filters( 'edit_allowedtags', $allowedtags );
 	kses_remove_filters();
 
 	kses_init_filters();
