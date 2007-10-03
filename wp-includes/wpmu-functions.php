@@ -913,10 +913,10 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	if ( empty( $user_name ) )
 	   	$errors->add('user_name', __("Please enter a username"));
 
-	preg_match( "/[a-zA-Z0-9]+/", $user_name, $maybe );
+	preg_match( "/[a-z0-9]+/", $user_name, $maybe );
 
 	if( $user_name != $maybe[0] ) {
-	    $errors->add('user_name', __("Only letters and numbers allowed"));
+	    $errors->add('user_name', __("Only lowercase letters and numbers allowed"));
 	}
 
 	$illegal_names = get_site_option( "illegal_names" );
@@ -1015,9 +1015,9 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	if ( empty( $blog_id ) )
 	    $errors->add('blog_id', __("Please enter a blog name"));
 
-	preg_match( "/[a-zA-Z0-9]+/", $blog_id, $maybe );
+	preg_match( "/[a-z0-9]+/", $blog_id, $maybe );
 	if( $blog_id != $maybe[0] ) {
-	    $errors->add('blog_id', __("Only letters and numbers allowed"));
+	    $errors->add('blog_id', __("Only lowercase letters and numbers allowed"));
 	}
 	if( in_array( $blog_id, $illegal_names ) == true ) {
 	    $errors->add('blog_id',  __("That name is not allowed"));
@@ -1864,13 +1864,13 @@ add_filter('the_title', 'wp_filter_kses');
 function wp_login($username, $password, $already_md5 = false) {
 	global $wpdb, $error, $current_user;
 
-	$username = strtolower($username);
+	$username = sanitize_user($username);
 
-	if ( !$username )
+	if ( '' == $username )
 		return false;
 
-	if ( !$password ) {
-		$error = __('<strong>Error</strong>: The password field is empty.');
+	if ( '' == $password ) {
+		$error = __('<strong>ERROR</strong>: The password field is empty.');
 		return false;
 	}
 
