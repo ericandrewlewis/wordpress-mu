@@ -278,7 +278,7 @@ function add_site_option( $key, $value ) {
 
 	$exists = $wpdb->get_row("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$safe_key' AND site_id = '{$wpdb->siteid}'");
 
-	if ( null !== $exists ) {// If we already have it
+	if ( is_object( $exists ) ) {// If we already have it
 		update_site_option( $key, $value );
 		return false;
 	}
@@ -294,16 +294,18 @@ function add_site_option( $key, $value ) {
 function update_site_option( $key, $value ) {
 	global $wpdb;
 
+	$safe_key = $wpdb->escape( $key );
+
 	if ( $value == get_site_option( $key ) )
 	 	return;
 
-	if ( get_site_option( $key, false, false ) === false )
-		add_site_option( $key, $value );
+	$exists = $wpdb->get_row("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$safe_key' AND site_id = '{$wpdb->siteid}'");
+
+	if ( false == is_object( $exists ) ) // It's a new record
+		return add_site_option( $key, $value );
 
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
-
-	$safe_key = $wpdb->escape( $key );
 
 	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '" . $wpdb->escape( $value ) . "' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$safe_key'" );
 	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
