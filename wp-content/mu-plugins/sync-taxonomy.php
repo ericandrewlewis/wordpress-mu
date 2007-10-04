@@ -27,6 +27,9 @@ $wpdb->term_relationships = $wpdb->prefix . "term_relationships";
 
 function sync_link2cat( $link_id ) {
 	global $wpdb;
+
+	if ( get_option('db_version') != 6124 )
+		return;
 	
 	if( function_exists( 'get_term' ) ) {
 		$wpdb->query( "DELETE FROM {$wpdb->link2cat} WHERE link_id = '{$link_id}'" );
@@ -66,6 +69,9 @@ add_action( 'add_link', 'sync_link2cat' );
 function sync_post2cat( $post_id ) {
 	global $wpdb;
 
+	if ( get_option('db_version') != 6124 )
+		return;
+	
 	if( function_exists( 'get_term' ) ) {
 		$wpdb->query( "DELETE FROM {$wpdb->post2cat} WHERE post_id = '{$post_id}'" );
 		$terms = $wpdb->get_results( "SELECT {$wpdb->term_taxonomy}.term_id FROM {$wpdb->term_taxonomy}, {$wpdb->term_relationships} WHERE {$wpdb->term_taxonomy}.term_taxonomy_id = {$wpdb->term_relationships}.term_taxonomy_id AND {$wpdb->term_relationships}.object_id = '{$post_id}' AND {$wpdb->term_taxonomy}.taxonomy = 'category'" );
@@ -110,6 +116,9 @@ function sync_terms_edit_link( $cat_ID ) {
 function sync_terms_edit( $cat_ID, $taxonomy ) {
 	global $wpdb;
 
+	if ( get_option('db_version') != 6124 )
+		return;
+	
 	if( function_exists( 'get_term' ) ) {
 		$cat = $wpdb->get_row( "SELECT * FROM {$wpdb->terms}, {$wpdb->term_taxonomy} WHERE {$wpdb->terms}.term_id = {$wpdb->term_taxonomy}.term_id AND {$wpdb->term_taxonomy}.term_id = '$cat_ID'" );
 		$wpdb->query( "UPDATE {$wpdb->categories} SET cat_name = '" . $wpdb->escape( $cat->name ) . "', category_nicename = '" . $wpdb->escape( $cat->slug ) . "', category_description = '" . $wpdb->escape( $cat->description ) . "', category_parent = '{$cat->parent}' WHERE cat_ID = '$cat_ID'" );
@@ -130,6 +139,9 @@ add_filter( 'edit_link_category', 'sync_terms_edit_link');
 function sync_terms_create( $cat_ID ) {
 	global $wpdb;
 
+	if ( get_option('db_version') != 6124 )
+		return;
+	
 	if( strpos( $_SERVER[ 'HTTP_REFERER' ], 'link-add.php' ) ) {
 		$taxonomy = 'link_category';
 	} else {
@@ -156,6 +168,9 @@ add_filter( 'create_link_category', 'sync_terms_create');
 function sync_terms_delete( $cat_ID ) {
 	global $wpdb;
 
+	if ( get_option('db_version') != 6124 )
+		return;
+	
 	if( function_exists( 'get_term' ) ) {
 		$wpdb->query( "DELETE FROM {$wpdb->categories} WHERE cat_ID = '$cat_ID'" );
 		$wpdb->query( "DELETE FROM {$wpdb->post2cat} WHERE cat_ID = '$cat_ID'" );
@@ -299,6 +314,9 @@ function do_backfill( $term_ids = array() ) {
 function make_tags_global( $global_id, $cat_ID ) {
 	global $wpdb;
 
+	if ( get_option('db_version') != 6124 )
+		return;
+	
 	if( $global_id == $cat_ID )
 		return;
 		
@@ -311,6 +329,9 @@ add_action( 'update_cat_id', 'make_tags_global', 10, 2 );
 function redo_relationships() {
 	global $wpdb, $blog_id;
 
+	if ( get_option('db_version') != 6124 )
+		return;
+	
 	$upgradetaxonomysecret = get_taxonomy_secret();
 
 	if ( !isset( $_GET['redorelationships'] ) || $upgradetaxonomysecret != $_GET['redorelationships'] )
