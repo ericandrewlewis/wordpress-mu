@@ -367,7 +367,10 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_emai
 }
 
 // Main
-$active_signup = 'all';
+$active_signup = get_site_option( 'registration' );
+if( !$active_signup )
+	$active_signup = 'all';
+
 $active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
 
 $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
@@ -400,6 +403,8 @@ switch ($_POST['stage']) {
 			signup_another_blog($newblogname);
 		} elseif( is_user_logged_in() == false && ( $active_signup == 'all' || $active_signup == 'user' ) ) {
 			signup_user( $newblogname, $user_email );
+		} elseif( is_user_logged_in() == false && ( $active_signup == 'blog' ) ) {
+			_e( "I'm sorry. We're not accepting new registrations at this time." );
 		} else {
 			_e( "You're logged in already. No need to register again!" );
 		}
