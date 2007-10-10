@@ -2004,7 +2004,23 @@ function get_userdatabylogin($user_login) {
 	wp_cache_add($user->user_login, $user, 'userlogins');
 
 	return $user;
-
 }
+
+function choose_primary_blog() {
+	global $current_user;
+	echo __('Primary Blog:') . ' ';
+	$all_blogs = get_blogs_of_user( $current_user->ID );
+	if( count( $all_blogs ) > 1 ) {
+		$primary_blog = get_usermeta($current_user->ID, 'primary_blog');
+		?><p><select name="primary_blog"><?php
+		foreach( $all_blogs as $blog ) {
+			?><option value='<?php echo $blog->userblog_id ?>'<?php if( $primary_blog == $blog->userblog_id ) echo ' selected' ?>>http://<?php echo $blog->domain.$blog->path ?></option><?php
+		}
+		?></select></p><?php
+	} else {
+		echo $_SERVER['HTTP_HOST'];
+	}       
+}
+add_action( 'profile_personal_options', 'choose_primary_blog' );
 
 ?>
