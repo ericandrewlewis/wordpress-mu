@@ -409,7 +409,7 @@ We hope you enjoy your new weblog.
 	wp_mail( $email, "Your new WordPress MU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
 	?><h2>Installation Finished!</h2>
 	<p>Congratulations! Your <a href='http://<?php echo $domain . $base; ?>'>WordPress &micro; site</a> has been configured.</p>
-	<p>You can <a href='wp-login.php'>log in</a> using the username "admin" and password "<?php echo $pass; ?>"</p>
+	<p>You can <a href='wp-login.php'>log in</a> using the username "admin" and password <?php echo $pass; ?></p>
 	<h3>Directory Permissions</h3>
 	<p>Please remember to reset the permissions on the following directories:<ul>
 	<?php
@@ -469,7 +469,7 @@ switch($action) {
 		step2();
 		// Install Blog!
 		include_once('./wp-config.php');
-		include_once('./wp-admin/upgrade-functions.php');
+		include_once('./wp-admin/includes/upgrade.php');
 		// normalise hostname - no www.
 		$_SERVER[ 'HTTP_HOST' ] = str_replace( 'www.', '', $_SERVER[ 'HTTP_HOST' ] );
 		make_db_current_silent();

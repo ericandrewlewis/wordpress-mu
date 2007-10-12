@@ -6,22 +6,22 @@ $parent_file = 'options-general.php';
 
 include('./admin-header.php');
 ?>
- 
+
 <div class="wrap">
 <h2><?php _e('General Options') ?></h2>
-<form method="post" action="options.php"> 
+<form method="post" action="options.php">
 <?php wp_nonce_field('update-options') ?>
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
-<table class="optiontable"> 
-<tr valign="top"> 
-<th scope="row"><?php _e('Weblog title:') ?></th> 
-<td><input name="blogname" type="text" id="blogname" value="<?php form_option('blogname'); ?>" size="40" /></td> 
-</tr> 
-<tr valign="top"> 
-<th scope="row"><?php _e('Tagline:') ?></th> 
+<table class="optiontable">
+<tr valign="top">
+<th scope="row"><?php _e('Blog title:') ?></th>
+<td><input name="blogname" type="text" id="blogname" value="<?php form_option('blogname'); ?>" size="40" /></td>
+</tr>
+<tr valign="top">
+<th scope="row"><?php _e('Tagline:') ?></th>
 <td><input name="blogdescription" type="text" id="blogdescription" style="width: 95%" value="<?php form_option('blogdescription'); ?>" size="45" />
 <br />
-<?php _e('In a few words, explain what this weblog is about.') ?></td> 
+<?php _e('In a few words, explain what this blog is about.') ?></td>
 </tr> 
 <tr valign="top"> 
 <th scope="row"><?php _e('Membership:') ?></th> 
@@ -71,8 +71,8 @@ if( is_array( $lang_files ) && count($lang_files) >= 1 ) {
 <td><code><?php echo gmdate(__('Y-m-d g:i:s a')); ?></code></td> 
 </tr>
 <tr>
-<th scope="row"><?php _e('Times in the weblog should differ by:') ?> </th>
-<td><input name="gmt_offset" type="text" id="gmt_offset" size="2" value="<?php form_option('gmt_offset'); ?>" /> 
+<th scope="row"><?php _e('Times in the blog should differ by:') ?> </th>
+<td><input name="gmt_offset" type="text" id="gmt_offset" size="2" value="<?php form_option('gmt_offset'); ?>" />
 <?php _e('hours') ?> (<?php _e('Your timezone offset, for example <code>-6</code> for Central Time.'); ?>)</td>
 </tr>
 <tr>
@@ -84,7 +84,7 @@ if( is_array( $lang_files ) && count($lang_files) >= 1 ) {
 <th scope="row"><?php _e('Default time format:') ?></th>
 <td><input name="time_format" type="text" id="time_format" size="30" value="<?php form_option('time_format'); ?>" /><br />
 <?php _e('Output:') ?> <strong><?php echo gmdate(get_option('time_format'), current_time('timestamp')); ?></strong></td>
-</tr> 
+</tr>
 <tr>
 <th scope="row">&nbsp;</th>
 <td><?php _e('<a href="http://codex.wordpress.org/Formatting_Date_and_Time">Documentation on date formatting</a>. Click "Update options" to update sample output.') ?> </td>
@@ -101,14 +101,14 @@ endfor;
 </select></td>
 </tr>
 </table>
-</fieldset> 
+</fieldset>
 
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
-<input type="hidden" name="action" value="update" /> 
-<input type="hidden" name="page_options" value="blogname,blogdescription,new_admin_email,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,language" /> 
+<input type="hidden" name="action" value="update" />
+<input type="hidden" name="page_options" value="blogname,blogdescription,new_admin_email,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,language" />
 </p>
 </form>
 
-</div> 
+</div>
 
 <?php include('./admin-footer.php') ?>

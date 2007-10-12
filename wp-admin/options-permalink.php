@@ -79,10 +79,21 @@ if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 		}
 		$wp_rewrite->set_category_base($category_base);
 	}
+
+	if ( isset($_POST['tag_base']) ) {
+		$tag_base = $_POST['tag_base'];
+		if (! empty($tag_base) )
+			$tag_base = preg_replace('#/+#', '/', '/' . $_POST['tag_base']);
+		if( $tag_base != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
+			$tag_base = '/blog' . $tag_base;
+		}
+		$wp_rewrite->set_tag_base($tag_base);
+	}
 }
 
 $permalink_structure = get_option('permalink_structure');
 $category_base = get_option('category_base');
+$tag_base = get_option( 'tag_base' );
 
 if ( (!file_exists($home_path.'.htaccess') && is_writable($home_path)) || is_writable($home_path.'.htaccess') )
 	$writable = true;
@@ -99,16 +110,16 @@ $wp_rewrite->flush_rules();
 
 <?php if (isset($_POST['submit'])) : ?>
 <div id="message" class="updated fade"><p><?php
-if ($writable)
-	_e('Permalink structure updated.');
+if ( $permalink_structure && !$usingpi && !$writable )
+	_e('You should update your .htaccess now.');
 else
-	_e('You should update your .htaccess now.'); 
+	_e('Permalink structure updated.');
 ?></p></div>
 <?php endif; ?>
 
-<div class="wrap"> 
-  <h2><?php _e('Customize Permalink Structure') ?></h2> 
-<form name="form" action="options-permalink.php" method="post"> 
+<div class="wrap">
+  <h2><?php _e('Customize Permalink Structure') ?></h2>
+<form name="form" action="options-permalink.php" method="post">
 <?php wp_nonce_field('update-permalink') ?>
 <p class="submit"><input type="submit" name="submit" value="<?php _e('Update Permalink Structure &raquo;') ?>" /></p>
   <p><?php _e('By default WordPress uses web <abbr title="Universal Resource Locator">URL</abbr>s which have question marks and lots of numbers in them, however WordPress offers you the ability to create a custom URL structure for your permalinks and archives. This can improve the aesthetics, usability, and forward-compatibility of your links. A <a href="http://codex.wordpress.org/Using_Permalinks">number of tags are available</a>, and here are some examples to get you started.'); ?></p>
@@ -153,17 +164,20 @@ checked="checked"
 
 <h3><?php _e('Optional'); ?></h3>
 <?php if ($is_apache) : ?>
-	<p><?php _e('If you like, you may enter a custom prefix for your category <abbr title="Universal Resource Locator">URL</abbr>s here. For example, <code>/taxonomy/tags</code> would make your category links like <code>http://example.org/taxonomy/tags/uncategorized/</code>. If you leave this blank the default will be used.') ?></p>
+	<p><?php _e('If you like, you may enter custom bases for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <code>/topics/</code> as your category base would make your category links like <code>http://example.org/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
 <?php else : ?>
-	<p><?php _e('If you like, you may enter a custom prefix for your category <abbr title="Universal Resource Locator">URL</abbr>s here. For example, <code>/index.php/taxonomy/tags</code> would make your category links like <code>http://example.org/index.php/taxonomy/tags/uncategorized/</code>. If you leave this blank the default will be used.') ?></p>
+	<p><?php _e('If you like, you may enter custom bases for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <code>/topics/</code> as your category base would make your category links like <code>http://example.org/index.php/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
 <?php endif; ?>
-	<p> 
-  <?php _e('Category base'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?><input name="category_base" type="text" class="code"  value="<?php echo attribute_escape( $category_base ); ?>" size="30" /> 
-     </p> 
-    <p class="submit"> 
-      <input type="submit" name="submit" value="<?php _e('Update Permalink Structure &raquo;') ?>" /> 
-    </p> 
-  </form> 
+	<p>
+  <?php _e('Category base'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?><input name="category_base" type="text" class="code"  value="<?php echo attribute_escape( $category_base ); ?>" size="30" />
+     </p>
+	  <p>
+	  <?php _e('Tag base'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" class="code"  value="<?php echo attribute_escape($tag_base); ?>" size="30" />
+     </p>
+    <p class="submit">
+      <input type="submit" name="submit" value="<?php _e('Update Permalink Structure &raquo;') ?>" />
+    </p>
+  </form>
 <?php if ( $permalink_structure && !$usingpi && !$writable ) : ?>
   <p><?php _e('If your <code>.htaccess</code> file were <a href="http://codex.wordpress.org/Make_a_Directory_Writable">writable</a>, we could do this automatically, but it isn&#8217;t so these are the mod_rewrite rules you should have in your <code>.htaccess</code> file. Click in the field and press <kbd>CTRL + a</kbd> to select all.') ?></p>
 <form action="options-permalink.php" method="post">

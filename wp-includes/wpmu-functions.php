@@ -176,18 +176,23 @@ function get_blog_details( $id, $all = true ) {
 		return false;
 	}
 
-	if( $all == true ) {
-		$wpdb->hide_errors();
-		$details->blogname   = get_blog_option($id, 'blogname');
-		$details->siteurl    = get_blog_option($id, 'siteurl');
-		$details->post_count = get_blog_option($id, 'post_count');
-		$wpdb->show_errors();
-
-		wp_cache_add( $id, serialize( $details ), 'blog-details' );
-
-		$key = md5( $details->domain . $details->path );
-		wp_cache_add( $key, serialize( $details ), 'blog-lookup' );
+	if ( !$all ) {
+		wp_cache_add( $id, $details, 'blog-details' );
+		return $details;
 	}
+
+	$wpdb->hide_errors();
+	$details->blogname   = get_blog_option($id, 'blogname');
+	$details->siteurl    = get_blog_option($id, 'siteurl');
+	$details->post_count = get_blog_option($id, 'post_count');
+	$wpdb->show_errors();
+
+	$details = apply_filters('blog_details', $details);
+
+	wp_cache_set( $id, $details, 'blog-details' );
+
+	$key = md5( $details->domain . $details->path );
+	wp_cache_set( $key, $details, 'blog-lookup' );
 
 	return $details;
 }
@@ -195,7 +200,7 @@ function get_blog_details( $id, $all = true ) {
 function refresh_blog_details( $id ) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
-	$details = get_blog_details( $id );
+	$details = get_blog_details( $id, false );
 	wp_cache_delete( $id , 'blog-details' );
 
 	$key = md5( $details->domain . $details->path );
@@ -267,7 +272,6 @@ function add_site_option( $key, $value ) {
 	$safe_key = $wpdb->escape( $key );
 
 	$exists = $wpdb->get_row("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = '$safe_key' AND site_id = '{$wpdb->siteid}'");
-
 	if ( is_object( $exists ) ) {// If we already have it
 		update_site_option( $key, $value );
 		return false;
@@ -296,6 +300,7 @@ function update_site_option( $key, $value ) {
 
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
+	$value = $wpdb->escape( $value );
 
 	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '" . $wpdb->escape( $value ) . "' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$safe_key'" );
 	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
@@ -390,11 +395,14 @@ function switch_to_blog( $new_blog ) {
 	$tmpoldblogdetails[ 'links' ]          = $wpdb->links;
 	$tmpoldblogdetails[ 'link2cat' ]       = $wpdb->link2cat;
 	$tmpoldblogdetails[ 'linkcategories' ] = $wpdb->linkcategories;
-	$tmpoldblogdetails[ 'options' ]         = $wpdb->options;
+	$tmpoldblogdetails[ 'options' ]        = $wpdb->options;
 	$tmpoldblogdetails[ 'postmeta' ]       = $wpdb->postmeta;
+	$tmpoldblogdetails[ 'terms' ]          = $wpdb->terms;
+	$tmpoldblogdetails[ 'term_taxonomy' ]  = $wpdb->term_taxonomy;
+	$tmpoldblogdetails[ 'term_relationships' ] = $wpdb->term_relationships;
 	$tmpoldblogdetails[ 'prefix' ]         = $wpdb->prefix;
-	$tmpoldblogdetails[ 'table_prefix' ] = $table_prefix;
-	$tmpoldblogdetails[ 'blog_id' ] = $blog_id;
+	$tmpoldblogdetails[ 'table_prefix' ]   = $table_prefix;
+	$tmpoldblogdetails[ 'blog_id' ]        = $blog_id;
 
 	// fix the new prefix.
 	$table_prefix = $wpmuBaseTablePrefix . $new_blog . "_";
@@ -409,6 +417,9 @@ function switch_to_blog( $new_blog ) {
 	$wpdb->linkcategories   = $table_prefix . 'linkcategories';
 	$wpdb->options          = $table_prefix . 'options';
 	$wpdb->postmeta         = $table_prefix . 'postmeta';
+	$wpdb->terms            = $table_prefix . 'terms';
+	$wpdb->term_taxonomy    = $table_prefix . 'term_taxonomy';
+	$wpdb->term_relationships = $table_prefix . 'term_relationships';
 	$blog_id = $new_blog;
 
 	if( is_object( $wp_roles ) ) {
@@ -447,6 +458,9 @@ function restore_current_blog() {
 	$wpdb->linkcategories = $tmpoldblogdetails[ 'linkcategories' ];
 	$wpdb->options = $tmpoldblogdetails[ 'options' ];
 	$wpdb->postmeta = $tmpoldblogdetails[ 'postmeta' ];
+	$wpdb->terms = $tmpoldblogdetails[ 'terms' ];
+	$wpdb->term_taxonomy = $tmpoldblogdetails[ 'term_taxonomy' ];
+	$wpdb->term_relationships = $tmpoldblogdetails[ 'term_relationships' ];
 	$wpdb->prefix = $tmpoldblogdetails[ 'prefix' ];
 	$table_prefix = $tmpoldblogdetails[ 'table_prefix' ];
 	$prev_blog_id = $blog_id;
@@ -787,8 +801,6 @@ function create_empty_blog( $domain, $path, $weblog_title, $site_id = 1 ) {
 }
 
 function get_blog_permalink( $blog_id, $post_id ) {
-	global $wpdb, $cache_settings;
-
 	$key = "{$blog_id}-{$post_id}-blog_permalink";
 	$link = wp_cache_get( $key, 'site-options' );
 	if( $link == false ) {
@@ -1014,7 +1026,7 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	if( in_array( $blog_id, $illegal_names ) == true ) {
 	    $errors->add('blog_id',  __("That name is not allowed"));
 	}
-	if( strlen( $blog_id ) < 4 ) {
+	if( strlen( $blog_id ) < 4 && !is_site_admin() ) {
 	    $errors->add('blog_id',  __("Blog name must be at least 4 characters"));
 	}
 
@@ -1264,6 +1276,33 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 	return $blog_id;
 }
 
+function newblog_notify_siteadmin( $blog_id, $user_id ) {
+	global $current_site;
+	if( get_site_option( 'registrationnotification' ) != 'yes' )
+		return;
+	$email = get_site_option( 'admin_email' );
+	if( is_email( $email ) == false )
+		return false;
+	$msg = "New Blog: " . get_blog_option( $blog_id, "blogname" ) . "\nURL: " . get_blog_option( $blog_id, "siteurl" ) . "\nRemote IP: {$_SERVER[ 'REMOTE_ADDR' ]}\n\nDisable these notifications: http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php";
+	$msg = apply_filters( 'newblog_notify_siteadmin', $msg );
+	wp_mail( $email, "New Blog Registration: " . get_blog_option( $blog_id, "siteurl" ), $msg );
+}
+add_action( "wpmu_new_blog", "newblog_notify_siteadmin", 10, 2 );
+
+function newuser_notify_siteadmin( $user_id ) {
+	global $current_site;
+	if( get_site_option( 'registrationnotification' ) != 'yes' )
+		return;
+	$email = get_site_option( 'admin_email' );
+	if( is_email( $email ) == false )
+		return false;
+	$user = new WP_User($user_id);
+	$msg = "New User: " . $user->user_login . "\nRemote IP: {$_SERVER[ 'REMOTE_ADDR' ]}\n\nDisable these notifications: http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php";
+	$msg = apply_filters( 'newuser_notify_siteadmin', $msg );
+	wp_mail( $email, "New User Registration: " . $user->user_login, $msg );
+}
+add_action( "wpmu_new_user", "newuser_notify_siteadmin" );
+
 function domain_exists($domain, $path, $site_id = 1) {
 	global $wpdb;
 	return $wpdb->get_var("SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path' AND site_id = '$site_id'" );
@@ -1287,7 +1326,7 @@ function install_blog($blog_id, $blog_title = '') {
 	global $wpdb, $table_prefix, $wp_roles;
 	$wpdb->hide_errors();
 
-	require_once( ABSPATH . 'wp-admin/upgrade-functions.php');
+	require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
 	$installed = $wpdb->get_results("SELECT * FROM $wpdb->posts");
 	if ($installed) die(__('<h1>Already Installed</h1><p>You appear to have already installed WordPress. To reinstall please clear your old database tables first.</p>') . '</body></html>');
 
@@ -1311,15 +1350,24 @@ function install_blog($blog_id, $blog_title = '') {
 	$wpdb->query("UPDATE $wpdb->options SET option_value = '' WHERE option_name = 'admin_email'");
 
 	// Default category
-	$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename, category_count, category_description) VALUES ('0', '".addslashes(__('Uncategorized'))."', '".sanitize_title(__('Uncategorized'))."', 1, '')");
-	$blogroll_id = $wpdb->get_var( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = 'blogroll'" );
+	$cat_name = $wpdb->escape(__('Uncategorized'));
+	$cat_slug = sanitize_title(__('Uncategorized'));
+	$wpdb->query("INSERT INTO $wpdb->terms (term_id, name, slug, term_group) VALUES ('1', '$cat_name', '$cat_slug', '0')");
+
+	$wpdb->query("INSERT INTO $wpdb->term_taxonomy (term_id, taxonomy, description, parent, count) VALUES ('1', 'category', '', '0', '1')");
+
+	// Default link category
+	$cat_name = $wpdb->escape(__('Blogroll'));
+	$cat_slug = sanitize_title(__('Blogroll'));
+	$blogroll_id = $wpdb->get_var( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = '$cat_slug'" );
 	if( $blogroll_id == null ) {
-		$wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " (cat_ID, cat_name, category_nicename, last_updated) VALUES (0, 'Blogroll', 'blogroll', NOW())" );
+		$wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " (cat_ID, cat_name, category_nicename, last_updated) VALUES (0, '$cat_name', '$cat_slug', NOW())" );
 		$blogroll_id = $wpdb->insert_id;
 	}
-	$wpdb->query("INSERT INTO $wpdb->categories (cat_ID, cat_name, category_nicename, link_count, category_description) VALUES ('{$blogroll_id}', '".addslashes(__('Blogroll'))."', '".sanitize_title(__('Blogroll'))."', 2, '')");
-	$wpdb->query("INSERT INTO $wpdb->link2cat (link_id, category_id) VALUES (1, $blogroll_id)");
-	$wpdb->query("INSERT INTO $wpdb->link2cat (link_id, category_id) VALUES (2, $blogroll_id)");
+	$wpdb->query("INSERT INTO $wpdb->terms (term_id, name, slug, term_group) VALUES ('$blogroll_id', '$cat_name', '$cat_slug', '0')");
+	$wpdb->query("INSERT INTO $wpdb->term_taxonomy (term_id, taxonomy, description, parent, count) VALUES ('$blogroll_id', 'link_category', '', '0', '2')");
+
+	update_option('default_link_category', $blogroll_id);
 
 	// remove all perms
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."user_level'" );
@@ -1334,8 +1382,10 @@ function install_blog_defaults($blog_id, $user_id) {
 	$wpdb->hide_errors();
 
 	// Default links
-	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_category, link_description, link_visible, link_owner, link_rating, link_updated, link_rel, link_notes, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', '', '', 1, '', 'Y', '$user_id', 0, 0, '', '', 'http://wordpress.com/feed/')");
-	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_category, link_description, link_visible, link_owner, link_rating, link_updated, link_rel, link_notes, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', '', '', 1, '', 'Y', '$user_id', 0, 0, '', '', 'http://wordpress.org/development/feed/')");
+	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', 1356, '$user_id', 'http://wordpress.com/feed/');");
+	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.org/', 'WordPress.org', 1356, '$user_id', 'http://wordpress.org/development/feed/');");
+	$wpdb->query( "INSERT INTO $wpdb->term_relationships (`object_id`, `term_taxonomy_id`) VALUES (1, 2)" );
+	$wpdb->query( "INSERT INTO $wpdb->term_relationships (`object_id`, `term_taxonomy_id`) VALUES (2, 2)" );
 
 	// First post
 	$now = date('Y-m-d H:i:s');
@@ -1348,13 +1398,12 @@ function install_blog_defaults($blog_id, $user_id) {
 	$first_post = str_replace( "SITE_NAME", $current_site->site_name, $first_post );
 	$first_post = stripslashes( $first_post );
 
-	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_excerpt, post_status, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_content_filtered, post_parent, guid, menu_order, post_type, post_mime_type, comment_count) VALUES ('".$user_id."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '', 'publish', 'open', 'open', '', '".addslashes(__('hello-world'))."', to_ping, pinged, '$now', '$now_gmt', '', 0, '', 0, 'post', '', 1)");
-	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (1, 1, 1)" );
+	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_title, post_category, post_name, post_modified, post_modified_gmt, comment_count) VALUES ('".$user_id."', '$now', '$now_gmt', '".addslashes($first_post)."', '".addslashes(__('Hello world!'))."', '0', '".addslashes(__('hello-world'))."', '$now', '$now_gmt', '1')");
+	$wpdb->query( "INSERT INTO $wpdb->term_relationships (`object_id`, `term_taxonomy_id`) VALUES (1, 1)" );
 	update_option( "post_count", 1 );
 
 	// First page
 	$wpdb->query("INSERT INTO $wpdb->posts (post_author, post_date, post_date_gmt, post_content, post_excerpt, post_title, post_category, post_name, post_modified, post_modified_gmt, post_status, post_type, to_ping, pinged, post_content_filtered) VALUES ('$user_id', '$now', '$now_gmt', '".$wpdb->escape(__('This is an example of a WordPress page, you could edit this to put information about yourself or your site so readers know where you are coming from. You can create as many pages like this one or sub-pages as you like and manage all of your content inside of WordPress.'))."', '', '".$wpdb->escape(__('About'))."', '0', '".$wpdb->escape(__('about'))."', '$now', '$now_gmt', 'publish', 'page', '', '', '')");
-	$wpdb->query( "INSERT INTO $wpdb->post2cat (`rel_id`, `post_id`, `category_id`) VALUES (2, 2, 1)" );
 	// Flush rules to pick up the new page.
 	$wp_rewrite->init();
 	$wp_rewrite->flush_rules();
@@ -1819,192 +1868,38 @@ add_action( 'admin_footer', 'add_switcher' );
 
 /* Global Categories */
 
-function global_categories( $cat_ID ) {
+function global_terms( $term_id, $tt_id ) {
 	global $wpdb;
 
-	$cat_ID = intval( $cat_ID );
-	$c = $wpdb->get_row( "SELECT * FROM $wpdb->categories WHERE cat_ID = '$cat_ID'" );
+	$term_id = intval( $term_id );
+	$c = $wpdb->get_row( "SELECT * FROM $wpdb->terms WHERE term_id = '$term_id'" );
 
-	$global_category = $wpdb->get_row( "SELECT * FROM $wpdb->sitecategories WHERE category_nicename = '" . $wpdb->escape( $c->category_nicename ) . "'" );
+	$global_id = $wpdb->get_var( "SELECT cat_ID FROM $wpdb->sitecategories WHERE category_nicename = '" . $wpdb->escape( $c->slug ) . "'" );
 
-	if ( $global_category ) {
-		$global_id = $global_category->cat_ID;
-	} else {
-		$wpdb->query( "INSERT INTO $wpdb->sitecategories ( cat_name, category_nicename ) VALUES ( '" . $wpdb->escape( $c->cat_name ) . "', '" . $wpdb->escape( $c->category_nicename ) . "' )" );
+	if ( $global_id == null ) {
+		$wpdb->query( "INSERT INTO $wpdb->sitecategories ( cat_name, category_nicename ) VALUES ( '" . $wpdb->escape( $c->name ) . "', '" . $wpdb->escape( $c->slug ) . "' )" );
 		$global_id = $wpdb->insert_id;
 	}
-	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$global_id' WHERE cat_id = '$cat_ID'" );
-	$wpdb->query( "UPDATE $wpdb->categories SET category_parent = '$global_id' WHERE category_parent = '$cat_ID'" );
-	$wpdb->query( "UPDATE $wpdb->post2cat SET category_id = '$global_id' WHERE category_id = '$cat_ID'" );
-	$wpdb->query( "UPDATE $wpdb->link2cat SET category_id = '$global_id' WHERE category_id = '$cat_ID'" );
-	wp_cache_delete($cat_ID, 'category');
-	wp_cache_delete($global_id, 'category');
-	wp_cache_delete('all_category_ids', 'category');
 
-	do_action('update_cat_id', $global_id, $cat_ID);
+	if ( $global_id == $term_id )
+		return $global_id;
 
-	return $global_id;
-}
+	$wpdb->query( "UPDATE $wpdb->terms SET term_id = '$global_id' WHERE term_id = '$term_id'" ); 
+	$wpdb->query( "UPDATE $wpdb->term_taxonomy SET term_id = '$global_id' WHERE term_id = '$term_id'" );
+	$wpdb->query( "UPDATE $wpdb->term_taxonomy SET parent = '$global_id' WHERE parent = '$term_id'" );
 
-add_filter( 'cat_id_filter', 'global_categories' );
+	$wpdb->query( "UPDATE $wpdb->categories SET cat_ID = '$global_id' WHERE cat_ID = '$term_id'" );
+	$wpdb->query( "UPDATE $wpdb->categories SET category_parent = '$global_id' WHERE category_parent = '$term_id'" );
+
+	clean_term_cache($global_id, 'category');
+	clean_term_cache($global_id, 'post_tag');
+
+	return $global_id; 
+}   
+add_filter( 'term_id_filter', 'global_terms', 10, 2 ); // taxonomy specific filter
 
 /* WordPress MU Default Filters */
 add_filter('the_title', 'wp_filter_kses');
-
-/* Pluggable */
-
-function wp_login($username, $password, $already_md5 = false) {
-	global $wpdb, $error, $current_user;
-
-	$username = sanitize_user($username);
-
-	if ( '' == $username )
-		return false;
-
-	if ( '' == $password ) {
-		$error = __('<strong>ERROR</strong>: The password field is empty.');
-		return false;
-	}
-
-	if ($current_user->data->user_login == $username)
-		return true;
-
-	$login = get_userdatabylogin($username);
-
-	if (!$login) {
-		if( is_site_admin( $username ) ) {
-			unset( $login );
-			$userdetails = get_userdatabylogin( $username );
-			$login->user_login = $username;
-			$login->user_pass = $userdetails->user_pass;
-		} else {
-			$admins = get_admin_users_for_domain();
-			reset( $admins );
-			while( list( $key, $val ) = each( $admins ) ) 
-			{ 
-				if( $val[ 'user_login' ] == $username ) {
-					unset( $login );
-					$login->user_login = $username;
-					$login->user_pass  = $val[ 'user_pass' ];
-				}
-			}
-		}
-	}
-	if (!$login) {
-		$error = __('<strong>Error</strong>: Wrong username.');
-		return false;
-	} else {
-		if( is_site_admin( $username ) == false && ( $primary_blog = get_usermeta( $login->ID, "primary_blog" ) ) ) {
-			$details = get_blog_details( $primary_blog );
-			if( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
-				$error = __('<strong>Error</strong>: Blog suspended.');
-				return false;
-			}
-		}
-		// If the password is already_md5, it has been double hashed.
-		// Otherwise, it is plain text.
-		if ( ($already_md5 && $login->user_login == $username && md5($login->user_pass) == $password) || ($login->user_login == $username && $login->user_pass == md5($password)) ) {
-			return true;
-		} else {
-			$error = __('<strong>Error</strong>: Incorrect password.');
-			$pwd = '';
-			return false;
-		}
-	}
-}
-
-function get_userdata( $user_id ) {
-	global $wpdb, $cache_userdata, $wpmuBaseTablePrefix;
-	$user_id = (int) $user_id;
-	if ( $user_id == 0 )
-		return false;
-
-	$user = wp_cache_get($user_id, 'users');
-	$user_level = $wpmuBaseTablePrefix . $wpdb->blogid . '_user_level';
-	if ( $user && is_site_admin( $user->user_login ) ) {
-		$user->$user_level = 10;
-		$user->user_level = 10;
-		$cap_key = $wpdb->prefix . 'capabilities';
-		$user->{$cap_key} = array( 'administrator' => '1' );
-		return $user;
-	} elseif ( $user ) {
-		return $user;
-	}
-
-	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id'") )
-		return false;
-
-	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id' /* pluggable get_userdata */");
-
-	if ($metavalues) {
-		foreach ( $metavalues as $meta ) {
-			@ $value = unserialize($meta->meta_value);
-			if ($value === FALSE)
-				$value = $meta->meta_value;
-			$user->{$meta->meta_key} = $value;
-
-			// We need to set user_level from meta, not row
-			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-				$user->user_level = $meta->meta_value;
-		} // end foreach
-	} //end if
-
-	if( is_site_admin( $user->user_login ) == true ) {
-	    $user->user_level = 10;
-	    $cap_key = $wpdb->prefix . 'capabilities';
-	    $user->{$cap_key} = array( 'administrator' => '1' );
-	}
-
-	wp_cache_add($user_id, $user, 'users');
-	wp_cache_add($user->user_login, $user, 'userlogins');
-
-	return $user;
-}
-
-function get_userdatabylogin($user_login) {
-	global $wpdb;
-	$user_login = sanitize_user( $user_login );
-
-	if ( empty( $user_login ) )
-		return false;
-		
-	$userdata = wp_cache_get($user_login, 'userlogins');
-	if( $userdata && is_site_admin( $user_login ) == true ) {
-		$userdata->user_level = 10;
-		$cap_key = $wpdb->prefix . 'capabilities';
-		$userdata->{$cap_key} = array( 'administrator' => '1' );
-		return $userdata;
-	} elseif( $userdata )
-		return $userdata;
-
-	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE user_login = '$user_login'") )
-		return false;
-
-	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user->ID'");
-
-	if ($metavalues) {
-		foreach ( $metavalues as $meta ) {
-			@ $value = unserialize($meta->meta_value);
-			if ($value === FALSE)
-				$value = $meta->meta_value;
-			$user->{$meta->meta_key} = $value;
-
-			// We need to set user_level from meta, not row
-			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-				$user->user_level = $meta->meta_value;
-		}
-	}
-	if( is_site_admin( $user_login ) == true ) {
-		$user->user_level = 10;
-		$cap_key = $wpdb->prefix . 'capabilities';
-		$user->{$cap_key} = array( 'administrator' => '1' );
-	}
-
-	wp_cache_add($user->ID, $user, 'users');
-	wp_cache_add($user->user_login, $user, 'userlogins');
-
-	return $user;
-}
 
 function choose_primary_blog() {
 	global $current_user;
@@ -2022,5 +1917,4 @@ function choose_primary_blog() {
 	}       
 }
 add_action( 'profile_personal_options', 'choose_primary_blog' );
-
 ?>

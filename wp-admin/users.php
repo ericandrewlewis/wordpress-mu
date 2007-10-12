@@ -489,7 +489,7 @@ default:
 		<p><a href="users.php"><?php _e('&laquo; Back to All Users'); ?></a></p>
 	<?php endif; ?>
 
-	<h3><?php 
+	<h3><?php
 	if ( 0 == $wp_user_search->first_user && $wp_user_search->total_users_for_query <= 50 )
 		printf(__('%3$s shown below'), $wp_user_search->first_user + 1, min($wp_user_search->first_user + $wp_user_search->users_per_page, $wp_user_search->total_users_for_query), $wp_user_search->total_users_for_query);
 	else

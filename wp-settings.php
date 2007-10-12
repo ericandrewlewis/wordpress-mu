@@ -14,14 +14,14 @@ function wp_unregister_GLOBALS() {
 	$noUnset = array('GLOBALS', '_GET', '_POST', '_COOKIE', '_REQUEST', '_SERVER', '_ENV', '_FILES', 'table_prefix');
 
 	$input = array_merge($_GET, $_POST, $_COOKIE, $_SERVER, $_ENV, $_FILES, isset($_SESSION) && is_array($_SESSION) ? $_SESSION : array());
-	foreach ( $input as $k => $v ) 
+	foreach ( $input as $k => $v )
 		if ( !in_array($k, $noUnset) && isset($GLOBALS[$k]) ) {
 			$GLOBALS[$k] = NULL;
 			unset($GLOBALS[$k]);
 		}
 }
 
-wp_unregister_GLOBALS(); 
+wp_unregister_GLOBALS();
 
 if( isset( $_SERVER[ 'HTTP_USER_AGENT' ] ) ) {
 	$HTTP_USER_AGENT = $_SERVER[ 'HTTP_USER_AGENT' ];
@@ -35,11 +35,29 @@ if ( ! isset($blog_id) )
 
 // Fix for IIS, which doesn't set REQUEST_URI
 if ( empty( $_SERVER['REQUEST_URI'] ) ) {
-	$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME']; // Does this work under CGI?
 
-	// Append the query string if it exists and isn't null
-	if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
-		$_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+	// IIS Mod-Rewrite
+	if (isset($_SERVER['HTTP_X_ORIGINAL_URL'])) {
+		$_SERVER['REQUEST_URI'] = $_SERVER['HTTP_X_ORIGINAL_URL'];
+	}
+	// IIS Isapi_Rewrite
+	else if (isset($_SERVER['HTTP_X_REWRITE_URL'])) {
+		$_SERVER['REQUEST_URI'] = $_SERVER['HTTP_X_REWRITE_URL'];
+	}
+	else {
+		// If root then simulate that no script-name was specified
+		if (empty($_SERVER['PATH_INFO']))
+			$_SERVER['REQUEST_URI'] = substr($_SERVER['SCRIPT_NAME'], 0, strrpos($_SERVER['SCRIPT_NAME'], '/')) . '/';
+		elseif ( $_SERVER['PATH_INFO'] == $_SERVER['SCRIPT_NAME'] )
+			// Some IIS + PHP configurations puts the script-name in the path-info (No need to append it twice)
+			$_SERVER['REQUEST_URI'] = $_SERVER['PATH_INFO'];
+		else
+			$_SERVER['REQUEST_URI'] = $_SERVER['SCRIPT_NAME'] . $_SERVER['PATH_INFO'];
+
+		// Append the query string if it exists and isn't null
+		if (isset($_SERVER['QUERY_STRING']) && !empty($_SERVER['QUERY_STRING'])) {
+			$_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+		}
 	}
 }
 
@@ -56,8 +74,9 @@ $PHP_SELF = $_SERVER['PHP_SELF'];
 if ( empty($PHP_SELF) )
 	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
-if ( !(phpversion() >= '4.1') )
-	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.1' );
+if ( version_compare( '4.2', phpversion(), '>' ) ) {
+	die( 'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.2.' );
+}
 
 if ( !extension_loaded('mysql') && !file_exists(ABSPATH . 'wp-content/db.php') )
 	die( 'Your PHP installation appears to be missing the MySQL which is required for WordPress.' );
@@ -77,7 +96,7 @@ function timer_stop($display = 0, $precision = 3) { //if called like timer_stop(
 	$mtime = $mtime[1] + $mtime[0];
 	$timeend = $mtime;
 	$timetotal = $timeend-$timestart;
-	$r = number_format($timetotal, $precision);
+	$r = ( function_exists('number_format_i18n') ) ? number_format_i18n($timetotal, $precision) : number_format($timetotal, $precision);
 	if ( $display )
 		echo $r;
 	return $r;
@@ -100,8 +119,14 @@ if ( !defined('LANGDIR') ) {
 		define('LANGDIR', WPINC . '/languages'); // no leading slash, no trailing slash
 }
 
+if ( !defined('PLUGINDIR') )
+	define('PLUGINDIR', 'wp-content/plugins'); // no leading slash, no trailing slash
+
+require (ABSPATH . WPINC . '/compat.php');
+require (ABSPATH . WPINC . '/functions.php');
+
 if ( file_exists(ABSPATH . 'wp-content/db.php') )
-	require (ABSPATH . 'wp-content/db.php');
+	require_once (ABSPATH . 'wp-content/db.php');
 else
 	require_once (ABSPATH . WPINC . '/wp-db.php');
 
@@ -109,10 +134,9 @@ else
 $wpdb->prefix = $table_prefix;
 
 if ( preg_match('|[^a-z0-9_]|i', $wpdb->prefix) && !file_exists(ABSPATH . 'wp-content/db.php') )
-	die("<strong>ERROR</strong>: <code>$table_prefix</code> in <code>wp-config.php</code> can only contain numbers, letters, and underscores.");
+	wp_die("<strong>ERROR</strong>: <code>$table_prefix</code> in <code>wp-config.php</code> can only contain numbers, letters, and underscores.");
 
 // Table names
-
 $wpdb->blogs		= $wpdb->prefix . 'blogs';
 $wpdb->site		= $wpdb->prefix . 'site';
 $wpdb->sitemeta		= $wpdb->prefix . 'sitemeta';
@@ -137,6 +161,9 @@ $wpdb->links            = $wpdb->prefix . 'links';
 $wpdb->linkcategories   = $wpdb->prefix . 'linkcategories';
 $wpdb->options          = $wpdb->prefix . 'options';
 $wpdb->postmeta         = $wpdb->prefix . 'postmeta';
+$wpdb->terms          = $wpdb->prefix . 'terms';
+$wpdb->term_taxonomy  = $wpdb->prefix . 'term_taxonomy';
+$wpdb->term_relationships = $wpdb->prefix . 'term_relationships';
 $wpdb->siteid           = $current_blog->site_id;
 $wpdb->blogid           = $current_blog->blog_id;
 
@@ -163,8 +190,6 @@ if( !defined( "UPLOADS" ) )
 if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
 	return;
 
-
-require (ABSPATH . WPINC . '/functions.php');
 require (ABSPATH . WPINC . '/classes.php');
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
@@ -173,11 +198,16 @@ include_once(ABSPATH . WPINC . '/gettext.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
 
 if ( !is_blog_installed() && (strpos($_SERVER['PHP_SELF'], 'install.php') === false && !defined('WP_INSTALLING')) ) {
-	if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
-		$link = 'install.php';
+	if ( defined('WP_SITEURL') )
+		$link = WP_SITEURL . '/wp-admin/install.php';
+	elseif (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
+		$link = preg_replace('|/wp-admin/?.*?$|', '/', $_SERVER['PHP_SELF']) . 'wp-admin/install.php';
 	else
-		$link = 'wp-admin/install.php';
-	wp_die(sprintf("It doesn't look like you've installed WP yet. Try running <a href='%s'>install.php</a>.", $link));
+		$link = preg_replace('|/[^/]+?$|', '/', $_SERVER['PHP_SELF']) . 'wp-admin/install.php';
+	require_once(ABSPATH . WPINC . '/kses.php');
+	require_once(ABSPATH . WPINC . '/pluggable.php');
+	wp_redirect($link);
+	die(); // have to die here ~ Mark
 }
 
 require (ABSPATH . WPINC . '/formatting.php');
@@ -203,6 +233,9 @@ require (ABSPATH . WPINC . '/cron.php');
 require (ABSPATH . WPINC . '/version.php');
 require (ABSPATH . WPINC . '/deprecated.php');
 require (ABSPATH . WPINC . '/script-loader.php');
+require (ABSPATH . WPINC . '/taxonomy.php');
+require (ABSPATH . WPINC . '/update.php');
+require (ABSPATH . WPINC . '/canonical.php');
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
 

@@ -63,9 +63,9 @@ case 'editedcat':
 		wp_die(__('Cheatin&#8217; uh?'));
 
 	if ( wp_update_category($_POST) )
-		wp_redirect('categories.php?message=3'); 
+		wp_redirect('categories.php?message=3');
 	else
-		wp_redirect('categories.php?message=5'); 
+		wp_redirect('categories.php?message=5');
 
 	exit;
 break;
@@ -99,7 +99,6 @@ $messages[5] = __('Category not updated.');
         <th scope="col"><?php _e('Name') ?></th>
         <th scope="col"><?php _e('Description') ?></th>
         <th scope="col" width="90" style="text-align: center"><?php _e('Posts') ?></th>
-        <th scope="col" width="90" style="text-align: center"><?php _e('Links') ?></th>
         <th colspan="2" style="text-align: center"><?php _e('Action') ?></th>
 	</tr>
 	</thead>
@@ -114,10 +113,12 @@ cat_rows();
 
 <?php if ( current_user_can('manage_categories') ) : ?>
 <div class="wrap">
-<p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete the posts and links in that category. Instead, posts that were only assigned to the deleted category are set to the category <strong>%s</strong> and links that were only assigned to the deleted category are set to <strong>%s</strong>.'), apply_filters('the_category', get_catname(get_option('default_category'))), apply_filters('the_category', get_catname(get_option('default_link_category')))) ?></p>
+<p><?php printf(__('<strong>Note:</strong><br />Deleting a category does not delete the posts in that category. Instead, posts that were only assigned to the deleted category are set to the category <strong>%s</strong>.'), apply_filters('the_category', get_catname(get_option('default_category')))) ?></p>
+<p><?php printf(__('Categories can be selectively converted to tags using the <a href="%s">category to tag converter</a>.'), 'admin.php?import=wp-cat2tag') ?></p>
 </div>
 
 <?php include('edit-category-form.php'); ?>
+
 <?php endif; ?>
 
 <?php

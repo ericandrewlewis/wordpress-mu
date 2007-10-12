@@ -19,181 +19,181 @@ if (!defined('CUSTOM_TAGS'))
 // You can override this in your my-hacks.php file
 if (!CUSTOM_TAGS) {
 	$allowedposttags = array(
-		'address' => array(), 
+		'address' => array(),
 		'a' => array(
-			'href' => array(), 'title' => array(), 
-			'rel' => array(), 'rev' => array(), 
+			'href' => array(), 'title' => array(),
+			'rel' => array(), 'rev' => array(),
 			'name' => array()
-			), 
+			),
 		'abbr' => array(
 			'title' => array(), 'class' => array()
-			), 
+			),
 		'acronym' => array(
 			'title' => array()
-			), 
-		'b' => array(), 
-		'big' => array(), 
+			),
+		'b' => array(),
+		'big' => array(),
 		'blockquote' => array(
-			'cite' => array(), 'xml:lang' => array(), 
+			'cite' => array(), 'xml:lang' => array(),
 			'lang' => array()
-			), 
-		'br' => array(), 
+			),
+		'br' => array(),
 		'button' => array(
-			'disabled' => array(), 'name' => array(), 
+			'disabled' => array(), 'name' => array(),
 			'type' => array(), 'value' => array()
-			), 
+			),
 		'caption' => array(
 			'align' => array()
-			), 
-		'code' => array(), 
+			),
+		'code' => array(),
 		'col' => array(
-			'align' => array(), 'char' => array(), 
-			'charoff' => array(), 'span' => array(), 
+			'align' => array(), 'char' => array(),
+			'charoff' => array(), 'span' => array(),
 			'valign' => array(), 'width' => array()
-			), 
+			),
 		'del' => array(
 			'datetime' => array()
-			), 
-		'dd' => array(), 
+			),
+		'dd' => array(),
 		'div' => array(
-			'align' => array(), 'xml:lang' => array(), 
+			'align' => array(), 'xml:lang' => array(),
 			'lang' => array()
-			), 
-		'dl' => array(), 
-		'dt' => array(), 
-		'em' => array(), 
-		'fieldset' => array(), 
+			),
+		'dl' => array(),
+		'dt' => array(),
+		'em' => array(),
+		'fieldset' => array(),
 		'font' => array(
-			'color' => array(), 'face' => array(), 
+			'color' => array(), 'face' => array(),
 			'size' => array()
-			), 
+			),
 		'form' => array(
-			'action' => array(), 'accept' => array(), 
-			'accept-charset' => array(), 'enctype' => array(), 
-			'method' => array(), 'name' => array(), 
+			'action' => array(), 'accept' => array(),
+			'accept-charset' => array(), 'enctype' => array(),
+			'method' => array(), 'name' => array(),
 			'target' => array()
-			), 
+			),
 		'h1' => array(
 			'align' => array()
-			), 
+			),
 		'h2' => array(
 			'align' => array()
-			), 
+			),
 		'h3' => array(
 			'align' => array()
-			), 
+			),
 		'h4' => array(
 			'align' => array()
-			), 
+			),
 		'h5' => array(
 			'align' => array()
-			), 
+			),
 		'h6' => array(
 			'align' => array()
-			), 
+			),
 		'hr' => array(
-			'align' => array(), 'noshade' => array(), 
+			'align' => array(), 'noshade' => array(),
 			'size' => array(), 'width' => array()
-			), 
-		'i' => array(), 
+			),
+		'i' => array(),
 		'img' => array(
-			'alt' => array(), 'align' => array(), 
-			'border' => array(), 'height' => array(), 
-			'hspace' => array(), 'longdesc' => array(), 
-			'vspace' => array(), 'src' => array(), 
+			'alt' => array(), 'align' => array(),
+			'border' => array(), 'height' => array(),
+			'hspace' => array(), 'longdesc' => array(),
+			'vspace' => array(), 'src' => array(),
 			'width' => array()
-			), 
+			),
 		'ins' => array(
 			'datetime' => array(), 'cite' => array()
-			), 
-		'kbd' => array(), 
+			),
+		'kbd' => array(),
 		'label' => array(
 			'for' => array()
-			), 
+			),
 		'legend' => array(
 			'align' => array()
-			), 
-		'li' => array(), 
+			),
+		'li' => array(),
 		'p' => array(
-			'align' => array(), 'xml:lang' => array(), 
+			'align' => array(), 'xml:lang' => array(),
 			'lang' => array()
-			), 
+			),
 		'pre' => array(
 			'width' => array()
-			), 
+			),
 		'q' => array(
 			'cite' => array()
-			), 
-		's' => array(), 
-		'strike' => array(), 
-		'strong' => array(), 
-		'sub' => array(), 
-		'sup' => array(), 
+			),
+		's' => array(),
+		'strike' => array(),
+		'strong' => array(),
+		'sub' => array(),
+		'sup' => array(),
 		'table' => array(
-			'align' => array(), 'bgcolor' => array(), 
-			'border' => array(), 'cellpadding' => array(), 
-			'cellspacing' => array(), 'rules' => array(), 
+			'align' => array(), 'bgcolor' => array(),
+			'border' => array(), 'cellpadding' => array(),
+			'cellspacing' => array(), 'rules' => array(),
 			'summary' => array(), 'width' => array()
-			), 
+			),
 		'tbody' => array(
-			'align' => array(), 'char' => array(), 
+			'align' => array(), 'char' => array(),
 			'charoff' => array(), 'valign' => array()
-			), 
+			),
 		'td' => array(
-			'abbr' => array(), 'align' => array(), 
-			'axis' => array(), 'bgcolor' => array(), 
-			'char' => array(), 'charoff' => array(), 
-			'colspan' => array(), 'headers' => array(), 
-			'height' => array(), 'nowrap' => array(), 
-			'rowspan' => array(), 'scope' => array(), 
+			'abbr' => array(), 'align' => array(),
+			'axis' => array(), 'bgcolor' => array(),
+			'char' => array(), 'charoff' => array(),
+			'colspan' => array(), 'headers' => array(),
+			'height' => array(), 'nowrap' => array(),
+			'rowspan' => array(), 'scope' => array(),
 			'valign' => array(), 'width' => array()
-			), 
+			),
 		'textarea' => array(
-			'cols' => array(), 'rows' => array(), 
-			'disabled' => array(), 'name' => array(), 
+			'cols' => array(), 'rows' => array(),
+			'disabled' => array(), 'name' => array(),
 			'readonly' => array()
-			), 
+			),
 		'tfoot' => array(
-			'align' => array(), 'char' => array(), 
+			'align' => array(), 'char' => array(),
 			'charoff' => array(), 'valign' => array()
-			), 
+			),
 		'th' => array(
-			'abbr' => array(), 'align' => array(), 
-			'axis' => array(), 'bgcolor' => array(), 
-			'char' => array(), 'charoff' => array(), 
-			'colspan' => array(), 'headers' => array(), 
-			'height' => array(), 'nowrap' => array(), 
-			'rowspan' => array(), 'scope' => array(), 
+			'abbr' => array(), 'align' => array(),
+			'axis' => array(), 'bgcolor' => array(),
+			'char' => array(), 'charoff' => array(),
+			'colspan' => array(), 'headers' => array(),
+			'height' => array(), 'nowrap' => array(),
+			'rowspan' => array(), 'scope' => array(),
 			'valign' => array(), 'width' => array()
-			), 
+			),
 		'thead' => array(
-			'align' => array(), 'char' => array(), 
+			'align' => array(), 'char' => array(),
 			'charoff' => array(), 'valign' => array()
-			), 
-		'title' => array(), 
+			),
+		'title' => array(),
 		'tr' => array(
-			'align' => array(), 'bgcolor' => array(), 
-			'char' => array(), 'charoff' => array(), 
+			'align' => array(), 'bgcolor' => array(),
+			'char' => array(), 'charoff' => array(),
 			'valign' => array()
-			), 
-		'tt' => array(), 
-		'u' => array(), 
-		'ul' => array(), 
-		'ol' => array(), 
+			),
+		'tt' => array(),
+		'u' => array(),
+		'ul' => array(),
+		'ol' => array(),
 		'var' => array()
 	);
-	
+
 	$allowedtags = array(
 		'a' => array(
 			'href' => array(), 'title' => array()
-			), 
+			),
 		'abbr' => array(
 			'title' => array()
-			), 
+			),
 		'acronym' => array(
 			'title' => array()
-			), 
-		'b' => array(), 
+			),
+		'b' => array(),
 		'blockquote' => array(
 			'cite' => array()
 			),
@@ -203,14 +203,14 @@ if (!CUSTOM_TAGS) {
 		//	'dd' => array(),
 		//	'dl' => array(),
 		//	'dt' => array(),
-		'em' => array(), 
+		'em' => array(),
 		'i' => array(),
 		//	'ins' => array('datetime' => array(), 'cite' => array()),
 		//	'li' => array(),
 		//	'ol' => array(),
 		//	'p' => array(),
 		//	'q' => array(),
-		'strike' => array(), 
+		'strike' => array(),
 		'strong' => array(),
 		//	'sub' => array(),
 		//	'sup' => array(),
@@ -218,6 +218,7 @@ if (!CUSTOM_TAGS) {
 		//	'ul' => array(),
 	);
 }
+
 function wp_kses($string, $allowed_html, $allowed_protocols = array ('http', 'https', 'ftp', 'ftps', 'mailto', 'news', 'irc', 'gopher', 'nntp', 'feed', 'telnet'))
 	###############################################################################
 		# This function makes sure that only the allowed HTML element names, attribute
@@ -229,17 +230,17 @@ function wp_kses($string, $allowed_html, $allowed_protocols = array ('http', 'ht
 	$string = wp_kses_no_null($string);
 	$string = wp_kses_js_entities($string);
 	$string = wp_kses_normalize_entities($string);
-	$string = wp_kses_hook($string);
 	$allowed_html_fixed = wp_kses_array_lc($allowed_html);
+	$string = wp_kses_hook($string, $allowed_html_fixed, $allowed_protocols); // WP changed the order of these funcs and added args to wp_kses_hook
 	return wp_kses_split($string, $allowed_html_fixed, $allowed_protocols);
 } # function wp_kses
 
-function wp_kses_hook($string)
+function wp_kses_hook($string, $allowed_html, $allowed_protocols)
 ###############################################################################
 # You add any kses hooks here.
 ###############################################################################
 {
-	$string = apply_filters('pre_kses', $string);
+	$string = apply_filters('pre_kses', $string, $allowed_html, $allowed_protocols);
 	return $string;
 } # function wp_kses_hook
 
@@ -285,21 +286,17 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
 	}
 	# Allow HTML comments
 
-	if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9]+)([^>]*)>?$%', $string, $matches)) {
-		wp_kses_reject(__('Seriously malformed HTML removed'));
+	if (!preg_match('%^<\s*(/\s*)?([a-zA-Z0-9]+)([^>]*)>?$%', $string, $matches))
 		return '';
 	# It's seriously malformed
-	}
 
 	$slash = trim($matches[1]);
 	$elem = $matches[2];
 	$attrlist = $matches[3];
 
-	if (!@isset($allowed_html[strtolower($elem)])) {
-		wp_kses_reject(sprintf(__('Removed <code>&lt;%1$s%2$s&gt</code> tag'), $slash, $elem));
+	if (!@isset($allowed_html[strtolower($elem)]))
 		return '';
 	# They are using a not allowed HTML element
-	}
 
 	if ($slash != '')
 		return "<$slash$elem>";
@@ -307,43 +304,6 @@ function wp_kses_split2($string, $allowed_html, $allowed_protocols)
 
 	return wp_kses_attr("$slash$elem", $attrlist, $allowed_html, $allowed_protocols);
 } # function wp_kses_split2
-
-$kses_messages = array();
-function wp_kses_reject($message) {
-	global $kses_messages;
-return; // Disabled
-	if ( count($kses_messages) == 0 )
-		add_action('save_post', 'wp_kses_save_message');
-
-	$kses_messages[] = $message;
-
-	return '';
-}
-
-function wp_kses_save_message($id) {
-	global $kses_messages;
-
-	foreach ( $kses_messages as $text )
-		$message .= "$text\n";
-
-	$kses_messages[] = "";
-
-	update_option('kses_message', $message);
-}
-
-function wp_kses_show_message() {
-	$message = get_option('kses_message');
-
-	if ( empty($message) )
-		return;
-	
-	echo "<div class='updated fade'>\n";
-	echo nl2br($message);
-	echo "</div>\n";
-
-	update_option('kses_message', '');
-}
-	
 
 function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 ###############################################################################
@@ -363,11 +323,8 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 
 	# Are any attributes allowed at all for this element?
 
-	if (@ count($allowed_html[strtolower($element)]) == 0) {
-		if ( ! empty($attr) )
-			wp_kses_reject(sprintf(__('All attributes removed from &lt;%s&gt; tag'), $element));
+	if (@ count($allowed_html[strtolower($element)]) == 0)
 		return "<$element$xhtml_slash>";
-	}
 
 	# Split it
 
@@ -379,16 +336,12 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 	$attr2 = '';
 
 	foreach ($attrarr as $arreach) {
-		if (!@ isset ($allowed_html[strtolower($element)][strtolower($arreach['name'])])) {
-			wp_kses_reject(sprintf(__('Attribute <code>%1$s</code> removed from <code>&lt;%2$s&gt;</code> tag'), $arreach['name'], $element));
+		if (!@ isset ($allowed_html[strtolower($element)][strtolower($arreach['name'])]))
 			continue; # the attribute is not allowed
-		}
 
 		$current = $allowed_html[strtolower($element)][strtolower($arreach['name'])];
-		if ($current == '') {
-			wp_kses_reject(sprintf(__('Attribute <code>%1$s</code> removed from <code>&lt;%2$s&gt;</code> tag'), $arreach['name'], $element));
+		if ($current == '')
 			continue; # the attribute is not allowed
-		}
 
 		if (!is_array($current))
 			$attr2 .= ' '.$arreach['whole'];
@@ -399,7 +352,6 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols)
 			$ok = true;
 			foreach ($current as $currkey => $currval)
 				if (!wp_kses_check_attr_val($arreach['value'], $arreach['vless'], $currkey, $currval)) {
-					wp_kses_reject(sprintf(__('Attribute <code>%1$s</code> removed from <code>&lt;%2$s&gt;</code> tag due to illegal value'), $arreach['name'], $element));
 					$ok = false;
 					break;
 				}
@@ -765,8 +717,6 @@ function kses_init_filters() {
 	add_filter('content_save_pre', 'wp_filter_post_kses');
 	add_filter('excerpt_save_pre', 'wp_filter_post_kses');
 	add_filter('content_filtered_save_pre', 'wp_filter_post_kses');
-	add_filter('pre_comment_author', 'wp_filter_kses');
-	add_action('admin_notices', 'wp_kses_show_message');
 }
 
 function kses_remove_filters() {

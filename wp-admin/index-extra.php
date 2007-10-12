@@ -2,15 +2,19 @@
 require_once('admin.php');
 require_once (ABSPATH . WPINC . '/rss.php');
 
-@header('Content-type: ' . get_option('html_type') . '; charset=' . get_option('blog_charset'));
+@header('Content-Type: ' . get_option('html_type') . '; charset=' . get_option('blog_charset'));
 
 switch ( $_GET['jax'] ) {
 
 case 'incominglinks' :
-$rss = @fetch_rss(apply_filters( 'dashboard_incoming_links_feed', 'http://feeds.technorati.com/cosmos/rss/?url='. trailingslashit(get_option('home')) .'&partner=wordpress' ));
+
+$rss_feed = apply_filters( 'dashboard_incoming_links_feed', 'http://blogsearch.google.com/blogsearch_feeds?hl=en&scoring=d&ie=utf-8&num=10&output=rss&partner=wordpress&q=link:' . trailingslashit( get_option('home') ) );
+$more_link = apply_filters( 'dashboard_incoming_links_link', 'http://blogsearch.google.com/blogsearch?hl=en&scoring=d&partner=wordpress&q=link:' . trailingslashit( get_option('home') ) );
+
+$rss = @fetch_rss( $rss_feed );
 if ( isset($rss->items) && 1 < count($rss->items) ) { // Technorati returns a 1-item feed when it has no results
 ?>
-<h3><?php _e('Incoming Links'); ?> <cite><a href="<?php echo apply_filters( 'dashboard_incoming_links_link', 'http://www.technorati.com/search/'. trailingslashit(get_option('home')) .'?partner=wordpress' ); ?>"><?php _e('More &raquo;'); ?></a></cite></h3>
+<h3><?php _e('Incoming Links'); ?> <cite><a href="<?php echo htmlspecialchars( $more_link ); ?>"><?php _e('More &raquo;'); ?></a></cite></h3>
 <ul>
 <?php
 $rss->items = array_slice($rss->items, 0, 10);
@@ -60,7 +64,7 @@ $post = preg_replace( '|.+?:(.+)|s', '$1', $item['title'] );
 	}
 ?>
 </ul>
-<p class="readmore"><a href="<?php echo apply_filters( 'dashboard_secondary_link', 'http://planet.wordpress.org/' ); ?>"><?php _e('Read more'); ?> &raquo;</a></p>
+<p class="readmore"><a href="<?php echo apply_filters( 'dashboard_secondary_link', 'http://planet.wordpress.org/' ); ?>"><?php _e('Read more &raquo;'); ?></a></p>
 <?php
 }
 break;

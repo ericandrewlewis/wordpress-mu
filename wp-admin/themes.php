@@ -73,7 +73,7 @@ if( is_site_admin() ) {
 <?php if ( $ct->screenshot ) : ?>
 <img src="<?php echo get_option('siteurl') . '/' . $ct->stylesheet_dir . '/' . $ct->screenshot; ?>" alt="<?php _e('Current theme preview'); ?>" />
 <?php endif; ?>
-<h3><?php printf(__('%1$s %2$s by %3$s'), $ct->title, $ct->version, $ct->author) ; ?></h3>
+<h3><?php printf(_c('%1$s %2$s by %3$s|1: theme title, 2: theme version, 3: theme author'), $ct->title, $ct->version, $ct->author) ; ?></h3>
 <p><?php echo $ct->description; ?></p>
 </div>
 
@@ -98,7 +98,7 @@ foreach ($theme_names as $theme_name) {
 	$author = $themes[$theme_name]['Author'];
 	$screenshot = $themes[$theme_name]['Screenshot'];
 	$stylesheet_dir = $themes[$theme_name]['Stylesheet Dir'];
-	$activate_link = wp_nonce_url("themes.php?action=activate&amp;template=$template&amp;stylesheet=$stylesheet", 'switch-theme_' . $template);
+	$activate_link = wp_nonce_url("themes.php?action=activate&amp;template=".urlencode($template)."&amp;stylesheet=".urlencode($stylesheet), 'switch-theme_' . $template);
 ?>
 <div class="available-theme">
 <h3><a href="<?php echo $activate_link; ?>"><?php echo $title; ?></a></h3>
