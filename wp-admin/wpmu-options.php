@@ -35,7 +35,7 @@ if (isset($_GET['updated'])) {
 		<?php printf( __( 'Registration and support mails will come from this address. Make it generic like "support@%s"' ), $current_site->domain ); ?></td>
 		</tr> 
 		<tr valign="top"> 
-		<th scope="row"><?php _e('Allow new blog registrations') ?></th> 
+		<th scope="row"><?php _e('Allow new registrations') ?></th> 
 		<?php
 		if( !get_site_option('registration') )
 			update_site_option( 'registration', 'all' );
@@ -45,6 +45,16 @@ if (isset($_GET['updated'])) {
 		<input name="registration" type="radio" id="registration3" value='user' <?php echo get_site_option('registration') == 'user' ? 'checked' : ''; ?> /> Enabled for users only. Only user account can be created.<br />
 		<input name="registration" type="radio" id="registration4" value='blog' <?php echo get_site_option('registration') == 'blog' ? 'checked' : ''; ?> /> Enabled for blogs only. Only logged in users can create new blogs.<br />
 		<?php _e('Disable or enable registration and who or what can be registered. (Default=all)') ?></td> 
+		</tr> 
+		<tr valign="top"> 
+		<th scope="row"><?php _e('Registration notification') ?></th> 
+		<?php
+		if( !get_site_option('registrationnotification') )
+			update_site_option( 'registrationnotification', 'yes' );
+		?>
+		<td><input name="registrationnotification" type="radio" id="registrationnotification1" value='yes' <?php echo get_site_option('registrationnotification') == 'yes' ? 'checked' : ''; ?> /> Yes<br />
+		<input name="registrationnotification" type="radio" id="registrationnotification2" value='no' <?php echo get_site_option('registrationnotification') == 'no' ? 'checked' : ''; ?> /> No<br />
+		<?php _e('Send the site admin an email notification every time someone registers a blog or user account.') ?></td> 
 		</tr> 
 		<tr valign="top"> 
 		<th scope="row"><?php _e('Welcome Email:') ?></th> 
@@ -105,7 +115,7 @@ if (isset($_GET['updated'])) {
 		<legend><?php _e('Site Wide Settings <em>(These settings may be overridden by blog owners)</em>') ?></legend> 
 		<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 		<?php
-		$lang_files = glob( ABSPATH . WPINC . "/languages/*.mo" );
+		$lang_files = glob( ABSPATH . "wp-content/languages/*.mo" );
 		$lang = get_site_option( "WPLANG" );
 		if( is_array( $lang_files ) ) {
 			?>
