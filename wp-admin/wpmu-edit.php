@@ -1,5 +1,8 @@
 <?php
 require_once('admin.php');
+if( is_site_admin() == false ) {
+    die( __('<p>You do not have permission to access this page.</p>') );
+}
 
 do_action( "wpmuadminedit", "" );
 
@@ -9,9 +12,6 @@ if( isset( $_POST[ 'ref' ] ) == false && empty( $_SERVER[ 'HTTP_REFERER' ] ) == 
 
 switch( $_REQUEST[ 'action' ] ) {
 	case "siteoptions":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('siteoptions');
 
 		update_site_option( "WPLANG", $_POST[ 'WPLANG' ] );
@@ -93,11 +93,8 @@ switch( $_REQUEST[ 'action' ] ) {
 		exit;
 	break;
 	case "adduser":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('add-user');
-		
+
 		if( is_array( $_POST[ 'user' ] ) == true ) {
 			$user = $_POST['user'];
 			$password = generate_random_password();
@@ -110,15 +107,11 @@ switch( $_REQUEST[ 'action' ] ) {
 			wp_redirect( add_query_arg( "updated", "useradded", $_SERVER[ 'HTTP_REFERER' ] ) );
 			die();
 		}
-	
+
 	break;
 	case "addblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
-		
 		check_admin_referer('add-blog');
-		
+
 		if( is_array( $_POST[ 'blog' ] ) == true ) {
 			$blog = $_POST['blog'];
 			$domain = strtolower( wp_specialchars( $blog['domain'] ) );
@@ -130,7 +123,7 @@ switch( $_REQUEST[ 'action' ] ) {
 				$newdomain = $current_site->domain;
 				$path = $base.$domain.'/';
 			}
-			
+
 			$user_id = email_exists($email);
 			if( !$user_id ) { // I'm not sure what this check should be.
 				$password = generate_random_password();
@@ -147,7 +140,7 @@ switch( $_REQUEST[ 'action' ] ) {
 			$wpdb->show_errors();
 			if( !is_wp_error($blog_id) ) {
 				if( get_user_option( $user_id, 'primary_blog' ) == 1 )
-					update_user_option( $user_id, 'primary_blog', $blog_id, true )
+					update_user_option( $user_id, 'primary_blog', $blog_id, true );
 				$content_mail = sprintf(__("New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
 				@wp_mail( get_site_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <' . get_site_option( 'admin_email' ) . '>' );
 				wp_redirect( add_query_arg( "updated", "blogadded", $_SERVER[ 'HTTP_REFERER' ] ) );
@@ -156,12 +149,9 @@ switch( $_REQUEST[ 'action' ] ) {
 				die( $blog_id->get_error_message() );
 			}
 		}
-			
+
 	break;
 	case "updateblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('editblog');
 		$options_table_name = $wpmuBaseTablePrefix . $id ."_options";
 
@@ -256,23 +246,13 @@ switch( $_REQUEST[ 'action' ] ) {
 		wpmu_admin_do_redirect( "wpmu-blogs.php?action=editblog&id=".$id );
 	break;
 	case "deleteblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('deleteblog');
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id, true );
-		if( $_POST[ 'ref' ] ) {
-			wp_redirect( add_query_arg( "updated", "blogdeleted", $_POST[ 'ref' ] ) );
-		} else {
-			wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
-		}
+		wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
 		die();
 	break;
 	case "allblogs":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('allblogs');
 		if( is_array( $_POST[ 'allblogs' ] ) ) {
 			while( list( $key, $val ) = each( $_POST[ 'allblogs' ] ) ) {
@@ -291,9 +271,6 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
 	case "archiveblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('archiveblog');
 		update_blog_status( $id, "archived", '1' );
 		do_action( "archive_blog", $id );
@@ -301,9 +278,6 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
 	case "unarchiveblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('unarchiveblog');
 		do_action( "unarchive_blog", $id );
 		update_blog_status( $id, "archived", '0' );
@@ -311,9 +285,6 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
 	case "activateblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('activateblog');
 		update_blog_status( $id, "deleted", '0' );
 		do_action( "activate_blog", $id );
@@ -321,9 +292,6 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
 	case "deactivateblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('deactivateblog');
 		do_action( "deactivate_blog", $id );
 		update_blog_status( $id, "deleted", '1' );
@@ -331,9 +299,6 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
 	case "unspamblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('unspamblog');
 		update_blog_status( $id, "spam", '0' );
 		do_action( "unspam_blog", $id );
@@ -341,28 +306,19 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
 	case "spamblog":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		check_admin_referer('spamblog');
-		do_action( "make_spam_blog", $id );
 		update_blog_status( $id, "spam", '1' );
+		do_action( 'make_spam_blog', $id );
 		wp_redirect( add_query_arg( "updated", "blogspam", $_POST[ 'ref' ] ) );
 		die();
 	break;
 	case "mature":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		update_blog_status( $id, 'mature', '1' );
 		do_action( 'mature_blog', $id );
 		wp_redirect( add_query_arg( "updated", "blogmature", $_POST[ 'ref' ] ) );
 		die();
 	break;
 	case "unmature":
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		update_blog_status( $id, 'mature', '0' );
 		do_action( 'unmature_blog', $id );
 		wp_redirect( add_query_arg( "updated", "blogunmature", $_POST[ 'ref' ] ) );
@@ -370,9 +326,6 @@ switch( $_REQUEST[ 'action' ] ) {
 	break;
     	case "updateuser":
 		check_admin_referer('edituser');
-		if( is_site_admin() == false ) {
-			die( __('<p>You do not have permission to access this page.</p>') );
-		}
 		unset( $_POST[ 'option' ][ 'ID' ] );
 		if( is_array( $_POST[ 'option' ] ) ) {
 			while( list( $key, $val ) = each( $_POST[ 'option' ] ) ) { 
@@ -396,9 +349,6 @@ switch( $_REQUEST[ 'action' ] ) {
 		die();
 	break;
     	case "updatethemes":
-		if( is_site_admin() == false )
-			die( __('<p>You do not have permission to access this page.</p>') );
-
     		if( is_array( $_POST[ 'theme' ] ) ) {
 			$themes = get_themes();
 			reset( $themes );
