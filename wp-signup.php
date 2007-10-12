@@ -1,6 +1,9 @@
 <?php
 define( "WP_INSTALLING", true );
 require( 'wp-config.php' );
+
+add_action( 'wp_head', 'signuppageheaders' ) ;
+
 require( 'wp-blog-header.php' );
 require_once( ABSPATH . WPINC . '/registration.php' );
 
@@ -10,6 +13,10 @@ if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_
 }
 
 do_action("signup_header");
+
+function signuppageheaders() {
+	echo "<meta name='robots' content='noindex,nofollow'>\n";
+}
 
 if( $current_blog->domain . $current_blog->path != $current_site->domain . $current_site->path ) {
 	header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php" );
@@ -372,6 +379,10 @@ if( !$active_signup )
 	$active_signup = 'all';
 
 $active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
+
+if( is_site_admin() ) {
+	echo "<div style='background: #faf; font-weight: bold; border: 1px solid #333; margin: 2px; padding: 2px'>Greetings Site Administrator! You are currently allowing '$active_signup' registrations. To change or disable registration go to your <a href='wp-admin/wpmu-options.php'>Options page</a>.</div>";
+}
 
 $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
 if( $_POST['blog_public'] != 1 )
