@@ -25,6 +25,7 @@ switch( $_REQUEST[ 'action' ] ) {
 		}
 		update_site_option( "illegal_names", $names );
 		update_site_option( "registration", $wpdb->escape( $_POST[ 'registration' ] ) );
+		update_site_option( "xmlrpc_active", $wpdb->escape( $_POST[ 'xmlrpc_active' ] ) );
 		update_site_option( "registrationnotification", $wpdb->escape( $_POST[ 'registrationnotification' ] ) );
 		if( $_POST[ 'limited_email_domains' ] != '' ) {
 			update_site_option( "limited_email_domains", split( ' ', $_POST[ 'limited_email_domains' ] ) );

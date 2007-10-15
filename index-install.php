@@ -368,6 +368,7 @@ function step3() {
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_email', '".$email."')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_user_id', '1')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'registration', 'none')" );
+	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'xmlrpc_active', 'no')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->site." ( id, domain, path ) VALUES ( NULL, '$domain', '$base' )" );
 	$wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " ( cat_ID, cat_name, category_nicename, last_updated ) VALUES (1, 'Uncategorized', 'uncategorized', NOW())" );
 	$wpdb->query( "INSERT INTO " . $wpdb->sitecategories . " ( cat_ID, cat_name, category_nicename, last_updated ) VALUES (2, 'Blogroll', 'blogroll', NOW())" );

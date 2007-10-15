@@ -57,6 +57,16 @@ if (isset($_GET['updated'])) {
 		<?php _e('Send the site admin an email notification every time someone registers a blog or user account.') ?></td> 
 		</tr> 
 		<tr valign="top"> 
+		<th scope="row"><?php _e('Enable posting by XMLRPC') ?></th> 
+		<?php
+		if( !get_site_option('xmlrpc_active') )
+			update_site_option( 'xmlrpc_active', 'no' );
+		?>
+		<td><input name="xmlrpc_active" type="radio" id="xmlrpc_active1" value='yes' <?php echo get_site_option('xmlrpc_active') == 'yes' ? 'checked' : ''; ?> /> Yes<br />
+		<input name="xmlrpc_active" type="radio" id="xmlrpc_active2" value='no' <?php echo get_site_option('xmlrpc_active') == 'no' ? 'checked' : ''; ?> /> No<br />
+		<?php _e('This is an advanced technique for making posts to blogs. It is used by <a href="http://codex.wordpress.org/Weblog_Client">blog clients</a> like Ecto, Flock and Microsoft Live Writer and by Flickr to post pictures to blogs. Unfortunately it is also extensively used by spammers. <em>Disabled by Default</em>') ?></td> 
+		</tr> 
+		<tr valign="top"> 
 		<th scope="row"><?php _e('Welcome Email:') ?></th> 
 		<td><textarea name="welcome_email" id="welcome_email" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('welcome_email') ) ?></textarea>
 		<br />
