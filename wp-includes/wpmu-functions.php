@@ -1917,4 +1917,10 @@ function choose_primary_blog() {
 	}       
 }
 add_action( 'profile_personal_options', 'choose_primary_blog' );
+
+function redirect_this_site( $hosts ) {
+	global $current_site;
+	return array( $current_site->domain );
+}
+add_filter( 'allowed_redirect_hosts', 'redirect_this_site' );
 ?>
