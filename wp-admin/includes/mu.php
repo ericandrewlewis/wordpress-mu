@@ -199,4 +199,29 @@ function get_site_allowed_themes() {
 
 	return $allowed_themes;
 }
+
+function get_space_allowed() {
+	$spaceAllowed = get_option("blog_upload_space");
+	if( $spaceAllowed == false ) 
+		$spaceAllowed = get_site_option("blog_upload_space");
+	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 50;
+
+	return $spaceAllowed;
+}
+
+function display_space_usage() {
+		$space = get_space_allowed();
+		$percentused = ( intval( get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024 ) / $space ) * 100;
+
+		if( $space > 1000 ) {
+			$space = number_format( $space / 1024 );
+			$space .= "GB";
+		} else {
+			$space .= "MB";
+		}
+	?>
+	<strong>Used: <?php echo number_format( $percentused ) ?>% of <?php echo $space ?></strong>
+	<?php
+}
+
 ?>

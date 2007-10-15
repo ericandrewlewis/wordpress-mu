@@ -183,30 +183,6 @@ function wp_upload_form() {
 <?php
 }
 
-function display_space_usage() {
-		$space = get_space_allowed();
-		$percentused = ( intval( get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024 ) / $space ) * 100;
-		$buymore = '';
-		if( $space < 10000 )
-			$buymore = '<a target="_blank" title="opens in new window" href="/wp-admin/paid-upgrades.php">Buy more</a>'; // open in new window in case they have a post open
-
-		/*
-		if( $space < 10000 )  {
-			$buymore = '<a target="_blank" title="opens in new window" href="/wp-admin/paid-upgrades.php">Buy more space</a>'; // open in new window in case they have a post open
-			if( get_option( 'use_upgraded_upload_filetypes' ) != '1' ) { $buymore .= __( " and you can upload " ) . str_replace( " ", ", ", get_site_option( "upgraded_upload_filetypes" ) ) . __(" files");}
-		}
-		*/
-		if( $space > 1000 ) {
-			$space = number_format( $space / 1024 );
-			$space .= "GB";
-		} else {
-			$space .= "MB";
-		}
-	?>
-	<strong>Used: <?php echo number_format( $percentused ) ?>% of <?php echo $space . ". $buymore" ?></strong>
-	<?php
-}
-
 function wp_upload_tab_upload() {
 	wp_upload_form();
 }
