@@ -163,14 +163,14 @@ CREATE TABLE IF NOT EXISTS $wpdb->blogs (
   PRIMARY KEY  (blog_id),
   KEY domain (domain(50),path(5)),
   KEY lang_id (lang_id)
-);
+) $charset_collate;
 CREATE TABLE IF NOT EXISTS $wpdb->blog_versions (
   blog_id bigint(20) NOT NULL default '0',
   db_version varchar(20) NOT NULL default '',
   last_updated datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (blog_id),
   KEY db_version (db_version)
-);
+) $charset_collate;
 CREATE TABLE IF NOT EXISTS $wpdb->registration_log (
   ID bigint(20) NOT NULL auto_increment,
   email varchar(255) NOT NULL default '',
@@ -179,14 +179,14 @@ CREATE TABLE IF NOT EXISTS $wpdb->registration_log (
   date_registered datetime NOT NULL default '0000-00-00 00:00:00',
   PRIMARY KEY  (ID),
   KEY IP (IP)
-);
+) $charset_collate;
 CREATE TABLE $wpdb->site (
   id bigint(20) NOT NULL auto_increment,
   domain varchar(200) NOT NULL default '',
   path varchar(100) NOT NULL default '',
   PRIMARY KEY  (id),
   KEY domain (domain,path)
-);
+) $charset_collate;
 CREATE TABLE IF NOT EXISTS $wpdb->sitemeta (
   meta_id bigint(20) NOT NULL auto_increment,
   site_id bigint(20) NOT NULL default '0',
@@ -195,7 +195,7 @@ CREATE TABLE IF NOT EXISTS $wpdb->sitemeta (
   PRIMARY KEY  (meta_id),
   KEY meta_key (meta_key),
   KEY site_id (site_id)
-);
+) $charset_collate;
 CREATE TABLE IF NOT EXISTS $wpdb->sitecategories (
   cat_ID bigint(20) NOT NULL auto_increment,
   cat_name varchar(55) NOT NULL default '',
@@ -204,7 +204,7 @@ CREATE TABLE IF NOT EXISTS $wpdb->sitecategories (
   PRIMARY KEY  (cat_ID),
   KEY category_nicename (category_nicename),
   KEY last_updated (last_updated)
-);
+) $charset_collate;
 CREATE TABLE IF NOT EXISTS $wpdb->signups (
   domain varchar(200) NOT NULL default '',
   path varchar(100) NOT NULL default '',
@@ -218,7 +218,7 @@ CREATE TABLE IF NOT EXISTS $wpdb->signups (
   meta longtext,
   KEY activation_key (activation_key),
   KEY domain (domain)
-);
+) $charset_collate;
 ";
 
 function populate_options() {

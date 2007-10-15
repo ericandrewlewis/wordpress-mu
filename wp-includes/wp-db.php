@@ -58,6 +58,9 @@ class wpdb {
 	function __construct($dbuser, $dbpassword, $dbname, $dbhost) {
 		register_shutdown_function(array(&$this, "__destruct"));
 
+		$this->charset = 'utf8';
+		$this->collete = 'utf8';
+
 		if ( defined('DB_CHARSET') )
 			$this->charset = DB_CHARSET;
 
