@@ -118,7 +118,7 @@ switch( $_GET[ 'action' ] ) {
 			$blog = $_POST['blog'];
 			$domain = strtolower( wp_specialchars( $blog['domain'] ) );
 			$email = wp_specialchars( $blog['email'] );
-			if( $email != '' && !is_email( $email ) )
+			if( !is_email( $email ) )
 				die( "Invalid email address" );
 			if( constant( "VHOST" ) == 'yes' ) {
 				$newdomain = $domain.".".$current_site->domain;
