@@ -3,15 +3,19 @@ require_once('admin.php');
 $title = __('WPMU Admin: Users');
 $parent_file = 'wpmu-admin.php';
 
-$id = intval( $_REQUEST[ 'id' ] );
+if( $_GET[ 'id' ] ) {
+	$id = intval( $_GET[ 'id' ] );
+} elseif( $_POST[ 'id' ] ) {
+	$id = intval( $_POST[ 'id' ] );
+}
 if( is_site_admin() == false ) {
 	die( __('<p>You do not have permission to access this page.</p>') );
 }
 
-switch( $_REQUEST[ 'action' ] ) {
+switch( $_GET[ 'action' ] ) {
 	case "confirm":
 	?>
-		<form action='wpmu-users.php' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><input type='hidden' name='ref' value='<?php if( isset( $_GET[ 'ref' ] ) ) {echo wp_specialchars( $_GET[ 'ref' ] ); } else { echo $_SERVER[ 'HTTP_REFERER' ]; } ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
+<form action='wpmu-users.php?action=<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>' method='POST'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ) ?>'><input type='hidden' name='ref' value='<?php if( isset( $_GET[ 'ref' ] ) ) {echo wp_specialchars( $_GET[ 'ref' ] ); } else { echo $_SERVER[ 'HTTP_REFERER' ]; } ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form>
 	<?php
 		die();
 	break;
@@ -25,6 +29,9 @@ switch( $_REQUEST[ 'action' ] ) {
 	break;
 	case "allusers":
 		check_admin_referer('allusers');
+		if( is_site_admin() == false ) {
+			die( __('<p>You do not have permission to access this page.</p>') );
+		}
 		if( is_array( $_POST[ 'allusers' ] ) ) {
 			while( list( $key, $val ) = each( $_POST[ 'allusers' ] ) ) {
 				if( $val != '' && $val != '0' && $val != '1' ) {
@@ -39,6 +46,15 @@ switch( $_REQUEST[ 'action' ] ) {
 								do_action( "make_spam_blog", $details->userblog_id );
 							}
 						}
+						update_user_status( $val, "spam", '1', 1 );
+					} elseif ( $_POST[ 'userfunction' ] == 'notspam' ) {
+						$blogs = get_blogs_of_user( $val, true );
+						if( is_array( $blogs ) ) {
+							while( list( $key, $details ) = each( $blogs ) ) {
+								update_blog_status( $details->userblog_id, "spam", '0' );
+							}
+						}
+						update_user_status( $val, "spam", '0', 1 );
 					}
 				}
 			}
@@ -51,6 +67,9 @@ switch( $_REQUEST[ 'action' ] ) {
 $title = __('WPMU Admin');
 $parent_file = 'wpmu-admin.php';
 require_once('admin-header.php');
+if( is_site_admin() == false ) {
+    die( __('<p>You do not have permission to access this page.</p>') );
+}
 if (isset($_GET['updated'])) {
 	?><div id="message" class="updated fade"><p><?php _e('Options saved.') ?></p></div><?php
 }
@@ -248,7 +267,7 @@ function check_all_rows() {
 <?php
 if ($user_list) {
 $bgcolor = '';
-foreach ($user_list as $user) { 
+foreach ($user_list as $user) {
 $class = ('alternate' == $class) ? '' : 'alternate';
 ?> 
 	<tr class='<?php echo $class; ?>'>
@@ -258,7 +277,7 @@ $class = ('alternate' == $class) ? '' : 'alternate';
 foreach($posts_columns as $column_name=>$column_display_name) {
 
 	switch($column_name) {
-	
+
 	case 'id':
 		?>
 		<th scope="row"><input type='checkbox' id='<?php echo $user[ 'ID' ] ?>' name='allusers[]' value='<?php echo $user[ 'ID' ] ?>' /> <label for='<?php echo $user[ 'ID' ] ?>'><?php echo $user[ 'ID' ] ?></label></th>
@@ -341,6 +360,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
     <?php wp_nonce_field( "allusers" ); ?>
 <li><input type='radio' name='userfunction' id='delete' value='delete' /> <label for='delete'><?php _e('Delete') ?></label></li>
 <li><input type='radio' name='userfunction' id='spam' value='spam' /> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
+<li><input type='radio' name='userfunction' id='notspam' value='notspam' /> <label for='spam'><?php _e('Not Spam') ?></label></li>
 </ul>
 <input type='hidden' name='action' value='allusers'>
 <p><input type='submit' value='<?php _e('Apply Changes') ?>'></p>

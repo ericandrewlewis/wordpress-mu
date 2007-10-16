@@ -6,11 +6,11 @@ if( is_site_admin() == false ) {
 
 do_action( "wpmuadminedit", "" );
 
-$id = intval( $_REQUEST[ 'id' ] );
+$id = intval( $_POST[ 'id' ] );
 if( isset( $_POST[ 'ref' ] ) == false && empty( $_SERVER[ 'HTTP_REFERER' ] ) == false )
 	$_POST[ 'ref' ] = $_SERVER[ 'HTTP_REFERER' ];
 
-switch( $_REQUEST[ 'action' ] ) {
+switch( $_GET[ 'action' ] ) {
 	case "siteoptions":
 		check_admin_referer('siteoptions');
 
@@ -251,7 +251,7 @@ switch( $_REQUEST[ 'action' ] ) {
 		check_admin_referer('deleteblog');
 		if( $id != '0' && $id != '1' )
 			wpmu_delete_blog( $id, true );
-		wp_redirect( add_query_arg( "updated", "blogdeleted", $_SERVER[ 'HTTP_REFERER' ] ) );
+		wp_redirect( add_query_arg( "updated", "blogdeleted", $_POST[ 'ref' ] ) );
 		die();
 	break;
 	case "allblogs":
@@ -365,7 +365,7 @@ switch( $_REQUEST[ 'action' ] ) {
 	break;
 	case "confirm":
 	?>
-		<html><head><title><?php _e("Please confirm your action"); ?></title></head><body><h1><?php _e("Please Confirm"); ?></h1><form action='wpmu-edit.php' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ); ?>'><input type='hidden' name='ref' value='<?php if( isset( $_GET[ 'ref' ] ) ) {echo wp_specialchars( $_GET[ 'ref' ] ); } else { echo $_SERVER[ 'HTTP_REFERER' ]; } ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='<?php _e("Confirm"); ?>'></form></body></html>
+	<html><head><title>Please confirm your action</title></head><body><h1>Please Confirm</h1><form action='wpmu-edit.php?action=<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>' method='POST'><input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>'><input type='hidden' name='id' value='<?php echo wp_specialchars( $_GET[ 'id' ] ); ?>'><input type='hidden' name='ref' value='<?php if( isset( $_GET[ 'ref' ] ) ) {echo wp_specialchars( $_GET[ 'ref' ] ); } else { echo $_SERVER[ 'HTTP_REFERER' ]; } ?>'><?php wp_nonce_field( $_GET[ 'action2' ] ) ?><p><?php echo wp_specialchars( $_GET[ 'msg' ] ) ?></p><input type='submit' value='Confirm'></form></body></html>
 	<?php
 	break;
 	default:
