@@ -118,6 +118,8 @@ switch( $_GET[ 'action' ] ) {
 			$blog = $_POST['blog'];
 			$domain = strtolower( wp_specialchars( $blog['domain'] ) );
 			$email = wp_specialchars( $blog['email'] );
+			if( $email != '' && !is_email( $email ) )
+				die( "Invalid email address" );
 			if( constant( "VHOST" ) == 'yes' ) {
 				$newdomain = $domain.".".$current_site->domain;
 				$path = $base;
@@ -127,7 +129,7 @@ switch( $_GET[ 'action' ] ) {
 			}
 
 			$user_id = email_exists($email);
-			if( !$user_id ) { // I'm not sure what this check should be.
+			if( !$user_id ) {
 				$password = generate_random_password();
 				$user_id = wpmu_create_user( $domain, $password, $email );
 				if(false == $user_id) {
