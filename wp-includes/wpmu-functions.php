@@ -560,6 +560,36 @@ function update_archived( $id, $archived ) {
 	return $archived;
 }
 
+function update_user_status( $id, $pref, $value, $refresh = 1 ) {
+	global $wpdb;
+
+	$wpdb->query( "UPDATE {$wpdb->users} SET {$pref} = '{$value}' WHERE ID = '$id'" );
+
+	if( $refresh == 1 )
+		refresh_user_details($id);
+	
+	if( $pref == 'spam' ) {
+		if( $value == 1 ) 
+			do_action( "make_spam_user", $id );
+		else
+			do_action( "make_ham_user", $id );
+	}
+
+	return $value;
+}
+
+function refresh_user_details($id) {
+	global $wpdb, $wpmuBaseTablePrefix;
+
+	if ( !$user = get_userdata( $id ) )
+		return false;
+
+	wp_cache_delete($id, 'users');
+	wp_cache_delete($user->user_login, 'userlogins');
+
+	return $id;
+}
+
 function update_blog_status( $id, $pref, $value, $refresh = 1 ) {
 	global $wpdb;
 
@@ -815,10 +845,15 @@ function get_blog_permalink( $blog_id, $post_id ) {
 // wpmu admin functions
 
 function wpmu_admin_do_redirect( $url = '' ) {
-	if( $_REQUEST[ 'ref' ] ) {
-		$ref = $_REQUEST[ 'ref' ];
-		$ref = wpmu_admin_redirect_add_updated_param( $_REQUEST[ 'ref' ] );
-		header( "Location: {$ref}" );
+	$ref = '';
+	if ( isset( $_GET['ref'] ) )
+		$ref = $_GET['ref'];
+	if ( isset( $_POST['ref'] ) )
+		$ref = $_POST['ref'];
+	
+	if( $ref ) {
+		$ref = wpmu_admin_redirect_add_updated_param( $ref );
+		wp_redirect( $ref );
 		die();
 	}
 	if( empty( $_SERVER[ 'HTTP_REFERER' ] ) == false ) {
@@ -834,7 +869,7 @@ function wpmu_admin_do_redirect( $url = '' ) {
 	} elseif( isset( $_POST[ 'redirect' ] ) ) {
 		$url = wpmu_admin_redirect_add_updated_param( $_POST[ 'redirect' ] );
 	}
-	header( "Location: {$url}" );
+	wp_redirect( $url );
 	die();
 }
 function wpmu_admin_redirect_add_updated_param( $url = '' ) {
