@@ -1251,10 +1251,20 @@ function wpmu_activate_signup($key) {
 	return array('blog_id' => $blog_id, 'user_id' => $user_id, 'password' => $password, 'title' => $signup->title, 'meta' => $meta);
 }
 
-function generate_random_password() {
-	$random_password = substr(md5(uniqid(microtime())), 0, 6);
-	$random_password = apply_filters('random_password', $random_password);
-	return $random_password;
+function generate_random_password($len=8) {
+	$keys = array(
+		'qwertasdfgzxcvb2345', // left hand
+		'yuiophjknm6789'       // right hand
+	);
+
+	// generate a password with alternating left/right hand keys
+	$pass = '';
+	for ($i=0; $i<$len; $i++) {
+		$hand = $keys[$i%2];
+		$pass .= substr($hand, mt_rand(0, strlen($hand)-1), 1);
+	}
+
+	return apply_filters('random_password', $pass);
 }
 
 function wpmu_create_user( $user_name, $password, $email) {
