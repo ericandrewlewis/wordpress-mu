@@ -200,7 +200,7 @@ switch( $_GET[ 'action' ] ) {
 </table>
 </div>
 <div class='wrap'><strong><?php _e('Misc Blog Actions') ?></strong>
-<p><?php do_action( "wpmueditblogaction", $_GET[ 'id' ] ); ?></p>
+<p><?php do_action( "wpmueditblogaction", intval( $_GET[ 'id' ] ) ); ?></p>
 </div>
 <p class="submit">
 <input type="submit" name="Submit" value="<?php _e('Update Options') ?> &raquo;" />
