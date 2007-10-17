@@ -1643,7 +1643,7 @@ function upload_is_user_over_quota( $echo = true ) {
 	global $wpdb;
 	
 	// Default space allowed is 10 MB 
-	$spaceAllowed = get_site_option("blog_upload_space");
+	$spaceAllowed = get_space_allowed();
 	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 10;
 	
 	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
