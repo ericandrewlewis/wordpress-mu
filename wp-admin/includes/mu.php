@@ -224,4 +224,72 @@ function display_space_usage() {
 	<?php
 }
 
+// Display File upload quota on dashboard
+function dashboard_quota() {
+	
+		global $blog_id;
+
+		$quota_mb = get_space_allowed();
+		$quota = $quota_mb * 1024 * 1024;
+		
+		if($quota==0) $quota=300*1024*1024;
+
+		$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
+
+		$used = get_dirsize($dirName);
+		$remaining = $quota - $used;
+
+		$out = "";
+		$out .= "<div id='spaceused'><h3>Storage Space<a href='upload.php' title='Manage Uploads...'> &raquo;</a></h3>";
+		
+		$out .= "<p>Total Space Avaiable:\n";
+		$out .= "<strong>".$quota_mb."MB</strong>";
+		$out .= "</p>";
+			
+		$out .= "<p>Upload Space Used:\n";
+		
+		$unit = "MB";
+		$size = $used / 1024 / 1024;
+		$quota = $quota / 1024 / 1024;
+	
+		$size = round($size, 2);
+		$pct = round(($size / $quota)*100);
+		$out .= "<strong>{$size}MB ({$pct}%)</strong>";
+		$out .= "</p>";
+		$out .= "</div>";
+
+		echo $out;
+	
+}
+add_action('activity_box_end', 'dashboard_quota');
+
+// Edit blog upload space setting on Edit Blog page
+function upload_space_setting( $id ) {
+	$quota = get_blog_option($id, "blog_upload_space"); 
+	
+	if($quota == "falsevalue") $quota = "";
+	$out = "<strong>Blog Upload Space Quota</strong>\n";
+	$out .= '<input type="text" size="3" name="option[blog_upload_space]" value="';
+	$out .= $quota;
+	$out .= '" /> MB<br />'."\n";
+	echo $out;
+}
+add_filter('wpmueditblogaction', 'upload_space_setting');
+
+// Edit XMLRPC active setting on Edit Blog page
+function xmlrpc_active_setting( $id ) {
+	$site_xmlrpc = get_site_option( 'xmlrpc_active' );
+	$xmlrpc_active = get_blog_option($id, "xmlrpc_active"); 
+	
+	if( $site_xmlrpc == 'yes' ) {
+		?><p><strong>XMLRPC Posting is enabled sitewide.</strong></p><?php
+	} else {
+		?><p><strong>XMLRPC Posting is disabled sitewide.</strong></p><?php
+	}
+	?>
+	<input type='radio' name='option[xmlrpc_active]' value='' <?php if( !$xmlrpc_active || $xmlrpc_active == '' ) echo "checked"; ?>> Obey sitewide default<br />
+	<input type='radio' name='option[xmlrpc_active]' value='yes' <?php if( $xmlrpc_active == "yes" ) echo "checked"; ?>> XMLRPC always on for this blog<br />
+	<input type='radio' name='option[xmlrpc_active]' value='no' <?php if( $xmlrpc_active == "no" ) echo "checked"; ?>> XMLRPC always off for this blog<br /><?php
+}
+add_filter('wpmueditblogaction', 'xmlrpc_active_setting');
 ?>
