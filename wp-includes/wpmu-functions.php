@@ -1899,7 +1899,9 @@ function add_switcher() {
 	$out .= "</ul>";
 	?>
 	<script type="text/javascript">
+	<!--
 	document.getElementById('wphead').innerHTML = '<?php echo $out ?>'
+	-->
 	</script>
 	<?php
 }
