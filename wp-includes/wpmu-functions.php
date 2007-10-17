@@ -325,9 +325,12 @@ function get_blog_option( $blog_id, $setting, $default='na' ) {
 		$row = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '{$setting}'" );
 		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 			$value = $row->option_value;
-			if( $value == false )
-				$value = 'falsevalue';
-			wp_cache_set($key, $value, 'site-options');
+			if( $value == false ) {
+				wp_cache_set($key, 'falsevalue', 'site-options');
+				return false;
+			} else {
+				wp_cache_set($key, $value, 'site-options');
+			}
 		} else { // option does not exist, so we must cache its non-existence
 			wp_cache_set($key, 'noop', 'site-options');
 		}
