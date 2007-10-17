@@ -1973,7 +1973,7 @@ function is_xmlrpc_active() {
 		return true;
 
 	// kill everything but pingbacks if xmlrpc is disabled
-	if( defined( 'XMLRPC_REQUEST' ) && strpos( $data, '<methodName>pingback.ping</methodName>' ) === false && get_site_option( 'xmlrpc_active' ) != 'yes' )
+	if( defined( 'XMLRPC_REQUEST' ) && strpos( $data, '<methodName>pingback.ping</methodName>' ) === false && (get_option( 'xmlrpc_active' ) == 'no' || get_site_option( 'xmlrpc_active' ) != 'yes' ) )
 		die();
 }
 add_action( 'init', 'is_xmlrpc_active' );
