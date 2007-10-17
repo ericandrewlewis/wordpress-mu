@@ -254,6 +254,8 @@ function dashboard_quota() {
 	
 		$size = round($size, 2);
 		$pct = round(($size / $quota)*100);
+		if ($size > $quota)
+			$pct = '100';
 		$out .= "<strong>{$size}MB ({$pct}%)</strong>";
 		$out .= "</p>";
 		$out .= "</div>";
@@ -267,11 +269,11 @@ add_action('activity_box_end', 'dashboard_quota');
 function upload_space_setting( $id ) {
 	$quota = get_blog_option($id, "blog_upload_space"); 
 	
-	if($quota == "falsevalue") $quota = "";
+	if( !$quota ) $quota = "";
 	$out = "<strong>Blog Upload Space Quota</strong>\n";
 	$out .= '<input type="text" size="3" name="option[blog_upload_space]" value="';
 	$out .= $quota;
-	$out .= '" /> MB<br />'."\n";
+	$out .= '" />MB (Leave blank for site default)<br />'."\n";
 	echo $out;
 }
 add_filter('wpmueditblogaction', 'upload_space_setting');
@@ -287,7 +289,7 @@ function xmlrpc_active_setting( $id ) {
 		?><p><strong>XMLRPC Posting is disabled sitewide.</strong></p><?php
 	}
 	?>
-	<input type='radio' name='option[xmlrpc_active]' value='' <?php if( !$xmlrpc_active || $xmlrpc_active == '' ) echo "checked"; ?>> Obey sitewide default<br />
+	<input type='radio' name='option[xmlrpc_active]' value='' <?php if( !$xmlrpc_active || $xmlrpc_active == '' ) echo "checked"; ?>> Do nothing, accept sitewide default<br />
 	<input type='radio' name='option[xmlrpc_active]' value='yes' <?php if( $xmlrpc_active == "yes" ) echo "checked"; ?>> XMLRPC always on for this blog<br />
 	<input type='radio' name='option[xmlrpc_active]' value='no' <?php if( $xmlrpc_active == "no" ) echo "checked"; ?>> XMLRPC always off for this blog<br /><?php
 }
