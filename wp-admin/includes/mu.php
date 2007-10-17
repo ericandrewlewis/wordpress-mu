@@ -1,5 +1,4 @@
 <?php
-
 function wpmu_delete_blog($blog_id, $drop = false) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
@@ -17,7 +16,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		remove_user_from_blog($user->user_id, $blog_id);
 	}
 
-	update_blog_status( $wpdb->blogid, 'deleted', 1 );
+	update_blog_status( $blog_id, 'deleted', 1 );
 
 	if ( $drop ) {
 		$drop_tables = array( $wpmuBaseTablePrefix . $blog_id . "_categories",
@@ -33,8 +32,9 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		$wpmuBaseTablePrefix . $blog_id . "_referer_blacklist" );
 		reset( $drop_tables );
 
-		foreach ($drop_tables as $drop_table)
+		foreach ( (array) $drop_tables as $drop_table) {
 			$wpdb->query( "DROP TABLE IF EXISTS $drop_table" );
+		}
 
 		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
 		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/" . $blog_id ."/files/";
@@ -63,9 +63,9 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		}
 
 		$stack = array_reverse($stack);  // Last added dirs are deepest
-		foreach($stack as $dir) {
+		foreach( (array) $stack as $dir) {
 			if ( $dir != $top_dir)
-			@ rmdir($dir);
+			@rmdir($dir);
 		}
 	}
 	$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key='wp_{$blog_id}_autosave_draft_ids'");
@@ -76,11 +76,9 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 
 function update_blog_public($old_value, $value) {
 	global $wpdb;
-	$value = (int) $value;
 	do_action('update_blog_public');
-	update_blog_status( $wpdb->blogid, 'public', $value );
+	update_blog_status( $wpdb->blogid, 'public', (int) $value );
 }
-
 add_action('update_option_blog_public', 'update_blog_public', 10, 2);
 
 function wpmu_delete_user($id) {
@@ -93,22 +91,20 @@ function wpmu_delete_user($id) {
 
 	$blogs = get_blogs_of_user($id);
 
-	if ( ! empty($blogs) ) foreach ($blogs as $blog) {
-		switch_to_blog($blog->userblog_id);
-		remove_user_from_blog($id, $blog->userblog_id);
+	if ( ! empty($blogs) )
+		foreach ($blogs as $blog) {
+			switch_to_blog($blog->userblog_id);
+			remove_user_from_blog($id, $blog->userblog_id);
 
-		$post_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_author = $id");
-
-		if ($post_ids) {
-			foreach ($post_ids as $post_id)
+			$post_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_author = $id");
+			foreach ( (array) $post_ids as $post_id )
 				wp_delete_post($post_id);
+
+			// Clean links
+			$wpdb->query("DELETE FROM $wpdb->links WHERE link_owner = $id");
+
+			restore_current_blog();
 		}
-
-		// Clean links
-		$wpdb->query("DELETE FROM $wpdb->links WHERE link_owner = $id");
-
-		restore_current_blog();
-	}
 
 	$wpdb->query("DELETE FROM $wpdb->users WHERE ID = $id");
 	$wpdb->query("DELETE FROM $wpdb->usermeta WHERE user_id = '$id'");
@@ -130,8 +126,9 @@ function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 			$blog_allowed_themes = get_option( "allowed_themes" );
 		else 
 			$blog_allowed_themes = get_blog_option( $blog_id, "allowed_themes" );
+			
 		if( is_array( $blog_allowed_themes ) ) {
-			foreach( $themes as $key => $theme ) {
+			foreach( (array) $themes as $key => $theme ) {
 				$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
 				if( isset( $blog_allowed_themes[ $key ] ) == true ) {
 					$blog_allowedthemes[ $theme_key ] = 1;
@@ -175,8 +172,7 @@ The Webmaster");
 	$content = str_replace('###EMAIL###', $value, $content);
 	
 	wp_mail( $value, sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
-}			
-
+}
 add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
 
 function get_site_allowed_themes() {
@@ -187,7 +183,7 @@ function get_site_allowed_themes() {
 		if( !is_array( $allowed_themes ) ) {
 			$allowed_themes = array();
 		} else {
-			foreach( $themes as $key => $theme ) {
+			foreach( (array) $themes as $key => $theme ) {
 				$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
 				if( isset( $allowed_themes[ $key ] ) == true ) {
 					$allowedthemes[ $theme_key ] = 1;
@@ -196,7 +192,6 @@ function get_site_allowed_themes() {
 			$allowed_themes = $allowedthemes;
 		}
 	}
-
 	return $allowed_themes;
 }
 
@@ -204,94 +199,79 @@ function get_space_allowed() {
 	$spaceAllowed = get_option("blog_upload_space");
 	if( $spaceAllowed == false ) 
 		$spaceAllowed = get_site_option("blog_upload_space");
-	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 50;
+	if( empty($spaceAllowed) || !is_numeric($spaceAllowed) )
+		$spaceAllowed = 50;
 
 	return $spaceAllowed;
 }
 
 function display_space_usage() {
-		$space = get_space_allowed();
-		$percentused = ( intval( get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024 ) / $space ) * 100;
+	$space = get_space_allowed();
+	$percentused = ( intval( get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024 ) / $space ) * 100;
 
-		if( $space > 1000 ) {
-			$space = number_format( $space / 1024 );
-			$space .= "GB";
-		} else {
-			$space .= "MB";
-		}
+	if( $space > 1000 ) {
+		$space = number_format( $space / 1024 );
+		$space .= __('GB');
+	} else {
+		$space .= __('MB');
+	}
 	?>
-	<strong>Used: <?php echo number_format( $percentused ) ?>% of <?php echo $space ?></strong>
+	<strong><?php printf(__('Used: %1s%% of %2s'), number_format($percentused), $space );?></strong> 
 	<?php
 }
 
 // Display File upload quota on dashboard
-function dashboard_quota() {
-	
-		global $blog_id;
+function dashboard_quota() {	
+	$quota_mb = get_space_allowed();
+	$quota = $quota_mb * 1024 * 1024;	
+	if( $quota == 0 ) $quota=10*1024*1024;
 
-		$quota_mb = get_space_allowed();
-		$quota = $quota_mb * 1024 * 1024;
-		
-		if($quota==0) $quota=300*1024*1024;
-
-		$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
-
-		$used = get_dirsize($dirName);
-		$remaining = $quota - $used;
-
-		$out = "";
-		$out .= "<div id='spaceused'><h3>Storage Space<a href='upload.php' title='Manage Uploads...'> &raquo;</a></h3>";
-		
-		$out .= "<p>Total Space Avaiable:\n";
-		$out .= "<strong>".$quota_mb."MB</strong>";
-		$out .= "</p>";
-			
-		$out .= "<p>Upload Space Used:\n";
-		
-		$unit = "MB";
-		$size = $used / 1024 / 1024;
+	$used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
+	$remaining = $quota - $used;
+	?>
+	<div id='spaceused'>
+		<h3><?php _e("Storage Space <a href='upload.php' title='Manage Uploads...'>&raquo;</a>"); ?></h3>
+		<p><?php _e('Total Space Avaiable:'); ?> <strong><?php echo $quota_mb.__('MB'); ?></strong></p>	
+		<p><?php _e('Upload Space Used:'); 	
 		$quota = $quota / 1024 / 1024;
-	
-		$size = round($size, 2);
+		$size = round( ($used / 1024 / 1024) , 2);
 		$pct = round(($size / $quota)*100);
-		if ($size > $quota)
-			$pct = '100';
-		$out .= "<strong>{$size}MB ({$pct}%)</strong>";
-		$out .= "</p>";
-		$out .= "</div>";
-
-		echo $out;
-	
+		if ($size > $quota) $pct = '100';			
+		?>
+		<strong><?php printf(__('%1sMB (%2s%%)'), number_format($size), $pct ); ?></strong></p>
+	</div>
+	<?php
 }
 add_action('activity_box_end', 'dashboard_quota');
 
 // Edit blog upload space setting on Edit Blog page
 function upload_space_setting( $id ) {
 	$quota = get_blog_option($id, "blog_upload_space"); 
+	if( !$quota )
+		$quota = '';
 	
-	if( !$quota ) $quota = "";
-	$out = "<strong>Blog Upload Space Quota</strong>\n";
-	$out .= '<input type="text" size="3" name="option[blog_upload_space]" value="';
-	$out .= $quota;
-	$out .= '" />MB (Leave blank for site default)<br />'."\n";
-	echo $out;
+	?>
+	<strong><?php _e('Blog Upload Space Quota'); ?></strong>
+	<input type="text" size="3" name="option[blog_upload_space]" value="<?php echo $quota; ?>" /><?php _e('MB (Leave blank for site default)'); ?><br />
+	<?php
 }
 add_filter('wpmueditblogaction', 'upload_space_setting');
 
 // Edit XMLRPC active setting on Edit Blog page
 function xmlrpc_active_setting( $id ) {
 	$site_xmlrpc = get_site_option( 'xmlrpc_active' );
-	$xmlrpc_active = get_blog_option($id, "xmlrpc_active"); 
+	$xmlrpc_active = get_blog_option($id, 'xmlrpc_active'); 
 	
-	if( $site_xmlrpc == 'yes' ) {
-		?><p><strong>XMLRPC Posting is enabled sitewide.</strong></p><?php
-	} else {
-		?><p><strong>XMLRPC Posting is disabled sitewide.</strong></p><?php
-	}
-	?>
-	<input type='radio' name='option[xmlrpc_active]' value='' <?php if( !$xmlrpc_active || $xmlrpc_active == '' ) echo "checked"; ?>> Do nothing, accept sitewide default<br />
-	<input type='radio' name='option[xmlrpc_active]' value='yes' <?php if( $xmlrpc_active == "yes" ) echo "checked"; ?>> XMLRPC always on for this blog<br />
-	<input type='radio' name='option[xmlrpc_active]' value='no' <?php if( $xmlrpc_active == "no" ) echo "checked"; ?>> XMLRPC always off for this blog<br /><?php
+	if( $site_xmlrpc == 'yes' ) { ?>
+		<p><strong><?php _e('XMLRPC Posting is enabled sitewide.'); ?></strong></p>
+	<?php } else { ?>
+		<p><strong><?php _e('XMLRPC Posting is disabled sitewide.'); ?></strong></p>
+	<?php } ?>
+	
+	<input type='radio' name='option[xmlrpc_active]' value='' <?php if( !$xmlrpc_active || $xmlrpc_active == '' ) echo "checked='checked'"; ?> /> <?php _e('Do nothing, accept sitewide default'); ?><br />
+	<input type='radio' name='option[xmlrpc_active]' value='yes' <?php if( $xmlrpc_active == "yes" ) echo "checked='checked'"; ?> /> <?php _e('XMLRPC always on for this blog'); ?><br />
+	<input type='radio' name='option[xmlrpc_active]' value='no' <?php if( $xmlrpc_active == "no" ) echo "checked='checked'"; ?> /> <?php _e('XMLRPC always off for this blog'); ?><br />
+	<?php
 }
 add_filter('wpmueditblogaction', 'xmlrpc_active_setting');
 ?>
