@@ -2,8 +2,8 @@
 
 // This holds the version number in a separate file so we can bump it without cluttering the SVN
 
-$wp_version = 'wordpress-mu-1.3rc1';
-$wporg_version = 'wordpress-2.3';
+$wp_version = '2.3';
+$wpmu_version = '1.3rc2';
 $wp_db_version = 6124;
 
 ?>
