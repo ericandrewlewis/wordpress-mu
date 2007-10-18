@@ -64,7 +64,7 @@ if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 		$permalink_structure = $_POST['permalink_structure'];
 		if (! empty($permalink_structure) )
 			$permalink_structure = preg_replace('#/+#', '/', '/' . $_POST['permalink_structure']);
-		if( $permalink_structure != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
+		if( constant( 'VHOST' ) == 'no' && $permalink_structure != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
 			$permalink_structure = '/blog' . $permalink_structure;
 		}
 		$wp_rewrite->set_permalink_structure($permalink_structure);
@@ -74,7 +74,7 @@ if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 		$category_base = $_POST['category_base'];
 		if (! empty($category_base) )
 			$category_base = preg_replace('#/+#', '/', '/' . $_POST['category_base']);
-		if( $category_base != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
+		if( constant( 'VHOST' ) == 'no' && $category_base != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
 			$category_base = '/blog' . $category_base;
 		}
 		$wp_rewrite->set_category_base($category_base);
@@ -84,7 +84,7 @@ if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 		$tag_base = $_POST['tag_base'];
 		if (! empty($tag_base) )
 			$tag_base = preg_replace('#/+#', '/', '/' . $_POST['tag_base']);
-		if( $tag_base != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
+		if( constant( 'VHOST' ) == 'no' && $tag_base != '' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) {
 			$tag_base = '/blog' . $tag_base;
 		}
 		$wp_rewrite->set_tag_base($tag_base);
@@ -160,7 +160,7 @@ checked="checked"
 </label>
 <br />
 </p>
-<p id="customstructure"><?php _e('Custom structure'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $permalink_structure = str_replace( "/blog", "", $permalink_structure ); }?><input name="permalink_structure" id="permalink_structure" type="text" class="code" style="width: 60%;" value="<?php echo attribute_escape( $permalink_structure ); ?>" size="50" /></p>
+<p id="customstructure"><?php _e('Custom structure'); ?>: <?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $permalink_structure = str_replace( "/blog", "", $permalink_structure ); }?><input name="permalink_structure" id="permalink_structure" type="text" class="code" style="width: 60%;" value="<?php echo attribute_escape( $permalink_structure ); ?>" size="50" /></p>
 
 <h3><?php _e('Optional'); ?></h3>
 <?php if ($is_apache) : ?>
@@ -169,10 +169,10 @@ checked="checked"
 	<p><?php _e('If you like, you may enter custom bases for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <code>/topics/</code> as your category base would make your category links like <code>http://example.org/index.php/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
 <?php endif; ?>
 	<p>
-  <?php _e('Category base'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?><input name="category_base" type="text" class="code"  value="<?php echo attribute_escape( $category_base ); ?>" size="30" />
+  <?php _e('Category base'); ?>: <?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?><input name="category_base" type="text" class="code"  value="<?php echo attribute_escape( $category_base ); ?>" size="30" />
      </p>
 	  <p>
-	  <?php _e('Tag base'); ?>: <?php if( $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" class="code"  value="<?php echo attribute_escape($tag_base); ?>" size="30" />
+	  <?php _e('Tag base'); ?>: <?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" class="code"  value="<?php echo attribute_escape($tag_base); ?>" size="30" />
      </p>
     <p class="submit">
       <input type="submit" name="submit" value="<?php _e('Update Permalink Structure &raquo;') ?>" />

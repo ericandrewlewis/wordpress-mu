@@ -388,8 +388,8 @@ You can log in to the administrator account with the following information:
  Password: PASSWORD
 Login Here: BLOG_URLwp-login.php
 
-We hope you enjoy your new weblog.
- Thanks!
+We hope you enjoy your new blog.
+Thanks!
 
 --The Team @ SITE_NAME')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' )" );
@@ -404,7 +404,11 @@ We hope you enjoy your new weblog.
 	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array() );
 	update_blog_option( 1, 'template', 'home');
 	update_blog_option( 1, 'stylesheet', 'home');
-	update_blog_option( 1, 'permalink_structure', '/blog/%year%/%monthnum%/%day%/%postname%/');
+	if( constant( 'VHOST' ) == 'yes' ) {
+		update_blog_option( 1, 'permalink_structure', '/%year%/%monthnum%/%day%/%postname%/');
+	} else {
+		update_blog_option( 1, 'permalink_structure', '/blog/%year%/%monthnum%/%day%/%postname%/');
+	}
 	update_blog_option( 1, 'rewrite_rules', '');
 	$msg = "Your new WordPress MU site has been created at\nhttp://{$domain}{$base}\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$domain}{$base}wp-login.php\n";
 	wp_mail( $email, "Your new WordPress MU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
