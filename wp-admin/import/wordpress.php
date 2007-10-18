@@ -145,7 +145,7 @@ class WP_Import {
 		$formnames = array ();
 		$selectnames = array ();
 
-		foreach ($_POST['user'] as $key => $line) {
+		foreach ((array)$_POST['user'] as $key => $line) {
 			$newname = trim(stripslashes($line));
 			if ($newname == '')
 				$newname = 'left_blank'; //passing author names from step 1 to step 2 is accomplished by using POST. left_blank denotes an empty entry in the form.
