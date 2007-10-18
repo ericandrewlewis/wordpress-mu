@@ -207,7 +207,10 @@ function get_space_allowed() {
 
 function display_space_usage() {
 	$space = get_space_allowed();
-	$percentused = ( intval( get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024 ) / $space ) * 100;
+	$used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024;
+
+	if ($used > $space) $percentused = '100';
+	else $percentused = ( $used / $space ) * 100;
 
 	if( $space > 1000 ) {
 		$space = number_format( $space / 1024 );
@@ -222,23 +225,19 @@ function display_space_usage() {
 
 // Display File upload quota on dashboard
 function dashboard_quota() {	
-	$quota_mb = get_space_allowed();
-	$quota = $quota_mb * 1024 * 1024;	
-	if( $quota == 0 ) $quota=10*1024*1024;
+	$quota = get_space_allowed();
+	$used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024;
 
-	$used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
-	$remaining = $quota - $used;
+	if ($used > $quota) $percentused = '100';
+	else $percentused = ( $used / $quota ) * 100;
+
 	?>
 	<div id='spaceused'>
 		<h3><?php _e("Storage Space <a href='upload.php' title='Manage Uploads...'>&raquo;</a>"); ?></h3>
-		<p><?php _e('Total Space Avaiable:'); ?> <strong><?php echo $quota_mb.__('MB'); ?></strong></p>	
+		<p><?php _e('Total Space Avaiable:'); ?> <strong><?php echo $quota . __('MB'); ?></strong></p>	
 		<p><?php _e('Upload Space Used:'); 	
-		$quota = $quota / 1024 / 1024;
-		$size = round( ($used / 1024 / 1024) , 2);
-		$pct = round(($size / $quota)*100);
-		if ($size > $quota) $pct = '100';			
 		?>
-		<strong><?php printf(__('%1sMB (%2s%%)'), number_format($size), $pct ); ?></strong></p>
+		<strong><?php printf(__('%1sMB (%2s%%)'), round($used,2), number_format($percentused) ); ?></strong></p>
 	</div>
 	<?php
 }
