@@ -376,7 +376,7 @@ function step3() {
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'blog_upload_space', '10' )" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'fileupload_maxk', '1500' )" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'site_admins', '" . serialize( array( 'admin' ) ) . "' )" );
-	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'allowedthemes', '" . serialize( array( 'classic', 'default' ) ) . "' )" );
+	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'allowedthemes', '" . serialize( array( 'classic' => 1, 'default' => 1 ) ) . "' )" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'illegal_names', '" . serialize( array(  "www", "web", "root", "admin", "main", "invite", "administrator" ) ) . "' )" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'welcome_email', 'Dear User,
 
