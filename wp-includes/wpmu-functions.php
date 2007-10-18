@@ -1280,6 +1280,9 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 		update_blog_option( $blog_id, $key, $value );
 	}
 
+	update_blog_option( $blog_id, 'blog_public', $meta['public'] );
+	delete_blog_option( $blog_id, 'public' );
+
 	if(get_usermeta( $user_id, 'primary_blog' ) == 1 )
 		update_usermeta( $user_id, 'primary_blog', $blog_id );
 
