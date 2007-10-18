@@ -149,7 +149,7 @@ if ( $_GET['updated'] == 'true' ) {
 		//  -->
 	</script>
 
-	<form name="formlist" action='wpmu-edit.php' method='post'>
+	<form name="formlist" action='wpmu-edit.php?action=allusers' method='post'>
 		<table class="widefat" cellpadding="3" cellspacing="3">
 			<thead>
 			<tr>
