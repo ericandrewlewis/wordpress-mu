@@ -234,8 +234,8 @@ function dashboard_quota() {
 	?>
 	<div id='spaceused'>
 		<h3><?php _e("Storage Space <a href='upload.php' title='Manage Uploads...'>&raquo;</a>"); ?></h3>
-		<p><?php _e('Total Space Avaiable:'); ?> <strong><?php echo $quota . __('MB'); ?></strong></p>	
-		<p><?php _e('Upload Space Used:'); 	
+		<p><?php _e('Total space available:'); ?> <strong><?php echo $quota . __('MB'); ?></strong></p>	
+		<p><?php _e('Upload space used:'); 	
 		?>
 		<strong><?php printf(__('%1sMB (%2s%%)'), round($used,2), number_format($percentused) ); ?></strong></p>
 	</div>
