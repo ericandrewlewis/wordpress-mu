@@ -284,7 +284,6 @@ function update_site_option( $key, $value ) {
 
 	if ( is_array($value) || is_object($value) )
 		$value = serialize($value);
-	$value = $wpdb->escape( $value );
 
 	$wpdb->query( "UPDATE $wpdb->sitemeta SET meta_value = '" . $wpdb->escape( $value ) . "' WHERE site_id='{$wpdb->siteid}' AND meta_key = '$safe_key'" );
 	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
