@@ -21,7 +21,7 @@ switch( $_GET['action'] ) {
 	case "siteoptions":
 		check_admin_referer('siteoptions');
 		if( empty( $_POST ) )
-			die( "You probably need to go back to the <a href='wpmu-options.php'>options page</a>" );
+			wp_die( __("You probably need to go back to the <a href='wpmu-options.php'>options page</a>") );
 
 		update_site_option( "WPLANG", $_POST['WPLANG'] );
 		if( is_email( $_POST['admin_email'] ) )
@@ -130,7 +130,7 @@ switch( $_GET['action'] ) {
 	case "updateblog":
 		check_admin_referer('editblog');
 		if( empty( $_POST ) )
-			die( "You probably need to go back to the <a href='wpmu-blogs.php'>blogs page</a>" );
+			wp_die( __("You probably need to go back to the <a href='wpmu-blogs.php'>blogs page</a>") );
 
 		// themes
 		if( is_array( $_POST['theme'] ) ) {
