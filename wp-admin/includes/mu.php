@@ -274,4 +274,34 @@ function xmlrpc_active_setting( $id ) {
 	<?php
 }
 add_action('wpmueditblogaction', 'xmlrpc_active_setting');
+
+function update_user_status( $id, $pref, $value, $refresh = 1 ) {
+	global $wpdb;
+
+	$wpdb->query( "UPDATE {$wpdb->users} SET {$pref} = '{$value}' WHERE ID = '$id'" );
+
+	if( $refresh == 1 )
+		refresh_user_details($id);
+	
+	if( $pref == 'spam' ) {
+		if( $value == 1 ) 
+			do_action( "make_spam_user", $id );
+		else
+			do_action( "make_ham_user", $id );
+	}
+
+	return $value;
+}
+
+function refresh_user_details($id) {
+	$id = (int) $id;
+	
+	if ( !$user = get_userdata( $id ) )
+		return false;
+
+	wp_cache_delete($id, 'users');
+	wp_cache_delete($user->user_login, 'userlogins');
+	return $id;
+}
+
 ?>
