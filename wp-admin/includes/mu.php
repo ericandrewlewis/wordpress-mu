@@ -241,7 +241,8 @@ function dashboard_quota() {
 	</div>
 	<?php
 }
-add_action('activity_box_end', 'dashboard_quota');
+if( current_user_can('edit_posts') )
+	add_action('activity_box_end', 'dashboard_quota');
 
 // Edit blog upload space setting on Edit Blog page
 function upload_space_setting( $id ) {
