@@ -25,9 +25,9 @@ $allowed_themes = get_site_allowed_themes();
 		<table style="border:0; width:100%;" cellspacing="5" cellpadding="5">
 			<thead>
 			<tr>
-				<th><?php _e('Active') ?></th>
-				<th><?php _e('Theme') ?></th>
-				<th><?php _e('Description') ?></th>
+				<th style="width:15%;"><?php _e('Active') ?></th>
+				<th style="width:15%;"><?php _e('Theme') ?></th>
+				<th style="width:70%;"><?php _e('Description') ?></th>
 			</tr>
 			</thead>
 			<tbody id="the-list">
