@@ -254,7 +254,7 @@ function upload_space_setting( $id ) {
 	<input type="text" size="3" name="option[blog_upload_space]" value="<?php echo $quota; ?>" /><?php _e('MB (Leave blank for site default)'); ?><br />
 	<?php
 }
-add_filter('wpmueditblogaction', 'upload_space_setting');
+add_action('wpmueditblogaction', 'upload_space_setting');
 
 // Edit XMLRPC active setting on Edit Blog page
 function xmlrpc_active_setting( $id ) {
@@ -272,5 +272,5 @@ function xmlrpc_active_setting( $id ) {
 	<input type='radio' name='option[xmlrpc_active]' value='no' <?php if( $xmlrpc_active == "no" ) echo "checked='checked'"; ?> /> <?php _e('XMLRPC always off for this blog'); ?><br />
 	<?php
 }
-add_filter('wpmueditblogaction', 'xmlrpc_active_setting');
+add_action('wpmueditblogaction', 'xmlrpc_active_setting');
 ?>
