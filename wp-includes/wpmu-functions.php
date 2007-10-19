@@ -143,16 +143,17 @@ function get_user_details( $username ) {
 	return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login = '$username'" );
 }
 
-function get_blog_details( $id, $all = true ) {
+function get_blog_details( $id, $getall = true ) {
 	global $wpdb;
 
-	$details = wp_cache_get( $id, 'blog-details' );
+	$all = $getall == true ? '' : 'short';
+	$details = wp_cache_get( $id . $all, 'blog-details' );
 
 	if ( $details ) {
 		if ( $details == -1 )
 			return false;
 		elseif ( !is_object($details) ) // Clear old pre-serialized objects. Cache clients do better with that.
-			wp_cache_delete( $id, 'blog-details' );
+			wp_cache_delete( $id . $all, 'blog-details' );
 		else
 			return $details;
 	}
@@ -160,12 +161,12 @@ function get_blog_details( $id, $all = true ) {
 	$details = $wpdb->get_row( "SELECT * FROM $wpdb->blogs WHERE blog_id = '$id' /* get_blog_details */" );
 
 	if ( !$details ) {
-		wp_cache_set( $id, -1, 'blog-details' );
+		wp_cache_set( $id . $all, -1, 'blog-details' );
 		return false;
 	}
 
-	if ( !$all ) {
-		wp_cache_add( $id, $details, 'blog-details' );
+	if ( !$getall ) {
+		wp_cache_add( $id . $all, $details, 'blog-details' );
 		return $details;
 	}
 
@@ -177,7 +178,7 @@ function get_blog_details( $id, $all = true ) {
 
 	$details = apply_filters('blog_details', $details);
 
-	wp_cache_set( $id, $details, 'blog-details' );
+	wp_cache_set( $id . $all, $details, 'blog-details' );
 
 	$key = md5( $details->domain . $details->path );
 	wp_cache_set( $key, $details, 'blog-lookup' );
