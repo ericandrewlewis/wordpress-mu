@@ -74,7 +74,7 @@ if (isset($_GET['updated'])) {
 					<th scope="row"><?php _e('Enable posting by XMLRPC') ?></th>  
 					<?php 
 					if( !get_site_option('xmlrpc_active') ) 
-						update_site_option( 'xmlrpc_active', 'no' ); 
+						update_site_option( 'xmlrpc_active', 'yes' ); 
 					?> 
 					<td>
 						<input name="xmlrpc_active" type="radio" id="xmlrpc_active1" value='yes' <?php echo get_site_option('xmlrpc_active') == 'yes' ? 'checked="checked"' : ''; ?> /> <?php _e('Yes'); ?><br /> 
