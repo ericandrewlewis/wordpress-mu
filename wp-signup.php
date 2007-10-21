@@ -201,6 +201,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 
 function validate_another_blog_signup() {
 	global $current_user, $blog_id, $blog_title, $errors, $domain, $path;
+	$current_user = wp_get_current_user();
 	if( !is_user_logged_in() ) {
 		die();
 	}
