@@ -163,8 +163,8 @@ if (isset($_GET['updated'])) {
 			<legend><?php _e('Site Wide Settings <em>(These settings may be overridden by blog owners)</em>') ?></legend> 
 			<table width="100%" cellspacing="2" cellpadding="5" class="editform"> 
 				<?php
-				$lang_files = glob( ABSPATH . LANGDIR . "/*.mo" );
-				$lang = get_site_option( "WPLANG" );
+				$lang_files = glob( ABSPATH . LANGDIR . '/*.mo' );
+				$lang = get_site_option('WPLANG');
 				if( is_array( $lang_files ) ) {
 					?>
 					<tr valign="top"> 
@@ -172,12 +172,10 @@ if (isset($_GET['updated'])) {
 						<td>
 							<select name="WPLANG" id="WPLANG">
 							<?php
-							echo "<option value=''>".__('Default')."</option>";
+							echo '<option value=""'.((empty($lang)) ? ' selected="selected"' : '').'>'.__('English')."</option>";
 							foreach ( (array) $lang_files as $key => $val ) {
-								$l = basename( $val, ".mo" );
-								echo "<option value='$l'";
-								echo $lang == $l ? " selected='selected'" : "";
-								echo "> $l</option>";
+								$code_lang = basename( $val, '.mo' );
+								echo '<option value="'.$code_lang.'"'.(($lang == $code_lang) ? ' selected="selected"' : '').'> '.format_code_lang($code_lang).'</option>';
 							}
 							?>
 							</select>
@@ -198,7 +196,7 @@ if (isset($_GET['updated'])) {
 				</tr>
 				<?php
 				$menu_perms = get_site_option( "menu_items" );
-				$menu_items = array( "plugins" );
+				$menu_items = array('plugins');
 				foreach ( (array) $menu_items as $key => $val ) {
 					$checked = ( $menu_perms[$val] == '1' ) ? ' checked="checked"' : '';
 					echo "<tr><th scope='row'>" . ucfirst( $val ) . "</th><td><input type='checkbox' name='menu_items[" . $val . "]' value='1'" . $checked . " /></td></tr>"; 

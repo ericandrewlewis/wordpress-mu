@@ -40,26 +40,26 @@ include('./admin-header.php');
 </tr>
 
 <?php
-$lang_files = glob( ABSPATH . LANGDIR . "/*" );
-$lang = get_option( "WPLANG" );
+$lang_files = glob( ABSPATH . LANGDIR . '/*.mo' );
+$lang = get_option('WPLANG');
 
-if( is_array( $lang_files ) && count($lang_files) >= 1 ) {
+if( is_array( $lang_files ) ) {
 	?>
 	<tr valign="top"> 
-	<th width="33%" scope="row"><?php _e('Language:') ?></th> 
-	<td><select name="WPLANG" id="WPLANG">
+		<th width="33%" scope="row"><?php _e('Blog language:') ?></th> 
+		<td>
+			<select name="WPLANG" id="WPLANG">
+				<?php
+				echo '<option value=""'.((empty($lang)) ? 'selected="selected"': '').'>'.__('English').'</option>';
+				foreach ( (array) $lang_files as $key => $val ) {
+					$code_lang = basename( $val, '.mo' );
+					echo '<option value="'.$code_lang.'"'.(($lang == $code_lang) ? ' selected="selected"' : '').'> '.format_code_lang($code_lang).'</option>';
+				}
+				?>
+			</select>
+		</td>
+	</tr> 
 	<?php
-	echo "<option value=''>Default</option>";
-	while( list( $key, $val ) = each( $lang_files ) ) { 
-		$l = basename( $val, ".mo" );
-		echo "<option value='$l'";
-		echo $lang == $l ? " selected" : "";
-		echo "> $l</option>";
-	}
-	?>
-		</select></td>
-		</tr> 
-		<?php
 } // languages
 ?>
 </table> 
