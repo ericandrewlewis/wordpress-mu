@@ -278,6 +278,7 @@ if ( $_GET['updated'] == 'true' ) {
 				<th style="text-align:center;" scope='row'><?php _e('Email') ?></th>
 				<td><input type="text" name="user[email]" /></td>
 			</tr>
+			<tr><td colspan='2'><?php _e('Username and password will be mailed to the above email address.') ?></td></tr>
 		</table>
 		<p>
 			<?php wp_nonce_field('add-user') ?>

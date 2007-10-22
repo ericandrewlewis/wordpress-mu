@@ -85,45 +85,46 @@ switch( $_GET['action'] ) {
 	case "addblog":
 		check_admin_referer('add-blog');
 
-		if( is_array( $_POST['blog'] ) == true ) {
-			$blog = $_POST['blog'];
-			$domain = strtolower( wp_specialchars( $blog['domain'] ) );
-			$email = wp_specialchars( $blog['email'] );
-			if( !is_email( $email ) ) 
-                wp_die( __("<p>Invalid email address</p>") ); 
-			
-			if( constant( "VHOST" ) == 'yes' ) {
-				$newdomain = $domain.".".$current_site->domain;
-				$path = $base;
-			} else {
-				$newdomain = $current_site->domain;
-				$path = $base.$domain.'/';
-			}
+		$blog = $_POST['blog'];
+		$domain = strtolower( wp_specialchars( $blog['domain'] ) );
+		$email = wp_specialchars( $blog['email'] );
+		
+		if ( empty($domain) || empty($email))
+			wp_die( __("<p>Missing blog address or email address.</p>") );
+		if( !is_email( $email ) ) 
+			wp_die( __("<p>Invalid email address</p>") ); 
+		
+		if( constant( "VHOST" ) == 'yes' ) {
+			$newdomain = $domain.".".$current_site->domain;
+			$path = $base;
+		} else {
+			$newdomain = $current_site->domain;
+			$path = $base.$domain.'/';
+		}
 
-			$user_id = email_exists($email);
-			if( !$user_id ) { // I'm not sure what this check should be.
-				$password = generate_random_password();
-				$user_id = wpmu_create_user( $domain, $password, $email );
-				if(false == $user_id) {
-					wp_die( __("<p>There was an error creating the user</p>") );
-				} else {
-					wp_new_user_notification($user_id, $password);
-				}
-			}
-
-			$wpdb->hide_errors();
-			$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
-			$wpdb->show_errors();
-			if( !is_wp_error($blog_id) ) {
-				if( get_user_option( $user_id, 'primary_blog' ) == 1 )
-					update_user_option( $user_id, 'primary_blog', $blog_id, true );
-				$content_mail = sprintf(__("New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
-				wp_mail( get_site_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <' . get_site_option( 'admin_email' ) . '>' );
-				wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add-blog'), $_SERVER['HTTP_REFERER'] ) );
-				exit();
+		$user_id = email_exists($email);
+		if( !$user_id ) {
+			$password = generate_random_password();
+			$user_id = wpmu_create_user( $domain, $password, $email );
+			if(false == $user_id) {
+				wp_die( __("<p>There was an error creating the user</p>") );
 			} else {
-				die( $blog_id->get_error_message() );
+				wp_new_user_notification($user_id, $password);
 			}
+		}
+
+		$wpdb->hide_errors();
+		$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
+		$wpdb->show_errors();
+		if( !is_wp_error($blog_id) ) {
+			if( get_user_option( $user_id, 'primary_blog' ) == 1 )
+				update_user_option( $user_id, 'primary_blog', $blog_id, true );
+			$content_mail = sprintf(__("New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
+			wp_mail( get_site_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <' . get_site_option( 'admin_email' ) . '>' );
+			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add-blog'), $_SERVER['HTTP_REFERER'] ) );
+			exit();
+		} else {
+			die( $blog_id->get_error_message() );
 		}
 	break;
 	
@@ -402,24 +403,24 @@ switch( $_GET['action'] ) {
 	case "adduser":
 		check_admin_referer('add-user');
 
-		if( is_array( $_POST['user'] ) == true ) {
-			$user = $_POST['user'];
-			if ( empty($user['username']) && empty($user['email']) ) {
-				wp_die( __("<p>Missing username and email.</p>") );
-			} elseif ( empty($user['username']) ) {
-				wp_die( __("<p>Missing username.</p>") );
-			} elseif ( empty($user['email']) ) {
-				wp_die( __("<p>Missing email.</p>") );
-			}
-			
-			$password = generate_random_password();
-			$user_id = wpmu_create_user(wp_specialchars( strtolower( $user['username'] ) ), $password, wp_specialchars( $user['email'] ) );
-			if( false == $user_id ) {
-				wp_die( __("<p>There was an error creating the user</p>") );
-			} else {
-				wp_new_user_notification($user_id, $password);
-			}
+		$user = $_POST['user'];
+		if ( empty($user['username']) && empty($user['email']) ) {
+			wp_die( __("<p>Missing username and email.</p>") );
+		} elseif ( empty($user['username']) ) {
+			wp_die( __("<p>Missing username.</p>") );
+		} elseif ( empty($user['email']) ) {
+			wp_die( __("<p>Missing email.</p>") );
 		}
+
+		$password = generate_random_password();
+		$user_id = wpmu_create_user(wp_specialchars( strtolower( $user['username'] ) ), $password, wp_specialchars( $user['email'] ) );
+
+		if( false == $user_id ) {
+ 			wp_die( __("<p>Duplicated username or email address.</p>") );
+		} else {
+			wp_new_user_notification($user_id, $password);
+		}
+
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add'), $_SERVER['HTTP_REFERER'] ) );
 		exit();
 	break;

@@ -631,6 +631,7 @@ switch( $_GET['action'] ) {
 					<tr><th style="text-align:center;" scope='row'><?php _e('Blog Title') ?></th><td><input name="blog[title]" type="text" size="20" title="<?php _e('Title') ?>"/></td></tr>
 					<tr><th style="text-align:center;" scope='row'><?php _e('Admin Email') ?></th><td><input name="blog[email]" type="text" size="20" title="<?php _e('Email') ?>"/></td></tr>
 					<tr><td colspan='2'><?php _e('A new user will be created if the above email address is not in the database.') ?></td></tr>
+					<tr><td colspan='2'><?php _e('The username and password will be mailed to this email address.') ?></td></tr>
 				</table>
 				<input class="button" type="submit" name="go" value="<?php _e('Add Blog') ?>" />
 			</form>
