@@ -1,4 +1,5 @@
 <?php
+
 function wpmu_delete_blog($blog_id, $drop = false) {
 	global $wpdb, $wpmuBaseTablePrefix;
 
@@ -327,9 +328,10 @@ function wpmu_checkAvailableSpace() {
 	$size = $size / 1024 / 1024;
 
 	if( ($spaceAllowed - $size) <= 0 ) {
-		wp_die( __( 'Sorry, you need to delete some files before you can upload any more.' ) );
+		define( 'DISABLE_UPLOADS', true );
+		define( 'DISABLE_UPLOADS_MESSAGE', 'Sorry, you must delete files before you can upload any more, or <a target="_new" href="paid-upgrades.php">buy more space</a>' );
 	}
 }
-add_filter('upload_files_upload','wpmu_checkAvailableSpace');
+add_action('upload_files_upload','wpmu_checkAvailableSpace');
 
 ?>

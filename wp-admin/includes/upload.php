@@ -102,6 +102,13 @@ function wp_upload_view() {
 }
 
 function wp_upload_form() {
+	if ( defined('DISABLE_UPLOADS') && constant('DISABLE_UPLOADS') ) {
+		if ( defined('DISABLE_UPLOADS_MESSAGE') && constant('DISABLE_UPLOADS_MESSAGE') ) {
+			return print(__(DISABLE_UPLOADS_MESSAGE));
+		} else {
+			return print(__('Sorry, uploads are temporarily disabled.'));
+		}
+	}
 	$id = get_the_ID();
 	global $post_id, $tab, $style;
 	$enctype = $id ? '' : ' enctype="multipart/form-data"';
@@ -194,6 +201,13 @@ function wp_upload_tab_upload_action() {
 
 	switch ( $action ) :
 	case 'upload' :
+		if ( defined('DISABLE_UPLOADS') && constant('DISABLE_UPLOADS') ) {
+	                if ( defined('DISABLE_UPLOADS_MESSAGE') && constant('DISABLE_UPLOADS_MESSAGE') ) {
+	                        return die(__(DISABLE_UPLOADS_MESSAGE));
+	                } else {
+	                        return die(__('Sorry, uploads are temporarily disabled.'));
+	                }
+		}
 		global $from_tab, $post_id, $style;
 		if ( !$from_tab )
 			$from_tab = 'upload';
