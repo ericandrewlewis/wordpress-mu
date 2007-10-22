@@ -186,7 +186,9 @@ switch( $_GET['action'] ) {
 		if( is_array( $_POST['blogusers'] ) ) {
 			reset( $_POST['blogusers'] );
 			foreach ( (array) $_POST['blogusers'] as $key => $val ) {
-				$wpdb->query( "DELETE FROM " . $wpdb->usermeta . " WHERE meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities' AND user_id = '" . $key . "'" );
+				delete_usermeta( $key, $wpmuBaseTablePrefix.$id.'_capabilities' );
+				delete_usermeta( $key, $wpmuBaseTablePrefix.$id.'_user_level' );
+				delete_usermeta( $key, 'primary_blog', $id ); // Delete primary blog if need.
 			}
 		}
 
@@ -402,9 +404,14 @@ switch( $_GET['action'] ) {
 
 		if( is_array( $_POST['user'] ) == true ) {
 			$user = $_POST['user'];
-			if ( empty($user['username']) || empty($user['email']) ) {
+			if ( empty($user['username']) && empty($user['email']) ) {
 				wp_die( __("<p>Missing username and email.</p>") );
-			}			
+			} elseif ( empty($user['username']) ) {
+				wp_die( __("<p>Missing username.</p>") );
+			} elseif ( empty($user['email']) ) {
+				wp_die( __("<p>Missing email.</p>") );
+			}
+			
 			$password = generate_random_password();
 			$user_id = wpmu_create_user(wp_specialchars( strtolower( $user['username'] ) ), $password, wp_specialchars( $user['email'] ) );
 			if( false == $user_id ) {

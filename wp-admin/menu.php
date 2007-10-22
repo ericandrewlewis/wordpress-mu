@@ -150,15 +150,30 @@ unset($id);
 
 uksort($menu, "strnatcasecmp"); // make it all pretty
 
-if (! user_can_access_admin_page()) {
-	global $wpdb;
+if ( !user_can_access_admin_page() ) {
 	// find the blog of this user first
-	$primary_blog = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '$user_ID' AND meta_key = 'primary_blog'" );
-	if( $primary_blog ) {
+	$primary_blog = (int) get_usermeta( $user_ID, 'primary_blog' );
+	if( $primary_blog != 0 ) {
+		global $wpdb;
 		$newblog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$primary_blog}'" );
 		if( $newblog != null ) {
-			header( "Location: http://" . $newblog->domain . $newblog->path . "wp-admin/" );
-			exit;
+			$blogs = get_blogs_of_user( $user_ID );
+			if ( empty($blogs) || $blogs == false ) { // If user haven't any blog
+				update_usermeta( $user_ID, 'wp_1_capabilities', array('subscriber' => true)); // Add subscriber permission for first blog.
+				wp_redirect( 'http://'.$current_site->domain . $current_site->path. 'wp-admin/' );
+				exit();
+			}
+
+			foreach ( (array) $blogs as $blog ) {
+				if ( $blog->userblog_id == $newblog->blog_id ) {
+					wp_redirect( 'http://'.$newblog->domain . $newblog->path . 'wp-admin/' );
+					exit();
+				}
+			}
+			
+			$blog = $blogs[0]; // Take the first blog...
+			wp_redirect( 'http://'.$blog->domain . $blog->path. 'wp-admin/' );
+			exit();
 		}
 	}
 	wp_die( __('You do not have sufficient permissions to access this page.') );
