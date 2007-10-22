@@ -147,12 +147,12 @@ define( "ERRORLOGFILE", "/tmp/mysql.log" );
 UPGRADING
 =========
 Please see this page for instructions on upgrading your install:
-http://trac.mu.wordpress.org/wiki/UpgradingWpmu
+http://codex.wordpress.org/Upgrading_WPMU
 
 
 Support Forum and Bug Reports
 =============================
-Please read http://trac.mu.wordpress.org/wiki/DebuggingWpmu before
+Please read http://codex.wordpress.org/Debugging_WPMU before
 asking any questions. Without all the information required there
 we'll just ask for it anyway or worse, your request will be ignored.
 
