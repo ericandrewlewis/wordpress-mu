@@ -26,51 +26,6 @@ add_action('private_to_published', 'wpmu_update_blogs_date');
 add_action('publish_phone', 'wpmu_update_blogs_date');
 add_action('publish_post', 'wpmu_update_blogs_date');
 
-/*
-  Determines if the available space defined by the admin has been exceeded by the user
-*/
-/**
- * Returns how much space is available (also shows a picture) for the current client blog, retrieving the value from the master blog 'main' option table
- *
- * @param string $action
- * @return string
- */
-function wpmu_checkAvailableSpace($action) {
-	// Using the action.
-	// Set the action to 'not-writable' to block the upload
-
-	// Default space allowed is 10 MB
-	$spaceAllowed = get_site_option( "blog_upload_space" );
-	if( $spaceAllowed == false )
-		$spaceAllowed = 10;
-
-	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
-  	$dir = dir($dirName);
-   	$size = 0;
-
-	while($file = $dir->read()) {
-		if ($file != '.' && $file != '..') {
-			if (is_dir($file)) {
-	           $size += dirsize($dirName . '/' . $file);
-	       } else {
-	           $size += filesize($dirName . '/' . $file);
-	       }
-	   }
-	}
-	$dir->close();
-	$size = $size / 1024 / 1024;
-	$spaceAvailable = sprintf( "%2.2f", ( ($spaceAllowed-$size) ) );
-	echo sprintf(__('Space Available (<i>%2.2fMB</i>)'), $spaceAvailable);
-
-	if (($spaceAllowed-$size)>0) {
-		return $action;
-	} else {
-		// No space left
-		return 'not-writable';
-	}
-}
-add_filter('fileupload_init','wpmu_checkAvailableSpace');
-
 function get_blogaddress_by_id( $blog_id ) {
 	$bloginfo = get_blog_details( (int) $blog_id, false ); // only get bare details!
 	return "http://" . $bloginfo->domain . $bloginfo->path;

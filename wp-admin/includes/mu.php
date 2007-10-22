@@ -304,4 +304,32 @@ function refresh_user_details($id) {
 	return $id;
 }
 
+/*
+  Determines if the available space defined by the admin has been exceeded by the user
+*/
+function wpmu_checkAvailableSpace() {
+	$spaceAllowed = get_space_allowed(); 
+
+	$dirName = trailingslashit( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
+  	$dir = dir($dirName);
+   	$size = 0;
+
+	while($file = $dir->read()) {
+		if ($file != '.' && $file != '..') {
+			if (is_dir( $dirName . $file)) {
+				$size += get_dirsize($dirName . $file);
+			} else {
+				$size += filesize($dirName . $file);
+			}
+		}
+	}
+	$dir->close();
+	$size = $size / 1024 / 1024;
+
+	if( ($spaceAllowed - $size) <= 0 ) {
+		wp_die( __( 'Sorry, you need to delete some files before you can upload any more.' ) );
+	}
+}
+add_filter('upload_files_upload','wpmu_checkAvailableSpace');
+
 ?>
