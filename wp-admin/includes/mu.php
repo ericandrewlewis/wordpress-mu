@@ -312,6 +312,9 @@ function wpmu_checkAvailableSpace() {
 	$spaceAllowed = get_space_allowed(); 
 
 	$dirName = trailingslashit( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
+	if (!(is_dir($dir) && is_readable($dir))) 
+		return; 
+
   	$dir = dir($dirName);
    	$size = 0;
 
