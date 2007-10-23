@@ -628,4 +628,3 @@ var TinyMCE_SpellCheckerPlugin = {
 
 // Register plugin
 tinyMCE.addPlugin('spellchecker', TinyMCE_SpellCheckerPlugin);
-

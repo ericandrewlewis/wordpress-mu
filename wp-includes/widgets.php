@@ -18,9 +18,7 @@ function register_sidebars($number = 1, $args = array()) {
 	if ( is_string($args) )
 		parse_str($args, $args);
 
-	$i = 1;
-
-	while ( $i <= $number ) {
+	for ( $i=1; $i <= $number; $i++ ) {
 		$_args = $args;
 		if ( $number > 1 ) {
 			$_args['name'] = isset($args['name']) ? $args['name'] : sprintf(__('Sidebar %d'), $i);
@@ -29,7 +27,6 @@ function register_sidebars($number = 1, $args = array()) {
 		}
 		$_args['id'] = isset($args['id']) ? $args['id'] : "sidebar-$i";
 		register_sidebar($_args);
-		++$i;
 	}
 }
 
@@ -630,7 +627,7 @@ function wp_widget_categories($args, $number = 1) {
 		wp_dropdown_categories($cat_args . '&show_option_none= ' . __('Select Category'));
 ?>
 
-<script lang='javascript'><!--
+<script type='text/javascript'><!--
     var dropdown = document.getElementById("cat");
     function onCatChange() {
 		if ( dropdown.options[dropdown.selectedIndex].value > 0 ) {
@@ -786,7 +783,7 @@ function wp_widget_categories_register() {
 	}
 
 	$dims = array( 'width' => 350, 'height' => 170 );
-	$class = array( 'classname' => 'widget_catgories' );
+	$class = array( 'classname' => 'widget_categories' );
 
 	for ( $i = 1; $i <= 9; $i++ ) {
 		$name = sprintf( __( 'Categories %d' ), $i );
@@ -1001,7 +998,7 @@ function wp_widget_rss_control($number) {
 	$options = $newoptions = get_option('widget_rss');
 	if ( $_POST["rss-submit-$number"] ) {
 		$newoptions[$number]['items'] = (int) $_POST["rss-items-$number"];
-		$url = clean_url(strip_tags(stripslashes($_POST["rss-url-$number"])));
+		$url = sanitize_url(strip_tags(stripslashes($_POST["rss-url-$number"])));
 		$newoptions[$number]['title'] = trim(strip_tags(stripslashes($_POST["rss-title-$number"])));
 		if ( $url !== $options[$number]['url'] ) {
 			require_once(ABSPATH . WPINC . '/rss.php');

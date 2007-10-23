@@ -322,6 +322,39 @@ class wpdb {
 	}
 
 	/**
+	 * Insert an array of data into a table
+	 * @param string $table WARNING: not sanitized!
+	 * @param array $data should not already be SQL-escaped
+	 * @return mixed results of $this->query()
+	 */
+	function insert($table, $data) {
+		$data = add_magic_quotes($data);
+		$fields = array_keys($data);
+		return $this->query("INSERT INTO $table (`" . implode('`,`',$fields) . "`) VALUES ('".implode("','",$data)."')");
+	}
+
+	/**
+	 * Update a row in the table with an array of data
+	 * @param string $table WARNING: not sanitized!
+	 * @param array $data should not already be SQL-escaped
+	 * @param array $where a named array of WHERE column => value relationships.  Multiple member pairs will be joined with ANDs.  WARNING: the column names are not currently sanitized!
+	 * @return mixed results of $this->query()
+	 */
+	function update($table, $data, $where){
+		$data = add_magic_quotes($data);
+		$bits = $wheres = array();
+		foreach ( array_keys($data) as $k )
+			$bits[] = "`$k` = '$data[$k]'";
+
+		if ( is_array( $where ) )
+			foreach ( $where as $c => $v )
+				$wheres[] = "$c = '" . $this->escape( $v ) . "'";
+		else
+			return false;
+		return $this->query( "UPDATE $table SET " . implode( ', ', $bits ) . ' WHERE ' . implode( ' AND ', $wheres ) . ' LIMIT 1' );
+	}
+
+	/**
 	 * Get one variable from the database
 	 * @param string $query (can be null as well, for caching, see codex)
 	 * @param int $x = 0 row num to return
@@ -472,65 +505,28 @@ class wpdb {
 	function bail($message) { // Just wraps errors in a nice header and footer
 		if ( !$this->show_errors )
 			return false;
-
-		header('Content-Type: text/html; charset=utf-8');
-
-		if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false)
-			$admin_dir = '';
-		else
-			$admin_dir = 'wp-admin/';
-
-?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-	<title>WordPress &rsaquo; Error</title>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-	<style media="screen" type="text/css">
-	<!--
-	html {
-		background: #eee;
+		wp_die($message);
 	}
-	body {
-		background: #fff;
-		color: #000;
-		font-family: Georgia, "Times New Roman", Times, serif;
-		margin-left: 25%;
-		margin-right: 25%;
-		padding: .2em 2em;
+	/**
+	 * Checks wether of not the database version is high enough to support the features WordPress uses
+	 * @global $wp_version
+	 */
+	function check_database_version()
+	{
+		global $wp_version;
+		// Make sure the server has MySQL 4.0
+		$mysql_version = preg_replace('|[^0-9\.]|', '', @mysql_get_server_info());
+		if ( version_compare($mysql_version, '4.0.0', '<') )
+			return new WP_Error('database_version',sprintf(__('<strong>ERROR</strong>: WordPress %s requires MySQL 4.0.0 or higher'), $wp_version));
 	}
 
-	h1 {
-		color: #006;
-		font-size: 18px;
-		font-weight: lighter;
-	}
-
-	h2 {
-		font-size: 16px;
-	}
-
-	p, li, dt {
-		line-height: 140%;
-		padding-bottom: 2px;
-	}
-
-	ul, ol {
-		padding: 5px 5px 5px 20px;
-	}
-	#logo {
-		margin-bottom: 2em;
-	}
-	-->
-	</style>
-</head>
-<body>
-	<h1 id="logo"><img alt="WordPress" src="<?php echo $admin_dir; ?>images/wordpress-logo.png" /></h1>
-	<p><?php echo $message; ?></p>
-</body>
-</html>
-<?php
-		die();
+	/**
+	 * This function is called when WordPress is generating the table schema to determine wether or not the current database
+	 * supports or needs the collation statements.
+	 */
+	function supports_collation()
+	{
+		return ( version_compare(mysql_get_server_info(), '4.1.0', '>=') );
 	}
 }
 

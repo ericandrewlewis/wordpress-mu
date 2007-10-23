@@ -45,10 +45,10 @@ switch ($step) {
 <p style="clear: both; margin-top: 1em;"><?php _e('Now select a category you want to put these links in.') ?><br />
 <?php _e('Category:') ?> <select name="cat_id">
 <?php
-$categories = get_categories('hide_empty=0');
+$categories = get_terms('link_category', 'get=all');
 foreach ($categories as $category) {
 ?>
-<option value="<?php echo $category->cat_ID; ?>"><?php echo wp_specialchars(apply_filters('link_category', $category->cat_name)); ?></option>
+<option value="<?php echo $category->term_id; ?>"><?php echo wp_specialchars(apply_filters('link_category', $category->name)); ?></option>
 <?php
 } // end foreach
 ?>
@@ -98,7 +98,7 @@ foreach ($categories as $category) {
 			} else {
 				$opml = file_get_contents($opml_url);
 			}
-			
+
 			include_once('link-parse-opml.php');
 
 			$link_count = count($names);
@@ -123,7 +123,7 @@ else
 } // end else
 
 if ( ! $blogrolling )
-	apply_filters( 'wp_delete_file', $opml_url); 
+	apply_filters( 'wp_delete_file', $opml_url);
 	@unlink($opml_url);
 ?>
 </div>

@@ -168,7 +168,7 @@ class WP_Object_Cache {
 			return false;
 		}
 
-		$cache_file = $this->cache_dir.$this->get_group_dir($group_key)."/".$this->hash($hash).'.php';
+		$cache_file = $this->cache_dir.$this->get_group_dir($group_key)."/".$this->hash($id).'.php';
 		if (!file_exists($cache_file)) {
 			$this->non_existant_objects[$hash] = true;
 			$this->cache_misses += 1;
@@ -289,7 +289,7 @@ class WP_Object_Cache {
 		if (empty ($group))
 			$group = 'default';
 
-		if (NULL == $data)
+		if (NULL === $data)
 			$data = '';
 
 		$this->cache[$hash] = $data;
@@ -331,6 +331,9 @@ class WP_Object_Cache {
 		// Loop over dirty objects and save them.
 		$errors = 0;
 		foreach ($this->dirty_objects as $group => $ids) {
+			if ( in_array($group, $this->non_persistent_groups) )
+				continue;
+
 			$group_dir = $this->make_group_dir($group, $dir_perms);
 
 			$ids = array_unique($ids);

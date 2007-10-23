@@ -3,8 +3,7 @@
 function get_bookmark($bookmark_id, $output = OBJECT, $filter = 'raw') {
 	global $wpdb;
 
-	$bookmark_id = (int) $bookmark_id;
-	$link = $wpdb->get_row("SELECT * FROM $wpdb->links WHERE link_id = '$bookmark_id' LIMIT 1");
+	$link = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->links WHERE link_id = %d LIMIT 1", $bookmark_id));
 	$link->link_category = array_unique( wp_get_object_terms($link_id, 'link_category', 'fields=ids') );
 
 	$link = sanitize_bookmark($link, $filter);
@@ -113,7 +112,7 @@ function get_bookmarks($args = '') {
 	}
 	if (!empty($category_query)) {
 		$category_query .= ") AND taxonomy = 'link_category'";
-		$join = " LEFT JOIN $wpdb->term_relationships AS tr ON ($wpdb->links.link_id = tr.object_id) LEFT JOIN $wpdb->term_taxonomy as tt ON tt.term_taxonomy_id = tr.term_taxonomy_id";
+		$join = " INNER JOIN $wpdb->term_relationships AS tr ON ($wpdb->links.link_id = tr.object_id) INNER JOIN $wpdb->term_taxonomy as tt ON tt.term_taxonomy_id = tr.term_taxonomy_id";
 	}
 
 	if (get_option('links_recently_updated_time')) {

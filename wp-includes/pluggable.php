@@ -60,7 +60,7 @@ endif;
 if ( !function_exists('get_userdata') ) :
 function get_userdata( $user_id ) {
 	global $wpdb, $cache_userdata, $wpmuBaseTablePrefix;
-	$user_id = (int) $user_id;
+	$user_id = abs(intval($user_id));
 	if ( $user_id == 0 )
 		return false;
 
@@ -76,16 +76,16 @@ function get_userdata( $user_id ) {
 		return $user;
 	}
 
-	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id'") )
+	if ( !$user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->users WHERE ID = %d LIMIT 1", $user_id)) )
 		return false;
 
-	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id' /* pluggable get_userdata */");
+	$wpdb->hide_errors();
+	$metavalues = $wpdb->get_results($wpdb->prepare("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = %d", $user_id));
+	$wpdb->show_errors();
 
 	if ($metavalues) {
 		foreach ( $metavalues as $meta ) {
-			@ $value = unserialize($meta->meta_value);
-			if ($value === FALSE)
-				$value = $meta->meta_value;
+			$value = maybe_unserialize($meta->meta_value);
 			$user->{$meta->meta_key} = $value;
 
 			// We need to set user_level from meta, not row
@@ -94,6 +94,14 @@ function get_userdata( $user_id ) {
 		} // end foreach
 	} //end if
 
+	// For backwards compat.
+	if ( isset($user->first_name) )
+		$user->user_firstname = $user->first_name;
+	if ( isset($user->last_name) )
+		$user->user_lastname = $user->last_name;
+	if ( isset($user->description) )
+		$user->user_description = $user->description;
+
 	if( is_site_admin( $user->user_login ) == true ) {
 	    $user->user_level = 10;
 	    $cap_key = $wpdb->prefix . 'capabilities';
@@ -101,8 +109,7 @@ function get_userdata( $user_id ) {
 	}
 
 	wp_cache_add($user_id, $user, 'users');
-	wp_cache_add($user->user_login, $user, 'userlogins');
-
+	wp_cache_add($user->user_login, $user_id, 'userlogins');
 	return $user;
 }
 endif;
@@ -121,7 +128,8 @@ function get_userdatabylogin($user_login) {
 	if ( empty( $user_login ) )
 		return false;
 
-	$userdata = wp_cache_get($user_login, 'userlogins');
+	$user_id = wp_cache_get($user_login, 'userlogins');
+	$userdata = wp_cache_get($user_id, 'users');
 
 	if( $userdata && is_site_admin( $user_login ) == true ) {
 		$userdata->user_level = 10;
@@ -131,32 +139,15 @@ function get_userdatabylogin($user_login) {
 	} elseif( $userdata )
 		return $userdata;
 
-	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE user_login = '$user_login'") )
+	if ( !$user_ID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->users WHERE user_login = %s", $user_login)) )
 		return false;
 
-	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user->ID'");
-
-	if ($metavalues) {
-		foreach ( $metavalues as $meta ) {
-			@ $value = unserialize($meta->meta_value);
-			if ($value === FALSE)
-				$value = $meta->meta_value;
-			$user->{$meta->meta_key} = $value;
-
-			// We need to set user_level from meta, not row
-			if ( $wpdb->prefix . 'user_level' == $meta->meta_key )
-				$user->user_level = $meta->meta_value;
-		}
-	}
+	$user = get_userdata($user_ID);
 	if( is_site_admin( $user_login ) == true ) {
 		$user->user_level = 10;
 		$cap_key = $wpdb->prefix . 'capabilities';
 		$user->{$cap_key} = array( 'administrator' => '1' );
 	}
-
-	wp_cache_add($user->ID, $user, 'users');
-	wp_cache_add($user->user_login, $user, 'userlogins');
-
 	return $user;
 }
 endif;
@@ -255,6 +246,7 @@ function wp_mail( $to, $subject, $message, $headers = '' ) {
 
 	// Set the from name and email
 	$phpmailer->From = apply_filters( 'wp_mail_from', $from_email );
+	$phpmailer->Sender = apply_filters( 'wp_mail_from', $from_email );
 	$phpmailer->FromName = apply_filters( 'wp_mail_from_name', $from_name );
 
 	// Set destination address
@@ -320,10 +312,8 @@ function wp_login($username, $password, $already_md5 = false) {
 		return false;
 	}
 
-	if ($current_user->data->user_login == $username)
-		return true;
-
 	$login = get_userdatabylogin($username);
+	//$login = $wpdb->get_row("SELECT ID, user_login, user_pass FROM $wpdb->users WHERE user_login = '$username'");
 
 	if (!$login) {
 		if( is_site_admin( $username ) ) {
@@ -334,17 +324,17 @@ function wp_login($username, $password, $already_md5 = false) {
 		} else {
 			$admins = get_admin_users_for_domain();
 			reset( $admins );
-			while( list( $key, $val ) = each( $admins ) ) { 
-				if( $val[ 'user_login' ] == $username ) {
+			foreach( $admins as $admin ) {
+				if( $admin[ 'user_login' ] == $username ) {
 					unset( $login );
 					$login->user_login = $username;
-					$login->user_pass  = $val[ 'user_pass' ];
+					$login->user_pass  = $admin[ 'user_pass' ];
 				}
 			}
 		}
 	}
 	if (!$login) {
-		$error = __('<strong>Error</strong>: Wrong username.');
+		$error = __('<strong>ERROR</strong>: Invalid username.');
 		return false;
 	} else {
 		if( is_site_admin( $username ) == false && ( $primary_blog = get_usermeta( $login->ID, "primary_blog" ) ) ) {
@@ -359,7 +349,7 @@ function wp_login($username, $password, $already_md5 = false) {
 		if ( ($already_md5 && $login->user_login == $username && md5($login->user_pass) == $password) || ($login->user_login == $username && $login->user_pass == md5($password)) ) {
 			return true;
 		} else {
-			$error = __('<strong>Error</strong>: Incorrect password.');
+			$error = __('<strong>ERROR</strong>: Incorrect password.');
 			$pwd = '';
 			return false;
 		}
@@ -406,23 +396,26 @@ function check_admin_referer($action = -1) {
 }endif;
 
 if ( !function_exists('check_ajax_referer') ) :
-function check_ajax_referer() {
-	$current_name = '';
-	if ( ( $current = wp_get_current_user() ) && $current->ID )
-		$current_name = $current->data->user_login;
-	if ( !$current_name )
-		die('-1');
+function check_ajax_referer( $action = -1 ) {
+	$nonce = $_REQUEST['_ajax_nonce'] ? $_REQUEST['_ajax_nonce'] : $_REQUEST['_wpnonce'];
+	if ( !wp_verify_nonce( $nonce, $action ) ) {
+		$current_name = '';
+		if ( ( $current = wp_get_current_user() ) && $current->ID )
+			$current_name = $current->data->user_login;
+		if ( !$current_name )
+			die('-1');
 
-	$cookie = explode('; ', urldecode(empty($_POST['cookie']) ? $_GET['cookie'] : $_POST['cookie'])); // AJAX scripts must pass cookie=document.cookie
-	foreach ( $cookie as $tasty ) {
-		if ( false !== strpos($tasty, USER_COOKIE) )
-			$user = substr(strstr($tasty, '='), 1);
-		if ( false !== strpos($tasty, PASS_COOKIE) )
-			$pass = substr(strstr($tasty, '='), 1);
+		$cookie = explode('; ', urldecode(empty($_POST['cookie']) ? $_GET['cookie'] : $_POST['cookie'])); // AJAX scripts must pass cookie=document.cookie
+		foreach ( $cookie as $tasty ) {
+			if ( false !== strpos($tasty, USER_COOKIE) )
+				$user = substr(strstr($tasty, '='), 1);
+			if ( false !== strpos($tasty, PASS_COOKIE) )
+				$pass = substr(strstr($tasty, '='), 1);
+		}
+
+		if ( $current_name != $user || !wp_login( $user, $pass, true ) )
+			die('-1');
 	}
-
-	if ( $current_name != $user || !wp_login( $user, $pass, true ) )
-		die('-1');
 	do_action('check_ajax_referer');
 }
 endif;
@@ -494,7 +487,7 @@ function wp_safe_redirect($location, $status = 302) {
 
 	$allowed_hosts = (array) apply_filters('allowed_redirect_hosts', array($wpp['host']), $lp['host']);
 
-	if ( isset($lp['host']) && !in_array($lp['host'], $allowed_hosts) )
+	if ( isset($lp['host']) && ( !in_array($lp['host'], $allowed_hosts) && $lp['host'] != strtolower($wpp['host'])) )
 		$location = get_option('siteurl') . '/wp-admin/';
 
 	wp_redirect($location, $status);
@@ -637,8 +630,8 @@ function wp_notify_moderator($comment_id) {
 	if( get_option( "moderation_notify" ) == 0 )
 		return true;
 
-	$comment = $wpdb->get_row("SELECT * FROM $wpdb->comments WHERE comment_ID='$comment_id' LIMIT 1");
-	$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID='$comment->comment_post_ID' LIMIT 1");
+	$comment = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_ID=%d LIMIT 1", $comment_id));
+	$post = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID=%d LIMIT 1", $comment->comment_post_ID));
 
 	$comment_author_domain = @gethostbyaddr($comment->comment_author_IP);
 	$comments_waiting = $wpdb->get_var("SELECT count(comment_ID) FROM $wpdb->comments WHERE comment_approved = '0'");
