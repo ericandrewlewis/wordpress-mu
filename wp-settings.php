@@ -249,10 +249,10 @@ if( $current_site->site_name == false ) {
 	$current_site->site_name = ucfirst( $current_site->domain );
 }
 
-if( defined( "WP_INSTALLING" ) == false ) {
-	$locale = get_option( "WPLANG" );
-	if( $locale == false )
-		$locale = get_site_option( "WPLANG" );
+if( defined('WP_INSTALLING') == false ) {
+	$locale = get_option('WPLANG');
+	if( $locale === false )
+		$locale = get_site_option('WPLANG');
 }
 
 $wpdb->hide_errors();
