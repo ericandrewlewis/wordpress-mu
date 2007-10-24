@@ -2,12 +2,8 @@
 define( 'SHORTINIT', true ); // this prevents most of WP from being loaded
 require_once( dirname( dirname( __FILE__) ) . '/wp-config.php' ); // absolute includes are faster
 
-if ( 
-	$current_blog->archived == '1' || 
-	$current_blog->spam == '1' ||
-	$current_blog->deleted == '1' 
-) {
-	header("HTTP/1.1 404 Not Found");
+if ( $current_blog->archived == '1' || $current_blog->spam == '1' || $current_blog->deleted == '1' ) {
+	header('HTTP/1.1 404 Not Found');
 	die('404 &#8212; File not found.');
 }
 
@@ -55,7 +51,7 @@ function wp_check_filetype($filename, $mimes = null) {
 	$type = false;
 	$ext = false;
 
-	foreach ($mimes as $ext_preg => $mime_match) {
+	foreach ( (array)$mimes as $ext_preg => $mime_match ) {
 		$ext_preg = '!\.(' . $ext_preg . ')$!i';
 		if ( preg_match($ext_preg, $filename, $ext_matches) ) {
 			$type = $mime_match;
@@ -69,13 +65,13 @@ function wp_check_filetype($filename, $mimes = null) {
 endif;
 
 
-$file = constant( "ABSPATH" ) . constant( "UPLOADS" ) . str_replace( '..', '', $_GET[ 'file' ] );
+$file = constant( 'ABSPATH' ) . constant( 'UPLOADS' ) . str_replace( '..', '', $_GET[ 'file' ] );
 if ( !is_file( $file ) ) {
-	header("HTTP/1.1 404 Not Found");
+	header('HTTP/1.1 404 Not Found');
 	die('404 &#8212; File not found.');
 }
 
-if( function_exists( "mime_content_type" ) ) {
+if( function_exists( 'mime_content_type' ) ) {
 	$mime[ 'type' ] = mime_content_type( $file );
 } else {
 	$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
@@ -86,21 +82,20 @@ if( $mime[ 'type' ] != false ) {
 	$ext = substr( $_SERVER[ 'REQUEST_URI' ], strrpos( $_SERVER[ 'REQUEST_URI' ], '.' ) + 1 );
 	$mimetype = "image/$ext";
 }
-header( 'Content-type: ' . $mimetype ); // always send this
+@header( 'Content-type: ' . $mimetype ); // always send this
+@header( 'Content-Length: ' . filesize( $file ) );
 
-$timestamp = filemtime( $file );
-
-$last_modified = gmdate('D, d M Y H:i:s', $timestamp);
+$last_modified = gmdate('D, d M Y H:i:s', filemtime( $file ));
 $etag = '"' . md5($last_modified) . '"';
 @header( "Last-Modified: $last_modified GMT" );
 @header( 'ETag: ' . $etag );
-
-$expire = gmdate('D, d M Y H:i:s', time() + 100000000);
-@header( "Expires: $expire GMT" );
+@header( 'Expires: ' . gmdate('D, d M Y H:i:s', time() + 100000000) . ' GMT' );
 
 // Support for Conditional GET
-if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) $client_etag = stripslashes($_SERVER['HTTP_IF_NONE_MATCH']);
-else $client_etag = false;
+if (isset($_SERVER['HTTP_IF_NONE_MATCH'])) 
+	$client_etag = stripslashes($_SERVER['HTTP_IF_NONE_MATCH']);
+else
+	$client_etag = false;
 
 $client_last_modified = trim( $_SERVER['HTTP_IF_MODIFIED_SINCE']);
 // If string is empty, return 0. If not, attempt to parse into a timestamp
