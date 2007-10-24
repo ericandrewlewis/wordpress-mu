@@ -3,7 +3,7 @@ define( 'SHORTINIT', true ); // this prevents most of WP from being loaded
 require_once( dirname( dirname( __FILE__) ) . '/wp-config.php' ); // absolute includes are faster
 
 if ( $current_blog->archived == '1' || $current_blog->spam == '1' || $current_blog->deleted == '1' ) {
-	header('HTTP/1.1 404 Not Found');
+	status_header( 404 );
 	die('404 &#8212; File not found.');
 }
 
@@ -67,7 +67,7 @@ endif;
 
 $file = constant( 'ABSPATH' ) . constant( 'UPLOADS' ) . str_replace( '..', '', $_GET[ 'file' ] );
 if ( !is_file( $file ) ) {
-	header('HTTP/1.1 404 Not Found');
+	status_header( 404 );
 	die('404 &#8212; File not found.');
 }
 
@@ -107,7 +107,7 @@ $modified_timestamp = strtotime($last_modified);
 if ( ($client_last_modified && $client_etag) ?
 	 (($client_modified_timestamp >= $modified_timestamp) && ($client_etag == $etag)) :
 	 (($client_modified_timestamp >= $modified_timestamp) || ($client_etag == $etag)) ) {
-	header('HTTP/1.1 304 Not Modified');
+	status_header( 304 );
 	exit;
 }
 
