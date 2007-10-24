@@ -332,7 +332,7 @@ function wpmu_checkAvailableSpace() {
 
 	if( ($spaceAllowed - $size) <= 0 ) {
 		define( 'DISABLE_UPLOADS', true );
-		define( 'DISABLE_UPLOADS_MESSAGE', 'Sorry, you must delete files before you can upload any more, or <a target="_new" href="paid-upgrades.php">buy more space</a>' );
+		define( 'DISABLE_UPLOADS_MESSAGE', __('Sorry, you must delete files before you can upload any more.') );
 	}
 }
 add_action('upload_files_upload','wpmu_checkAvailableSpace');
