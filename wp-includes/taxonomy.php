@@ -903,7 +903,7 @@ function wp_delete_term( $term, $taxonomy, $args = array() ) {
 			return $term_obj;
 		$parent = $term_obj->parent;
 
-		$wpdb->update( $wpdb->term_taxonomy, compact( $parent ), array( 'parent' => $term_obj->term_id) + compact( $taxonomy ) );
+		$wpdb->update( $wpdb->term_taxonomy, compact( 'parent' ), array( 'parent' => $term_obj->term_id) + compact( 'taxonomy' ) );
 	}
 
 	$objects = $wpdb->get_col( $wpdb->prepare( "SELECT object_id FROM $wpdb->term_relationships WHERE term_taxonomy_id = %d", $tt_id ) );
@@ -1365,7 +1365,8 @@ function clean_object_term_cache($object_ids, $object_type) {
 		$object_ids = array($object_ids);
 
 	foreach ( $object_ids as $id )
-		wp_cache_delete($id, 'object_terms');
+		foreach ( get_object_taxonomies($object_type) as $taxonomy )
+			wp_cache_delete($id, "{$taxonomy}_relationships");
 
 	do_action('clean_object_term_cache', $object_ids, $object_type);
 }
