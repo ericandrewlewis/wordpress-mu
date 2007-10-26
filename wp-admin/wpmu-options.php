@@ -70,19 +70,6 @@ if (isset($_GET['updated'])) {
 					</td> 
 				</tr> 
 				
-				<tr valign="top">  
-					<th scope="row"><?php _e('Enable posting by XMLRPC') ?></th>  
-					<?php 
-					if( !get_site_option('xmlrpc_active') ) 
-						update_site_option( 'xmlrpc_active', 'yes' ); 
-					?> 
-					<td>
-						<input name="xmlrpc_active" type="radio" id="xmlrpc_active1" value='yes' <?php echo get_site_option('xmlrpc_active') == 'yes' ? 'checked="checked"' : ''; ?> /> <?php _e('Yes'); ?><br /> 
-						<input name="xmlrpc_active" type="radio" id="xmlrpc_active2" value='no' <?php echo get_site_option('xmlrpc_active') == 'no' ? 'checked="checked"' : ''; ?> /> <?php _e('No'); ?><br /> 
-						<?php _e('This is an advanced technique for making posts to blogs. It is used by <a href="http://codex.wordpress.org/Weblog_Client">blog clients</a> like Ecto, Flock and Microsoft Live Writer and by Flickr to post pictures to blogs. Unfortunately it is also extensively used by spammers. <em>Disabled by Default</em>') ?>
-					</td>  
-				</tr>  
-				
 				<tr valign="top"> 
 					<th scope="row"><?php _e('Welcome Email:') ?></th> 
 					<td>
@@ -204,6 +191,11 @@ if (isset($_GET['updated'])) {
 				?>
 			</table>
 		</fieldset>
+
+		<?php
+		// Add more options here
+		do_action( 'wpmu_options' );
+		?>
 		
 		<p class="submit"> 
 			<input type="submit" name="Submit" value="<?php _e('Update Options') ?>" /></p> 

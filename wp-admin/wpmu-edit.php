@@ -36,7 +36,6 @@ switch( $_GET['action'] ) {
 		
 		update_site_option( "illegal_names", $names );
 		update_site_option( "registration", $_POST['registration'] );
-		update_site_option( "xmlrpc_active", $_POST[ 'xmlrpc_active' ] ); 
 		update_site_option( "registrationnotification", $_POST['registrationnotification'] );
 		
 		if( $_POST['limited_email_domains'] != '' ) {
@@ -76,6 +75,9 @@ switch( $_GET['action'] ) {
 			}
 			update_site_option( 'site_admins' , $site_admins );
 		}
+
+		// Update more options here
+		do_action( 'update_wpmu_options' );
 
 		wp_redirect( add_query_arg( "updated", "true", $_SERVER['HTTP_REFERER'] ) );
 		exit();

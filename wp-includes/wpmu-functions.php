@@ -1868,19 +1868,4 @@ function redirect_this_site( $hosts ) {
 	return array( $current_site->domain );
 }
 add_filter( 'allowed_redirect_hosts', 'redirect_this_site' );
-
-function is_xmlrpc_active() {
-	global $HTTP_RAW_POST_DATA;
-	if ($HTTP_RAW_POST_DATA)
-		$data = $HTTP_RAW_POST_DATA;
-
-	// add this to a blog's options table to enable xmlrpc on that blog
-	if( get_option( 'xmlrpc_active' ) == 'yes' )
-		return true;
-
-	// kill everything but pingbacks if xmlrpc is disabled
-	if( defined( 'XMLRPC_REQUEST' ) && strpos( $data, '<methodName>pingback.ping</methodName>' ) === false && (get_option( 'xmlrpc_active' ) == 'no' || get_site_option( 'xmlrpc_active' ) != 'yes' ) )
-		die();
-}
-add_action( 'init', 'is_xmlrpc_active' );
 ?>
