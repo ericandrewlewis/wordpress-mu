@@ -1034,8 +1034,8 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 	// expected_slashed ($name)
 	$name = stripslashes($name);
 
-	if ( empty($slug) )
-		$slug = sanitize_title($name);
+	// slug is always santized name in WordPress MU
+	$slug = sanitize_title($name);
 
 	$term_group = 0;
 	if ( $alias_of ) {
@@ -1244,11 +1244,9 @@ function wp_update_term( $term, $taxonomy, $args = array() ) {
 	$args = sanitize_term($args, $taxonomy, 'db');
 	extract($args, EXTR_SKIP);
 
-	$empty_slug = false;
-	if ( empty($slug) ) {
-		$empty_slug = true;
-		$slug = sanitize_title($name);
-	}
+	// slug is always santized name in WordPress MU
+	$empty_slug = true;
+	$slug = sanitize_title($name);
 
 	if ( $alias_of ) {
 		$alias = $wpdb->get_row( $wpdb->prepare( "SELECT term_id, term_group FROM $wpdb->terms WHERE slug = %s", $alias_of) );
