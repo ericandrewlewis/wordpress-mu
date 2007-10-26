@@ -88,6 +88,8 @@ function wp_handle_upload( &$file, $overrides = false ) {
 		}
 	}
 
+	$file = apply_filters( 'wp_handle_upload_prefilter', $file );
+
 	// You may define your own function and pass the name in $overrides['upload_error_handler']
 	$upload_error_handler = 'wp_handle_upload_error';
 

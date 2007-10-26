@@ -1500,16 +1500,6 @@ function get_most_recent_post_of_user( $user_id ) {
 
 /* Misc functions */
 
-function is_upload_too_big( $file ) {
-	if( filesize($file['file']) > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
-		$file['error'] = sprintf(__('This file is too big. Files must be less than %1$s Kb in size.<br />'), get_site_option( 'fileupload_maxk', 1500 ) );
-	if( upload_is_user_over_quota( false ) ) {
-		$file['error'] = __('You have used your space quota. Please delete files before uploading.<br />');
-	}
-	return $file;
-}
-add_filter( 'wp_handle_upload', 'is_upload_too_big' );
-
 function fix_upload_details( $uploads ) {
 	$uploads['url'] = str_replace( UPLOADS, "files", $uploads['url'] );
 	return $uploads;
