@@ -25,7 +25,7 @@ switch( $_GET['action'] ) {
 			echo "<ul>";
 			foreach( (array) $blogs as $details ) {
 				if( $details['spam'] == 0 && $details['deleted'] == 0 && $details['archived'] == 0 ) {
-					$siteurl = $wpdb->get_var("SELECT option_value from {$wpmuBaseTablePrefix}{$details['blog_id']}_options WHERE option_name = 'siteurl'");
+					$siteurl = $wpdb->get_var("SELECT option_value from {$wpdb->base_prefix}{$details['blog_id']}_options WHERE option_name = 'siteurl'");
 					echo "<li>$siteurl</li>";
 					if( $http_fopen ) {
 						$fp = fopen( $siteurl . "wp-admin/upgrade.php?step=1", "r" );

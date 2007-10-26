@@ -25,7 +25,7 @@ function check_upload_size( $file ) {
 add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' );
 
 function wpmu_delete_blog($blog_id, $drop = false) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	if ( $blog_id != $wpdb->blogid ) {
 		$switch = true;
@@ -44,17 +44,17 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 	update_blog_status( $blog_id, 'deleted', 1 );
 
 	if ( $drop ) {
-		$drop_tables = array( $wpmuBaseTablePrefix . $blog_id . "_categories",
-		$wpmuBaseTablePrefix . $blog_id . "_comments",
-		$wpmuBaseTablePrefix . $blog_id . "_linkcategories",
-		$wpmuBaseTablePrefix . $blog_id . "_links",
-		$wpmuBaseTablePrefix . $blog_id . "_link2cat",
-		$wpmuBaseTablePrefix . $blog_id . "_options",
-		$wpmuBaseTablePrefix . $blog_id . "_post2cat",
-		$wpmuBaseTablePrefix . $blog_id . "_postmeta",
-		$wpmuBaseTablePrefix . $blog_id . "_posts",
-		$wpmuBaseTablePrefix . $blog_id . "_referer_visitLog",
-		$wpmuBaseTablePrefix . $blog_id . "_referer_blacklist" );
+		$drop_tables = array( $wpdb->base_prefix . $blog_id . "_categories",
+		$wpdb->base_prefix . $blog_id . "_comments",
+		$wpdb->base_prefix . $blog_id . "_linkcategories",
+		$wpdb->base_prefix . $blog_id . "_links",
+		$wpdb->base_prefix . $blog_id . "_link2cat",
+		$wpdb->base_prefix . $blog_id . "_options",
+		$wpdb->base_prefix . $blog_id . "_post2cat",
+		$wpdb->base_prefix . $blog_id . "_postmeta",
+		$wpdb->base_prefix . $blog_id . "_posts",
+		$wpdb->base_prefix . $blog_id . "_referer_visitLog",
+		$wpdb->base_prefix . $blog_id . "_referer_blacklist" );
 		reset( $drop_tables );
 
 		foreach ( (array) $drop_tables as $drop_table) {

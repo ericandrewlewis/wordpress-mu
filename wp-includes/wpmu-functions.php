@@ -256,12 +256,12 @@ function get_blog_option( $id, $key, $default='na' ) {
 */
 
 function get_blog_option( $blog_id, $setting, $default='na' ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	$key = $blog_id."-".$setting."-blog_option";
 	$value = wp_cache_get( $key, "site-options" );
 	if( $value == null ) {
-		$row = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_options WHERE option_name = '{$setting}'" );
+		$row = $wpdb->get_row( "SELECT * FROM {$wpdb->base_prefix}{$blog_id}_options WHERE option_name = '{$setting}'" );
 		if( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 			$value = $row->option_value;
 			if( $value == false ) {
@@ -318,7 +318,7 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 }
 
 function switch_to_blog( $new_blog ) {
-	global $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
+	global $tmpoldblogdetails, $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
 
 	if ( empty($new_blog) )
 		$new_blog = $blog_id;
@@ -347,7 +347,7 @@ function switch_to_blog( $new_blog ) {
 	$tmpoldblogdetails['blog_id']        = $blog_id;
 
 	// fix the new prefix.
-	$table_prefix = $wpmuBaseTablePrefix . $new_blog . "_";
+	$table_prefix = $wpdb->base_prefix . $new_blog . "_";
 	$wpdb->prefix			= $table_prefix;
 	$wpdb->blogid           = $new_blog;
 	$wpdb->posts            = $table_prefix . 'posts';
@@ -378,7 +378,7 @@ function switch_to_blog( $new_blog ) {
 }
 
 function restore_current_blog() {
-	global $table_prefix, $tmpoldblogdetails, $wpdb, $wpmuBaseTablePrefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
+	global $table_prefix, $tmpoldblogdetails, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
 
 	if ( !$switched )
 		return;
@@ -422,7 +422,7 @@ function restore_current_blog() {
 }
 
 function get_blogs_of_user( $id, $all = false ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	$user = get_userdata( $id );
 	if ( !$user )
@@ -433,7 +433,7 @@ function get_blogs_of_user( $id, $all = false ) {
 	$i = 0;
 	foreach ( (array) $user as $key => $value ) {
 		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
-			preg_match('/' . $wpmuBaseTablePrefix . '(\d+)_capabilities/', $key, $match);
+			preg_match('/' . $wpdb->base_prefix . '(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) && ( $all == true || $all == false && ( $blog->archived == 0 && $blog->spam == 0 && $blog->deleted == 0 ) ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
@@ -578,7 +578,7 @@ function get_most_active_blogs( $num = 10, $display = true ) {
 }
 
 function get_blog_list( $start = 0, $num = 10, $display = true ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	$blogs = get_site_option( "blog_list" );
 	$update = false;
@@ -596,7 +596,7 @@ function get_blog_list( $start = 0, $num = 10, $display = true ) {
 
 		foreach ( (array) $blogs as $key => $details ) {
 			$blog_list[ $details['blog_id'] ] = $details;
-			$blog_list[ $details['blog_id'] ]['postcount'] = $wpdb->get_var( "SELECT count(*) FROM " . $wpmuBaseTablePrefix . $details['blog_id'] . "_posts WHERE post_status='publish' AND post_type='post'" );
+			$blog_list[ $details['blog_id'] ]['postcount'] = $wpdb->get_var( "SELECT count(*) FROM " . $wpdb->base_prefix . $details['blog_id'] . "_posts WHERE post_status='publish' AND post_type='post'" );
 		}
 		unset( $blogs );
 		$blogs = $blog_list;
@@ -629,12 +629,12 @@ function get_blog_count( $id = 0 ) {
 }
 
 function get_blog_post( $blog_id, $post_id ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	$key = $blog_id."-".$post_id."-blog_post";
 	$post = wp_cache_get( $key, "site-options" );
 	if( $post == false ) {
-		$post = $wpdb->get_row( "SELECT * FROM {$wpmuBaseTablePrefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
+		$post = $wpdb->get_row( "SELECT * FROM {$wpdb->base_prefix}{$blog_id}_posts WHERE ID = '{$post_id}'" );
 		wp_cache_add( $key, $post, "site-options", 120 );
 	}
 
@@ -790,12 +790,12 @@ function wpmu_admin_redirect_url() {
 }
 
 function is_blog_user( $blog_id = 0 ) {
-	global $current_user, $wpdb, $wpmuBaseTablePrefix;
+	global $current_user, $wpdb;
 
 	if ( !$blog_id )
 		$blog_id = $wpdb->blogid;
 
-	$cap_key = $wpmuBaseTablePrefix . $blog_id . '_capabilities';
+	$cap_key = $wpdb->base_prefix . $blog_id . '_capabilities';
 
 	if ( is_array($current_user->$cap_key) && in_array(1, $current_user->$cap_key) )
 		return true;
@@ -1319,7 +1319,7 @@ function install_blog($blog_id, $blog_title = '') {
 }
 
 function install_blog_defaults($blog_id, $user_id) {
-	global $wpdb, $wp_rewrite, $current_site, $table_prefix, $wpmuBaseTablePrefix;
+	global $wpdb, $wp_rewrite, $current_site, $table_prefix;
 
 	$wpdb->hide_errors();
 
@@ -1361,7 +1361,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$user_id."' AND meta_key = '".$table_prefix."capabilities'" );
 	// Delete any caps that snuck into the previously active blog. (Hardcoded to blog 1 for now.) TODO: Get previous_blog_id.
 	if ( $user_id != 1 )
-		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$user_id."' AND meta_key = '" . $wpmuBaseTablePrefix . "1_capabilities'" );
+		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$user_id."' AND meta_key = '" . $wpdb->base_prefix . "1_capabilities'" );
 
 	$wpdb->show_errors();
 }
@@ -1462,7 +1462,7 @@ function get_user_id_from_string( $string ) {
 }
 
 function get_most_recent_post_of_user( $user_id ) {
-	global $wpdb, $wpmuBaseTablePrefix;
+	global $wpdb;
 
 	$user_id = (int) $user_id;
 
@@ -1472,7 +1472,7 @@ function get_most_recent_post_of_user( $user_id ) {
 	// Walk through each blog and get the most recent post
 	// published by $user_id
 	foreach ( $user_blogs as $blog ) {
-		$recent_post = $wpdb->get_row("SELECT ID, post_date_gmt FROM {$wpmuBaseTablePrefix}{$blog->userblog_id}_posts WHERE post_author = '{$user_id}' AND post_type = 'post' AND post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1", ARRAY_A);
+		$recent_post = $wpdb->get_row("SELECT ID, post_date_gmt FROM {$wpdb->base_prefix}{$blog->userblog_id}_posts WHERE post_author = '{$user_id}' AND post_type = 'post' AND post_status = 'publish' ORDER BY post_date_gmt DESC LIMIT 1", ARRAY_A);
 
 		// Make sure we found a post
 		if ( isset($recent_post['ID']) ) {

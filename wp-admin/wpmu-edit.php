@@ -175,11 +175,11 @@ switch( $_GET['action'] ) {
 			reset( $newroles );
 			foreach ( (array) $newroles as $userid => $role ) {
 				$role_len = strlen( $role );
-				$existing_role = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$userid'  AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'" );
+				$existing_role = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$userid'  AND meta_key = '" . $wpdb->base_prefix . $id . "_capabilities'" );
 				if( false == $existing_role ) {
-					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpmuBaseTablePrefix . $id . "_capabilities', 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}')" );
+					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpdb->base_prefix . $id . "_capabilities', 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}')" );
 				} elseif( $existing_role != "a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}" ) {
-					$wpdb->query( "UPDATE $wpdb->usermeta SET meta_value = 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}' WHERE user_id = '$userid'  AND meta_key = '" . $wpmuBaseTablePrefix . $id . "_capabilities'" );
+					$wpdb->query( "UPDATE $wpdb->usermeta SET meta_value = 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}' WHERE user_id = '$userid'  AND meta_key = '" . $wpdb->base_prefix . $id . "_capabilities'" );
 				}
 
 			}
@@ -189,8 +189,8 @@ switch( $_GET['action'] ) {
 		if( is_array( $_POST['blogusers'] ) ) {
 			reset( $_POST['blogusers'] );
 			foreach ( (array) $_POST['blogusers'] as $key => $val ) {
-				delete_usermeta( $key, $wpmuBaseTablePrefix.$id.'_capabilities' );
-				delete_usermeta( $key, $wpmuBaseTablePrefix.$id.'_user_level' );
+				delete_usermeta( $key, $wpdb->base_prefix.$id.'_capabilities' );
+				delete_usermeta( $key, $wpdb->base_prefix.$id.'_user_level' );
 				delete_usermeta( $key, 'primary_blog', $id ); // Delete primary blog if need.
 			}
 		}
@@ -203,14 +203,14 @@ switch( $_GET['action'] ) {
 				unset( $_POST['role'] );
 				$_POST['role'] = $newroles[ $userid ];
 				if( $pass != '' ) {
-					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
+					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 					$userdata = get_userdata($userid);
 					$_POST['pass1'] = $_POST['pass2'] = $pass;
 					$_POST['email'] = $userdata->user_email;
 					$_POST['rich_editing'] = $userdata->rich_editing;
 					edit_user( $userid );
 					if( $cap == null )
-						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpmuBaseTablePrefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
+						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 				}
 			}
 			unset( $_POST['role'] );
@@ -224,7 +224,7 @@ switch( $_GET['action'] ) {
 			if( $userid ) {
 				$user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );
 				if( $user == false )
-					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpmuBaseTablePrefix . $id . "_capabilities', 'a:1:{s:" . strlen( $_POST['new_role'] ) . ":\"" . $_POST['new_role'] . "\";b:1;}')" );
+					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpdb->base_prefix . $id . "_capabilities', 'a:1:{s:" . strlen( $_POST['new_role'] ) . ":\"" . $_POST['new_role'] . "\";b:1;}')" );
 			}
 		}
 		wpmu_admin_do_redirect( "wpmu-blogs.php?action=editblog&updated=true&id=".$id );

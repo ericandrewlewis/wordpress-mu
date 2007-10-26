@@ -59,13 +59,13 @@ endif;
 
 if ( !function_exists('get_userdata') ) :
 function get_userdata( $user_id ) {
-	global $wpdb, $cache_userdata, $wpmuBaseTablePrefix;
+	global $wpdb, $cache_userdata;
 	$user_id = abs(intval($user_id));
 	if ( $user_id == 0 )
 		return false;
 
 	$user = wp_cache_get($user_id, 'users');
-	$user_level = $wpmuBaseTablePrefix . $wpdb->blogid . '_user_level';
+	$user_level = $wpdb->base_prefix . $wpdb->blogid . '_user_level';
 	if ( $user && is_site_admin( $user->user_login ) ) {
 		$user->$user_level = 10;
 		$user->user_level = 10;

@@ -2,6 +2,7 @@
 if( $current_site && $current_blog )
 	return;
 
+// depreciated
 $wpmuBaseTablePrefix = $table_prefix;
 
 $domain = addslashes( $_SERVER['HTTP_HOST'] );

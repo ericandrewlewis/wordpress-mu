@@ -129,7 +129,7 @@ require (ABSPATH . WPINC . '/functions.php');
 
 require_wp_db();
 // $table_prefix is deprecated as of 2.1
-$wpdb->prefix = $table_prefix;
+$wpdb->prefix = $wpdb->base_prefix = $table_prefix;
 
 if ( preg_match('|[^a-z0-9_]|i', $wpdb->prefix) && !file_exists(ABSPATH . 'wp-content/db.php') )
 	wp_die("<strong>ERROR</strong>: <code>$table_prefix</code> in <code>wp-config.php</code> can only contain numbers, letters, and underscores.");
