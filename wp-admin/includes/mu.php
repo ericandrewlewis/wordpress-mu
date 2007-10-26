@@ -368,4 +368,10 @@ function format_code_lang( $code = '' ) {
 	return strtr( $code, $lang_codes );
 }
 
+function sync_slugs( $term, $taxonomy, $args ) {
+	$args[ 'slug' ] = sanitize_title( $args[ 'name' ] );
+	return $args;
+}
+add_filter( 'pre_update_term', 'sync_slugs', 10, 3 );
+
 ?>
