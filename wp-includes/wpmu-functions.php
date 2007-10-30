@@ -1065,7 +1065,7 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, "http://{$domain}{$path}");
 	// TODO: Don't hard code activation link.
-	$subject = sprintf(__('Activate %s'), $domain.$path);
+	$subject = '[' . $from_name . '] ' . sprintf(__('Activate %s'), 'http://' . $domain . $path);
 	wp_mail($user_email, $subject, $message, $message_headers);
 }
 

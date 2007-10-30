@@ -223,7 +223,7 @@ function validate_another_blog_signup() {
 
 function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
-<h2><?php printf(__('%s Is Yours'), $domain.$path ) ?></h2>
+<h2><?php printf(__('The blog %s is yours.'), $domain.$path ) ?></h2>
 <p><?php printf(__('<a href="http://%1$s">http://%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $domain.$path, $domain.$path, "http://" . $domain.$path . "wp-login.php", $user_name) ?></p>
 <?php
 	do_action('signup_finished');
@@ -302,7 +302,7 @@ function validate_user_signup() {
 
 function confirm_user_signup($user_name, $user_email) {
 ?>
-<h2><?php printf(__('%s Is Your New Username'), $user_name) ?></h2>
+<h2><?php printf(__('%s is your new username'), $user_name) ?></h2>
 <p><?php _e('But, before you can start using your new username, <strong>you must activate it</strong>.') ?></p>
 <p><?php printf(__('Check your inbox at <strong>%1$s</strong> and click the link given.  '),  $user_email) ?></p>
 <p><?php _e('If you do not activate your username within two days, you will have to sign up again.'); ?></p>
@@ -369,7 +369,7 @@ function validate_blog_signup() {
 
 function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
-<h2><?php printf(__('%s Is Yours'), $domain.$path) ?></h2>
+<h2><?php printf(__('The blog %s is yours'), $domain.$path) ?></h2>
 <p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
 <p><?php printf(__('Check your inbox at <strong>%s</strong> and click the link given.  '),  $user_email) ?></p>
 <p><?php _e('If you do not activate your blog within two days, you will have to sign up again.'); ?></p>
