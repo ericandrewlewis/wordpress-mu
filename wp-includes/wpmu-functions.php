@@ -943,6 +943,7 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 
 	$blog_id = sanitize_user( $blog_id );
 	$blog_title = strip_tags( $blog_title );
+	$blog_title = substr( $blog_title, 0, 50 );
 
 	$errors = new WP_Error();
 	$illegal_names = get_site_option( "illegal_names" );
