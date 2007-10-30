@@ -92,7 +92,8 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 ?>
 <tr>
 <th scope="row"  valign="top"><?php _e('Privacy:') ?></th>
-<td><label><input type="checkbox" name="blog_public" value="1" checked="checked" /> <?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?></label></td>
+<td><?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?> 
+<label><input type="radio" name="blog_public" value="1" <?php if( !isset( $_POST[ 'blog_public' ] ) || $_POST[ 'blog_public' ] == '1' ) { ?>checked="checked"<?php } ?> /> <strong>Yes</strong> </label> <label><input type="radio" name="blog_public" value="0" <?php if( isset( $_POST[ 'blog_public' ] ) && $_POST[ 'blog_public' ] == '0' ) { ?>checked="checked"<?php } ?> /><strong>No</strong> </label> <br />
 </tr>
 <?php
 do_action('signup_blogform', $errors);
@@ -389,8 +390,6 @@ if( is_site_admin() ) {
 }
 
 $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
-if( $_POST['blog_public'] != 1 )
-	$_POST['blog_public'] = 0;
 
 if( $active_signup == "none" ) {
 	_e( "Registration has been disabled." );
