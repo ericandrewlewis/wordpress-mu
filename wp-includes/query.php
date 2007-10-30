@@ -998,7 +998,14 @@ class WP_Query {
 				}
 			} else {
 				$q['tag'] = sanitize_term_field('slug', $q['tag'], 0, 'post_tag', 'db');
-				$q['tag_slug__in'][] = $q['tag'];
+				$reqtag = is_term( $q['tag'], 'post_tag' );
+				if ( !empty($reqtag) )
+					$reqtag = $reqtag['term_id'];
+				else
+					$reqtag = 0;
+
+				$q['tag_id'] = $reqtag;
+				$q['tag__in'][] = $reqtag;
 			}
 		}
 

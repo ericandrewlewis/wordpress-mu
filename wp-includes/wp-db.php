@@ -322,39 +322,6 @@ class wpdb {
 	}
 
 	/**
-	 * Insert an array of data into a table
-	 * @param string $table WARNING: not sanitized!
-	 * @param array $data should not already be SQL-escaped
-	 * @return mixed results of $this->query()
-	 */
-	function insert($table, $data) {
-		$data = add_magic_quotes($data);
-		$fields = array_keys($data);
-		return $this->query("INSERT INTO $table (`" . implode('`,`',$fields) . "`) VALUES ('".implode("','",$data)."')");
-	}
-
-	/**
-	 * Update a row in the table with an array of data
-	 * @param string $table WARNING: not sanitized!
-	 * @param array $data should not already be SQL-escaped
-	 * @param array $where a named array of WHERE column => value relationships.  Multiple member pairs will be joined with ANDs.  WARNING: the column names are not currently sanitized!
-	 * @return mixed results of $this->query()
-	 */
-	function update($table, $data, $where){
-		$data = add_magic_quotes($data);
-		$bits = $wheres = array();
-		foreach ( array_keys($data) as $k )
-			$bits[] = "`$k` = '$data[$k]'";
-
-		if ( is_array( $where ) )
-			foreach ( $where as $c => $v )
-				$wheres[] = "$c = '" . $this->escape( $v ) . "'";
-		else
-			return false;
-		return $this->query( "UPDATE $table SET " . implode( ', ', $bits ) . ' WHERE ' . implode( ' AND ', $wheres ) . ' LIMIT 1' );
-	}
-
-	/**
 	 * Get one variable from the database
 	 * @param string $query (can be null as well, for caching, see codex)
 	 * @param int $x = 0 row num to return
@@ -506,27 +473,6 @@ class wpdb {
 		if ( !$this->show_errors )
 			return false;
 		wp_die($message);
-	}
-	/**
-	 * Checks wether of not the database version is high enough to support the features WordPress uses
-	 * @global $wp_version
-	 */
-	function check_database_version()
-	{
-		global $wp_version;
-		// Make sure the server has MySQL 4.0
-		$mysql_version = preg_replace('|[^0-9\.]|', '', @mysql_get_server_info());
-		if ( version_compare($mysql_version, '4.0.0', '<') )
-			return new WP_Error('database_version',sprintf(__('<strong>ERROR</strong>: WordPress %s requires MySQL 4.0.0 or higher'), $wp_version));
-	}
-
-	/**
-	 * This function is called when WordPress is generating the table schema to determine wether or not the current database
-	 * supports or needs the collation statements.
-	 */
-	function supports_collation()
-	{
-		return ( version_compare(mysql_get_server_info(), '4.1.0', '>=') );
 	}
 }
 

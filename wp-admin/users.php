@@ -523,7 +523,7 @@ foreach($roleclasses as $role => $roleclass) {
 	<th colspan="2" style="text-align: center"><?php _e('Actions') ?></th>
 </tr>
 </tbody>
-<tbody id="role-<?php echo $role; ?>" class="list:user user-list"><?php
+<tbody id="role-<?php echo $role; ?>"><?php
 $style = '';
 foreach ( (array) $roleclass as $user_object ) {
 	$style = ( ' class="alternate"' == $style ) ? '' : ' class="alternate"';

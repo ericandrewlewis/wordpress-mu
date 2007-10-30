@@ -76,11 +76,11 @@ function get_userdata( $user_id ) {
 		return $user;
 	}
 
-	if ( !$user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->users WHERE ID = %d LIMIT 1", $user_id)) )
+	if ( !$user = $wpdb->get_row("SELECT * FROM $wpdb->users WHERE ID = '$user_id' LIMIT 1") )
 		return false;
 
 	$wpdb->hide_errors();
-	$metavalues = $wpdb->get_results($wpdb->prepare("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = %d", $user_id));
+	$metavalues = $wpdb->get_results("SELECT meta_key, meta_value FROM $wpdb->usermeta WHERE user_id = '$user_id'");
 	$wpdb->show_errors();
 
 	if ($metavalues) {
@@ -139,7 +139,9 @@ function get_userdatabylogin($user_login) {
 	} elseif( $userdata )
 		return $userdata;
 
-	if ( !$user_ID = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->users WHERE user_login = %s", $user_login)) )
+	$user_login = $wpdb->escape($user_login);
+
+	if ( !$user_ID = $wpdb->get_var("SELECT ID FROM $wpdb->users WHERE user_login = '$user_login'") )
 		return false;
 
 	$user = get_userdata($user_ID);
@@ -396,26 +398,23 @@ function check_admin_referer($action = -1) {
 }endif;
 
 if ( !function_exists('check_ajax_referer') ) :
-function check_ajax_referer( $action = -1 ) {
-	$nonce = $_REQUEST['_ajax_nonce'] ? $_REQUEST['_ajax_nonce'] : $_REQUEST['_wpnonce'];
-	if ( !wp_verify_nonce( $nonce, $action ) ) {
-		$current_name = '';
-		if ( ( $current = wp_get_current_user() ) && $current->ID )
-			$current_name = $current->data->user_login;
-		if ( !$current_name )
-			die('-1');
+function check_ajax_referer() {
+	$current_name = '';
+	if ( ( $current = wp_get_current_user() ) && $current->ID )
+		$current_name = $current->data->user_login;
+	if ( !$current_name )
+		die('-1');
 
-		$cookie = explode('; ', urldecode(empty($_POST['cookie']) ? $_GET['cookie'] : $_POST['cookie'])); // AJAX scripts must pass cookie=document.cookie
-		foreach ( $cookie as $tasty ) {
-			if ( false !== strpos($tasty, USER_COOKIE) )
-				$user = substr(strstr($tasty, '='), 1);
-			if ( false !== strpos($tasty, PASS_COOKIE) )
-				$pass = substr(strstr($tasty, '='), 1);
-		}
-
-		if ( $current_name != $user || !wp_login( $user, $pass, true ) )
-			die('-1');
+	$cookie = explode('; ', urldecode(empty($_POST['cookie']) ? $_GET['cookie'] : $_POST['cookie'])); // AJAX scripts must pass cookie=document.cookie
+	foreach ( $cookie as $tasty ) {
+		if ( false !== strpos($tasty, USER_COOKIE) )
+			$user = substr(strstr($tasty, '='), 1);
+		if ( false !== strpos($tasty, PASS_COOKIE) )
+			$pass = substr(strstr($tasty, '='), 1);
 	}
+
+	if ( $current_name != $user || !wp_login( $user, $pass, true ) )
+		die('-1');
 	do_action('check_ajax_referer');
 }
 endif;
@@ -630,8 +629,8 @@ function wp_notify_moderator($comment_id) {
 	if( get_option( "moderation_notify" ) == 0 )
 		return true;
 
-	$comment = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_ID=%d LIMIT 1", $comment_id));
-	$post = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID=%d LIMIT 1", $comment->comment_post_ID));
+	$comment = $wpdb->get_row("SELECT * FROM $wpdb->comments WHERE comment_ID='$comment_id' LIMIT 1");
+	$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID='$comment->comment_post_ID' LIMIT 1");
 
 	$comment_author_domain = @gethostbyaddr($comment->comment_author_IP);
 	$comments_waiting = $wpdb->get_var("SELECT count(comment_ID) FROM $wpdb->comments WHERE comment_approved = '0'");

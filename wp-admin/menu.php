@@ -150,7 +150,7 @@ unset($id);
 
 uksort($menu, "strnatcasecmp"); // make it all pretty
 
-if ( !user_can_access_admin_page() ) {
+if (! user_can_access_admin_page()) {
 	// find the blog of this user first
 	$primary_blog = (int) get_usermeta( $user_ID, 'primary_blog' );
 	if( $primary_blog != 0 ) {

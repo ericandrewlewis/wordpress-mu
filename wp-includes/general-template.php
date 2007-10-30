@@ -208,7 +208,7 @@ function wp_title($sep = '&raquo;', $display = true) {
 	}
 	if ( !empty($author_name) ) {
 		// We do a direct query here because we don't cache by nicename.
-		$title = $wpdb->get_var($wpdb->prepare("SELECT display_name FROM $wpdb->users WHERE user_nicename = %s", $author_name));
+		$title = $wpdb->get_var("SELECT display_name FROM $wpdb->users WHERE user_nicename = '$author_name'");
 	}
 
 	// If there's a month
@@ -255,7 +255,7 @@ function single_post_title($prefix = '', $display = true) {
 
 	if ( intval($p) || '' != $name ) {
 		if ( !$p )
-			$p = $wpdb->get_var($wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_name = %s", $name));
+			$p = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_name = '$name'");
 		$post = & get_post($p);
 		$title = $post->post_title;
 		$title = apply_filters('single_post_title', $title);
@@ -363,7 +363,7 @@ function wp_get_archives($args = '') {
 		$type = 'monthly';
 
 	if ( '' != $limit ) {
-		$limit = abs(intval($limit));
+		$limit = (int) $limit;
 		$limit = ' LIMIT '.$limit;
 	}
 
@@ -1076,50 +1076,4 @@ function wp_admin_css( $file = 'wp-admin' ) {
 	}
 }
 
-/**
- * Outputs the XHTML generator that is generated on the wp_head hook.
- */
-function wp_generator()
-{
-	the_generator( apply_filters( 'wp_generator_type', 'xhtml' ) );
-}
-
-/**
- * Outputs the generator XML or Comment for RSS, ATOM, etc.
- * @param {String} $type The type of generator to return.
- */
-function the_generator ( $type ) {
-	echo apply_filters('the_generator',get_the_generator($type),$type) . "\n";
-}
-
-/**
- * Creates the generator XML or Comment for RSS, ATOM, etc.
- * @param {String} $type The type of generator to return.
- */
-function get_the_generator ( $type ) {
-	switch ($type) {
-		case 'html':
-			$gen = '<meta name="generator" content="WordPress/' . get_bloginfo( 'version' ) . '">';
-			break;
-		case 'xhtml':
-			$gen = '<meta name="generator" content="WordPress/' . get_bloginfo( 'version' ) . '" />';
-			break;
-		case 'atom':
-			$gen = '<generator uri="http://wordpress.org/" version="' . get_bloginfo_rss( 'version' ) . '">WordPress</generator>';
-			break;
-		case 'rss2':
-			$gen = '<generator>http://wordpress.org/?v=' . get_bloginfo_rss( 'version' ) . '</generator>';
-			break;
-		case 'rdf':
-			$gen = '<admin:generatorAgent rdf:resource="http://wordpress.org/?v=' . get_bloginfo_rss( 'version' ) . '" />';
-			break;
-		case 'comment':
-			$gen = '<!-- generator="WordPress/' . get_bloginfo( 'version' ) . '" -->';
-			break;
-		case 'export':
-			$gen = '<!-- generator="wordpress/' . get_bloginfo_rss('version') . '" created="'. date('Y-m-d H:i') . '"-->';
-			break;
-	}
-	return apply_filters( "get_the_generator_{$type}", $gen, $type );
-}
 ?>

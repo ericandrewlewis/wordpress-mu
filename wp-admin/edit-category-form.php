@@ -9,7 +9,7 @@ if ( ! empty($cat_ID) ) {
 } else {
 	$heading = __('Add Category');
 	$submit_text = __('Add Category &raquo;');
-	$form = '<form name="addcat" id="addcat" method="post" action="categories.php" class="add:the-list:">';
+	$form = '<form name="addcat" id="addcat" method="post" action="categories.php">';
 	$action = 'addcat';
 	$nonce_action = 'add-category';
 	do_action('add_category_form_pre', $category);

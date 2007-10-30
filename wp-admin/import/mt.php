@@ -138,7 +138,7 @@ class MT_Import {
 		$j = -1;
 		foreach ($authors as $author) {
 			++ $j;
-			echo '<li><i>'.$author.'</i><br />'.'<input type="text" value="'.$author.'" name="'.'user[]'.'" maxlength="30">';
+			echo '<li>'.__('Current author:').' <strong>'.$author.'</strong><br />'.'<input type="text" value="'.$author.'" name="'.'user[]'.'" maxlength="30">';
 			$this->users_form($j);
 			echo '</li>';
 		}

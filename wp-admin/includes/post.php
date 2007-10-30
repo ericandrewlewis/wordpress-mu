@@ -348,8 +348,6 @@ function add_meta( $post_ID ) {
 		if ( in_array($metakey, $protected) )
 			return false;
 
-		wp_cache_delete($post_ID, 'post_meta');
-
 		$result = $wpdb->query( "
 						INSERT INTO $wpdb->postmeta
 						(post_id,meta_key,meta_value )
@@ -363,9 +361,6 @@ function add_meta( $post_ID ) {
 function delete_meta( $mid ) {
 	global $wpdb;
 	$mid = (int) $mid;
-
-	$post_id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_id = '$mid'");
-	wp_cache_delete($post_id, 'post_meta');
 
 	return $wpdb->query( "DELETE FROM $wpdb->postmeta WHERE meta_id = '$mid'" );
 }
@@ -412,9 +407,6 @@ function update_meta( $mid, $mkey, $mvalue ) {
 
 	if ( in_array($mkey, $protected) )
 		return false;
-
-	$post_id = $wpdb->get_var("SELECT post_id FROM $wpdb->postmeta WHERE meta_id = '$mid'");
-	wp_cache_delete($post_id, 'post_meta');
 
 	$mvalue = maybe_serialize( stripslashes( $mvalue ));
 	$mvalue = $wpdb->escape( $mvalue );
@@ -474,45 +466,6 @@ function _relocate_children( $old_ID, $new_ID ) {
 	$old_ID = (int) $old_ID;
 	$new_ID = (int) $new_ID;
 	return $wpdb->query( "UPDATE $wpdb->posts SET post_parent = $new_ID WHERE post_parent = $old_ID" );
-}
-
-function wp_edit_posts_query( $q = false ) {
-	global $wpdb;
-	if ( false === $q )
-		$q = $_GET;
-	$q['m']   = (int) $q['m'];
-	$q['cat'] = (int) $q['cat'];
-	$post_stati  = array(	//	array( adj, noun )
-				'draft' => array(__('Draft'), _c('Drafts|manage posts header')),
-				'future' => array(__('Scheduled'), __('Scheduled posts')),
-				'pending' => array(__('Pending Review'), __('Pending posts')),
-				'private' => array(__('Private'), __('Private posts')),
-				'publish' => array(__('Published'), __('Published posts'))
-			);
-
-	$avail_post_stati = $wpdb->get_col("SELECT DISTINCT post_status FROM $wpdb->posts WHERE post_type = 'post'");
-
-	$post_status_q = '';
-	$post_status_label = _c('Posts|manage posts header');
-	if ( isset($q['post_status']) && in_array( $q['post_status'], array_keys($post_stati) ) ) {
-		$post_status_label = $post_stati[$q['post_status']][1];
-		$post_status_q = '&post_status=' . $q['post_status'];
-	}
-
-	if ( 'pending' === $q['post_status'] ) {
-		$order = 'ASC';
-		$orderby = 'modified';
-	} elseif ( 'draft' === $q['post_status'] ) {
-		$order = 'DESC';
-		$orderby = 'modified';
-	} else {
-		$order = 'DESC';
-		$orderby = 'date';
-	}
-
-	wp("what_to_show=posts$post_status_q&posts_per_page=20&order=$order&orderby=$orderby");
-
-	return array($post_stati, $avail_post_stati);
 }
 
 ?>

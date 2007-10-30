@@ -18,7 +18,9 @@ function register_sidebars($number = 1, $args = array()) {
 	if ( is_string($args) )
 		parse_str($args, $args);
 
-	for ( $i=1; $i <= $number; $i++ ) {
+	$i = 1;
+
+	while ( $i <= $number ) {
 		$_args = $args;
 		if ( $number > 1 ) {
 			$_args['name'] = isset($args['name']) ? $args['name'] : sprintf(__('Sidebar %d'), $i);
@@ -27,6 +29,7 @@ function register_sidebars($number = 1, $args = array()) {
 		}
 		$_args['id'] = isset($args['id']) ? $args['id'] : "sidebar-$i";
 		register_sidebar($_args);
+		++$i;
 	}
 }
 
@@ -627,7 +630,7 @@ function wp_widget_categories($args, $number = 1) {
 		wp_dropdown_categories($cat_args . '&show_option_none= ' . __('Select Category'));
 ?>
 
-<script type='text/javascript'><!--
+<script lang='javascript'><!--
     var dropdown = document.getElementById("cat");
     function onCatChange() {
 		if ( dropdown.options[dropdown.selectedIndex].value > 0 ) {

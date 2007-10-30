@@ -32,7 +32,6 @@ header('Content-Type: text/xml; charset=' . get_option('blog_charset'), true);
       <api name="Movable Type" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
       <api name="MetaWeblog" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
       <api name="Blogger" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
-      <api name="Atom" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/wp-app.php/service" /> 
     </apis>
   </service>
 </rsd>
@@ -595,7 +594,7 @@ class wp_xmlrpc_server extends IXR_Server {
 			restore_current_blog();
 		}
 
-	  return $struct;
+		return $struct;
 	}
 
 

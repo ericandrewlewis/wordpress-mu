@@ -26,7 +26,7 @@ function update_attached_file( $attachment_id, $file ) {
 }
 
 function &get_children($args = '', $output = OBJECT) {
-	global $wpdb;
+	global $post_cache, $wpdb, $blog_id;
 
 	if ( empty( $args ) ) {
 		if ( isset( $GLOBALS['post'] ) ) {
@@ -49,13 +49,14 @@ function &get_children($args = '', $output = OBJECT) {
 
 	$children = get_posts( $r );
 
-	if ( !$children )
+	if ( $children ) {
+		foreach ( $children as $key => $child ) {
+			$post_cache[$blog_id][$child->ID] =& $children[$key];
+			$kids[$child->ID] =& $children[$key];
+		}
+	} else {
 		return false;
-
-	update_post_cache($children);
-
-	foreach ( $children as $key => $child )
-		$kids[$child->ID] =& $children[$key];
+	}
 
 	if ( $output == OBJECT ) {
 		return $kids;
@@ -92,23 +93,36 @@ function get_extended($post) {
 // Retrieves post data given a post ID or post object.
 // Handles post caching.
 function &get_post(&$post, $output = OBJECT, $filter = 'raw') {
-	global $wpdb;
+	global $post_cache, $wpdb, $blog_id;
 
 	if ( empty($post) ) {
 		if ( isset($GLOBALS['post']) )
 			$_post = & $GLOBALS['post'];
 		else
-			return null;
+			$_post = null;
 	} elseif ( is_object($post) ) {
-		wp_cache_add($post->ID, $post, 'posts');
-		$_post = &$post;
+		if ( 'page' == $post->post_type )
+			return get_page($post, $output, $filter);
+		if ( !isset($post_cache[$blog_id][$post->ID]) )
+			$post_cache[$blog_id][$post->ID] = &$post;
+		$_post = & $post_cache[$blog_id][$post->ID];
 	} else {
 		$post = (int) $post;
-		if ( ! $_post = wp_cache_get($post, 'posts') ) {
-			$_post = & $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID = %d LIMIT 1", $post));
-			wp_cache_add($_post->ID, $_post, 'posts');
+		if ( isset($post_cache[$blog_id][$post]) )
+			$_post = & $post_cache[$blog_id][$post];
+		elseif ( $_post = wp_cache_get($post, 'pages') )
+			return get_page($_post, $output, $filter);
+		else {
+			$query = "SELECT * FROM $wpdb->posts WHERE ID = '$post' LIMIT 1";
+			$_post = & $wpdb->get_row($query);
+			if ( 'page' == $_post->post_type )
+				return get_page($_post, $output, $filter);
+			$post_cache[$blog_id][$post] = & $_post;
 		}
 	}
+
+	if ( defined('WP_IMPORTING') )
+		unset($post_cache[$blog_id]);
 
 	$_post = sanitize_post($_post, $filter);
 
@@ -209,9 +223,9 @@ function get_posts($args) {
 		if ( count($incposts) ) {
 			foreach ( $incposts as $incpost ) {
 				if (empty($inclusions))
-					$inclusions = $wpdb->prepare(' AND ( ID = %d ', $incpost);
+					$inclusions = ' AND ( ID = ' . intval($incpost) . ' ';
 				else
-					$inclusions .= $wpdb->prepare(' OR ID = %d ', $incpost);
+					$inclusions .= ' OR ID = ' . intval($incpost) . ' ';
 			}
 		}
 	}
@@ -224,9 +238,9 @@ function get_posts($args) {
 		if ( count($exposts) ) {
 			foreach ( $exposts as $expost ) {
 				if (empty($exclusions))
-					$exclusions = $wpdb->prepare(' AND ( ID <> %d ', $expost);
+					$exclusions = ' AND ( ID <> ' . intval($expost) . ' ';
 				else
-					$exclusions .= $wpdb->prepare(' AND ID <> %d ', $expost);
+					$exclusions .= ' AND ID <> ' . intval($expost) . ' ';
 			}
 		}
 	}
@@ -237,16 +251,15 @@ function get_posts($args) {
 	$query .= empty( $category ) ? '' : ", $wpdb->term_relationships, $wpdb->term_taxonomy  ";
 	$query .= empty( $meta_key ) ? '' : ", $wpdb->postmeta ";
 	$query .= " WHERE 1=1 ";
-	$query .= empty( $post_type ) ? '' : $wpdb->prepare("AND post_type = %s ", $post_type);
-	$query .= empty( $post_status ) ? '' : $wpdb->prepare("AND post_status = %s ", $post_status);
+	$query .= empty( $post_type ) ? '' : "AND post_type = '$post_type' ";
+	$query .= empty( $post_status ) ? '' : "AND post_status = '$post_status' ";
 	$query .= "$exclusions $inclusions " ;
-	$query .= empty( $category ) ? '' : $wpdb->prepare("AND ($wpdb->posts.ID = $wpdb->term_relationships.object_id AND $wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id AND $wpdb->term_taxonomy.term_id = %d) ", $category);
-	$query .= empty( $post_parent ) ? '' : $wpdb->prepare("AND $wpdb->posts.post_parent = %d ", $post_parent);
-	// expected_slashed ($meta_key, $meta_value) -- Also, this looks really funky, doesn't seem like it works
+	$query .= empty( $category ) ? '' : "AND ($wpdb->posts.ID = $wpdb->term_relationships.object_id AND $wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id AND $wpdb->term_taxonomy.term_id = " . $category. ") ";
+	$query .= empty( $post_parent ) ? '' : "AND $wpdb->posts.post_parent = '$post_parent' ";
 	$query .= empty( $meta_key ) | empty($meta_value)  ? '' : " AND ($wpdb->posts.ID = $wpdb->postmeta.post_id AND $wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value = '$meta_value' )";
 	$query .= " GROUP BY $wpdb->posts.ID ORDER BY " . $orderby . ' ' . $order;
 	if ( 0 < $numberposts )
-		$query .= $wpdb->prepare(" LIMIT %d,%d", $offset, $numberposts);
+		$query .= " LIMIT " . $offset . ',' . $numberposts;
 
 	$posts = $wpdb->get_results($query);
 
@@ -259,118 +272,124 @@ function get_posts($args) {
 // Post meta functions
 //
 
-function add_post_meta($post_id, $meta_key, $meta_value, $unique = false) {
-	global $wpdb;
+function add_post_meta($post_id, $key, $value, $unique = false) {
+	global $wpdb, $post_meta_cache, $blog_id;
 
-	// expected_slashed ($meta_key)
-	$meta_key = stripslashes($meta_key);
+	$post_id = (int) $post_id;
 
-	if ( $unique && $wpdb->get_var( $wpdb->prepare( "SELECT meta_key FROM $wpdb->postmeta WHERE meta_key = %s AND post_id = %d", $meta_key, $post_id ) ) )
-		return false;
+	if ( $unique ) {
+		if ( $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key = '$key' AND post_id = '$post_id'") ) {
+			return false;
+		}
+	}
 
-	$cache = wp_cache_get($post_id, 'post_meta');
-	if ( ! is_array($cache) )
-		$cache = array();
-	// expected_slashed ($meta_key)
-	$cache[$wpdb->escape($meta_key)][] = $meta_value;
+	$post_meta_cache[$blog_id][$post_id][$key][] = $value;
 
-	wp_cache_set($post_id, $cache, 'post_meta');
+	$value = maybe_serialize($value);
+	$value = $wpdb->escape($value);
 
-	$meta_value = maybe_serialize($meta_value);
+	$wpdb->query("INSERT INTO $wpdb->postmeta (post_id,meta_key,meta_value) VALUES ('$post_id','$key','$value')");
 
-	$wpdb->insert( $wpdb->postmeta, compact( 'post_id', 'meta_key', 'meta_value' ) );
 	return true;
 }
 
 function delete_post_meta($post_id, $key, $value = '') {
-	global $wpdb;
+	global $wpdb, $post_meta_cache, $blog_id;
 
-	$post_id = absint( $post_id );
+	$post_id = (int) $post_id;
 
-	// expected_slashed ($key, $value)
-	$key = stripslashes( $key );
-	$value = stripslashes( $value );
-
-	if ( empty( $value ) )
-		$meta_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = %s", $post_id, $key ) );
-	else
-		$meta_id = $wpdb->get_var( $wpdb->prepare( "SELECT meta_id FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = %s AND meta_value = %s", $post_id, $key, $value ) );
+	if ( empty($value) ) {
+		$meta_id = $wpdb->get_var("SELECT meta_id FROM $wpdb->postmeta WHERE post_id = '$post_id' AND meta_key = '$key'");
+	} else {
+		$meta_id = $wpdb->get_var("SELECT meta_id FROM $wpdb->postmeta WHERE post_id = '$post_id' AND meta_key = '$key' AND meta_value = '$value'");
+	}
 
 	if ( !$meta_id )
 		return false;
 
-	if ( empty( $value ) )
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = %s", $post_id, $key ) );
-	else
-		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = %s AND meta_value = %s", $post_id, $key, $value ) );
+	if ( empty($value) ) {
+		$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = '$post_id' AND meta_key = '$key'");
+		unset($post_meta_cache[$blog_id][$post_id][$key]);
+	} else {
+		$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = '$post_id' AND meta_key = '$key' AND meta_value = '$value'");
+		$cache_key = $post_meta_cache[$blog_id][$post_id][$key];
+		if ($cache_key) foreach ( $cache_key as $index => $data )
+			if ( $data == $value )
+				unset($post_meta_cache[$blog_id][$post_id][$key][$index]);
+	}
 
-	wp_cache_delete($post_id, 'post_meta');
+	unset($post_meta_cache[$blog_id][$post_id][$key]);
 
 	return true;
 }
 
 function get_post_meta($post_id, $key, $single = false) {
-	global $wpdb;
+	global $wpdb, $post_meta_cache, $blog_id;
 
 	$post_id = (int) $post_id;
 
-	$meta_cache = wp_cache_get($post_id, 'post_meta');
-
-	if ( isset($meta_cache[$key]) ) {
+	if ( isset($post_meta_cache[$blog_id][$post_id][$key]) ) {
 		if ( $single ) {
-			return maybe_unserialize( $meta_cache[$key][0] );
+			return maybe_unserialize( $post_meta_cache[$blog_id][$post_id][$key][0] );
 		} else {
-			return maybe_unserialize( $meta_cache[$key] );
+			return maybe_unserialize( $post_meta_cache[$blog_id][$post_id][$key] );
 		}
 	}
 
-	if ( !$meta_cache ) {
+	if ( !isset($post_meta_cache[$blog_id][$post_id]) )
 		update_postmeta_cache($post_id);
-		$meta_cache = wp_cache_get($post_id, 'post_meta');
-	}
 
 	if ( $single ) {
-		if ( isset($meta_cache[$key][0]) )
-			return maybe_unserialize($meta_cache[$key][0]);
+		if ( isset($post_meta_cache[$blog_id][$post_id][$key][0]) )
+			return maybe_unserialize($post_meta_cache[$blog_id][$post_id][$key][0]);
 		else
 			return '';
-	} else {
-		return maybe_unserialize($meta_cache[$key]);
+	}	else {
+		return maybe_unserialize($post_meta_cache[$blog_id][$post_id][$key]);
 	}
 }
 
-function update_post_meta($post_id, $meta_key, $meta_value, $prev_value = '') {
-	global $wpdb;
+function update_post_meta($post_id, $key, $value, $prev_value = '') {
+	global $wpdb, $post_meta_cache, $blog_id;
 
-	$original_value = $meta_value;
-	$meta_value = maybe_serialize($meta_value);
+	$post_id = (int) $post_id;
+
+	$original_value = $value;
+	$value = maybe_serialize($value);
+	$value = $wpdb->escape($value);
 
 	$original_prev = $prev_value;
 	$prev_value = maybe_serialize($prev_value);
+	$prev_value = $wpdb->escape($prev_value);
 
-	// expected_slashed ($meta_key)
-	$meta_key = stripslashes($meta_key);
-
-	if ( ! $wpdb->get_var( $wpdb->prepare( "SELECT meta_key FROM $wpdb->postmeta WHERE meta_key = %s AND post_id = %d", $meta_key, $post_id ) ) )
+	if (! $wpdb->get_var("SELECT meta_key FROM $wpdb->postmeta WHERE meta_key = '$key' AND post_id = '$post_id'") ) {
 		return false;
+	}
 
-	$data  = compact( 'meta_value' );
-	$where = compact( 'meta_key', 'post_id' );
+	if ( empty($prev_value) ) {
+		$wpdb->query("UPDATE $wpdb->postmeta SET meta_value = '$value' WHERE meta_key = '$key' AND post_id = '$post_id'");
+		$cache_key = $post_meta_cache[$blog_id][$post_id][$key];
+		if ( !empty($cache_key) )
+			foreach ($cache_key as $index => $data)
+				$post_meta_cache[$blog_id][$post_id][$key][$index] = $original_value;
+	} else {
+		$wpdb->query("UPDATE $wpdb->postmeta SET meta_value = '$value' WHERE meta_key = '$key' AND post_id = '$post_id' AND meta_value = '$prev_value'");
+		$cache_key = $post_meta_cache[$blog_id][$post_id][$key];
+		if ( !empty($cache_key) )
+			foreach ($cache_key as $index => $data)
+				if ( $data == $original_prev )
+					$post_meta_cache[$blog_id][$post_id][$key][$index] = $original_value;
+	}
 
-	if ( !empty( $prev_value ) )
-		$where['meta_value'] = $prev_value;
-
-	$wpdb->update( $wpdb->postmeta, $data, $where );
-	wp_cache_delete($post_id, 'post_meta');
 	return true;
 }
 
 
 function delete_post_meta_by_key($post_meta_key) {
-	global $wpdb;
-	if ( $wpdb->query($wpdb->prepare("DELETE FROM $wpdb->postmeta WHERE meta_key = %s", $post_meta_key)) ) {
-		// TODO Get post_ids and delete cache
-		// wp_cache_delete($post_id, 'post_meta');
+	global $wpdb, $post_meta_cache, $blog_id;
+	$post_meta_key = $wpdb->escape($post_meta_key);
+	if ( $wpdb->query("DELETE FROM $wpdb->postmeta WHERE meta_key = '$post_meta_key'") ) {
+		unset($post_meta_cache[$blog_id]); // not worth doing the work to iterate through the cache
 		return true;
 	}
 	return false;
@@ -378,17 +397,17 @@ function delete_post_meta_by_key($post_meta_key) {
 
 
 function get_post_custom($post_id = 0) {
-	global $id, $wpdb;
+	global $id, $post_meta_cache, $wpdb, $blog_id;
 
 	if ( !$post_id )
 		$post_id = (int) $id;
 
 	$post_id = (int) $post_id;
 
-	if ( ! wp_cache_get($post_id, 'post_meta') )
+	if ( !isset($post_meta_cache[$blog_id][$post_id]) )
 		update_postmeta_cache($post_id);
 
-	return wp_cache_get($post_id, 'post_meta');
+	return $post_meta_cache[$blog_id][$post_id];
 }
 
 function get_post_custom_keys( $post_id = 0 ) {
@@ -485,8 +504,9 @@ function sanitize_post_field($field, $value, $post_id, $context) {
 
 function wp_delete_post($postid = 0) {
 	global $wpdb, $wp_rewrite;
+	$postid = (int) $postid;
 
-	if ( !$post = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID = %d", $postid)) )
+	if ( !$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = $postid") )
 		return $post;
 
 	if ( 'attachment' == $post->post_type )
@@ -497,25 +517,20 @@ function wp_delete_post($postid = 0) {
 	// TODO delete for pluggable post taxonomies too
 	wp_delete_object_term_relationships($postid, array('category', 'post_tag'));
 
-	$parent_data = array( 'post_parent' => $post->post_parent );
-	$parent_where = array( 'post_parent' => $postid );
-
 	if ( 'page' == $post->post_type )
-		$wpdb->update( $wpdb->posts, $parent_data, $parent_where + array( 'post_type' => 'page' ) );
+		$wpdb->query("UPDATE $wpdb->posts SET post_parent = $post->post_parent WHERE post_parent = $postid AND post_type = 'page'");
 
-	$wpdb->update( $wpdb->posts, $parent_data, $parent_where + array( 'post_type' => 'attachment' ) );
+	$wpdb->query("UPDATE $wpdb->posts SET post_parent = $post->post_parent WHERE post_parent = $postid AND post_type = 'attachment'");
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE ID = %d", $postid ));
+	$wpdb->query("DELETE FROM $wpdb->posts WHERE ID = $postid");
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->comments WHERE comment_post_ID = %d", $postid ));
+	$wpdb->query("DELETE FROM $wpdb->comments WHERE comment_post_ID = $postid");
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE post_id = %d", $postid ));
+	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = $postid");
 
 	if ( 'page' == $post->post_type ) {
 		clean_page_cache($postid);
 		$wp_rewrite->flush_rules();
-	} else {
-		clean_post_cache($postid);
 	}
 
 	do_action('deleted_post', $postid);
@@ -642,14 +657,6 @@ function wp_insert_post($postarr = array()) {
 			$post_date_gmt = get_gmt_from_date($post_date);
 	}
 
-	if ( $update ) {
-		$post_modified     = current_time( 'mysql' );
-		$post_modified_gmt = current_time( 'mysql', 1 );
-	} else {
-		$post_modified     = $post_date;
-		$post_modified_gmt = $post_date_gmt;
-	}
-
 	if ( 'publish' == $post_status ) {
 		$now = gmdate('Y-m-d H:i:59');
 		if ( mysql2date('U', $post_date_gmt) > mysql2date('U', $now) )
@@ -687,36 +694,54 @@ function wp_insert_post($postarr = array()) {
 		$post_password = '';
 
 	if ( 'draft' != $post_status ) {
-		$post_name_check = $wpdb->get_var($wpdb->prepare("SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID != %d AND post_parent = %d LIMIT 1", $post_name, $post_type, $post_ID, $post_parent));
+		$post_name_check = $wpdb->get_var("SELECT post_name FROM $wpdb->posts WHERE post_name = '$post_name' AND post_type = '$post_type' AND ID != '$post_ID' AND post_parent = '$post_parent' LIMIT 1");
 
 		if ($post_name_check || in_array($post_name, $wp_rewrite->feeds) ) {
 			$suffix = 2;
 			do {
 				$alt_post_name = substr($post_name, 0, 200-(strlen($suffix)+1)). "-$suffix";
-				// expected_slashed ($alt_post_name, $post_name, $post_type)
-				$post_name_check = $wpdb->get_var($wpdb->prepare("SELECT post_name FROM $wpdb->posts WHERE post_name = '$alt_post_name' AND post_type = '$post_type' AND ID != %d AND post_parent = %d LIMIT 1", $post_ID, $post_parent));
+				$post_name_check = $wpdb->get_var("SELECT post_name FROM $wpdb->posts WHERE post_name = '$alt_post_name' AND post_type = '$post_type' AND ID != '$post_ID' AND post_parent = '$post_parent' LIMIT 1");
 				$suffix++;
 			} while ($post_name_check);
 			$post_name = $alt_post_name;
 		}
 	}
 
-	// expected_slashed (everything!)
-	$data = compact( array( 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_content_filtered', 'post_title', 'post_excerpt', 'post_status', 'post_type', 'comment_status', 'ping_status', 'post_password', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_parent', 'menu_order' ) );
-	$data = stripslashes_deep( $data );
-	$where = array( 'ID' => $post_ID );
-
 	if ($update) {
-		$wpdb->update( $wpdb->posts, $data, $where );
+		$wpdb->query(
+			"UPDATE IGNORE $wpdb->posts SET
+			post_author = '$post_author',
+			post_date = '$post_date',
+			post_date_gmt = '$post_date_gmt',
+			post_content = '$post_content',
+			post_content_filtered = '$post_content_filtered',
+			post_title = '$post_title',
+			post_excerpt = '$post_excerpt',
+			post_status = '$post_status',
+			post_type = '$post_type',
+			comment_status = '$comment_status',
+			ping_status = '$ping_status',
+			post_password = '$post_password',
+			post_name = '$post_name',
+			to_ping = '$to_ping',
+			pinged = '$pinged',
+			post_modified = '".current_time('mysql')."',
+			post_modified_gmt = '".current_time('mysql',1)."',
+			post_parent = '$post_parent',
+			menu_order = '$menu_order'
+			WHERE ID = $post_ID");
 	} else {
-		$data['post_mime_type'] = stripslashes( $post_mime_type ); // This isn't in the update
-		$wpdb->insert( $wpdb->posts, $data );
-		$post_ID = (int) $wpdb->insert_id;
+		$wpdb->query(
+			"INSERT IGNORE INTO $wpdb->posts
+			(post_author, post_date, post_date_gmt, post_content, post_content_filtered, post_title, post_excerpt,  post_status, post_type, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_parent, menu_order, post_mime_type)
+			VALUES
+			('$post_author', '$post_date', '$post_date_gmt', '$post_content', '$post_content_filtered', '$post_title', '$post_excerpt', '$post_status', '$post_type', '$comment_status', '$ping_status', '$post_password', '$post_name', '$to_ping', '$pinged', '$post_date', '$post_date_gmt', '$post_parent', '$menu_order', '$post_mime_type')");
+			$post_ID = (int) $wpdb->insert_id;
 	}
 
 	if ( empty($post_name) && 'draft' != $post_status ) {
 		$post_name = sanitize_title($post_title, $post_ID);
-		$wpdb->update( $wpdb->posts, compact( 'post_name' ), $where );
+		$wpdb->query( "UPDATE $wpdb->posts SET post_name = '$post_name' WHERE ID = '$post_ID'" );
 	}
 
 	wp_set_post_categories( $post_ID, $post_category );
@@ -730,7 +755,7 @@ function wp_insert_post($postarr = array()) {
 
 	// Set GUID
 	if ( ! $update )
-		$wpdb->update( $wpdb->posts, array( 'guid' => get_permalink( $post_ID ) ), $where );
+		$wpdb->query("UPDATE $wpdb->posts SET guid = '" . get_permalink($post_ID) . "' WHERE ID = '$post_ID'");
 
 	$post = get_post($post_ID);
 	if ( !empty($page_template) )
@@ -798,7 +823,7 @@ function wp_publish_post($post_id) {
 	if ( 'publish' == $post->post_status )
 		return;
 
-	$wpdb->update( $wpdb->posts, array( 'post_status' => 'publish' ), array( 'ID' => $post_id ) );
+	$wpdb->query( "UPDATE $wpdb->posts SET post_status = 'publish' WHERE ID = '$post_id'" );
 
 	$old_status = $post->post_status;
 	$post->post_status = 'publish';
@@ -858,15 +883,13 @@ function wp_transition_post_status($new_status, $old_status, $post) {
 
 function add_ping($post_id, $uri) { // Add a URL to those already pung
 	global $wpdb;
-	$pung = $wpdb->get_var( $wpdb->prepare( "SELECT pinged FROM $wpdb->posts WHERE ID = %d", $post_id ));
+	$pung = $wpdb->get_var("SELECT pinged FROM $wpdb->posts WHERE ID = $post_id");
 	$pung = trim($pung);
 	$pung = preg_split('/\s/', $pung);
 	$pung[] = $uri;
 	$new = implode("\n", $pung);
 	$new = apply_filters('add_ping', $new);
-	// expected_slashed ($new)
-	$new = stripslashes($new);
-	return $wpdb->update( $wpdb->posts, array( 'pinged' => $new ), array( 'ID' => $post_id ) );
+	return $wpdb->query("UPDATE $wpdb->posts SET pinged = '$new' WHERE ID = $post_id");
 }
 
 function get_enclosed($post_id) { // Get enclosures already enclosed for a post
@@ -890,7 +913,7 @@ function get_enclosed($post_id) { // Get enclosures already enclosed for a post
 
 function get_pung($post_id) { // Get URLs already pung for a post
 	global $wpdb;
-	$pung = $wpdb->get_var( $wpdb->prepare( "SELECT pinged FROM $wpdb->posts WHERE ID = %d", $post_id ));
+	$pung = $wpdb->get_var("SELECT pinged FROM $wpdb->posts WHERE ID = $post_id");
 	$pung = trim($pung);
 	$pung = preg_split('/\s/', $pung);
 	$pung = apply_filters('get_pung', $pung);
@@ -899,7 +922,7 @@ function get_pung($post_id) { // Get URLs already pung for a post
 
 function get_to_ping($post_id) { // Get any URLs in the todo list
 	global $wpdb;
-	$to_ping = $wpdb->get_var( $wpdb->prepare( "SELECT to_ping FROM $wpdb->posts WHERE ID = %d", $post_id ));
+	$to_ping = $wpdb->get_var("SELECT to_ping FROM $wpdb->posts WHERE ID = $post_id");
 	$to_ping = trim($to_ping);
 	$to_ping = preg_split('/\s/', $to_ping, -1, PREG_SPLIT_NO_EMPTY);
 	$to_ping = apply_filters('get_to_ping',  $to_ping);
@@ -938,9 +961,9 @@ function trackback_url_list($tb_list, $post_id) {
 function get_all_page_ids() {
 	global $wpdb;
 
-	if ( ! $page_ids = wp_cache_get('all_page_ids', 'posts') ) {
+	if ( ! $page_ids = wp_cache_get('all_page_ids', 'pages') ) {
 		$page_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_type = 'page'");
-		wp_cache_add('all_page_ids', $page_ids, 'posts');
+		wp_cache_add('all_page_ids', $page_ids, 'pages');
 	}
 
 	return $page_ids;
@@ -950,14 +973,57 @@ function get_all_page_ids() {
 // Retrieves page data given a page ID or page object.
 // Handles page caching.
 function &get_page(&$page, $output = OBJECT, $filter = 'raw') {
+	global $wpdb, $blog_id;
+
 	if ( empty($page) ) {
-		if ( isset( $GLOBALS['page'] ) && isset( $GLOBALS['page']->ID ) )
-			return get_post($GLOBALS['page'], $output, $filter);
-		else
-			return null;
+		if ( isset( $GLOBALS['page'] ) && isset( $GLOBALS['page']->ID ) ) {
+			$_page = & $GLOBALS['page'];
+			wp_cache_add($_page->ID, $_page, 'pages');
+		} else {
+			// shouldn't we just return NULL at this point? ~ Mark
+			$_page = null;
+		}
+	} elseif ( is_object($page) ) {
+		if ( 'post' == $page->post_type )
+			return get_post($page, $output, $filter);
+		wp_cache_add($page->ID, $page, 'pages');
+		$_page = $page;
+	} else {
+		$page = (int) $page;
+		// first, check the cache
+		if ( ! ( $_page = wp_cache_get($page, 'pages') ) ) {
+			// not in the page cache?
+			if ( isset($GLOBALS['page']->ID) && ($page == $GLOBALS['page']->ID) ) { // for is_page() views
+				// I don't think this code ever gets executed ~ Mark
+				$_page = & $GLOBALS['page'];
+				wp_cache_add($_page->ID, $_page, 'pages');
+			} elseif ( isset($GLOBALS['post_cache'][$blog_id][$page]) ) { // it's actually a page, and is cached
+				return get_post($page, $output, $filter);
+			} else { // it's not in any caches, so off to the DB we go
+				// Why are we using assignment for this query?
+				$_page = & $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID= '$page' LIMIT 1");
+				if ( 'post' == $_page->post_type )
+					return get_post($_page, $output, $filter);
+				// Potential issue: we're not checking to see if the post_type = 'page'
+				// So all non-'post' posts will get cached as pages.
+				wp_cache_add($_page->ID, $_page, 'pages');
+			}
+		}
 	}
 
-	return get_post($page, $output, $filter);
+	$_page = sanitize_post($_page, $filter);
+
+	// at this point, one way or another, $_post contains the page object
+
+	if ( $output == OBJECT ) {
+		return $_page;
+	} elseif ( $output == ARRAY_A ) {
+		return get_object_vars($_page);
+	} elseif ( $output == ARRAY_N ) {
+		return array_values(get_object_vars($_page));
+	} else {
+		return $_page;
+	}
 }
 
 function get_page_by_path($page_path, $output = OBJECT) {
@@ -971,7 +1037,7 @@ function get_page_by_path($page_path, $output = OBJECT) {
 	foreach($page_paths as $pathdir)
 		$full_path .= ($pathdir!=''?'/':'') . sanitize_title($pathdir);
 
-	$pages = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_name = %s AND post_type='page'", $leaf_path ));
+	$pages = $wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_name = '$leaf_path' AND post_type='page'");
 
 	if ( empty($pages) )
 		return NULL;
@@ -980,7 +1046,7 @@ function get_page_by_path($page_path, $output = OBJECT) {
 		$path = '/' . $leaf_path;
 		$curpage = $page;
 		while ($curpage->post_parent != 0) {
-			$curpage = $wpdb->get_row( $wpdb->prepare( "SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE ID = %d and post_type='page'", $curpage->post_parent ));
+			$curpage = $wpdb->get_row("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE ID = '$curpage->post_parent' and post_type='page'");
 			$path = '/' . $curpage->post_name . $path;
 		}
 
@@ -993,7 +1059,8 @@ function get_page_by_path($page_path, $output = OBJECT) {
 
 function get_page_by_title($page_title, $output = OBJECT) {
 	global $wpdb;
-	$page = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_title = %s AND post_type='page'", $page_title ));
+	$page_title = $wpdb->escape($page_title);
+	$page = $wpdb->get_var("SELECT ID FROM $wpdb->posts WHERE post_title = '$page_title' AND post_type='page'");
 	if ( $page )
 		return get_page($page, $output);
 
@@ -1001,6 +1068,11 @@ function get_page_by_title($page_title, $output = OBJECT) {
 }
 
 function &get_page_children($page_id, $pages) {
+	global $page_cache, $blog_id;
+
+	if ( empty($pages) )
+		$pages = &$page_cache[$blog_id];
+
 	$page_list = array();
 	foreach ( $pages as $page ) {
 		if ( $page->post_parent == $page_id ) {
@@ -1057,7 +1129,7 @@ function &get_pages($args = '') {
 	extract( $r, EXTR_SKIP );
 
 	$key = md5( serialize( $r ) );
-	if ( $cache = wp_cache_get( 'get_pages', 'posts' ) )
+	if ( $cache = wp_cache_get( 'get_pages', 'page' ) )
 		if ( isset( $cache[ $key ] ) )
 			return apply_filters('get_pages', $cache[ $key ], $r );
 
@@ -1071,9 +1143,9 @@ function &get_pages($args = '') {
 		if ( count($incpages) ) {
 			foreach ( $incpages as $incpage ) {
 				if (empty($inclusions))
-					$inclusions = $wpdb->prepare(' AND ( ID = %d ', $incpage);
+					$inclusions = ' AND ( ID = ' . intval($incpage) . ' ';
 				else
-					$inclusions .= $wpdb->prepare(' OR ID = %d ', $incpage);
+					$inclusions .= ' OR ID = ' . intval($incpage) . ' ';
 			}
 		}
 	}
@@ -1086,9 +1158,9 @@ function &get_pages($args = '') {
 		if ( count($expages) ) {
 			foreach ( $expages as $expage ) {
 				if (empty($exclusions))
-					$exclusions = $wpdb->prepare(' AND ( ID <> %d ', $expage);
+					$exclusions = ' AND ( ID <> ' . intval($expage) . ' ';
 				else
-					$exclusions .= $wpdb->prepare(' AND ID <> %d ', $expage);
+					$exclusions .= ' AND ID <> ' . intval($expage) . ' ';
 			}
 		}
 	}
@@ -1112,9 +1184,9 @@ function &get_pages($args = '') {
 				}
 
 				if ( '' == $author_query )
-					$author_query = $wpdb->prepare(' post_author = %d ', $post_author);
+					$author_query = ' post_author = ' . intval($post_author) . ' ';
 				else
-					$author_query .= $wpdb->prepare(' OR post_author = %d ', $post_author);
+					$author_query .= ' OR post_author = ' . intval($post_author) . ' ';
 			}
 			if ( '' != $author_query )
 				$author_query = " AND ($author_query)";
@@ -1124,7 +1196,6 @@ function &get_pages($args = '') {
 	$query = "SELECT * FROM $wpdb->posts " ;
 	$query .= ( empty( $meta_key ) ? "" : ", $wpdb->postmeta " ) ;
 	$query .= " WHERE (post_type = 'page' AND post_status = 'publish') $exclusions $inclusions " ;
-	// expected_slashed ($meta_key, $meta_value) -- also, it looks funky
 	$query .= ( empty( $meta_key ) | empty($meta_value)  ? "" : " AND ($wpdb->posts.ID = $wpdb->postmeta.post_id AND $wpdb->postmeta.meta_key = '$meta_key' AND $wpdb->postmeta.meta_value = '$meta_value' )" ) ;
 	$query .= $author_query;
 	$query .= " ORDER BY " . $sort_column . " " . $sort_order ;
@@ -1141,7 +1212,7 @@ function &get_pages($args = '') {
 		$pages = & get_page_children($child_of, $pages);
 
 	$cache[ $key ] = $pages;
-	wp_cache_set( 'get_pages', $cache, 'posts' );
+	wp_cache_set( 'get_pages', $cache, 'page' );
 
 	$pages = apply_filters('get_pages', $pages, $r);
 
@@ -1165,7 +1236,7 @@ function generate_page_uri_index() {
 
 			// URL => page name
 			$uri = get_page_uri($id);
-			$attachments = $wpdb->get_results( $wpdb->prepare( "SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = %d", $id ));
+			$attachments = $wpdb->get_results("SELECT ID, post_name, post_parent FROM $wpdb->posts WHERE post_type = 'attachment' AND post_parent = '$id'");
 			if ( $attachments ) {
 				foreach ( $attachments as $attachment ) {
 					$attach_uri = get_page_uri($attachment->ID);
@@ -1243,16 +1314,14 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 	else
 		$post_name = sanitize_title($post_name);
 
-	// expected_slashed ($post_name)
 	$post_name_check =
-		$wpdb->get_var( $wpdb->prepare( "SELECT post_name FROM $wpdb->posts WHERE post_name = '$post_name' AND post_status = 'inherit' AND ID != %d LIMIT 1", $post_ID));
+		$wpdb->get_var("SELECT post_name FROM $wpdb->posts WHERE post_name = '$post_name' AND post_status = 'inherit' AND ID != '$post_ID' LIMIT 1");
 
 	if ($post_name_check) {
 		$suffix = 2;
 		while ($post_name_check) {
 			$alt_post_name = $post_name . "-$suffix";
-			// expected_slashed ($alt_post_name, $post_name)
-			$post_name_check = $wpdb->get_var( $wpdb->prepare( "SELECT post_name FROM $wpdb->posts WHERE post_name = '$alt_post_name' AND post_status = 'inherit' AND ID != %d AND post_parent = %d LIMIT 1", $post_ID, $post_parent));
+			$post_name_check = $wpdb->get_var("SELECT post_name FROM $wpdb->posts WHERE post_name = '$alt_post_name' AND post_status = 'inherit' AND ID != '$post_ID' AND post_parent = '$post_parent' LIMIT 1");
 			$suffix++;
 		}
 		$post_name = $alt_post_name;
@@ -1293,20 +1362,43 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 	if ( ! isset($pinged) )
 		$pinged = '';
 
-	// expected_slashed (everything!)
-	$data = compact( array( 'post_author', 'post_date', 'post_date_gmt', 'post_content', 'post_content_filtered', 'post_title', 'post_excerpt', 'post_status', 'post_type', 'comment_status', 'ping_status', 'post_password', 'post_name', 'to_ping', 'pinged', 'post_modified', 'post_modified_gmt', 'post_parent', 'menu_order', 'post_mime_type', 'guid' ) );
-	$data = stripslashes_deep( $data );
-
-	if ( $update ) {
-		$wpdb->update( $wpdb->posts, $data, array( 'ID' => $post_ID ) );
+	if ($update) {
+		$wpdb->query(
+			"UPDATE $wpdb->posts SET
+			post_author = '$post_author',
+			post_date = '$post_date',
+			post_date_gmt = '$post_date_gmt',
+			post_content = '$post_content',
+			post_content_filtered = '$post_content_filtered',
+			post_title = '$post_title',
+			post_excerpt = '$post_excerpt',
+			post_status = '$post_status',
+			post_type = '$post_type',
+			comment_status = '$comment_status',
+			ping_status = '$ping_status',
+			post_password = '$post_password',
+			post_name = '$post_name',
+			to_ping = '$to_ping',
+			pinged = '$pinged',
+			post_modified = '".current_time('mysql')."',
+			post_modified_gmt = '".current_time('mysql',1)."',
+			post_parent = '$post_parent',
+			menu_order = '$menu_order',
+			post_mime_type = '$post_mime_type',
+			guid = '$guid'
+			WHERE ID = $post_ID");
 	} else {
-		$wpdb->insert( $wpdb->posts, $data );
-		$post_ID = (int) $wpdb->insert_id;
+		$wpdb->query(
+			"INSERT INTO $wpdb->posts
+			(post_author, post_date, post_date_gmt, post_content, post_content_filtered, post_title, post_excerpt,  post_status, post_type, comment_status, ping_status, post_password, post_name, to_ping, pinged, post_modified, post_modified_gmt, post_parent, menu_order, post_mime_type, guid)
+			VALUES
+			('$post_author', '$post_date', '$post_date_gmt', '$post_content', '$post_content_filtered', '$post_title', '$post_excerpt', '$post_status', '$post_type', '$comment_status', '$ping_status', '$post_password', '$post_name', '$to_ping', '$pinged', '$post_date', '$post_date_gmt', '$post_parent', '$menu_order', '$post_mime_type', '$guid')");
+			$post_ID = (int) $wpdb->insert_id;
 	}
 
 	if ( empty($post_name) ) {
 		$post_name = sanitize_title($post_title, $post_ID);
-		$wpdb->update( $wpdb->posts, compact( $post_name ), array( 'ID' => $post_ID ) );
+		$wpdb->query( "UPDATE $wpdb->posts SET post_name = '$post_name' WHERE ID = '$post_ID'" );
 	}
 
 	wp_set_post_categories($post_ID, $post_category);
@@ -1327,8 +1419,9 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 
 function wp_delete_attachment($postid) {
 	global $wpdb;
+	$postid = (int) $postid;
 
-	if ( !$post = $wpdb->get_row(  $wpdb->prepare( "SELECT * FROM $wpdb->posts WHERE ID = %d", $postid)) )
+	if ( !$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = '$postid'") )
 		return $post;
 
 	if ( 'attachment' != $post->post_type )
@@ -1340,15 +1433,15 @@ function wp_delete_attachment($postid) {
 	// TODO delete for pluggable post taxonomies too
 	wp_delete_object_term_relationships($postid, array('category', 'post_tag'));
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->posts WHERE ID = %d", $postid ));
+	$wpdb->query("DELETE FROM $wpdb->posts WHERE ID = '$postid'");
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->comments WHERE comment_post_ID = %d", $postid ));
+	$wpdb->query("DELETE FROM $wpdb->comments WHERE comment_post_ID = '$postid'");
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE post_id = %d ", $postid ));
+	$wpdb->query("DELETE FROM $wpdb->postmeta WHERE post_id = '$postid'");
 
 	if ( ! empty($meta['thumb']) ) {
 		// Don't delete the thumb if another attachment uses it
-		if (! $wpdb->get_row( $wpdb->prepare( "SELECT meta_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attachment_metadata' AND meta_value LIKE %s AND post_id <> %d", '%'.$meta['thumb'].'%', $postid)) ) {
+		if (! $wpdb->get_row("SELECT meta_id FROM $wpdb->postmeta WHERE meta_key = '_wp_attachment_metadata' AND meta_value LIKE '%".$wpdb->escape($meta['thumb'])."%' AND post_id <> $postid")) {
 			$thumbfile = str_replace(basename($file), $meta['thumb'], $file);
 			$thumbfile = apply_filters('wp_delete_file', $thumbfile);
 			@ unlink($thumbfile);
@@ -1359,8 +1452,6 @@ function wp_delete_attachment($postid) {
 
 	if ( ! empty($file) )
 		@ unlink($file);
-
-	clean_post_cache($postid);
 
 	do_action('delete_attachment', $postid);
 
@@ -1619,105 +1710,118 @@ function get_lastpostmodified($timezone = 'server') {
 //
 
 function update_post_cache(&$posts) {
+	global $post_cache, $blog_id;
+
 	if ( !$posts )
 		return;
 
-	foreach ( $posts as $post )
-		wp_cache_add($post->ID, $post, 'posts');
+	for ($i = 0; $i < count($posts); $i++) {
+		$post_cache[$blog_id][$posts[$i]->ID] = &$posts[$i];
+	}
 }
 
 function clean_post_cache($id) {
-	wp_cache_delete($id, 'posts');
-	wp_cache_delete($id, 'post_meta');
+	global $post_cache, $post_meta_cache, $post_term_cache, $blog_id;
+
+	if ( isset( $post_cache[$blog_id][$id] ) )
+		unset( $post_cache[$blog_id][$id] );
+
+	if ( isset ($post_meta_cache[$blog_id][$id] ) )
+		unset( $post_meta_cache[$blog_id][$id] );
 
 	clean_object_term_cache($id, 'post');
-
-	do_action('clean_post_cache', $id);
 }
 
 function update_page_cache(&$pages) {
-	update_post_cache($pages);
+	global $page_cache, $blog_id;
+
+	if ( !$pages )
+		return;
+
+	for ($i = 0; $i < count($pages); $i++) {
+		$page_cache[$blog_id][$pages[$i]->ID] = &$pages[$i];
+		wp_cache_add($pages[$i]->ID, $pages[$i], 'pages');
+	}
 }
 
 function clean_page_cache($id) {
-	clean_post_cache($id);
+	global $page_cache, $blog_id;
 
-	wp_cache_delete( 'all_page_ids', 'posts' );
-	wp_cache_delete( 'get_pages', 'posts' );
+	if ( isset( $page_cache[$blog_id][$id] ) )
+		unset( $page_cache[$blog_id][$id] );
 
-	do_action('clean_page_cache', $id);
+	wp_cache_delete($id, 'pages');
+	wp_cache_delete( 'all_page_ids', 'pages' );
+	wp_cache_delete( 'get_pages', 'page' );
 }
 
 function update_post_caches(&$posts) {
-	global $wpdb;
+	global $post_cache;
+	global $wpdb, $blog_id;
 
 	// No point in doing all this work if we didn't match any posts.
 	if ( !$posts )
 		return;
 
-	update_post_cache($posts);
+	// Get the categories for all the posts
+	for ($i = 0; $i < count($posts); $i++) {
+		$post_id_array[] = $posts[$i]->ID;
+		$post_cache[$blog_id][$posts[$i]->ID] = &$posts[$i];
+	}
 
-	$post_ids = array();
+	$post_id_list = implode(',', $post_id_array);
 
-	for ($i = 0; $i < count($posts); $i++)
-		$post_ids[] = $posts[$i]->ID;
+	update_object_term_cache($post_id_list, 'post');
 
-	update_object_term_cache($post_ids, 'post');
-
-	update_postmeta_cache($post_ids);
+	update_postmeta_cache($post_id_list);
 }
 
-function update_postmeta_cache($post_ids) {
-	global $wpdb;
+function update_postmeta_cache($post_id_list = '') {
+	global $wpdb, $post_meta_cache, $blog_id;
 
-	if ( empty( $post_ids ) )
+	// We should validate this comma-separated list for the upcoming SQL query
+	$post_id_list = preg_replace('|[^0-9,]|', '', $post_id_list);
+
+	if ( empty( $post_id_list ) )
 		return false;
 
-	if ( !is_array($post_ids) ) {
-		$post_ids = preg_replace('|[^0-9,]|', '', $post_ids);
-		$post_ids = explode(',', $post_ids);
+	// we're marking each post as having its meta cached (with no keys... empty array), to prevent posts with no meta keys from being queried again
+	// any posts that DO have keys will have this empty array overwritten with a proper array, down below
+	$post_id_array = (array) explode(',', $post_id_list);
+	$count = count( $post_id_array);
+	for ( $i = 0; $i < $count; $i++ ) {
+		$post_id = (int) $post_id_array[ $i ];
+		if ( isset( $post_meta_cache[$blog_id][$post_id] ) ) { // If the meta is already cached
+			unset( $post_id_array[ $i ] );
+			continue;
+		}
+		$post_meta_cache[$blog_id][$post_id] = array();
 	}
-
-	$post_ids = array_map('intval', $post_ids);
-
-	$ids = array();
-	foreach ( (array) $post_ids as $id ) {
-		if ( false === wp_cache_get($id, 'post_meta') )
-			$ids[] = $id;
-	}
-
-	if ( empty( $ids ) )
-		return false;
+	if ( count( $post_id_array ) == 0 )
+		return;
+	$post_id_list = join( ',', $post_id_array ); // with already cached stuff removeds
 
 	// Get post-meta info
-	$id_list = join(',', $ids);
-	$cache = array();
-	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta WHERE post_id IN ($id_list) ORDER BY post_id, meta_key", ARRAY_A) ) {
-		foreach ( (array) $meta_list as $metarow) {
+	if ( $meta_list = $wpdb->get_results("SELECT post_id, meta_key, meta_value FROM $wpdb->postmeta WHERE post_id IN($post_id_list) ORDER BY post_id, meta_key", ARRAY_A) ) {
+		// Change from flat structure to hierarchical:
+		if ( !isset($post_meta_cache) )
+			$post_meta_cache[$blog_id] = array();
+
+		foreach ($meta_list as $metarow) {
 			$mpid = (int) $metarow['post_id'];
 			$mkey = $metarow['meta_key'];
 			$mval = $metarow['meta_value'];
 
 			// Force subkeys to be array type:
-			if ( !isset($cache[$mpid]) || !is_array($cache[$mpid]) )
-				$cache[$mpid] = array();
-			if ( !isset($cache[$mpid][$mkey]) || !is_array($cache[$mpid][$mkey]) )
-				$cache[$mpid][$mkey] = array();
+			if ( !isset($post_meta_cache[$blog_id][$mpid]) || !is_array($post_meta_cache[$blog_id][$mpid]) )
+				$post_meta_cache[$blog_id][$mpid] = array();
+			if ( !isset($post_meta_cache[$blog_id][$mpid]["$mkey"]) || !is_array($post_meta_cache[$blog_id][$mpid]["$mkey"]) )
+				$post_meta_cache[$blog_id][$mpid]["$mkey"] = array();
 
 			// Add a value to the current pid/key:
-			$cache[$mpid][$mkey][] = $mval;
+			$post_meta_cache[$blog_id][$mpid][$mkey][] = $mval;
 		}
 	}
-
-	foreach ( (array) $ids as $id ) {
-		if ( ! isset($cache[$id]) )
-			$cache[$id] = array();
-	}
-
-	foreach ( array_keys($cache) as $post)
-		wp_cache_set($post, $cache[$post], 'post_meta');
-
-	return $cache;
 }
 
 //
@@ -1729,7 +1833,7 @@ function _transition_post_status($new_status, $old_status, $post) {
 
 	if ( $old_status != 'publish' && $new_status == 'publish' ) {
 			// Reset GUID if transitioning to publish.
-			$wpdb->update( $wpdb->posts, array( 'guid' => get_permalink( $post->ID ) ), array( 'ID' => $post->ID ) );
+			$wpdb->query("UPDATE $wpdb->posts SET guid = '" . get_permalink($post->ID) . "' WHERE ID = '$post->ID'");
 			do_action('private_to_published', $post->ID);  // Deprecated, use private_to_publish
 	}
 
@@ -1756,10 +1860,17 @@ function _publish_post_hook($post_id) {
 
 	$post = get_post($post_id);
 
-	$data = array( 'post_id' => $post_id, 'meta_value' => '1' );
 	if ( get_option('default_pingback_flag') )
-		$wpdb->insert( $wpdb->postmeta, $data + array( 'meta_key' => '_pingme' ) );
-	$wpdb->insert( $wpdb->postmeta, $data + array( 'meta_key' => '_encloseme' ) );
+		$result = $wpdb->query("
+			INSERT INTO $wpdb->postmeta
+			(post_id,meta_key,meta_value)
+			VALUES ('$post_id','_pingme','1')
+		");
+	$result = $wpdb->query("
+		INSERT INTO $wpdb->postmeta
+		(post_id,meta_key,meta_value)
+		VALUES ('$post_id','_encloseme','1')
+	");
 	wp_schedule_single_event(time(), 'do_pings');
 }
 

@@ -121,14 +121,10 @@ case 'editpost':
 
 		if ($_POST['save']) {
 			$location = "post.php?action=edit&post=$post_ID";
-		} elseif ($_POST['addemeta']) {
-			$location = add_query_arg( 'message', 2, wp_get_referer() );
-			$location = explode('#', $location);
-			$location = $location[0] . '#postcustom';
+		} elseif ($_POST['updatemeta']) {
+			$location = wp_get_referer() . '&message=2#postcustom';
 		} elseif ($_POST['deletemeta']) {
-			$location = add_query_arg( 'message', 3, wp_get_referer() );
-			$location = explode('#', $location);
-			$location = $location[0] . '#postcustom';
+			$location = wp_get_referer() . '&message=3#postcustom';
 		} elseif (!empty($referredby) && $referredby != $referer) {
 			$location = $_POST['referredby'];
 			if ( $_POST['referredby'] == 'redo' )
