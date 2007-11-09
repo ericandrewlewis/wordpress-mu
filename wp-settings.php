@@ -287,6 +287,8 @@ if ( !defined('USER_COOKIE') )
 	define('USER_COOKIE', 'wordpressuser');
 if ( !defined('PASS_COOKIE') )
 	define('PASS_COOKIE', 'wordpresspass');
+if ( !defined('TEST_COOKIE') )
+	define('TEST_COOKIE', 'wordpress_test_cookie');
 if ( !defined('COOKIEPATH') )
 	define('COOKIEPATH', $current_site->path );
 if ( !defined('SITECOOKIEPATH') )
