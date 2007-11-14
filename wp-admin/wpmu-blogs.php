@@ -5,7 +5,6 @@ $title = __('WordPress MU &rsaquo; Admin &rsaquo; Blogs');
 $parent_file = 'wpmu-admin.php';
 wp_enqueue_script( 'listman' );
 require_once('admin-header.php');
-
 if( is_site_admin() == false ) {
     wp_die( __('<p>You do not have permission to access this page.</p>') );
 }
@@ -519,7 +518,7 @@ switch( $_GET['action'] ) {
 							case 'control_backend':
 							?>
 								<td valign="top">
-									<?php echo "<a href='http://" . $blog['domain'] . $blog['path'] . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?>
+									<?php echo "<a href='". $schema . $blog['domain'] . $blog['path'] . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?>
 								</td>
 							<?php
 							break;
