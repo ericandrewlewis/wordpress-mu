@@ -53,8 +53,11 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		$wpdb->base_prefix . $blog_id . "_post2cat",
 		$wpdb->base_prefix . $blog_id . "_postmeta",
 		$wpdb->base_prefix . $blog_id . "_posts",
-		$wpdb->base_prefix . $blog_id . "_referer_visitLog",
-		$wpdb->base_prefix . $blog_id . "_referer_blacklist" );
+		$wpdb->base_prefix . $blog_id . "_terms",
+		$wpdb->base_prefix . $blog_id . "_term_taxonomy",
+		$wpdb->base_prefix . $blog_id . "_term_relationships" );
+
+		$drop_tables = apply_filters( 'wpmu_drop_tables', $drop_tables ); 
 		reset( $drop_tables );
 
 		foreach ( (array) $drop_tables as $drop_table) {
