@@ -93,7 +93,7 @@ function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
 <tr>
 <th scope="row"  valign="top"><?php _e('Privacy:') ?></th>
 <td><?php _e('I would like my blog to appear in search engines like Google and Technorati, and in public listings around this site.'); ?> 
-<label><input type="radio" name="blog_public" value="1" <?php if( !isset( $_POST[ 'blog_public' ] ) || $_POST[ 'blog_public' ] == '1' ) { ?>checked="checked"<?php } ?> /> <strong>Yes</strong> </label> <label><input type="radio" name="blog_public" value="0" <?php if( isset( $_POST[ 'blog_public' ] ) && $_POST[ 'blog_public' ] == '0' ) { ?>checked="checked"<?php } ?> /><strong>No</strong> </label> <br />
+<label><input type="radio" name="blog_public" value="1" <?php if( !isset( $_POST[ 'blog_public' ] ) || $_POST[ 'blog_public' ] == '1' ) { ?>checked="checked"<?php } ?> /> <strong><?php _e( 'Yes' ); ?></strong> </label> <label><input type="radio" name="blog_public" value="0" <?php if( isset( $_POST[ 'blog_public' ] ) && $_POST[ 'blog_public' ] == '0' ) { ?>checked="checked"<?php } ?> /><strong><?php _e( 'No' ); ?></strong> </label> <br />
 </tr>
 <?php
 do_action('signup_blogform', $errors);
@@ -386,7 +386,7 @@ if( !$active_signup )
 $active_signup = apply_filters( 'wpmu_active_signup', $active_signup ); // return "all", "none", "blog" or "user"
 
 if( is_site_admin() ) {
-	echo "<div style='background: #faf; font-weight: bold; border: 1px solid #333; margin: 2px; padding: 2px'>Greetings Site Administrator! You are currently allowing '$active_signup' registrations. To change or disable registration go to your <a href='wp-admin/wpmu-options.php'>Options page</a>.</div>";
+	echo "<div style='background: #faf; font-weight: bold; border: 1px solid #333; margin: 2px; padding: 2px'>" . sprintf( __( "Greetings Site Administrator! You are currently allowing '%s' registrations. To change or disable registration go to your <a href='wp-admin/wpmu-options.php'>Options page</a>." ), $active_signup ) . "</div>";
 }
 
 $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
