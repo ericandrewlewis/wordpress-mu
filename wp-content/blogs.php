@@ -71,11 +71,10 @@ if ( !is_file( $file ) ) {
 	die('404 &#8212; File not found.');
 }
 
-if( function_exists( 'mime_content_type' ) ) {
-	$mime[ 'type' ] = mime_content_type( $file );
-} else {
-	$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
-}
+$mime = wp_check_filetype( $_SERVER[ 'REQUEST_URI' ] );
+if( $mime[ 'type' ] === false && function_exists( 'mime_content_type' ) )
+		$mime[ 'type' ] = mime_content_type( $file );
+
 if( $mime[ 'type' ] != false ) {
 	$mimetype = $mime[ 'type' ];
 } else {
