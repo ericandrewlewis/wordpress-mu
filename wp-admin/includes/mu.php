@@ -1,26 +1,23 @@
 <?php
-
 function check_upload_size( $file ) {
-
-	if( $file[ 'error' ] != '0' ) // there's already an error
+	if( $file['error'] != '0' ) // there's already an error
 		return $file;
 
-	$space_allowed = 1048576*get_space_allowed();
+	$space_allowed = 1048576 * get_space_allowed();
 	$space_used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
 	$space_left = $space_allowed - $space_used;
-	$file_size = filesize( $file[ 'tmp_name' ]);
+	$file_size = filesize( $file['tmp_name'] );
 	if( $space_left < $file_size )
-		$file[ 'error' ] = sprintf( __( 'Not enough space to upload. %1$sKb needed.' ), number_format( ($file_size - $space_left) /1024 ) );
+		$file['error'] = sprintf( __( 'Not enough space to upload. %1$sKb needed.' ), number_format( ($file_size - $space_left) /1024 ) );
 	if( $file_size > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
 		$file['error'] = sprintf(__('This file is too big. Files must be less than %1$s Kb in size.'), get_site_option( 'fileupload_maxk', 1500 ) );
 	if( upload_is_user_over_quota( false ) ) {
 		$file['error'] = __('You have used your space quota. Please delete files before uploading.');
 	}
-	if( $file[ 'error' ] != '0' )
-		wp_die( $file[ 'error' ] . ' <a href="javascript:history.go(-1)">' . __( 'Back' ) . '</a>' );
+	if( $file['error'] != '0' )
+		wp_die( $file['error'] . ' <a href="javascript:history.go(-1)">' . __( 'Back' ) . '</a>' );
 
 	return $file;
-
 }
 add_filter( 'wp_handle_upload_prefilter', 'check_upload_size' );
 
@@ -65,7 +62,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		}
 
 		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
-		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/" . $blog_id ."/files/";
+		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/{$blog_id}/files/";
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
 		$top_dir = $dir;
 		$stack = array($dir);
@@ -98,7 +95,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 	}
 	$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key='wp_{$blog_id}_autosave_draft_ids'");
 
-	if ( $switch )
+	if ( $switch === true )
 		restore_current_blog();
 }
 
@@ -157,7 +154,7 @@ function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 			
 		if( is_array( $blog_allowed_themes ) ) {
 			foreach( (array) $themes as $key => $theme ) {
-				$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
+				$theme_key = wp_specialchars( $theme['Stylesheet'] );
 				if( isset( $blog_allowed_themes[ $key ] ) == true ) {
 					$blog_allowedthemes[ $theme_key ] = 1;
 				}
@@ -179,12 +176,9 @@ function update_option_new_admin_email($old_value, $value) {
 	if ( $value == get_option( 'admin_email' ) || !is_email( $value ) )
 		return;
 
-	$hash = md5( $value.time().mt_rand() );
-	$newadminemail = array( 
-		"hash" => $hash,
-		"newemail" => $value
-	);
-	update_option( 'adminhash', $newadminemail );
+	$hash = md5( $value. time() .mt_rand() );
+	$new_admin_email = array( "hash" => $hash, "newemail" => $value );
+	update_option( 'adminhash', $new_admin_email );
 	
 	$content = __("Dear user,\n\n
 You recently requested to have the administration email address on 
