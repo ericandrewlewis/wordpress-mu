@@ -228,7 +228,7 @@ function populate_options() {
 	$guessurl = preg_replace('|/wp-admin/.*|i', '', $schema . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
 	add_option('siteurl', $guessurl);
 	add_option('blogname', __('My Blog'));
-	add_option('blogdescription', __('Just another ' . $current_site->site_name . ' weblog'), __('Short tagline'));
+	add_option('blogdescription', sprintf(__('Just another %s weblog'), $current_site->site_name ) );
 	add_option('new_users_can_blog', 0);
 	add_option('users_can_register', 0);
 	add_option('admin_email', 'you@example.com');
