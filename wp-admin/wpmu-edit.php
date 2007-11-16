@@ -422,6 +422,7 @@ switch( $_GET['action'] ) {
 		} else {
 			wp_new_user_notification($user_id, $password);
 		}
+		add_user_to_blog('1', $user_id, 'subscriber');
 
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add'), $_SERVER['HTTP_REFERER'] ) );
 		exit();
