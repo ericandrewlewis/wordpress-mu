@@ -1207,6 +1207,8 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 		update_blog_option( $blog_id, $key, $value );
 	}
 
+	add_blog_option( $blog_id, 'WPLANG', get_site_option( 'WPLANG' ) );
+
 	update_blog_option( $blog_id, 'blog_public', $meta['public'] );
 	delete_blog_option( $blog_id, 'public' );
 
