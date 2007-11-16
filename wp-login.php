@@ -11,11 +11,11 @@ nocache_headers();
 
 header('Content-Type: '.get_bloginfo('html_type').'; charset='.get_bloginfo('charset'));
 
-$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
 if ( defined('RELOCATE') ) { // Move flag is set
 	if ( isset( $_SERVER['PATH_INFO'] ) && ($_SERVER['PATH_INFO'] != $_SERVER['PHP_SELF']) )
 		$_SERVER['PHP_SELF'] = str_replace( $_SERVER['PATH_INFO'], '', $_SERVER['PHP_SELF'] );
 
+	$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
 	if ( dirname($schema . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']) != get_option('siteurl') )
 		update_option('siteurl', dirname($schema . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF']) );
 }
@@ -270,7 +270,7 @@ default:
 	login_header(__('Login'));
 ?>
 
-<form name="loginform" id="loginform" action="<?php echo $schema . $current_blog->domain . $current_blog->path ?>wp-login.php" method="post">
+<form name="loginform" id="loginform" action="http://<?php echo $current_blog->domain . $current_blog->path ?>wp-login.php" method="post">
 <?php if ( !in_array( $_GET['checkemail'], array('confirm', 'newpass') ) ) : ?>
 	<p>
 		<label><?php _e('Username:') ?><br />

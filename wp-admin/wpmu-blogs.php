@@ -518,7 +518,7 @@ switch( $_GET['action'] ) {
 							case 'control_backend':
 							?>
 								<td valign="top">
-									<?php echo "<a href='". $schema . $blog['domain'] . $blog['path'] . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?>
+									<?php echo "<a href='http://" . $blog['domain'] . $blog['path'] . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?>
 								</td>
 							<?php
 							break;

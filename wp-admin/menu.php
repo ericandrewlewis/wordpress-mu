@@ -4,9 +4,6 @@
 // Menu item name
 // The minimum level the user needs to access the item: between 0 and 10
 // The URL of the item's file
-
-$schema = ( isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) == 'on' ) ? 'https://' : 'http://';
-
 $menu[0] = array(__('Dashboard'), 'read', 'index.php');
 
 if (strpos($_SERVER['REQUEST_URI'], 'edit-pages.php') !== false)
@@ -163,19 +160,19 @@ if (! user_can_access_admin_page()) {
 			$blogs = get_blogs_of_user( $user_ID );
 			if ( empty($blogs) || $blogs == false ) { // If user haven't any blog
 				update_usermeta( $user_ID, 'wp_1_capabilities', array('subscriber' => true)); // Add subscriber permission for first blog.
-				wp_redirect( $schema . $current_site->domain . $current_site->path. 'wp-admin/' );
+				wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
 				exit();
 			}
 
 			foreach ( (array) $blogs as $blog ) {
 				if ( $blog->userblog_id == $newblog->blog_id ) {
-					wp_redirect( $schema . $newblog->domain . $newblog->path . 'wp-admin/' );
+					wp_redirect( 'http://' . $newblog->domain . $newblog->path . 'wp-admin/' );
 					exit();
 				}
 			}
 			
 			$blog = $blogs[0]; // Take the first blog...
-			wp_redirect( $schema . $blog->domain . $blog->path. 'wp-admin/' );
+			wp_redirect( 'http://' . $blog->domain . $blog->path. 'wp-admin/' );
 			exit();
 		}
 	}
