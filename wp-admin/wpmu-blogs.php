@@ -279,8 +279,8 @@ switch( $_GET['action'] ) {
 	
 	// List blogs
 	default:
-		$start = isset( $_GET['start'] ) ? intval( $_GET['start'] ) : 0;
-		$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 60;
+		$apage = isset( $_GET['apage'] ) ? intval( $_GET['apage'] ) : 1;
+		$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 30;
 		
 		$query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
 		
@@ -307,6 +307,7 @@ switch( $_GET['action'] ) {
 		if( isset( $_GET['sortby'] ) == false ) {
 			$_GET['sortby'] = 'id';
 		}
+		
 		if( $_GET['sortby'] == 'registered' ) {
 			$query .= ' ORDER BY registered ';
 		} elseif( $_GET['sortby'] == 'id' ) {
@@ -320,27 +321,24 @@ switch( $_GET['action'] ) {
 		$query .= ( $_GET['order'] == 'DESC' ) ? 'DESC' : 'ASC';
 		
 		if ( $_GET['ip_address'] == '' )
-			$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
+			$query .= " LIMIT " . intval( ( $apage - 1 ) * $num) . ", " . intval( $num );
 			
 		$blog_list = $wpdb->get_results( $query, ARRAY_A );	
 		
-		$next = ( count( $blog_list ) < $num ) ? false : true;
-		
-		// Pagination
-		$url2 = "order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=" . $_GET['s'] . "&ip_address=" . $_GET['ip_address'];
-		$blog_navigation = '';
-		if( $start == 0 ) { 
-			$blog_navigation .= __('Previous&nbsp;Blogs');
-		} elseif( $start <= 30 ) { 
-			$blog_navigation .= '<a href="wpmu-blogs.php?start=0&amp;' . $url2 . ' ">' . __('Previous&nbsp;Blogs') . '</a>';
+		if( !empty($_GET['s']) ||  !empty($_GET['blog_id']) || !empty($_GET['ip_address'])) {
+			$total = count($blog_list);	
 		} else {
-			$blog_navigation .= '<a href="wpmu-blogs.php?start=' . ( $start - $num ) . '&' . $url2 . '">' . __('Previous&nbsp;Blogs') . '</a>';
-		} 
-		if ( $next ) {
-			$blog_navigation .= '&nbsp;||&nbsp;<a href="wpmu-blogs.php?start=' . ( $start + $num ) . '&' . $url2 . '">' . __('Next&nbsp;Blogs') . '</a>';
-		} else {
-			$blog_navigation .= '&nbsp;||&nbsp;' . __('Next&nbsp;Blogs');
+			$total = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ");	
 		}
+
+		// Pagination
+		$url2 = "&order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=" . $_GET['s'] . "&ip_address=" . $_GET['ip_address'];
+		$blog_navigation = paginate_links( array(
+			'base' => add_query_arg( 'apage', '%#%' ).$url2,
+			'format' => '',
+			'total' => ceil($total / $num),
+			'current' => $apage
+		));
 		?>
 		<script type="text/javascript">
 		<!--
@@ -376,8 +374,7 @@ switch( $_GET['action'] ) {
 		<div class="wrap">
 		<h2><?php _e('Blogs') ?></h2>
 		<div style="float:right; padding:0 20px; margin-top:20px;"> 
-			<h4 style="margin:0 0 4px;"><?php _e('Blog Navigation') ?></h4> 
-			<?php echo $blog_navigation; ?>
+			<?php if ( $blog_navigation ) echo "<p class='pagenav'>$blog_navigation</p>"; ?>
 		</div>
 		
 		<form id="searchform" action="wpmu-blogs.php" method="get"> 
@@ -436,7 +433,7 @@ switch( $_GET['action'] ) {
 			<thead>
 				<tr>
 					<?php foreach($posts_columns as $column_id => $column_display_name) : ?>
-						<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&amp;sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a></th>
+						<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&amp;sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a></th>
 					<?php endforeach ?>
 				</tr>
 			</thead>
@@ -594,8 +591,7 @@ switch( $_GET['action'] ) {
 		</table>
 		
 		<div style="float:right; padding:0 20px; margin-top:20px;"> 
-			<h4 style="margin:0 0 4px;"><?php _e('Blog Navigation') ?></h4> 
-			<?php echo $blog_navigation;?>
+			<?php if ( $blog_navigation ) echo "<p class='pagenav'>$blog_navigation</p>"; ?>
 		</div>
 		<input style="margin:5px 0;" id="check_all2" type="button" class="button" value="<?php _e('Check All') ?>" onclick="check_all_rows()" /> 
 		
