@@ -1134,7 +1134,7 @@ function wpmu_activate_signup($key) {
 		if ( 'blog_taken' == $blog_id->get_error_code() ) {
 			$blog_id->add_data($signup);
 			$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
-			error_log("Blog $blog_id failed to complete activation.", 0);	
+			error_log("Blog {$signup->domain} failed to complete activation, the blog already exists.", 0);	
 		}
 
 		return $blog_id;
