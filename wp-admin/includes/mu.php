@@ -373,6 +373,7 @@ add_filter( 'pre_update_term', 'sync_slugs', 10, 3 );
 
 function redirect_user_to_blog() {
 	global $wpdb, $current_user, $current_site;
+	get_currentuserinfo();
 	$primary_blog = (int) get_usermeta( $current_user->ID, 'primary_blog' );
 	if( !$primary_blog )
 		$primary_blog = 1;
@@ -419,7 +420,6 @@ function wpmu_menu() {
 	unset( $submenu['options-general.php'][40] );
 	unset( $submenu['edit.php'][30] );
 	unset( $menu['30'] );
-	$menu[45] = array(__('Upgrades'), 'manage_options', 'paid-upgrades.php');
 
 	$menu_perms = get_site_option( "menu_items" );
 	if( is_array( $menu_perms ) == false )

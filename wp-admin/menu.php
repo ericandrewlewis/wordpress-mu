@@ -14,11 +14,11 @@ if (strpos($_SERVER['REQUEST_URI'], 'page-new.php') !== false)
 	$menu[10] = array(__('Manage'), 'edit_pages', 'edit-pages.php');
 else
 	$menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
+
 $menu[15] = array(__('Comments'), 'edit_posts', 'edit-comments.php');
 $menu[20] = array(__('Blogroll'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
-if( $menu_perms[ 'plugins' ] == 1 )
-	$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 if ( current_user_can('edit_users') )
 	$menu[35] = array(__('Users'), 'edit_users', 'users.php');
 else
@@ -70,16 +70,6 @@ $submenu['plugins.php'][10] = array(__('Plugin Editor'), 'edit_plugins', 'plugin
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
 $submenu['themes.php'][10] = array(__('Theme Editor'), 'edit_themes', 'theme-editor.php');
 
-get_currentuserinfo();
-if( is_site_admin() ) {
-	$menu[1] = array(__('Site Admin'), '10', 'wpmu-admin.php' );
-	$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
-	$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
-	$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
-	$submenu[ 'wpmu-admin.php' ][20] = array( __('Themes'), '10', 'wpmu-themes.php' );
-	$submenu[ 'wpmu-admin.php' ][25] = array( __('Options'), '10', 'wpmu-options.php' );
-	$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
-}
 do_action('_admin_menu');
 
 // Create list of page plugin hook names.
@@ -147,7 +137,6 @@ unset($id);
 uksort($menu, "strnatcasecmp"); // make it all pretty
 
 if (! user_can_access_admin_page()) {
-	// find the blog of this user first
 	do_action( 'admin_menu_permission' );
 	wp_die( __('You do not have sufficient permissions to access this page.') );
 }
