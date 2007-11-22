@@ -14,10 +14,6 @@ if (strpos($_SERVER['REQUEST_URI'], 'page-new.php') !== false)
 	$menu[10] = array(__('Manage'), 'edit_pages', 'edit-pages.php');
 else
 	$menu[10] = array(__('Manage'), 'edit_posts', 'edit.php');
-$menu_perms = get_site_option( "menu_items" );
-if( is_array( $menu_perms ) == false )
-	$menu_perms = array();
-	
 $menu[15] = array(__('Comments'), 'edit_posts', 'edit-comments.php');
 $menu[20] = array(__('Blogroll'), 'manage_links', 'link-manager.php');
 $menu[25] = array(__('Presentation'), 'switch_themes', 'themes.php');
@@ -43,7 +39,7 @@ $submenu['edit.php'][5] = array(__('Posts'), 'edit_posts', 'edit.php');
 $submenu['edit.php'][10] = array(__('Pages'), 'edit_pages', 'edit-pages.php');
 $submenu['edit.php'][12] = array(__('Uploads'), 'upload_files', 'upload.php');
 $submenu['edit.php'][15] = array(__('Categories'), 'manage_categories', 'categories.php');
-//$submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
+$submenu['edit.php'][30] = array(__('Files'), 'edit_files', 'templates.php');
 $submenu['edit.php'][35] = array(__('Import'), 'import', 'import.php');
 $submenu['edit.php'][40] = array(__('Export'), 'import', 'export.php');
 
@@ -66,13 +62,13 @@ $submenu['options-general.php'][20] = array(__('Reading'), 'manage_options', 'op
 $submenu['options-general.php'][25] = array(__('Discussion'), 'manage_options', 'options-discussion.php');
 $submenu['options-general.php'][30] = array(__('Privacy'), 'manage_options', 'options-privacy.php');
 $submenu['options-general.php'][35] = array(__('Permalinks'), 'manage_options', 'options-permalink.php');
-//$submenu['options-general.php'][40] = array(__('Miscellaneous'), 'manage_options', 'options-misc.php');
+$submenu['options-general.php'][40] = array(__('Miscellaneous'), 'manage_options', 'options-misc.php');
 
-//$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
-//$submenu['plugins.php'][10] = array(__('Plugin Editor'), 'edit_plugins', 'plugin-editor.php');
+$submenu['plugins.php'][5] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+$submenu['plugins.php'][10] = array(__('Plugin Editor'), 'edit_plugins', 'plugin-editor.php');
 
 $submenu['themes.php'][5] = array(__('Themes'), 'switch_themes', 'themes.php');
-//$submenu['themes.php'][10] = array(__('Theme Editor'), 'edit_themes', 'theme-editor.php');
+$submenu['themes.php'][10] = array(__('Theme Editor'), 'edit_themes', 'theme-editor.php');
 
 get_currentuserinfo();
 if( is_site_admin() ) {
@@ -152,31 +148,7 @@ uksort($menu, "strnatcasecmp"); // make it all pretty
 
 if (! user_can_access_admin_page()) {
 	// find the blog of this user first
-	$primary_blog = (int) get_usermeta( $user_ID, 'primary_blog' );
-	if( !$primary_blog )
-		$primary_blog = 1;
-
-	global $wpdb;
-	$newblog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$primary_blog}'" );
-	if( $newblog != null ) {
-		$blogs = get_blogs_of_user( $user_ID );
-		if ( empty($blogs) || $blogs == false ) { // If user haven't any blog
-			add_user_to_blog('1', $user_ID, 'subscriber'); // Add subscriber permission for first blog.
-			wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
-			exit();
-		}
-
-		foreach ( (array) $blogs as $blog ) {
-			if ( $blog->userblog_id == $newblog->blog_id ) {
-				wp_redirect( 'http://' . $newblog->domain . $newblog->path . 'wp-admin/' );
-				exit();
-			}
-		}
-
-		$blog = $blogs[0]; // Take the first blog...
-		wp_redirect( 'http://' . $blog->domain . $blog->path. 'wp-admin/' );
-		exit();
-	}
+	do_action( 'admin_menu_permission' );
 	wp_die( __('You do not have sufficient permissions to access this page.') );
 }
 

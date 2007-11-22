@@ -371,4 +371,67 @@ function sync_slugs( $term, $taxonomy, $args ) {
 }
 add_filter( 'pre_update_term', 'sync_slugs', 10, 3 );
 
+function redirect_user_to_blog() {
+	global $wpdb, $current_user, $current_site;
+	$primary_blog = (int) get_usermeta( $current_user->ID, 'primary_blog' );
+	if( !$primary_blog )
+		$primary_blog = 1;
+
+	$newblog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$primary_blog}'" );
+	if( $newblog != null ) {
+		$blogs = get_blogs_of_user( $current_user->ID );
+		if ( empty($blogs) || $blogs == false ) { // If user haven't any blog
+			add_user_to_blog('1', $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
+			wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
+			exit();
+		}
+
+		foreach ( (array) $blogs as $blog ) {
+			if ( $blog->userblog_id == $newblog->blog_id ) {
+				wp_redirect( 'http://' . $newblog->domain . $newblog->path . 'wp-admin/' );
+				exit();
+			}
+		}
+
+		$blog = $blogs[0]; // Take the first blog...
+		wp_redirect( 'http://' . $blog->domain . $blog->path. 'wp-admin/' );
+		exit();
+	}
+}
+add_action( 'admin_menu_permission', 'redirect_user_to_blog' );
+
+function wpmu_menu() {
+	global $menu, $submenu;
+
+	if( is_site_admin() ) {
+		$menu[1] = array(__('Site Admin'), '10', 'wpmu-admin.php' );
+		$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
+		$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
+		$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
+		$submenu[ 'wpmu-admin.php' ][20] = array( __('Themes'), '10', 'wpmu-themes.php' );
+		$submenu[ 'wpmu-admin.php' ][25] = array( __('Options'), '10', 'wpmu-options.php' );
+		$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
+	}
+	unset( $submenu['themes.php'][10] );
+	unset( $submenu['plugins.php'][5] );
+	unset( $submenu['plugins.php'][10] );
+	unset( $submenu['options-general.php'][35] );
+	unset( $submenu['options-general.php'][40] );
+	unset( $submenu['edit.php'][30] );
+	unset( $menu['30'] );
+	$menu[45] = array(__('Upgrades'), 'manage_options', 'paid-upgrades.php');
+
+	$menu_perms = get_site_option( "menu_items" );
+	if( is_array( $menu_perms ) == false )
+		$menu_perms = array();
+	if( $menu_perms[ 'plugins' ] == 1 )
+		$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+	if ( current_user_can('edit_users') ) {
+		$submenu['users.php'][15] = array(__("Invites"), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
+	} else {
+		$submenu['profile.php'][10] = array(__("Invites"), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
+	}
+}
+add_action( '_admin_menu', 'wpmu_menu' );
+
 ?>
