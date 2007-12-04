@@ -391,10 +391,14 @@ if( is_site_admin() ) {
 
 $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-9]/', '', $_GET['new'])) : null;
 
+$current_user = wp_get_current_user();
 if( $active_signup == "none" ) {
 	_e( "Registration has been disabled." );
 } else {
-switch ($_POST['stage']) {
+	if( $active_signup == 'blog' && !is_user_logged_in() ) {
+		wp_die( 'You must be logged in to register a blog.' );
+	}
+	switch ($_POST['stage']) {
 	case 'validate-user-signup' :
 		if( $active_signup == 'all' || $_POST[ 'signup_for' ] == 'blog' && $active_signup == 'blog' || $_POST[ 'signup_for' ] == 'user' && $active_signup == 'user' )
 			validate_user_signup();
@@ -431,7 +435,7 @@ switch ($_POST['stage']) {
 			printf(__("<p><em>The blog you were looking for, <strong>%s</strong> doesn't exist but you can create it now!</em></p>"), $newblog );
 		}
 		break;
-}
+	}
 }
 ?>
 </div>
