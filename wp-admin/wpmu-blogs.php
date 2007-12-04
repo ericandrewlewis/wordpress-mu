@@ -79,12 +79,13 @@ switch( $_GET['action'] ) {
 					<div class="wrap">
 						<table style="border:0; width:100%;" cellspacing="2" cellpadding="5" class="editform"> 
 							<tr valign="top"> 
-								<th scope="row"><?php _e('URL') ?></th> 
-								<td>http://<input name="blog[domain]" type="text" id="domain" value="<?php echo $details['domain'] ?>" size="33" /></td> 
+								<th scope="row"><?php _e('Domain') ?></th> 
+								<td>http://<input name="blog[domain]" type="text" id="domain" value="<?php echo $details['domain'] ?>" size="33" /></td>
 							</tr> 
 							<tr valign="top"> 
 								<th scope="row"><?php _e('Path') ?></th> 
-								<td><input name="blog[path]" type="text" id="path" value="<?php echo $details['path'] ?>" size="40" /></td> 
+								<td><input name="blog[path]" type="text" id="path" value="<?php echo $details['path'] ?>" size="40" />
+								<br />(<?php _e( 'siteurl and home will be modified too' ); ?>)</td> 
 							</tr> 
 							<tr valign="top"> 
 								<th scope="row"><?php _e('Registered') ?></th> 
@@ -280,7 +281,7 @@ switch( $_GET['action'] ) {
 	// List blogs
 	default:
 		$apage = isset( $_GET['apage'] ) ? intval( $_GET['apage'] ) : 1;
-		$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 30;
+		$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 15;
 		
 		$query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
 		
@@ -320,16 +321,16 @@ switch( $_GET['action'] ) {
 
 		$query .= ( $_GET['order'] == 'DESC' ) ? 'DESC' : 'ASC';
 		
-		if ( $_GET['ip_address'] == '' )
-			$query .= " LIMIT " . intval( ( $apage - 1 ) * $num) . ", " . intval( $num );
-			
-		$blog_list = $wpdb->get_results( $query, ARRAY_A );	
-		
 		if( !empty($_GET['s']) ||  !empty($_GET['blog_id']) || !empty($_GET['ip_address'])) {
+			$blog_list = $wpdb->get_results( $query, ARRAY_A );	
 			$total = count($blog_list);	
 		} else {
 			$total = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ");	
 		}
+		
+		$query .= " LIMIT " . intval( ( $apage - 1 ) * $num) . ", " . intval( $num );
+			
+		$blog_list = $wpdb->get_results( $query, ARRAY_A );	
 
 		// Pagination
 		$url2 = "&order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=" . $_GET['s'] . "&ip_address=" . $_GET['ip_address'];

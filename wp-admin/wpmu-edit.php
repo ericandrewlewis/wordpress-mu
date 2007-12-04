@@ -154,6 +154,12 @@ switch( $_GET['action'] ) {
 				$c++;
 			}
 		}
+
+		if( get_blog_option( $id, 'siteurl' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
+			update_blog_option( $id, 'siteurl', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+		
+		if( get_blog_option( $id, 'home' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
+			update_blog_option( $id, 'home', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
 		
 		// update blogs table
 		$result = $wpdb->query("UPDATE {$wpdb->blogs} SET
