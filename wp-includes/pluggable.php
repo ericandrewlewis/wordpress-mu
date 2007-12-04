@@ -341,7 +341,7 @@ function wp_login($username, $password, $already_md5 = false) {
 	} else {
 		if( is_site_admin( $username ) == false && ( $primary_blog = get_usermeta( $login->ID, "primary_blog" ) ) ) {
 			$details = get_blog_details( $primary_blog );
-			if( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) {
+			if( is_object( $details ) && $details->spam == 1 ) {
 				$error = __('<strong>Error</strong>: Blog suspended.');
 				return false;
 			}
