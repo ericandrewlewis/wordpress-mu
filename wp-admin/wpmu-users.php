@@ -39,8 +39,8 @@ if ( $_GET['updated'] == 'true' ) {
 
 <div class="wrap">
 	<?php
-	$start = isset( $_GET['start'] ) ? intval( $_GET['start'] ) : 0;
-	$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 30;
+	$apage = isset( $_GET['apage'] ) ? intval( $_GET['apage'] ) : 1;
+	$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 15;
 
 	$query = "SELECT * FROM {$wpdb->users}";
 	
@@ -67,29 +67,29 @@ if ( $_GET['updated'] == 'true' ) {
 	
 	$query .= ( $_GET['order'] == 'DESC' ) ? 'DESC' : 'ASC';
 
-	$query .= " LIMIT " . intval( $start ) . ", " . intval( $num );
-	$user_list = $wpdb->get_results( $query, ARRAY_A );
+	if( !empty($_GET['s'])) {
+		$user_list = $wpdb->get_results( $query, ARRAY_A );
+		$total = count($user_list);	
+	} else {
+		$total = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->users}");
+	}
 	
-	$next = ( count( $user_list ) < $num ) ? false : true;
+	$query .= " LIMIT " . intval( ( $apage - 1 ) * $num) . ", " . intval( $num );
+	
+	$user_list = $wpdb->get_results( $query, ARRAY_A );
+
+	// Pagination
+	$user_navigation = paginate_links( array(
+		'base' => add_query_arg( 'apage', '%#%' ),
+		'format' => '',
+		'total' => ceil($total / $num),
+		'current' => $apage
+	));
 	?>
 	<h2><?php _e("Users"); ?></h2>
-	<div style="float:right; padding:0 20px; margin-top:10px;"> 
-		<h4 style="margin:0 0 4px;"><?php _e('User Navigation') ?></h4> 
-		<?php 
-		$url2 = "order=" . $_GET['order'] . "&sortby=" . $_GET['sortby'] . "&s=" .$_GET['s'];
-		if( $start == 0 ) { 
-			_e('Previous&nbsp;Users');
-		} elseif( $start <= 30 ) { 
-			echo '<a href="wpmu-users.php?start=0' . $url2 . '">'.__('Previous&nbsp;Users').'</a>';
-		} else {
-			echo '<a href="wpmu-users.php?start=' . ( $start - $num ) . '&' . $url2 . '">'.__('Previous&nbsp;Users').'</a>';
-		} 
-		if ( $next ) {
-			echo '&nbsp;||&nbsp;<a href="wpmu-users.php?start=' . ( $start + $num ) . '&' . $url2 . '">'.__('Next&nbsp;Users').'</a>';
-		} else {
-			echo '&nbsp;||&nbsp;'.__('Next&nbsp;Users');
-		}
-		?>
+	
+	<div style="float:right; padding:0 20px; margin-top:20px;"> 
+		<?php if ( $user_navigation ) echo "<p class='pagenav'>$user_navigation</p>"; ?>
 	</div>
 	
 	<form action="wpmu-users.php" method="get" id="searchform"> 
@@ -158,7 +158,7 @@ if ( $_GET['updated'] == 'true' ) {
 						<?php if( $column_id == 'blogs' ) {
 							_e('Blogs');
 						} else { ?>
-							<a href="wpmu-users.php?sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>start=<?php echo $start ?>"><?php echo $column_display_name; ?></a>
+							<a href="wpmu-users.php?sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a>
 						<?php } ?>
 					</th>
 				<?php } ?>
@@ -249,6 +249,10 @@ if ( $_GET['updated'] == 'true' ) {
 			</tbody>
 		</table>
 		
+		<div style="float:right; padding:0 20px; margin-top:20px;"> 
+			<?php if ( $user_navigation ) echo "<p class='pagenav'>$user_navigation</p>"; ?>
+		</div>
+	
 		<p><input class="button" type="button" value="<?php _e('Check All') ?>" onclick="this.value=check_all_rows()" /></p>
 		
 		<h3><?php _e('Selected Users:') ?></h3>
