@@ -308,6 +308,7 @@ function confirm_user_signup($user_name, $user_email) {
 <p><?php printf(__('Check your inbox at <strong>%1$s</strong> and click the link given.  '),  $user_email) ?></p>
 <p><?php _e('If you do not activate your username within two days, you will have to sign up again.'); ?></p>
 <?php
+	do_action('signup_finished');
 }
 
 function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_title = '', $errors = '') {
