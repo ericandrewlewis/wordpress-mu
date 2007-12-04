@@ -1832,9 +1832,6 @@ function global_terms( $term_id, $tt_id ) {
 }   
 add_filter( 'term_id_filter', 'global_terms', 10, 2 ); // taxonomy specific filter
 
-/* WordPress MU Default Filters */
-add_filter('the_title', 'wp_filter_kses');
-
 function choose_primary_blog() {
 	global $current_user;
 	echo __('Primary Blog:') . ' ';
