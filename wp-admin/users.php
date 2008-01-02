@@ -255,7 +255,7 @@ case 'doremove':
 	check_admin_referer('remove-users');
 
 	if ( empty($_POST['users']) ) {
-		header('Location: users.php');
+		wp_redirect('users.php');
 	}
 
 	if ( !current_user_can('edit_users') )
@@ -272,7 +272,7 @@ case 'doremove':
 		remove_user_from_blog($id);
 	}
 
-	header('Location: users.php?update=' . $update);
+	wp_redirect('users.php?update=' . $update);
 
 break;
 
@@ -281,7 +281,7 @@ case 'removeuser':
 	check_admin_referer('bulk-users');
 
 	if (empty($_POST['users'])) {
-		header('Location: users.php');
+		wp_redirect('users.php');
 	}
 
 	if ( !current_user_can('edit_users') )
@@ -356,14 +356,14 @@ case 'addexistinguser':
 				do_action( "added_existing_user", $user_id );
 				$location = 'users.php?update=add';
 			}
-			header("Location: $location");
+			wp_redirect("$location");
 			die();
 		} else {
-			header('Location: users.php?update=notfound' );
+			wp_redirect('users.php?update=notfound' );
 			die();
 		}
 	}
-	header('Location: users.php');
+	wp_redirect('users.php');
 	die();
 break;
 default:

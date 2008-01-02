@@ -8,7 +8,7 @@ require( 'wp-blog-header.php' );
 require_once( ABSPATH . WPINC . '/registration.php' );
 
 if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_array( $_GET[ 'new' ], get_site_option( 'illegal_names' ) ) == true ) {
-	header( "Location: http://{$current_site->domain}{$current_site->path}" );
+	wp_redirect( "http://{$current_site->domain}{$current_site->path}" );
 	die();
 }
 
@@ -19,7 +19,7 @@ function signuppageheaders() {
 }
 
 if( $current_blog->domain . $current_blog->path != $current_site->domain . $current_site->path ) {
-	header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php" );
+	wp_redirect( "http://" . $current_site->domain . $current_site->path . "wp-signup.php" );
 	die();
 }
 
