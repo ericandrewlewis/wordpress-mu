@@ -44,7 +44,6 @@ function wp_widgets_admin_head() {
 	<?php foreach ( $wp_registered_widget_controls as $name => $widget ) : ?>
 		jQuery('#<?php echo $widget['id']; ?>popper').click(function() {popControl('#<?php echo $widget['id']; ?>control');});
 		jQuery('#<?php echo $widget['id']; ?>closer').click(function() {unpopControl('#<?php echo $widget['id']; ?>control');});
-		jQuery('#<?php echo $widget['id']; ?>control').Draggable({handle: '.controlhandle', zIndex: 1000});
 		if ( true && window.opera )
 			jQuery('#<?php echo $widget['id']; ?>control').css('border','1px solid #bbb');
 	<?php endforeach; ?>
