@@ -1053,6 +1053,10 @@ function wpmu_signup_user($user, $user_email, $meta = '') {
 // Notify user of signup success.
 function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_email, $key, $meta = '') {
 	global $current_site;
+
+	if( !apply_filters('wpmu_signup_blog_notification', $domain, $path, $title, $user, $user_email, $key, $meta) )
+		return;
+
 	// Send email with activation link.
 	if( constant( "VHOST" ) == 'no' ) {
 		$activate_url = "http://" . $current_site->domain . $current_site->path . "wp-activate.php?key=$key";
@@ -1072,6 +1076,10 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 
 function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 	global $current_site;
+
+	if( !apply_filters('wpmu_signup_user_notification', $user, $user_email, $key, $meta) )
+		return;
+
 	// Send email with activation link.
 	$admin_email = get_site_option( "admin_email" );
 	if( $admin_email == '' )
@@ -1372,6 +1380,9 @@ function install_blog_defaults($blog_id, $user_id) {
 function wpmu_welcome_notification($blog_id, $user_id, $password, $title, $meta = '') {
 	global $current_site;
 
+	if( !apply_filters('wpmu_welcome_notification', $blog_id, $user_id, $password, $title, $meta) )
+		return;
+
 	$welcome_email = stripslashes( get_site_option( 'welcome_email' ) );
 	if( $welcome_email == false )
 		$welcome_email = stripslashes( __( "Dear User,
@@ -1413,6 +1424,9 @@ SITE_NAME" ) );
 
 function wpmu_welcome_user_notification($user_id, $password, $meta = '') {
 	global $current_site;
+
+	if( !apply_filters('wpmu_welcome_user_notification', $user_id, $password, $meta) )
+		return;
 
 	$welcome_email = __( "Dear User,
 
