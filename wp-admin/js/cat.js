@@ -9,4 +9,3 @@ function newCatAddIn() {
 	$('newcat').onkeypress = function(e) { return killSubmit("catList.ajaxAdder('category','jaxcat');", e); };
 	$('catadd').onclick = function() { catList.ajaxAdder('category', 'jaxcat'); };
 }
-

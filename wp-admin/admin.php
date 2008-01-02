@@ -1,4 +1,6 @@
 <?php
+define('WP_ADMIN', TRUE);
+
 if ( defined('ABSPATH') )
 	require_once( ABSPATH . 'wp-config.php');
 else
@@ -64,7 +66,7 @@ if (isset($plugin_page)) {
 		do_action('load-' . $plugin_page);
 
 		if (! isset($_GET['noheader']))
-			require_once(ABSPATH . '/wp-admin/admin-header.php');
+			require_once(ABSPATH . 'wp-admin/admin-header.php');
 
 		if ( file_exists(ABSPATH . MUPLUGINDIR . "/$plugin_page") )
 			include(ABSPATH . MUPLUGINDIR . "/$plugin_page");

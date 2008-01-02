@@ -130,6 +130,9 @@ if ( file_exists(ABSPATH . 'wp-content/db.php') )
 else
 	require_once (ABSPATH . WPINC . '/wp-db.php');
 
+if ( !empty($wpdb->error) )
+	dead_db();
+
 // $table_prefix is deprecated as of 2.1
 $wpdb->prefix = $wpdb->base_prefix = $table_prefix;
 
@@ -137,6 +140,7 @@ if ( preg_match('|[^a-z0-9_]|i', $wpdb->prefix) && !file_exists(ABSPATH . 'wp-co
 	wp_die("<strong>ERROR</strong>: <code>$table_prefix</code> in <code>wp-config.php</code> can only contain numbers, letters, and underscores.");
 
 // Table names
+$wpdb->usermeta       = $wpdb->prefix . 'usermeta';
 $wpdb->blogs		= $wpdb->prefix . 'blogs';
 $wpdb->site		= $wpdb->prefix . 'site';
 $wpdb->sitemeta		= $wpdb->prefix . 'sitemeta';
@@ -145,7 +149,6 @@ $wpdb->signups		= $wpdb->prefix . 'signups';
 $wpdb->registration_log	= $wpdb->prefix . 'registration_log';
 $wpdb->blog_versions	= $wpdb->prefix . 'blog_versions';
 $wpdb->users		= $wpdb->prefix . 'users';
-$wpdb->usermeta		= $wpdb->prefix . 'usermeta';
 
 if( defined( 'SUNRISE' ) )
 	include_once( ABSPATH . 'wp-content/sunrise.php' );
@@ -171,9 +174,6 @@ if ( defined('CUSTOM_USER_TABLE') )
 	$wpdb->users = CUSTOM_USER_TABLE;
 if ( defined('CUSTOM_USER_META_TABLE') )
 	$wpdb->usermeta = CUSTOM_USER_META_TABLE;
-
-// To be removed in 2.2
-$tableposts = $tableusers = $tablecategories = $tablepost2cat = $tablecomments = $tablelink2cat = $tablelinks = $tablelinkcategories = $tableoptions = $tablepostmeta = '';
 
 if ( file_exists(ABSPATH . 'wp-content/object-cache.php') )
 	require_once (ABSPATH . 'wp-content/object-cache.php');

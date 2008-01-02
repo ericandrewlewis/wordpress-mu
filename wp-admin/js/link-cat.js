@@ -8,4 +8,3 @@ function newLinkCatAddIn() {
 	$('newcat').onkeypress = function(e) { return killSubmit("linkcatList.ajaxAdder('link-category','jaxcat');", e); };
 	$('catadd').onclick = function() { linkcatList.ajaxAdder('link-category', 'jaxcat'); };
 }
-
