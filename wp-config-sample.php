@@ -21,8 +21,13 @@ $table_prefix  = 'wp_';   // Only numbers, letters, and underscores please!
 // For example, install de.mo to wp-content/languages and set WPLANG to 'de'
 // to enable German language support.
 define ('WPLANG', '');
+
 // uncomment this to enable wp-content/sunrise.php support
 //define( 'SUNRISE', 'on' );
+
+// Uncomment and set this to a URL to redirect if a blog does not exist. (Useful if signup is disabled)
+// Browser will redirect to constant( 'NOBLOGREDICT' ) . "?new=blogname" where blogname is the unknown blog
+// define( 'NOBLOGREDIRECT', '' );
 
 define( "WP_USE_MULTIPLE_DB", false );
 

@@ -103,7 +103,11 @@ if( constant( 'VHOST' ) == 'yes' ) {
 
 if( defined( "WP_INSTALLING" ) == false ) {
 	if( $current_site && $current_blog == null ) {
-		header( "Location: http://{$current_site->domain}{$current_site->path}wp-signup.php?new=" . urlencode( $blogname ) );
+		if( defined( 'NOBLOGREDIRECT' ) && constant( 'NOBLOGREDIRECT' ) != '' ) {
+			header( "Location: " . constant( 'NOBLOGREDIRECT' ) . "?new=" . urlencode( $blogname ) );
+		} else {
+			header( "Location: http://{$current_site->domain}{$current_site->path}wp-signup.php?new=" . urlencode( $blogname ) );
+		}
 		die();
 	}
 	if( $current_blog == false || $current_site == false )
