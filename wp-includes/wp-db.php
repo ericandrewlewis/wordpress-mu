@@ -63,7 +63,7 @@ class wpdb {
 			$this->show_errors();
 
 		$this->charset = 'utf8';
-		$this->collete = 'utf8';
+		$this->collate = 'utf8';
 
 		if ( defined('DB_CHARSET') )
 			$this->charset = DB_CHARSET;
