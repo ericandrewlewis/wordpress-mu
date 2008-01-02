@@ -426,11 +426,6 @@ function wpmu_menu() {
 		$menu_perms = array();
 	if( $menu_perms[ 'plugins' ] == 1 )
 		$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
-	if ( current_user_can('edit_users') ) {
-		$submenu['users.php'][15] = array(__("Invites"), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
-	} else {
-		$submenu['profile.php'][10] = array(__("Invites"), 'edit_posts', 'invites.php'); // TODO: put somewhere else.
-	}
 }
 add_action( '_admin_menu', 'wpmu_menu' );
 
