@@ -151,7 +151,7 @@ function do_htaccess( $oldfilename, $newfilename, $base, $url ) {
 		filestats( $err );
 
 		print "<p>Please ensure that the webserver can write to this directory.</p>";
-		print "<p>If you use Cpanel then read <a href='http://mu.wordpress.org/forums/topic/99'>this post</a>. Cpanel creates files that I need to overwrite and you have to fix that.</p>";
+		print "<p>If you use Cpanel then read <a href='http://mu.wordpress.org/forums/topic.php?id=99'>this post</a>. Cpanel creates files that I need to overwrite and you have to fix that.</p>";
 		print "<p>If all else fails then you'll have to create it by hand:";
 		print "<ul><li> Download htaccess.dist to your computer and open it in your favourite text editor.</li>
 		<li> Replace the following text:<ul><li>BASE by '$base'</li><li>HOST by '$url'</li></li>
