@@ -269,6 +269,9 @@ if ( $_GET['updated'] == 'true' ) {
 	</form>
 </div>
 
+<?php
+if( apply_filters('show_adduser_fields', true) ) :
+?>
 <div class="wrap">
 	<form action="wpmu-edit.php?action=adduser" method="post">
 		<h2><?php _e('Add User') ?></h2>
@@ -289,5 +292,6 @@ if ( $_GET['updated'] == 'true' ) {
 			<input class="button" type="submit" name="Add user" value="<?php _e('Add user') ?>" /></p>
 	</form>
 </div>
+<?php endif; ?>
 
 <?php include('admin-footer.php'); ?>
