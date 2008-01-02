@@ -46,7 +46,7 @@ function wpmu_current_site() {
 				$current_site = $sites[0];
 				die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
 			} else {
-				die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
+				die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://codex.wordpress.org/Debugging_WPMU'>Debugging WPMU</a> for further assistance." );
 			}
 		} else {
 			$path = '/';
@@ -61,7 +61,7 @@ function wpmu_current_site() {
 				$current_site = $sites[0];
 				die( "That blog does not exist. Please try <a href='http://{$current_site->domain}{$current_site->path}'>http://{$current_site->domain}{$current_site->path}</a>" );
 			} else {
-				die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>Debugging WPMU</a> for further assistance." );
+				die( "No WPMU site defined on this host. If you are the owner of this site, please check <a href='http://codex.wordpress.org/Debugging_WPMU'>Debugging WPMU</a> for further assistance." );
 			}
 		} else {
 			$path = '/';
@@ -183,7 +183,7 @@ function is_installed() {
 			$msg .= "Searched for <em>" . $domain . $path . "</em> in " . DB_NAME . "::" . $wpdb->blogs . " table. Is that right?<br />";
 		}
 		$msg .= "<br />\n<h1>What do I do now?</h1>";
-		$msg .= "Read the <a target='_blank' href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>bug report</a> page. Some of the guidelines there may help you figure out what went wrong.<br />";
+		$msg .= "Read the <a target='_blank' href='http://codex.wordpress.org/Debugging_WPMU'>bug report</a> page. Some of the guidelines there may help you figure out what went wrong.<br />";
 		$msg .= "If you're still stuck with this message, then check that your database contains the following tables:<ul>
 			<li> $wpdb->blogs </li>
 			<li> $wpdb->users </li>
@@ -192,7 +192,7 @@ function is_installed() {
 			<li> $wpdb->sitemeta </li>
 			<li> $wpdb->sitecategories </li>
 			</ul>";
-		$msg .= "If you suspect a problem please report it to the support forums but you must include the information asked for in the <a href='http://trac.mu.wordpress.org/wiki/DebuggingWpmu'>WPMU bug reporting guidelines</a>!<br /><br />";
+		$msg .= "If you suspect a problem please report it to the support forums but you must include the information asked for in the <a href='http://codex.wordpress.org/Debugging_WPMU'>WPMU bug reporting guidelines</a>!<br /><br />";
 		if( is_file( 'release-info.txt' ) ) {
 			$msg .= 'Your bug report must include the following text: "';
 			$info = file( 'release-info.txt' );
