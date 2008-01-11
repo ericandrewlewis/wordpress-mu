@@ -400,7 +400,7 @@ Thanks!
 	$current_site->path = $base;
 	$current_site->site_name = ucfirst( $domain );
 
-	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array() );
+	wpmu_create_blog( $domain, $base, $weblog_title, $user_id, array( 'blog_public' => 1, 'public' => 1 ) );
 	update_blog_option( 1, 'template', 'home');
 	update_blog_option( 1, 'stylesheet', 'home');
 	if( constant( 'VHOST' ) == 'yes' ) {
