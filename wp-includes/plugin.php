@@ -242,6 +242,7 @@ function plugin_basename($file) {
 	$file = str_replace('\\','/',$file); // sanitize for Win32 installs
 	$file = preg_replace('|/+|','/', $file); // remove any duplicate slash
 	$file = preg_replace('|^.*/wp-content/plugins/|','',$file); // get relative path from plugins dir
+	$file = preg_replace('|^.*/wp-content/mu-plugins/|','',$file); // get relative path from mu-plugins dir
 	return $file;
 }
 
