@@ -279,24 +279,6 @@ function upload_space_setting( $id ) {
 }
 add_action('wpmueditblogaction', 'upload_space_setting');
 
-// Edit XMLRPC active setting on Edit Blog page
-function xmlrpc_active_setting( $id ) {
-	$site_xmlrpc = get_site_option( 'xmlrpc_active' );
-	$xmlrpc_active = get_blog_option($id, 'xmlrpc_active'); 
-	
-	if( $site_xmlrpc == 'yes' ) { ?>
-		<p><strong><?php _e('XMLRPC Posting is enabled sitewide.'); ?></strong></p>
-	<?php } else { ?>
-		<p><strong><?php _e('XMLRPC Posting is disabled sitewide.'); ?></strong></p>
-	<?php } ?>
-	
-	<input type='radio' name='option[xmlrpc_active]' value='' <?php if( !$xmlrpc_active || $xmlrpc_active == '' ) echo "checked='checked'"; ?> /> <?php _e('Do nothing, accept sitewide default'); ?><br />
-	<input type='radio' name='option[xmlrpc_active]' value='yes' <?php if( $xmlrpc_active == "yes" ) echo "checked='checked'"; ?> /> <?php _e('XMLRPC always on for this blog'); ?><br />
-	<input type='radio' name='option[xmlrpc_active]' value='no' <?php if( $xmlrpc_active == "no" ) echo "checked='checked'"; ?> /> <?php _e('XMLRPC always off for this blog'); ?><br />
-	<?php
-}
-add_action('wpmueditblogaction', 'xmlrpc_active_setting');
-
 function update_user_status( $id, $pref, $value, $refresh = 1 ) {
 	global $wpdb;
 
