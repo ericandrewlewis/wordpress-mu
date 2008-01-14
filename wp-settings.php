@@ -269,7 +269,7 @@ if ( '1' == $current_blog->deleted )
 	graceful_fail(__('This user has elected to delete their account and the content is no longer available.'));
 
 if ( '2' == $current_blog->deleted )
-		graceful_fail(sprintf(__('This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:support@{%1$s}">support@{%1$s}</a>.'), $current_site->domain));
+		graceful_fail(sprintf(__('This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:%1$s">%1$s</a>.'), get_site_option( 'admin_email', "support@{$current_site->domain}" )));
 
 if( $current_blog->archived == '1' )
     graceful_fail(__('This blog has been archived or suspended.'));
