@@ -139,10 +139,11 @@ class WP_Object_Cache {
 	}
 
 	function get($id, $group = 'default', $count_hits = true) {
-		$hash = $this->key($id, $group);
-		$group_key = $this->key( '', $group );
 		if (empty ($group))
 			$group = 'default';
+
+		$group_key = $this->key( '', $group );
+		$hash = $this->key($id, $group_key);
 
 		if (isset ($this->cache[$hash])) {
 			if ($count_hits)
@@ -168,7 +169,7 @@ class WP_Object_Cache {
 			return false;
 		}
 
-		$cache_file = $this->cache_dir.$this->get_group_dir($group_key)."/".$this->hash($id).'.php';
+		$cache_file = $this->cache_dir.$this->get_group_dir($group_key)."/".$this->hash($hash).'.php';
 		if (!file_exists($cache_file)) {
 			$this->non_existant_objects[$hash] = true;
 			$this->cache_misses += 1;
@@ -285,7 +286,8 @@ class WP_Object_Cache {
 	}
 
 	function set($id, $data, $group = 'default', $expire = '') {
-		$hash = $this->key($id, $group);
+		$group_key = $this->key( '', $group );
+		$hash = $this->key($id, $group_key);
 		if (empty ($group))
 			$group = 'default';
 
@@ -294,7 +296,7 @@ class WP_Object_Cache {
 
 		$this->cache[$hash] = $data;
 		unset ($this->non_existant_objects[$hash]);
-		$this->dirty_objects[$this->key( '', $group )][] = $id;
+		$this->dirty_objects[$group_key][] = $id;
 
 		return true;
 	}
@@ -338,17 +340,18 @@ class WP_Object_Cache {
 
 			$ids = array_unique($ids);
 			foreach ($ids as $id) {
-				$cache_file = $group_dir.$this->hash($group.'-'.$id).'.php';
+				$hash = $this->key($id, $group);
+				$cache_file = $group_dir.$this->hash($hash).'.php';
 
 				// Remove the cache file if the key is not set.
-				if (!isset ($this->cache[$group.'-'.$id])) {
+				if (!isset ($this->cache[$hash])) {
 					if (file_exists($cache_file))
 						@ unlink($cache_file);
 					continue;
 				}
 
 				$temp_file = tempnam($group_dir, 'tmp');
-				$serial = CACHE_SERIAL_HEADER.base64_encode(serialize($this->cache[$group.'-'.$id])).CACHE_SERIAL_FOOTER;
+				$serial = CACHE_SERIAL_HEADER.base64_encode(serialize($this->cache[$hash])).CACHE_SERIAL_FOOTER;
 				$fd = @fopen($temp_file, 'w');
 				if ( false === $fd ) {
 					$errors++;
