@@ -13,7 +13,8 @@ if( trim( get_option('blog_public') ) == '' )
 <div class="wrap">
 <h2><?php _e('Privacy Options') ?></h2>
 <form method="post" action="options.php">
-<?php wp_nonce_field('update-options') ?>
+<?php wp_nonce_field('privacy-options') ?>
+<input type='hidden' name='option_page' value='privacy' />
 <table class="optiontable">
 <tr valign="top">
 <th scope="row"><?php _e('Blog visibility:') ?> </th>
@@ -30,7 +31,6 @@ if( trim( get_option('blog_public') ) == '' )
 
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 <input type="hidden" name="action" value="update" />
-<input type="hidden" name="page_options" value="blog_public" />
 </p>
 </form>
 

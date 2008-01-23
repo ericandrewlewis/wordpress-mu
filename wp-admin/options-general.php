@@ -10,7 +10,8 @@ include('./admin-header.php');
 <div class="wrap">
 <h2><?php _e('General Options') ?></h2>
 <form method="post" action="options.php">
-<?php wp_nonce_field('update-options') ?>
+<?php wp_nonce_field('general-options') ?>
+<input type='hidden' name='option_page' value='general' />
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
 <table class="optiontable">
 <tr valign="top">
@@ -105,7 +106,6 @@ endfor;
 
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 <input type="hidden" name="action" value="update" />
-<input type="hidden" name="page_options" value="blogname,blogdescription,new_admin_email,users_can_register,gmt_offset,date_format,time_format,start_of_week,comment_registration,WPLANG,language" />
 </p>
 </form>
 

@@ -411,4 +411,20 @@ function wpmu_menu() {
 }
 add_action( '_admin_menu', 'wpmu_menu' );
 
+function mu_options( $options ) {
+	$removed = array( 'general' => array( 'admin_email', 'default_role' ),
+	'reading' => array( 'gzipcompression' ),
+	'writing' => array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' ) );
+
+	$added = array( 'general' => array( 'new_admin_email', 'WPLANG', 'language' ) );
+
+	unset( $options[ 'misc' ] );
+
+	$options = remove_option_whitelist( $removed, $options );
+	$options = add_option_whitelist( $added, $options );
+
+	return $options;
+}
+add_filter( 'whitelist_options', 'mu_options' );
+
 ?>

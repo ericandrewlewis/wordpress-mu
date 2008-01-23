@@ -10,7 +10,8 @@ include('admin-header.php');
 <div class="wrap">
 <h2><?php _e('Writing Options') ?></h2>
 <form method="post" action="options.php">
-<?php wp_nonce_field('update-options') ?>
+<?php wp_nonce_field('writing-options') ?>
+<input type='hidden' name='option_page' value='writing' />
 <p class="submit"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
 <table width="100%" cellspacing="2" cellpadding="5" class="optiontable editform">
 <tr valign="top">
@@ -56,9 +57,13 @@ endforeach;
 </select></td>
 </tr>
 </table>
+
+
+
+</fieldset>
+
 <p class="submit">
 <input type="hidden" name="action" value="update" />
-<input type="hidden" name="page_options" value="default_post_edit_rows,use_smilies,default_category,default_email_category,use_balanceTags,default_link_category" /> 
 <input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" />
 </p>
 </form>
