@@ -433,9 +433,15 @@ switch( $_GET['action'] ) {
 		<table width="100%" cellpadding="3" cellspacing="3" class="widefat">
 			<thead>
 				<tr>
-					<?php foreach($posts_columns as $column_id => $column_display_name) : ?>
-						<th scope="col"><a href="wpmu-blogs.php?<?php echo $sortby_url ?>&amp;sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a></th>
-					<?php endforeach ?>
+				<?php foreach($posts_columns as $column_id => $column_display_name) { ?>
+					<?php $column_link = "<a href='wpmu-blogs.php?{$sortby_url}&amp;sortby={$column_id}&amp;";
+					if( $_GET['sortby'] == $column_id ) { 
+						$column_link .= $_GET[ 'order' ] == 'DESC' ? 'order=ASC&amp;' : 'order=DESC&amp;';
+					}
+					$column_link .= "apage={$apage}'>{$column_display_name}</a>";
+					$col_url = $column_id == 'users' || $column_id == 'plugins' ? $column_display_name : $column_link;
+					?><th scope="col"><?php echo $col_url ?></th>
+				<?php } ?>
 				</tr>
 			</thead>
 			<tbody id="the-list">
