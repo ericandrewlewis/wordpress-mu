@@ -1021,6 +1021,13 @@ function wp_upload_bits($name, $type, $bits) {
 	if ( $upload['error'] !== false )
 		return $upload;
 
+	/* WPMU check file before writing it */
+	$upload_bits_error = apply_filters( 'wp_upload_bits', array( 'name' => $name, 'bits' => $bits, 'time' => $time ) );
+	if( is_array( $upload_bits_error ) == false ) {
+		$upload[ 'error' ] = $upload_bits_error;
+		return $upload;
+	}
+
 	$number = '';
 	$filename = $name;
 	$path_parts = pathinfo($filename);

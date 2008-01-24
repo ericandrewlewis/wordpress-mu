@@ -1869,4 +1869,17 @@ function redirect_this_site( $hosts ) {
 	return array( $current_site->domain );
 }
 add_filter( 'allowed_redirect_hosts', 'redirect_this_site' );
+
+function upload_is_file_too_big( $upload ) {
+	if( is_array( $upload ) == false )
+		return $upload;
+	if( defined( 'WP_IMPORTING' ) )
+		return $upload;
+	if( strlen( $upload[ 'bits' ] )  > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
+		return __( "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.<br />" );
+	}
+
+	return $upload;
+}
+add_filter( "wp_upload_bits", "upload_is_file_too_big" );
 ?>
