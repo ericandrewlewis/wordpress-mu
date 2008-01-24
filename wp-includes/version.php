@@ -3,7 +3,7 @@
 // This holds the version number in a separate file so we can bump it without cluttering the SVN
 
 $wp_version = '2.3.2';
-$wpmu_version = '1.3.1';
+$wpmu_version = '1.3.2';
 $wp_db_version = 6124;
 
 ?>
