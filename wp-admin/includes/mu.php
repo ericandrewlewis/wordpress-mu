@@ -363,7 +363,7 @@ function redirect_user_to_blog() {
 	$newblog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$primary_blog}'" );
 	if( $newblog != null ) {
 		$blogs = get_blogs_of_user( $current_user->ID );
-		if ( empty($blogs) || $blogs == false ) { // If user haven't any blog
+		if ( empty($blogs) || $blogs == false ) { // If user has no blog
 			add_user_to_blog('1', $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
 			wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
 			exit();
@@ -376,7 +376,8 @@ function redirect_user_to_blog() {
 			}
 		}
 
-		$blog = $blogs[0]; // Take the first blog...
+		reset( $blogs );
+		$blog = current( $blogs ); // Take the first blog...
 		wp_redirect( 'http://' . $blog->domain . $blog->path. 'wp-admin/' );
 		exit();
 	}
