@@ -377,7 +377,7 @@ class WP_Import {
 					if ( $tag_id == 0 ) {
 						$tag = $wpdb->escape($tag);
 						$tag_id = wp_insert_term($tag, 'post_tag');
-						$tag_id = $tag_id['term_id'];
+						$tag_id = intval( $tag_id['term_id'] );
 					}
 					$post_tags[] = $tag_id;
 				}
