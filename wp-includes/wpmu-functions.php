@@ -19,6 +19,8 @@ function wpmu_update_blogs_date() {
 
 	$wpdb->query( "UPDATE {$wpdb->blogs} SET last_updated = NOW() WHERE  blog_id = '{$wpdb->blogid}'" );
 	refresh_blog_details( $wpdb->blogid );
+
+	do_action( 'wpmu_blog_updated', $wpdb->blogid );
 }
 
 add_action('delete_post', 'wpmu_update_blogs_date');
