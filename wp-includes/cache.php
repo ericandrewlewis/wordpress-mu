@@ -79,23 +79,21 @@ class WP_Object_Cache {
 		return true;
 	}
 
-	function key($key, $group) {
-		global $blog_id;
+	function maybe_localize_group( $group ) {
+		global $wpdb;
 
 		if ( empty($group) )
 			$group = 'default';
 
-		if (false !== array_search($group, $this->global_groups))
-			$prefix = '';
-		else
-			$prefix = $blog_id . '-';
+		$pre_test = substr( $group, 0, strpos( $group, '-' ) );
+		if( $pre_test == intval( $pre_test ) )
+			return $group; // already localized.
+		$prefix = '';
+		if (false === array_search($group, $this->global_groups))
+			$prefix = $wpdb->blogid . '-';
 
-		if( '' != $key )
-			$key = '-' . $key;
-
-		return "$prefix$group$key";
+		return "$prefix$group";
 	}
-
 
 	function add($id, $data, $group = 'default', $expire = '') {
 		if (empty ($group))
@@ -108,16 +106,16 @@ class WP_Object_Cache {
 	}
 
 	function delete($id, $group = 'default', $force = false) {
-		$hash = $this->key($id, $group);
 		if (empty ($group))
 			$group = 'default';
+		$group = $this->maybe_localize_group( $group );
 
 		if (!$force && false === $this->get($id, $group, false))
 			return false;
 
-		unset ($this->cache[$hash]);
-		$this->non_existant_objects[$hash] = true;
-		$this->dirty_objects[$this->key( '', $group )][] = $id;
+		unset ($this->cache[$group][$id]);
+		$this->non_existant_objects[$group][$id] = true;
+		$this->dirty_objects[$group][] = $id;
 		return true;
 	}
 
@@ -141,37 +139,35 @@ class WP_Object_Cache {
 	function get($id, $group = 'default', $count_hits = true) {
 		if (empty ($group))
 			$group = 'default';
+		$group = $this->maybe_localize_group( $group );
 
-		$group_key = $this->key( '', $group );
-		$hash = $this->key($id, $group_key);
-
-		if (isset ($this->cache[$hash])) {
+		if (isset ($this->cache[$group][$id])) {
 			if ($count_hits)
 				$this->warm_cache_hits += 1;
-			return $this->cache[$hash];
+			return $this->cache[$group][$id];
 		}
 
-		if (isset ($this->non_existant_objects[$hash]))
+		if (isset ($this->non_existant_objects[$group][$id]))
 			return false;
 
 		//  If caching is not enabled, we have to fall back to pulling from the DB.
 		if (!$this->cache_enabled) {
-			if (!isset ($this->cache[$group_key]))
-				$this->load_group_from_db($group_key);
+			if (!isset ($this->cache[$group]))
+				$this->load_group_from_db($group);
 
-			if (isset ($this->cache[$hash])) {
+			if (isset ($this->cache[$group][$id])) {
 				$this->cold_cache_hits += 1;
-				return $this->cache[$hash];
+				return $this->cache[$group][$id];
 			}
 
-			$this->non_existant_objects[$hash] = true;
+			$this->non_existant_objects[$group][$id] = true;
 			$this->cache_misses += 1;
 			return false;
 		}
 
-		$cache_file = $this->cache_dir.$this->get_group_dir($group_key)."/".$this->hash($hash).'.php';
+		$cache_file = $this->cache_dir.$this->get_group_dir($group)."/".$this->hash($id).'.php';
 		if (!file_exists($cache_file)) {
-			$this->non_existant_objects[$hash] = true;
+			$this->non_existant_objects[$group][$id] = true;
 			$this->cache_misses += 1;
 			return false;
 		}
@@ -185,12 +181,12 @@ class WP_Object_Cache {
 			return false;
 		}
 
-		$this->cache[$hash] = unserialize(base64_decode(substr(@ file_get_contents($cache_file), strlen(CACHE_SERIAL_HEADER), -strlen(CACHE_SERIAL_FOOTER))));
-		if (false === $this->cache[$hash])
-			$this->cache[$hash] = '';
+		$this->cache[$group][$id] = unserialize(base64_decode(substr(@ file_get_contents($cache_file), strlen(CACHE_SERIAL_HEADER), -strlen(CACHE_SERIAL_FOOTER))));
+		if (false === $this->cache[$group][$id])
+			$this->cache[$group][$id] = '';
 
 		$this->cold_cache_hits += 1;
-		return $this->cache[$hash];
+		return $this->cache[$group][$id];
 	}
 
 	function get_group_dir($group) {
@@ -210,6 +206,16 @@ class WP_Object_Cache {
 
 	function load_group_from_db($group) {
 		return;
+		global $wpdb;
+
+		if ('category' == $group) {
+			$this->cache['category'] = array ();
+			if ($dogs = $wpdb->get_results("SELECT * FROM $wpdb->categories")) {
+				foreach ($dogs as $catt)
+					$this->cache['category'][$catt->cat_ID] = $catt;
+			}
+		}
+
 	}
 
 	function make_group_dir($group, $perms) {
@@ -286,17 +292,16 @@ class WP_Object_Cache {
 	}
 
 	function set($id, $data, $group = 'default', $expire = '') {
-		$group_key = $this->key( '', $group );
-		$hash = $this->key($id, $group_key);
 		if (empty ($group))
 			$group = 'default';
+		$group = $this->maybe_localize_group( $group );
 
-		if (NULL === $data)
+		if (NULL == $data)
 			$data = '';
 
-		$this->cache[$hash] = $data;
-		unset ($this->non_existant_objects[$hash]);
-		$this->dirty_objects[$group_key][] = $id;
+		$this->cache[$group][$id] = $data;
+		unset ($this->non_existant_objects[$group][$id]);
+		$this->dirty_objects[$group][] = $id;
 
 		return true;
 	}
@@ -333,25 +338,21 @@ class WP_Object_Cache {
 		// Loop over dirty objects and save them.
 		$errors = 0;
 		foreach ($this->dirty_objects as $group => $ids) {
-			if ( in_array($group, $this->non_persistent_groups) )
-				continue;
-
 			$group_dir = $this->make_group_dir($group, $dir_perms);
 
 			$ids = array_unique($ids);
 			foreach ($ids as $id) {
-				$hash = $this->key($id, $group);
-				$cache_file = $group_dir.$this->hash($hash).'.php';
+				$cache_file = $group_dir.$this->hash($id).'.php';
 
 				// Remove the cache file if the key is not set.
-				if (!isset ($this->cache[$hash])) {
+				if (!isset ($this->cache[$group][$id])) {
 					if (file_exists($cache_file))
 						@ unlink($cache_file);
 					continue;
 				}
 
 				$temp_file = tempnam($group_dir, 'tmp');
-				$serial = CACHE_SERIAL_HEADER.base64_encode(serialize($this->cache[$hash])).CACHE_SERIAL_FOOTER;
+				$serial = CACHE_SERIAL_HEADER.base64_encode(serialize($this->cache[$group][$id])).CACHE_SERIAL_FOOTER;
 				$fd = @fopen($temp_file, 'w');
 				if ( false === $fd ) {
 					$errors++;
@@ -380,14 +381,14 @@ class WP_Object_Cache {
 
 	function stats() {
 		echo "<p>";
-		echo "<strong>Cold Cache Hits:</strong> {$this->cold_cache_hits}<br />";
-		echo "<strong>Warm Cache Hits:</strong> {$this->warm_cache_hits}<br />";
-		echo "<strong>Cache Misses:</strong> {$this->cache_misses}<br />";
+		echo "<strong>Cold Cache Hits:</strong> {$this->cold_cache_hits}<br/>";
+		echo "<strong>Warm Cache Hits:</strong> {$this->warm_cache_hits}<br/>";
+		echo "<strong>Cache Misses:</strong> {$this->cache_misses}<br/>";
 		echo "</p>";
 
 		foreach ($this->cache as $group => $cache) {
 			echo "<p>";
-			echo "<strong>Group:</strong> $group<br />";
+			echo "<strong>Group:</strong> $group<br/>";
 			echo "<strong>Cache:</strong>";
 			echo "<pre>";
 			print_r($cache);
