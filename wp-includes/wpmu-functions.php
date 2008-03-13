@@ -1859,8 +1859,7 @@ function global_terms( $term_id, $tt_id ) {
 	$wpdb->query( "UPDATE $wpdb->term_taxonomy SET term_id = '$global_id' WHERE term_id = '$term_id'" );
 	$wpdb->query( "UPDATE $wpdb->term_taxonomy SET parent = '$global_id' WHERE parent = '$term_id'" );
 
-	clean_term_cache($global_id, 'category');
-	clean_term_cache($global_id, 'post_tag');
+	clean_term_cache($term_id);
 
 	return $global_id; 
 }   
