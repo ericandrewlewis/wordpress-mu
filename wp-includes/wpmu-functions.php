@@ -1878,7 +1878,7 @@ function upload_is_file_too_big( $upload ) {
 	if( defined( 'WP_IMPORTING' ) )
 		return $upload;
 	if( strlen( $upload[ 'bits' ] )  > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
-		return __( "This file is too big. Files must be less than " . get_site_option( 'fileupload_maxk', 1500 ) . "Kb in size.<br />" );
+		return sprintf(__( "This file is too big. Files must be less than %dKb in size.<br />" ), get_site_option( 'fileupload_maxk', 1500 )); 
 	}
 
 	return $upload;
