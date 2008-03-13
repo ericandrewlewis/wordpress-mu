@@ -116,7 +116,7 @@ switch( $_GET['action'] ) {
 		}
 
 		$wpdb->hide_errors();
-		$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id ,'', $current_site->id);
+		$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id , array( "public" => 1 ), $current_site->id);
 		$wpdb->show_errors();
 		if( !is_wp_error($blog_id) ) {
 			if( get_user_option( $user_id, 'primary_blog' ) == 1 )
