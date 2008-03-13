@@ -728,7 +728,7 @@ function create_empty_blog( $domain, $path, $weblog_title, $site_id = 1 ) {
 	install_blog($blog_id);
 	restore_current_blog();
 
-	return true;
+	return $blog_id;
 }
 
 function get_blog_permalink( $blog_id, $post_id ) {
