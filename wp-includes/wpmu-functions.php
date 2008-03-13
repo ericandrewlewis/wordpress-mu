@@ -1652,7 +1652,6 @@ endif;
 /* Delete blog */
 
 class delete_blog {
-
 	function delete_blog() {
 		$this->reallydeleteblog = false;
 		add_action('admin_menu', array(&$this, 'admin_menu'));
@@ -1812,7 +1811,7 @@ function add_switcher() {
 	?>
 	<script type="text/javascript">
 	<!--
-	document.getElementById('wphead').innerHTML = '<?php echo $out ?>'
+	document.getElementById('wphead').innerHTML = '<?php echo $out ?>';
 	-->
 	</script>
 	<?php
@@ -1873,9 +1872,7 @@ function redirect_this_site( $hosts ) {
 add_filter( 'allowed_redirect_hosts', 'redirect_this_site' );
 
 function upload_is_file_too_big( $upload ) {
-	if( is_array( $upload ) == false )
-		return $upload;
-	if( defined( 'WP_IMPORTING' ) )
+	if( is_array( $upload ) == false || defined( 'WP_IMPORTING' ) )
 		return $upload;
 	if( strlen( $upload[ 'bits' ] )  > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) ) {
 		return sprintf(__( "This file is too big. Files must be less than %dKb in size.<br />" ), get_site_option( 'fileupload_maxk', 1500 )); 
