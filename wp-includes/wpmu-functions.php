@@ -30,7 +30,7 @@ add_action('publish_post', 'wpmu_update_blogs_date');
 
 function get_blogaddress_by_id( $blog_id ) {
 	$bloginfo = get_blog_details( (int) $blog_id, false ); // only get bare details!
-	return "http://" . $bloginfo->domain . $bloginfo->path;
+	return clean_url("http://" . $bloginfo->domain . $bloginfo->path);
 }
 
 function get_blogaddress_by_name( $blogname ) {
@@ -39,9 +39,9 @@ function get_blogaddress_by_name( $blogname ) {
 	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 		if( $blogname == 'main' )
 			$blogname = 'www';
-		return "http://".$blogname.".".$domain.$base;
+		return clean_url("http://".$blogname.".".$domain.$base);
 	} else {
-		return "http://".$hostname.$base.$blogname;
+		return clean_url("http://".$hostname.$base.$blogname);
 	}
 }
 
@@ -60,7 +60,7 @@ function get_blogaddress_by_domain( $domain, $path ){
 			$url = 'http://' . $domain . $path;
 		}
 	}
-	return $url;
+	return clean_url($url);
 }
 
 function get_sitestats() {
@@ -571,7 +571,7 @@ function get_most_active_blogs( $num = 10, $display = true ) {
 		if( is_array( $most_active ) ) {
 			reset( $most_active );
 			foreach ( (array) $most_active as $key => $details ) {
-				$url = "http://" . $details['domain'] . $details['path'];
+				$url = clean_url("http://" . $details['domain'] . $details['path']);
 				echo "<li>" . $details['postcount'] . " <a href='$url'>$url</a></li>";
 			}
 		}
@@ -1065,14 +1065,15 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 	} else {
 		$activate_url = "http://{$domain}{$path}wp-activate.php?key=$key";
 	}
+	$activate_url = clean_url($activate_url);
 	$admin_email = get_site_option( "admin_email" );
 	if( $admin_email == '' )
 		$admin_email = 'support@' . $_SERVER['SERVER_NAME'];
 	$from_name = get_site_option( "site_name" ) == '' ? 'WordPress' : wp_specialchars( get_site_option( "site_name" ) );
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, "http://{$domain}{$path}");
+	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, clean_url("http://{$domain}{$path}"));
 	// TODO: Don't hard code activation link.
-	$subject = '[' . $from_name . '] ' . sprintf(__('Activate %s'), 'http://' . $domain . $path);
+	$subject = '[' . $from_name . '] ' . sprintf(__('Activate %s'), clean_url('http://' . $domain . $path));
 	wp_mail($user_email, $subject, $message, $message_headers);
 }
 
@@ -1088,7 +1089,7 @@ function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 		$admin_email = 'support@' . $_SERVER['SERVER_NAME'];
 	$from_name = get_site_option( "site_name" ) == '' ? 'WordPress' : wp_specialchars( get_site_option( "site_name" ) );
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), "http://{$current_site->domain}{$current_site->path}wp-activate.php?key=$key" );
+	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), clean_url("http://{$current_site->domain}{$current_site->path}wp-activate.php?key=$key") );
 	// TODO: Don't hard code activation link.
 	$subject = sprintf(__('Activate %s'), $user);
 	wp_mail($user_email, $subject, $message, $message_headers);
@@ -1235,12 +1236,21 @@ function newblog_notify_siteadmin( $blog_id, $user_id ) {
 	global $current_site;
 	if( get_site_option( 'registrationnotification' ) != 'yes' )
 		return;
+		
 	$email = get_site_option( 'admin_email' );
-	if( is_email( $email ) == false )
+	if( is_email($email) == false )
 		return false;
-	$msg = "New Blog: " . get_blog_option( $blog_id, "blogname" ) . "\nURL: " . get_blog_option( $blog_id, "siteurl" ) . "\nRemote IP: {$_SERVER['REMOTE_ADDR']}\n\nDisable these notifications: http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php";
+	
+	$options_site_url = clean_url("http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php");
+	
+	$msg = sprintf(__("New Blog: %1s
+URL: %2s
+Remote IP: %3s
+
+Disable these notifications: %4s"), get_blog_option( $blog_id, "blogname" ), get_blog_option( $blog_id, "siteurl" ), $_SERVER['REMOTE_ADDR'], $options_site_url);
 	$msg = apply_filters( 'newblog_notify_siteadmin', $msg );
-	wp_mail( $email, "New Blog Registration: " . get_blog_option( $blog_id, "siteurl" ), $msg );
+	
+	wp_mail( $email, sprintf(__("New Blog Registration: %s"), get_blog_option( $blog_id, "siteurl" )), $msg );
 }
 add_action( "wpmu_new_blog", "newblog_notify_siteadmin", 10, 2 );
 
@@ -1248,13 +1258,20 @@ function newuser_notify_siteadmin( $user_id ) {
 	global $current_site;
 	if( get_site_option( 'registrationnotification' ) != 'yes' )
 		return;
+		
 	$email = get_site_option( 'admin_email' );
-	if( is_email( $email ) == false )
+	if( is_email($email) == false )
 		return false;
 	$user = new WP_User($user_id);
-	$msg = "New User: " . $user->user_login . "\nRemote IP: {$_SERVER['REMOTE_ADDR']}\n\nDisable these notifications: http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php";
+
+	$options_site_url = clean_url("http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php");
+	$msg = sprintf(__("New User: %1s
+Remote IP: %2s
+
+Disable these notifications: %3s"), $user->user_login, $_SERVER['REMOTE_ADDR'], $options_site_url);
+	
 	$msg = apply_filters( 'newuser_notify_siteadmin', $msg );
-	wp_mail( $email, "New User Registration: " . $user->user_login, $msg );
+	wp_mail( $email, sprintf(__("New User Registration: %s"), $user->user_login), $msg );
 }
 add_action( "wpmu_new_user", "newuser_notify_siteadmin" );
 
@@ -1265,15 +1282,15 @@ function domain_exists($domain, $path, $site_id = 1) {
 
 function insert_blog($domain, $path, $site_id) {
 	global $wpdb;
-	$path = trailingslashit( $path );
-	$query = "INSERT INTO $wpdb->blogs ( blog_id, site_id, domain, path, registered ) VALUES ( NULL, '$site_id', '$domain', '$path', NOW( ))";
-	$result = $wpdb->query( $query );
-	if ( ! $result )
+	$path = trailingslashit($path);
+	$site_id = (int) $site_id;
+	
+	$result = $wpdb->query( "INSERT INTO $wpdb->blogs ( blog_id, site_id, domain, path, registered ) VALUES ( NULL, '$site_id', '$domain', '$path', NOW( ))" );
+	if ( !$result )
 		return false;
 
-	$id = $wpdb->insert_id;
-	refresh_blog_details($id);
-	return $id;
+	refresh_blog_details($wpdb->insert_id);
+	return $wpdb->insert_id;
 }
 
 // Install an empty blog.  wpdb should already be switched.
@@ -1349,7 +1366,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	if( $first_post == false )
 		$first_post = stripslashes( __( 'Welcome to <a href="SITE_URL">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' ) );
 
-	$first_post = str_replace( "SITE_URL", "http://" . $current_site->domain . $current_site->path, $first_post );
+	$first_post = str_replace( "SITE_URL", clean_url("http://" . $current_site->domain . $current_site->path), $first_post );
 	$first_post = str_replace( "SITE_NAME", $current_site->site_name, $first_post );
 	$first_post = stripslashes( $first_post );
 
@@ -1804,8 +1821,10 @@ function add_switcher() {
 	$out = '<h1><span id="blog-title">' . wptexturize(get_bloginfo(("name"))) . '</span><span id="viewsite">(<a href="' . get_option("home") . "/" . '">' . __("View site &raquo;") . '</a>)</span></h1>';
 	$out .= '<ul id="switchermenu">';
 	$blogs = get_blogs_of_user($current_user->ID);
-	if ( ! empty($blogs) ) foreach ( $blogs as $blog ) {
-		$out .= '<li><a href="http://' . $blog->domain . $blog->path . 'wp-admin/">' . addslashes( $blog->blogname ) . '</a></li>';
+	if ( !empty($blogs) ) {
+		foreach ( $blogs as $blog ) {
+			$out .= '<li><a href="'. clean_url('http://' . $blog->domain . $blog->path . 'wp-admin/'). '">' . addslashes( $blog->blogname ) . '</a></li>';
+		}
 	}
 	$out .= "</ul>";
 	?>
