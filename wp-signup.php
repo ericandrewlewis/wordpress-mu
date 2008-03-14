@@ -371,10 +371,17 @@ function validate_blog_signup() {
 
 function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
-<h2><?php printf(__('The blog %s is yours'), $domain.$path) ?></h2>
+<h2><?php printf(__('Congratulations!  The blog %s is yours.'), $domain.$path) ?></h2>
 <p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
-<p><?php printf(__('Check your inbox at <strong>%s</strong> and click the link given.  '),  $user_email) ?></p>
+<p><?php printf(__('Check your inbox at <strong>%s</strong> and click the link given. It should arrive within 30 minutes.'),  $user_email) ?></p>
 <p><?php _e('If you do not activate your blog within two days, you will have to sign up again.'); ?></p>
+<h2><?php _e('Still waiting for your email?') ?></h2>
+<p><?php _e("If you haven't received your email yet, there are a number of things you can do:") ?></p>
+<ul>
+<li><p><strong><?php _e('Wait a little longer.  Sometimes delivery of email can be delayed by precesses outside of our control.') ?></strong></p></li>
+<li><p><?php _e('Check the junk email or spam folder of your email client.  Sometime emails wind up there by mistake.') ?></p></li>
+<li><?php printf(__("Have you entered your email correctly?  We think it's %s but if you've entered it incorrectly, you won't receive it."), $user_email) ?></li>
+</ul>
 <?php
 	do_action('signup_finished');
 }
