@@ -565,6 +565,7 @@ foreach ( (array) $roleclass as $user_object ) {
 	}
 ?>
 
+<?php if( apply_filters('show_adduser_fields', true) ) {?>
 <div class="wrap">
 <h2><?php _e('Add User From Community') ?></h2>
 <div class="narrow">
@@ -590,8 +591,9 @@ foreach ( (array) $roleclass as $user_object ) {
 	<?php echo $referer; ?>
 	<input name="adduser" type="submit" id="addusersub" value="<?php _e('Add User &raquo;') ?>" />
 </p>
-</div>
 </form>
+</div>
+<?php } ?>
 
 <?php if ( is_wp_error( $add_user_errors ) ) : ?>
 	<div class="error">
