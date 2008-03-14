@@ -86,10 +86,10 @@ class WP_Object_Cache {
 			$group = 'default';
 
 		$pre_test = substr( $group, 0, strpos( $group, '-' ) );
-		if( $pre_test == intval( $pre_test ) )
+		if( $pre_test != '' && $pre_test == intval( $pre_test ) )
 			return $group; // already localized.
 		$prefix = '';
-		if (false === array_search($group, $this->global_groups))
+		if (true !== array_search($group, $this->global_groups))
 			$prefix = $wpdb->blogid . '-';
 
 		return "$prefix$group";
