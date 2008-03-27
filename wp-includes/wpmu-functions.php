@@ -1899,4 +1899,17 @@ function upload_is_file_too_big( $upload ) {
 	return $upload;
 }
 add_filter( "wp_upload_bits", "upload_is_file_too_big" );
+
+function wordpressmu_kses( $tags ) {
+	foreach( $tags as $tag => $attr ) {
+		if( is_array( $attr[ 'class' ] ) )
+			unset( $attr[ 'class' ] );
+		if( is_array( $attr[ 'id' ] ) )
+			unset( $attr[ 'id' ] );
+		$tags[ $tag ] = $attr;
+	}
+	return $tags;
+}
+add_filter( 'edit_allowedtags', 'wordpressmu_kses' );
+add_filter( 'edit_allowedposttags', 'wordpressmu_kses' );
 ?>
