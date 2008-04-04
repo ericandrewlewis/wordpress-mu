@@ -28,26 +28,8 @@ if ( isset($_GET['action']) ) {
 	check_admin_referer('switch-theme_' . $_GET['template']);
 
 	if ('activate' == $_GET['action']) {
-		$found = false;
-		while( list( $key, $details ) = each( $themes ) ) { 
-			if( $details[ 'Template' ] == $_GET['template'] && $details[ 'Stylesheet' ] == $_GET['stylesheet'] ) {
-				$found = true;
-				break;
-			}
-		}
-		if( $found == true ) {
-			if ( isset($_GET['template']) )
-				update_option('template', $_GET['template']);
-
-			if ( isset($_GET['stylesheet']) )
-				update_option('stylesheet', $_GET['stylesheet']);
-
-			do_action('switch_theme', get_current_theme());
-
-			wp_redirect('themes.php?activated=true');
-		} else {
-			wp_redirect('themes.php');
-		}
+		switch_theme($_GET['template'], $_GET['stylesheet']);
+		wp_redirect('themes.php?activated=true');
 		exit;
 	}
 }
@@ -63,7 +45,7 @@ if( is_site_admin() ) {
 <?php if ( ! validate_current_theme() ) : ?>
 <div id="message1" class="updated fade"><p><?php _e('The active theme is broken.  Reverting to the default theme.'); ?></p></div>
 <?php elseif ( isset($_GET['activated']) ) : ?>
-<div id="message2" class="updated fade"><p><?php printf(__('New theme activated. <a href="%s">View site &raquo;</a>'), get_bloginfo('url') . '/'); ?></p></div>
+<div id="message2" class="updated fade"><p><?php printf(__('New theme activated. <a href="%s">Visit site</a>'), get_bloginfo('url') . '/'); ?></p></div>
 <?php endif; ?>
 
 
@@ -75,9 +57,11 @@ if( is_site_admin() ) {
 <?php endif; ?>
 <h3><?php printf(_c('%1$s %2$s by %3$s|1: theme title, 2: theme version, 3: theme author'), $ct->title, $ct->version, $ct->author) ; ?></h3>
 <p><?php echo $ct->description; ?></p>
+<?php if ( $ct->tags ) : ?>
+<p><?php _e('Tags:'); ?> <?php echo join(', ', $ct->tags); ?></p>
+<?php endif; ?>
 </div>
 
-<br style="clear: both" />
 <h2><?php _e('Available Themes'); ?></h2>
 <?php if ( 1 < count($themes) ) { ?>
 
@@ -98,6 +82,7 @@ foreach ($theme_names as $theme_name) {
 	$author = $themes[$theme_name]['Author'];
 	$screenshot = $themes[$theme_name]['Screenshot'];
 	$stylesheet_dir = $themes[$theme_name]['Stylesheet Dir'];
+	$tags = $themes[$theme_name]['Tags'];
 	$activate_link = wp_nonce_url("themes.php?action=activate&amp;template=".urlencode($template)."&amp;stylesheet=".urlencode($stylesheet), 'switch-theme_' . $template);
 ?>
 <div class="available-theme">
@@ -110,6 +95,9 @@ foreach ($theme_names as $theme_name) {
 </a>
 
 <p><?php echo $description; ?></p>
+<?php if ( $tags ) : ?>
+<p><?php _e('Tags:'); ?> <?php echo join(', ', $tags); ?></p>
+<?php endif; ?>
 </div>
 <?php } // end foreach theme_names ?>
 

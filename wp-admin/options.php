@@ -1,7 +1,7 @@
 <?php
 require_once('admin.php');
 
-$title = __('Options');
+$title = __('Settings');
 $this_file = 'options.php';
 $parent_file = 'options-general.php';
 
@@ -9,8 +9,8 @@ wp_reset_vars(array('action'));
 
 $whitelist_options = array(
 	'general' => array('siteurl', 'home', 'blogname', 'blogdescription', 'admin_email', 'users_can_register', 'gmt_offset', 'date_format', 'time_format', 'start_of_week', 'comment_registration', 'default_role'),
-	'discussion' => array( 'default_pingback_flag', 'default_ping_status', 'default_comment_status', 'comments_notify', 'moderation_notify', 'comment_moderation', 'require_name_email', 'comment_whitelist', 'comment_max_links', 'moderation_keys', 'blacklist_keys' ),
-	'misc' => array( 'hack_file', 'use_linksupdate', 'uploads_use_yearmonth_folders', 'upload_path' ),
+	'discussion' => array( 'default_pingback_flag', 'default_ping_status', 'default_comment_status', 'comments_notify', 'moderation_notify', 'comment_moderation', 'require_name_email', 'comment_whitelist', 'comment_max_links', 'moderation_keys', 'blacklist_keys', 'show_avatars', 'avatar_rating' ),
+	'misc' => array( 'hack_file', 'use_linksupdate', 'uploads_use_yearmonth_folders', 'upload_path', 'thumbnail_size_w', 'thumbnail_size_h', 'thumbnail_crop', 'medium_size_w', 'medium_size_h' ),
 	'privacy' => array( 'blog_public' ),
 	'reading' => array( 'posts_per_page', 'posts_per_rss', 'rss_use_excerpt', 'blog_charset', 'gzipcompression', 'show_on_front', 'page_on_front', 'page_for_posts' ),
 	'writing' => array( 'default_post_edit_rows', 'use_smilies', 'ping_sites', 'mailserver_url', 'mailserver_port', 'mailserver_login', 'mailserver_pass', 'default_category', 'default_email_category', 'use_balanceTags', 'default_link_category' ),
@@ -63,7 +63,7 @@ case 'update':
 			$option = trim($option);
 			$value = $_POST[$option];
 			if(!is_array($value))	$value = trim($value);
-				$value = stripslashes_deep($value);
+			$value = stripslashes_deep($value);
 			update_option($option, $value);
 		}
 	}
@@ -79,13 +79,12 @@ default:
 	include('admin-header.php'); ?>
 
 <div class="wrap">
-  <h2><?php _e('All Options'); ?></h2>
+  <h2><?php _e('All Settings'); ?></h2>
   <form name="form" action="options.php" method="post" id="all-options">
   <?php wp_nonce_field('options-options') ?>
   <input type="hidden" name="action" value="update" />
   <input type='hidden' name='option_page' value='options' />
-	<p class="submit"><input type="submit" name="Update" value="<?php _e('Update Options &raquo;') ?>" /></p>
-  <table width="98%">
+  <table class="form-table">
 <?php
 $options = $wpdb->get_results("SELECT * FROM $wpdb->options ORDER BY option_name");
 
@@ -124,7 +123,7 @@ endforeach;
 ?>
   </table>
 <?php $options_to_update = implode(',', $options_to_update); ?>
-<p class="submit"><input type="hidden" name="page_options" value="<?php echo $options_to_update; ?>" /><input type="submit" name="Update" value="<?php _e('Update Options &raquo;') ?>" /></p>
+<p class="submit"><input type="hidden" name="page_options" value="<?php echo $options_to_update; ?>" /><input type="submit" name="Update" value="<?php _e('Save Changes') ?>" /></p>
   </form>
 </div>
 

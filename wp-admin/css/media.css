@@ -8,7 +8,7 @@ div#media-upload-header {
 	height: 2.5em;
 }
 
-ul#sidemenu {
+body#media-upload ul#sidemenu {
 	font-weight: normal;
 	margin: 0 5px;
 	position: absolute;
@@ -235,4 +235,8 @@ abbr.required {
 }
 #media-upload tr.align td.field {
 	text-align: center;
+}
+#media-upload tr.image-size {
+	margin-bottom: 1em;
+	height: 3em;
 }

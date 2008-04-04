@@ -84,48 +84,67 @@ class WP_Filesystem_FTPext{
 		$this->permission = $perm;
 	}
 
-	function find_base_dir($base = '.',$echo = false){
+	function find_base_dir($base = '.',$echo = false, $loop = false) {
+		//Sanitize the Windows path formats, This allows easier conparison and aligns it to FTP output.
 		$abspath = str_replace('\\','/',ABSPATH); //windows: Straighten up the paths..
 		if( strpos($abspath, ':') ){ //Windows, Strip out the driveletter
 			if( preg_match("|.{1}\:(.+)|i", $abspath, $mat) )
 				$abspath = $mat[1];
 		}
 	
+		//Set up the base directory (Which unless specified, is the current one)
 		if( empty( $base ) || '.' == $base ) $base = $this->cwd();
-		if( empty( $base ) ) $base = '/';
-		if( '/' != substr($base, -1) ) $base .= '/';
+		$base = trailingslashit($base);
 
-		if($echo) echo __('Changing to ') . $base  .'<br>';
-		if( false === $this->chdir($base) )
-			return false;
+		//Can we see the Current directory as part of the ABSPATH?
+		$location = strpos($abspath, $base);
+		if( false !== $location ) {
+			$newbase = path_join($base, substr($abspath, $location + strlen($base)));
 
-		if( $this->exists($base . 'wp-settings.php') ){
-			if($echo) echo __('Found ') . $base . 'wp-settings.php<br>';
-			$this->wp_base = $base;
-			return $this->wp_base;
-		}
-
-		if( strpos($abspath, $base) > 0)
-			$arrPath = split('/',substr($abspath,strpos($abspath, $base)));
-		else
-			$arrPath = split('/',$abspath);
-
-		for($i = 0; $i <= count($arrPath); $i++)
-			if( $arrPath[ $i ] == '' ) unset( $arrPath[ $i ] );
-
-		foreach($arrPath as $key=>$folder){
-			if( $this->is_dir($base . $folder) ){
-				if($echo) echo __('Found ') . $folder . ' ' . __('Changing to') . ' ' . $base . $folder . '/<br>';
-				return $this->find_base_dir($base .  $folder . '/',$echo);
+			if( false !== $this->chdir($newbase) ){ //chdir sometimes returns null under certain circumstances, even when its changed correctly, FALSE will be returned if it doesnt change correctly.
+				if($echo) printf( __('Changing to %s') . '<br/>', $newbase );
+				//Check to see if it exists in that folder.
+				if( $this->exists($newbase . 'wp-settings.php') ){
+					if($echo) printf( __('Found %s'),  $newbase . 'wp-settings.php<br/>' );
+					return $newbase;
+				}	
 			}
 		}
-
-		if( $base == '/' )
-			return false;
-		//If we get this far, somethings gone wrong, change to / and restart the process.
-		return $this->find_base_dir('/',$echo);
+	
+		//Ok, Couldnt do a magic location from that particular folder level
+		
+		//Get a list of the files in the current directory, See if we can locate where we are in the folder stucture.
+		$files = $this->dirlist($base);
+		
+		$arrPath = explode('/', $abspath);
+		foreach($arrPath as $key){
+			//Working from /home/ to /user/ to /wordpress/ see if that file exists within the current folder, 
+			// If its found, change into it and follow through looking for it. 
+			// If it cant find WordPress down that route, it'll continue onto the next folder level, and see if that matches, and so on.
+			// If it reaches the end, and still cant find it, it'll return false for the entire function.
+			if( isset($files[ $key ]) ){
+				//Lets try that folder:
+				$folder = path_join($base, $key);
+				if($echo) printf( __('Changing to %s') . '<br/>', $folder );
+				$ret = $this->find_base_dir( $folder, $echo, $loop);
+				if( $ret )
+					return $ret;
+			}
+		}
+		//Only check this as a last resort, to prevent locating the incorrect install. All above proceeedures will fail quickly if this is the right branch to take.
+		if(isset( $files[ 'wp-settings.php' ]) ){
+			if($echo) printf( __('Found %s'),  $base . 'wp-settings.php<br/>' );
+			return $base;
+		}
+		if( $loop )
+			return false;//Prevent tihs function looping again.
+		//As an extra last resort, Change back to / if the folder wasnt found. This comes into effect when the CWD is /home/user/ but WP is at /var/www/.... mainly dedicated setups.
+		return $this->find_base_dir('/', $echo, true); 
 	}
-	function get_base_dir($base = '.', $echo=false){
+
+	function get_base_dir($base = '.', $echo = false){
+		if( defined('FTP_BASE') )
+			$this->wp_base = FTP_BASE;
 		if( empty($this->wp_base) )
 			$this->wp_base = $this->find_base_dir($base,$echo);
 		return $this->wp_base;
@@ -136,6 +155,8 @@ class WP_Filesystem_FTPext{
 			$type = isset($this->filetypes[ $extension ]) ? $this->filetypes[ $extension ] : FTP_ASCII;
 		}
 		$temp = tmpfile();
+		if ( ! $temp )
+			return false;
 		if( ! @ftp_fget($this->link,$temp,$file,$type,$resumepos) )
 			return false;
 		fseek($temp, 0); //Skip back to the start of the file being written to
@@ -151,10 +172,12 @@ class WP_Filesystem_FTPext{
 	}
 	function put_contents($file,$contents,$type=''){
 		if( empty($type) ){
-			$extension = substr(strrchr($filename, "."), 1);
+			$extension = substr(strrchr($file, "."), 1);
 			$type = isset($this->filetypes[ $extension ]) ? $this->filetypes[ $extension ] : FTP_ASCII;
 		}
 		$temp = tmpfile();
+		if ( ! $temp )
+			return false;
 		fwrite($temp,$contents);
 		fseek($temp, 0); //Skip back to the start of the file being written to
 		$ret = @ftp_fput($this->link,$file,$temp,$type);
@@ -162,7 +185,10 @@ class WP_Filesystem_FTPext{
 		return $ret;
 	}
 	function cwd(){
-		return ftp_pwd($this->link);
+		$cwd = ftp_pwd($this->link);
+		if( $cwd )
+			$cwd = trailingslashit($cwd);
+		return $cwd;
 	}
 	function chdir($dir){
 		return @ftp_chdir($dir);
@@ -308,8 +334,9 @@ class WP_Filesystem_FTPext{
 	}
 	function is_dir($path){
 		$cwd = $this->cwd();
-		@ftp_chdir($this->link, $path);
-		if ( $this->cwd() != $cwd ) {
+		$result = @ftp_chdir($this->link, $path);
+		if( $result && $path == $this->cwd() ||
+			$this->cwd() != $cwd ) {
 			@ftp_chdir($this->link, $cwd);
 			return true;
 		}
@@ -425,9 +452,9 @@ class WP_Filesystem_FTPext{
 		} else {
 			$limitFile = false;
 		}
-		//if( ! $this->is_dir($path) )
-		//	return false;
-		$list = ftp_rawlist($this->link , '-a ' . $path, false);
+
+		$list = @ftp_rawlist($this->link , '-a ' . $path, false);
+
 		if ( $list === false )
 			return false;
 

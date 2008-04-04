@@ -4,22 +4,26 @@
 	<tr>
 
 <?php $posts_columns = wp_manage_media_columns(); ?>
-<?php foreach($posts_columns as $column_display_name) { ?>
-	<th scope="col"><?php echo $column_display_name; ?></th>
+<?php foreach($posts_columns as $post_column_key => $column_display_name) {
+	if ( 'cb' === $post_column_key )
+		$class = ' class="check-column"';
+	elseif ( 'comments' === $post_column_key )
+		$class = ' class="num"';
+	else
+		$class = '';
+?>
+	<th scope="col"<?php echo $class; ?>><?php echo $column_display_name; ?></th>
 <?php } ?>
 
 	</tr>
 	</thead>
 	<tbody id="the-list" class="list:post">
 <?php
-$i_post = 0;
 if ( have_posts() ) {
 $bgcolor = '';
 add_filter('the_title','wp_specialchars');
-while (have_posts()) : the_post(); $i_post++;
-if ( 16 == $i_post )
-	echo "\t</tbody>\n\t<tbody id='the-extra-list' class='list:post' style='display: none'>\n"; // Hack!
-$class = ( $i_post > 15 || 'alternate' == $class) ? '' : 'alternate';
+while (have_posts()) : the_post();
+$class = 'alternate' == $class ? '' : 'alternate';
 global $current_user;
 $post_owner = ( $current_user->ID == $post->post_author ? 'self' : 'other' );
 ?>
@@ -33,20 +37,20 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 
 	case 'cb':
 		?>
-		<th scope="row" style="text-align: center"><input type="checkbox" name="delete[]" value="<?php the_ID(); ?>" /></th>
+		<th scope="row" class="check-column"><input type="checkbox" name="delete[]" value="<?php the_ID(); ?>" /></th>
 		<?php
 		break;
 
 	case 'icon':
 		?>
-		<td class="media-icon"><?php echo wp_get_attachment_link($post->ID, array(60, 40), false, true); ?></td>
+		<td class="media-icon"><?php echo wp_get_attachment_link($post->ID, array(80, 60), false, true); ?></td>
 		<?php
 		// TODO
 		break;
 
 	case 'media':
 		?>
-		<td><strong><a href="media.php?action=edit&amp;attachment_id=<?php the_ID(); ?>"><?php the_title(); ?></a></strong><br />
+		<td><strong><a href="media.php?action=edit&amp;attachment_id=<?php the_ID(); ?>" title="<?php echo attribute_escape(sprintf(__('Edit "%s"'), get_the_title())); ?>"><?php the_title(); ?></a></strong><br />
 		<?php echo strtoupper(preg_replace('/^.*?\.(\w+)$/', '$1', get_attached_file($post->ID))); ?>
 		<?php do_action('manage_media_media_column', $post->ID); ?>
 		</td>
@@ -81,21 +85,27 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		break;
 
 	case 'parent':
-		if ( $post_parent = get_post($post->post_parent) ) {
-			$title = get_the_title($post->post_parent);
-			if ( empty($title) )
-				$title = __('(no title)');
+		$title = __('(no title)'); // override below
+		if ( $post->post_parent > 0 ) {
+			if ( get_post($post->post_parent) ) {
+				$parent_title = get_the_title($post->post_parent);
+				if ( !empty($parent_title) )
+					$title = $parent_title;
+			}
+			?>
+			<td><strong><a href="post.php?action=edit&amp;post=<?php echo $post->post_parent; ?>"><?php echo $title ?></a></strong></td>
+			<?php
 		} else {
-			$title = '';
+			?>
+			<td>&nbsp;</td>
+			<?php
 		}
-		?>
-		<td><strong><a href="post.php?action=edit&amp;post=<?php echo $post->post_parent; ?>"><?php echo $title ?></a></strong></td>
-		<?php
+
 		break;
 
 	case 'comments':
 		?>
-		<td style="text-align: center">
+		<td class="num"><div class="post-com-count-wrapper">
 		<?php
 		$left = get_pending_comments_num( $post->ID );
 		$pending_phrase = sprintf( __('%s pending'), number_format( $left ) );
@@ -105,7 +115,7 @@ foreach($posts_columns as $column_name=>$column_display_name) {
 		if ( $left )
 			echo '</strong>';
 		?>
-		</td>
+		</div></td>
 		<?php
 		break;
 

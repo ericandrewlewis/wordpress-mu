@@ -382,13 +382,13 @@ function redirect_user_to_blog() {
 		exit();
 	}
 }
-add_action( 'admin_menu_permission', 'redirect_user_to_blog' );
+add_action( 'admin_page_access_denied', 'redirect_user_to_blog' );
 
 function wpmu_menu() {
 	global $menu, $submenu;
 
 	if( is_site_admin() ) {
-		$menu[1] = array(__('Site Admin'), '10', 'wpmu-admin.php' );
+		$menu[29] = array(__('Site Admin'), '10', 'wpmu-admin.php' );
 		$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
 		$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
 		$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
@@ -401,7 +401,7 @@ function wpmu_menu() {
 	unset( $submenu['plugins.php'][10] );
 	unset( $submenu['options-general.php'][40] );
 	unset( $submenu['edit.php'][30] );
-	unset( $menu['30'] );
+	unset( $menu['35'] ); // Plugins
 
 	$menu_perms = get_site_option( "menu_items" );
 	if( is_array( $menu_perms ) == false )
@@ -418,8 +418,6 @@ function mu_options( $options ) {
 
 	$added = array( 'general' => array( 'new_admin_email', 'WPLANG', 'language' ) );
 
-	unset( $options[ 'misc' ] );
-
 	$options = remove_option_whitelist( $removed, $options );
 	$options = add_option_whitelist( $added, $options );
 
@@ -427,4 +425,170 @@ function mu_options( $options ) {
 }
 add_filter( 'whitelist_options', 'mu_options' );
 
+function import_no_new_users( $permission ) {
+	return false;
+}
+add_filter( 'import_allow_create_users', 'import_no_new_users' );
+// See "import_allow_fetch_attachments" and "import_attachment_size_limit" filters too.
+
+function add_option_update_handler($option_group, $option_name, $sanitize_callback = '') {
+	global $new_whitelist_options, $sanitize_callbacks;
+	$new_whitelist_options[ $option_group ][] = $option_name;
+	if( $sanitize_callback != '' )
+		add_filter( "sanitize_option_{$option_name}", $sanitize_callback );
+}
+
+function remove_option_update_handler($option_group, $option_name, $sanitize_callback = '') {
+	global $new_whitelist_options, $sanitize_callbacks;
+	$pos = array_search( $option_name, $new_whitelist_options );
+	if( $pos !== false )
+		unset( $new_whitelist_options[ $option_group ][ $pos ] );
+	if( $sanitize_callback != '' )
+		remove_filter( "sanitize_option_{$option_name}", $sanitize_callback );
+}
+
+function option_update_filter( $options ) {
+	global $new_whitelist_options;
+
+	if( is_array( $new_whitelist_options ) )
+		$options = add_option_whitelist( $new_whitelist_options, $options );
+
+	return $options;
+}
+add_filter( 'whitelist_options', 'option_update_filter' );
+
+function add_option_whitelist( $new_options, $options = '' ) {
+	if( $options == '' ) {
+		global $whitelist_options;
+	} else {
+		$whitelist_options = $options;
+	}
+	foreach( $new_options as $page => $keys ) {
+		foreach( $keys as $key ) {
+			$pos = array_search( $key, $whitelist_options[ $page ] );
+			if( $pos === false )
+				$whitelist_options[ $page ][] = $key;
+		}
+	}
+	return $whitelist_options;
+}
+
+function remove_option_whitelist( $del_options, $options = '' ) {
+	if( $options == '' ) {
+		global $whitelist_options;
+	} else {
+		$whitelist_options = $options;
+	}
+	foreach( $del_options as $page => $keys ) {
+		foreach( $keys as $key ) {
+			$pos = array_search( $key, $whitelist_options[ $page ] );
+			if( $pos !== false )
+				unset( $whitelist_options[ $page ][ $pos ] );
+		}
+	}
+	return $whitelist_options;
+}
+
+/* Blogswitcher */
+function blogswitch_init() {
+	global $current_user, $current_blog;
+	$blogs = get_blogs_of_user( $current_user->ID );
+	if ( !$blogs )
+		return;
+	add_action( 'admin_menu', 'blogswitch_ob_start' );
+	add_action( 'dashmenu', 'blogswitch_markup' );
+}
+
+
+function blogswitch_ob_start() {
+	wp_enqueue_script( 'blog-switch', '/wp-admin/js/blog-switch.js', array( 'jquery' ), 2 );
+	ob_start( 'blogswitch_ob_content' );
+}
+
+function blogswitch_ob_content( $content ) {
+	$content = preg_replace( '#<ul id="dashmenu">.*?%%REAL_DASH_MENU%%#s', '<ul id="dashmenu">', $content );
+	return str_replace( '%%END_REAL_DASH_MENU%%</ul>', '', $content );
+}
+
+function blogswitch_markup() {
+	global $current_user, $blog_id; // current blog
+	$list = array();
+	$options = array();
+
+
+	$primary_blog = get_usermeta( $current_user->ID, 'primary_blog' );
+
+	foreach ( $blogs = get_blogs_of_user( $current_user->ID ) as $blog ) {
+		if ( !$blog->blogname )
+			continue;
+
+		// Use siteurl for this in case of mapping
+		$parsed = parse_url( $blog->siteurl );
+		$domain = $parsed['host'];
+
+		if ( $_SERVER['HTTP_HOST'] === $domain ) {
+			$current  = ' class="current"';
+			$selected = ' selected="selected"';
+		} else {
+			$current  = '';
+			$selected = '';
+		}
+		
+		$url = clean_url( $blog->siteurl ) . '/wp-admin/';
+		$name = wp_specialchars( strip_tags( $blog->blogname ) );
+		$list_item = "<li><a href='$url'$current>$name</a></li>";
+		$option_item = "<option value='$url'$selected>$name</option>";
+
+		if ( $blog_id == $blog->userblog_id ) {
+			$list[-2] = $list_item;
+			$options[] = $option_item; // [sic] don't reorder dropdown based on current blog
+		} elseif ( $primary_blog == $blog->userblog_id ) {
+			$list[-1] = $list_item;
+			$options[-1] = $option_item;
+		} else {
+			$list[] = $list_item;
+			$options[] = $option_item;
+		}
+	}
+	ksort($list);
+	ksort($options);
+
+	$list = array_slice( $list, 0, 4 ); // First 4
+
+	$select = "\n\t\t<select>\n\t\t\t" . join( "\n\t\t\t", $options ) . "\n\t\t</select>";
+
+	echo "%%REAL_DASH_MENU%%\n\t" . join( "\n\t", $list );
+
+	if ( count($list) < count($options) ) :
+?>
+
+	<li id="all-my-blogs-tab" class="wp-no-js-hidden"><a href="#" class="blog-picker-toggle"><?php _e( 'All my blogs' ); ?></a></li>
+
+	</ul>
+
+	<form id="all-my-blogs" action="" method="get" style="display: none">
+		<p>
+			<?php printf( __( 'Choose a blog: %s' ), $select ); ?>
+
+			<input type="submit" class="button" value="<?php _e( 'Go' ); ?>" />
+			<a href="#" class="blog-picker-toggle"><?php _e( 'Cancel' ); ?></a>
+		</p>
+	</form>
+
+<?php 	else : // counts ?>
+
+	</ul>
+
+<?php
+	endif; // counts
+
+	echo '%%END_REAL_DASH_MENU%%';
+}
+
+add_action( '_admin_menu', 'blogswitch_init' );
+
+function mu_css() {
+	wp_admin_css( 'css/mu' );
+}
+add_action( 'admin_head', 'mu_css' );
 ?>

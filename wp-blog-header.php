@@ -13,7 +13,6 @@ $wp_did_header = true;
 require_once( dirname(__FILE__) . '/wp-config.php');
 
 wp();
-gzip_compression();
 
 require_once(ABSPATH . WPINC . '/template-loader.php');
 

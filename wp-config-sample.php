@@ -10,6 +10,12 @@ define('DB_COLLATE', '');
 define('VHOST', 'VHOSTSETTING'); 
 $base = 'BASE';
 
+// Change SECRET_KEY to a unique phrase.  You won't have to remember it later,
+// so make it long and complicated.  You can visit https://www.grc.com/passwords.htm
+// to get a phrase generated for you, or just make something up.
+define('SECRET_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
+define('SECRET_SALT', 'put your unique phrase here'); // Change this to a unique phrase.
+
 // double check $base
 if( $base == 'BASE' )
 	die( 'Problem in wp-config.php - $base is set to BASE when it should be the path like "/" or "/blogs/"! Please fix it!' );

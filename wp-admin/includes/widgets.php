@@ -2,7 +2,7 @@
 
 // $_search is unsanitized
 function wp_list_widgets( $show = 'all', $_search = false ) {
-	global $wp_registered_widgets, $sidebars_widgets;
+	global $wp_registered_widgets, $sidebars_widgets, $wp_registered_widget_controls;
 	if ( $_search ) {
 		// sanitize
 		$search = preg_replace( '/[^\w\s]/', '', $_search );
@@ -52,17 +52,31 @@ function wp_list_widgets( $show = 'all', $_search = false ) {
 			$widget_control_template = ob_get_contents();
 			ob_end_clean();
 
+			$widget_id = $widget['id']; // save this for later in case we mess with $widget['id']
+
 			$is_multi = false !== strpos( $widget_control_template, '%i%' );
 			if ( !$sidebar || $is_multi ) {
-				if ( $is_multi )
-					$already_shown[] = $widget['callback']; // it's a multi-widget.  We only need to show it in the list once.
-				$action = 'add';
-				$add_url = wp_nonce_url( add_query_arg( array(
+				$add_query = array(
 					'sidebar' => $sidebar,
-					'add' => $widget['id'],
 					'key' => false,
 					'edit' => false
-				) ), "add-widget_$widget[id]" );
+				);
+				if ( $is_multi ) {
+					// it's a multi-widget.  We only need to show it in the list once.
+					$already_shown[] = $widget['callback'];
+					$num = (int) array_pop( explode( '-', $widget['id'] ) );
+					$id_base = $wp_registered_widget_controls[$widget['id']]['id_base'];
+					// so that we always add a new one when clicking "add"
+					while ( isset($wp_registered_widgets["$id_base-$num"]) )
+						$num++;
+					$widget['id'] = "$id_base-$num";
+					$add_query['base'] = $id_base;
+					$add_query['key'] = $num;
+					$add_query['sidebar'] = $GLOBALS['sidebar'];
+				}
+				$add_query['add'] = $widget['id'];
+				$action = 'add';
+				$add_url = wp_nonce_url( add_query_arg( $add_query ), "add-widget_$widget[id]" );
 			} else {
 				$action = 'edit';
 				$edit_url = clean_url( add_query_arg( array(
@@ -110,7 +124,7 @@ function wp_list_widgets( $show = 'all', $_search = false ) {
 			<?php endif; ?>
 
 			<div class="widget-description">
-				<?php echo ( $widget_description = wp_widget_description( $widget['id'] ) ) ? $widget_description : '&nbsp;'; ?>
+				<?php echo ( $widget_description = wp_widget_description( $widget_id ) ) ? $widget_description : '&nbsp;'; ?>
 			</div>
 
 			<br class="clear" />
@@ -174,7 +188,7 @@ function wp_widget_control( $sidebar_args ) {
 
 	$key = $sidebar_id ? array_search( $widget_id, $sidebars_widgets[$sidebar_id] ) : 'no-key'; // position of widget in sidebar
 
-	$edit = $edit_widget > 0 && $key && $edit_widget == $key; // (bool) are we currently editing this widget
+	$edit = -1 <  $edit_widget && is_numeric($key) && $edit_widget === $key; // (bool) are we currently editing this widget
 
 	$id_format = $widget['id'];
 	// We aren't showing a widget control, we're outputing a template for a mult-widget control
@@ -198,11 +212,10 @@ function wp_widget_control( $sidebar_args ) {
 	$wp_registered_widgets[$widget_id]['callback'] = $wp_registered_widgets[$widget_id]['_callback'];
 	unset($wp_registered_widgets[$widget_id]['_callback']);
 
-	if ( $widget_title )
-		$widget_title = sprintf( _c('%1$s: %2$s|widget_admin_title' ), $sidebar_args['widget_name'], $widget_title );
+	if ( $widget_title && $widget_title != $control['name'] )
+		$widget_title = sprintf( _c('%1$s: %2$s|1: widget name, 2: widget title' ), $sidebar_args['widget_name'], $widget_title );
 	else
 		$widget_title = wp_specialchars( strip_tags( $sidebar_args['widget_name'] ) );
-
 
 	if ( empty($sidebar_args['_display']) || 'template' != $sidebar_args['_display'] )
 		echo $sidebar_args['before_widget'];
@@ -241,7 +254,7 @@ function wp_widget_control( $sidebar_args ) {
 
 				<?php endif; ?>
 
-				<a class="widget-action widget-control-remove delete alignright" href="<?php echo clean_url( add_query_arg( array( 'remove' => $id_format, 'key' => $key ), wp_nonce_url( null, "remove-widget_$widget[id]" ) ) ); ?>"><?php _e('Remove'); ?></a>
+				<a class="widget-action widget-control-remove delete alignright" href="<?php echo clean_url( wp_nonce_url( add_query_arg( array( 'remove' => $id_format, 'key' => $key ) ), "remove-widget_$widget[id]" ) ); ?>"><?php _e('Remove'); ?></a>
 				<br class="clear" />
 			</div>
 		</div>

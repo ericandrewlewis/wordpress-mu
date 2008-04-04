@@ -337,6 +337,10 @@ function step2() {
 			case '$base = \'BASE\';':
 				fwrite($handle, str_replace('BASE', $base, $line));
 				break;
+			case "define('SECRET_K":
+			case "define('SECRET_S":
+				fwrite($handle, str_replace('put your unique phrase here', md5( mt_rand() ) . md5( mt_rand() ), $line));
+				break;
 			default:
 				fwrite($handle, $line);
 				break;
@@ -479,18 +483,6 @@ switch($action) {
 		make_db_current_silent();
 		populate_options();
 		do_htaccess( 'htaccess.dist', '.htaccess', $base, '');
-		step3();
-	break;
-	case "step3":
-		// call createBlog();
-		// create .htaccess
-		// print login info and links.
-		require_once('./wp-config.php');
-		require_once('./wp-admin/upgrade-functions.php');
-		make_db_current_silent();
-		populate_options();
-		do_htaccess( 'htaccess.dist', '.htaccess', $base, '');
-		printheader();
 		step3();
 	break;
 	default:

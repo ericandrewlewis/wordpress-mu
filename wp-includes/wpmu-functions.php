@@ -1145,7 +1145,6 @@ function wpmu_activate_signup($key) {
 		if ( 'blog_taken' == $blog_id->get_error_code() ) {
 			$blog_id->add_data($signup);
 			$wpdb->query("UPDATE $wpdb->signups SET active = '1', activated = '$now' WHERE activation_key = '$key'");
-			error_log("Blog {$signup->domain} failed to complete activation, the blog already exists.", 0);	
 		}
 
 		return $blog_id;
@@ -1303,7 +1302,6 @@ function install_blog($blog_id, $blog_title = '') {
 	if ($installed) die(__('<h1>Already Installed</h1><p>You appear to have already installed WordPress. To reinstall please clear your old database tables first.</p>') . '</body></html>');
 
 	$url = get_blogaddress_by_id($blog_id);
-	error_log("install_blog - ID: $blog_id  URL: $url Title: $blog_title ", 0);
 
 	// Set everything up
 	make_db_current_silent();
@@ -1742,101 +1740,6 @@ SITE_NAME
 
 $delete_blog_obj = new delete_blog();
 
-/* Dashboard Switcher */
-
-add_action( 'admin_print_scripts', 'switcher_scripts' );
-
-function switcher_scripts() {
-	wp_enqueue_script('jquery');
-}
-
-
-function switcher_css() {
-?>
-<style type="text/css">
-#switchermenu a {
-	font-size: 20px;
-	padding: 0 1.5em 0 10px;
-	display: block;
-	color: #c3def1;
-}
-
-#switchermenu a:hover {
-	background: #1a70b4;
-	color: #fff;
-}
-
-#switchermenu li {
-	margin: 0;
-	padding: 2px;
-}
-
-#switchermenu {
-	display: none;
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	overflow: hidden;
-	border-top: 1px solid #1a70b4;
-	border-left: 1px solid #1a70b4;
-	position: absolute;
-	left: 0;
-	top: 1em;
-	background: #14568a;
-	z-index: 1;
-}
-</style>
-<script type="text/javascript">
-jQuery( function($) {
-var switchTime;
-var w = false;
-var h = $( '#blog-title' )
-	.css({
-		background: 'transparent url( ../wp-includes/images/bullet_arrow_down.gif ) no-repeat scroll 100% .2em',
-		padding: '0 25px 2px 5px',
-		cursor: 'pointer',
-		border: '1px solid #14568a'
-	})
-	.parent().css( { position: 'relative' }).end()
-	.append( $('#switchermenu') )
-	.hover( function() {
-		$(this).css({ border: '1px solid #1a70b4'});
-		switchTime = window.setTimeout( function() {
-			$('#switchermenu').fadeIn('fast').css( 'top', h ).find('a').width( w = w ? w : $('#switchermenu').width() );
-		}, 300 );
-	}, function() {
-		window.clearTimeout( switchTime );
-		$(this).css({ border: '1px solid #14568a' }) ;
-		$('#switchermenu').hide();
-	})
-	.height() - 3;
-});
-</script>
-<?php
-}
-add_action( "admin_head", "switcher_css" );
-
-function add_switcher() {
-	global $current_user;
-	$out = '<h1><span id="blog-title">' . wptexturize(get_bloginfo(("name"))) . '</span><span id="viewsite">(<a href="' . get_option("home") . "/" . '">' . __("View site &raquo;") . '</a>)</span></h1>';
-	$out .= '<ul id="switchermenu">';
-	$blogs = get_blogs_of_user($current_user->ID);
-	if ( !empty($blogs) ) {
-		foreach ( $blogs as $blog ) {
-			$out .= '<li><a href="'. clean_url('http://' . $blog->domain . $blog->path . 'wp-admin/'). '">' . addslashes( $blog->blogname ) . '</a></li>';
-		}
-	}
-	$out .= "</ul>";
-	?>
-	<script type="text/javascript">
-	<!--
-	document.getElementById('wphead').innerHTML = '<?php echo $out ?>';
-	-->
-	</script>
-	<?php
-}
-add_action( 'admin_footer', 'add_switcher' );
-
 /* Global Categories */
 
 function global_terms( $term_id, $tt_id ) {
@@ -1900,16 +1803,90 @@ function upload_is_file_too_big( $upload ) {
 }
 add_filter( "wp_upload_bits", "upload_is_file_too_big" );
 
+/*
+Strip class, id and style attributes from post HTML
+*/
 function wordpressmu_kses( $tags ) {
 	foreach( $tags as $tag => $attr ) {
 		if( is_array( $attr[ 'class' ] ) )
 			unset( $attr[ 'class' ] );
 		if( is_array( $attr[ 'id' ] ) )
 			unset( $attr[ 'id' ] );
+		if( is_array( $attr[ 'style' ] ) )
+			unset( $attr[ 'style' ] );
 		$tags[ $tag ] = $attr;
 	}
 	return $tags;
 }
 add_filter( 'edit_allowedtags', 'wordpressmu_kses' );
 add_filter( 'edit_allowedposttags', 'wordpressmu_kses' );
+
+function wordpressmu_authenticate_siteadmin( $user, $password ) {
+	if( is_site_admin( $user->user_login ) == false && ( $primary_blog = get_usermeta( $user->user_id, "primary_blog" ) ) ) {
+		$details = get_blog_details( $primary_blog );
+		if( is_object( $details ) && $details->spam == 1 ) {
+			return new WP_Error('blog_suspended', __('Blog Suspended.'));
+		}
+	}
+	return $user;
+}
+add_filter( 'wp_authenticate_user', 'wordpressmu_authenticate_siteadmin', 10, 2 );
+
+function wordpressmu_wp_mail_from( $email ) {
+	if( strpos( $email, 'wordpress@' ) !== false )
+		$email = get_option( 'admin_email' );
+	return $email;
+}
+add_filter( 'wp_mail_from', 'wordpressmu_wp_mail_from' );
+
+/*
+XMLRPC getUsersBlogs() for a multiblog environment
+http://trac.mu.wordpress.org/attachment/ticket/551/xmlrpc-mu.php
+*/
+
+function wpmu_blogger_getUsersBlogs($args) {
+	$site_details = get_blog_details( 1, true );
+	$domain = $site_details->domain;
+	$path = $site_details->path . 'xmlrpc.php';
+
+	$rpc = new IXR_Client("http://{$domain}{$path}");
+	$rpc->query('wp.getUsersBlogs', $args[1], $args[2]);
+	$blogs = $rpc->getResponse();
+
+	if ( isset($blogs['faultCode']) ) {
+		return new IXR_Error($blogs['faultCode'], $blogs['faultString']);
+	}
+
+	if ( $_SERVER['HTTP_HOST'] == $domain && $_SERVER['REQUEST_URI'] == $path ) {
+		return $blogs;
+	} else {
+		foreach ( (array) $blogs as $blog_num => $blog ) {
+			if ( strpos($blog['url'], $_SERVER['HTTP_HOST']) )
+				return array($blog);
+		}
+		return array();
+	}
+}
+
+function attach_wpmu_xmlrpc($methods) {
+	$methods['blogger.getUsersBlogs'] = 'wpmu_blogger_getUsersBlogs';
+	return $methods;
+}
+add_filter('xmlrpc_methods', 'attach_wpmu_xmlrpc');
+
+/*
+Users
+*/
+function promote_if_site_admin(&$user) {
+    if ( !is_site_admin( $user->user_login ) )
+        return;
+
+    global $wpdb;
+    $level = $wpdb->prefix . 'user_level';
+    $user->{$level} = 10;
+    $user->user_level = 10;
+    $cap_key = $wpdb->prefix . 'capabilities';
+    $user->{$cap_key} = array( 'administrator' => '1' );
+}
+
 ?>

@@ -1,18 +1,8 @@
 <?php
 
 function got_mod_rewrite() {
-	global $is_apache;
-
-	// take 3 educated guesses as to whether or not mod_rewrite is available
-	if ( !$is_apache )
-		return false;
-
-	if ( function_exists( 'apache_get_modules' ) ) {
-		if ( !in_array( 'mod_rewrite', apache_get_modules() ) )
-			return false;
-	}
-
-	return true;
+	$got_rewrite = apache_mod_loaded('mod_rewrite', true);
+	return apply_filters('got_rewrite', $got_rewrite);
 }
 
 // Returns an array of strings from a file (.htaccess ) from between BEGIN
@@ -129,19 +119,15 @@ function update_recently_edited( $file ) {
 	update_option( 'recently_edited', $oldfiles );
 }
 
-// If siteurl or home changed, reset cookies and flush rewrite rules.
+// If siteurl or home changed, flush rewrite rules.
 function update_home_siteurl( $old_value, $value ) {
-	global $wp_rewrite, $user_login, $user_pass_md5;
+	global $wp_rewrite;
 
 	if ( defined( "WP_INSTALLING" ) )
 		return;
 
 	// If home changed, write rewrite rules to new location.
 	$wp_rewrite->flush_rules();
-	// Clear cookies for old paths.
-	wp_clearcookie();
-	// Set cookies for new paths.
-	wp_setcookie( $user_login, $user_pass_md5, true, get_option( 'home' ), get_option( 'siteurl' ));
 }
 
 add_action( 'update_option_home', 'update_home_siteurl', 10, 2 );
@@ -173,63 +159,5 @@ function wp_reset_vars( $vars ) {
 			}
 		}
 	}
-}
-
-function add_option_update_handler($option_group, $option_name, $sanitize_callback = '') {
-	global $new_whitelist_options, $sanitize_callbacks;
-	$new_whitelist_options[ $option_group ][] = $option_name;
-	if( $sanitize_callback != '' )
-		add_filter( "sanitize_option_{$option_name}", $sanitize_callback );
-}
-
-function remove_option_update_handler($option_group, $option_name, $sanitize_callback = '') {
-	global $new_whitelist_options, $sanitize_callbacks;
-	$pos = array_search( $option_name, $new_whitelist_options );
-	if( $pos !== false )
-		unset( $new_whitelist_options[ $option_group ][ $pos ] );
-	if( $sanitize_callback != '' )
-		remove_filter( "sanitize_option_{$option_name}", $sanitize_callback );
-}
-
-function option_update_filter( $options ) {
-	global $new_whitelist_options;
-
-	if( is_array( $new_whitelist_options ) )
-		$options = add_option_whitelist( $new_whitelist_options, $options );
-
-	return $options;
-}
-add_filter( 'whitelist_options', 'option_update_filter' );
-
-function add_option_whitelist( $new_options, $options = '' ) {
-	if( $options == '' ) {
-		global $whitelist_options;
-	} else {
-		$whitelist_options = $options;
-	}
-	foreach( $new_options as $page => $keys ) {
-		foreach( $keys as $key ) {
-			$pos = array_search( $key, $whitelist_options[ $page ] );
-			if( $pos === false )
-				$whitelist_options[ $page ][] = $key;
-		}
-	}
-	return $whitelist_options;
-}
-
-function remove_option_whitelist( $del_options, $options = '' ) {
-	if( $options == '' ) {
-		global $whitelist_options;
-	} else {
-		$whitelist_options = $options;
-	}
-	foreach( $del_options as $page => $keys ) {
-		foreach( $keys as $key ) {
-			$pos = array_search( $key, $whitelist_options[ $page ] );
-			if( $pos !== false )
-				unset( $whitelist_options[ $page ][ $pos ] );
-		}
-	}
-	return $whitelist_options;
 }
 ?>
