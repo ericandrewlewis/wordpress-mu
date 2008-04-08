@@ -1295,10 +1295,11 @@ function insert_blog($domain, $path, $site_id) {
 // Install an empty blog.  wpdb should already be switched.
 function install_blog($blog_id, $blog_title = '') {
 	global $wpdb, $table_prefix, $wp_roles;
-	$wpdb->hide_errors();
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
+	$wpdb->suppress_errors();
 	$installed = $wpdb->get_results("SELECT * FROM $wpdb->posts");
+	$wpdb->suppress_errors( false);
 	if ($installed) die(__('<h1>Already Installed</h1><p>You appear to have already installed WordPress. To reinstall please clear your old database tables first.</p>') . '</body></html>');
 
 	$url = get_blogaddress_by_id($blog_id);
