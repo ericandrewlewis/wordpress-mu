@@ -1812,10 +1812,6 @@ Strip class, id and style attributes from post HTML
 */
 function wordpressmu_kses( $tags ) {
 	foreach( $tags as $tag => $attr ) {
-		if( is_array( $attr[ 'class' ] ) )
-			unset( $attr[ 'class' ] );
-		if( is_array( $attr[ 'id' ] ) )
-			unset( $attr[ 'id' ] );
 		if( is_array( $attr[ 'style' ] ) )
 			unset( $attr[ 'style' ] );
 		$tags[ $tag ] = $attr;
