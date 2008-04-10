@@ -1,6 +1,3 @@
-
-<div class="wrap">
-<h2 id="write-post"><?php _e('Write Page'); ?></h2>
 <?php
 if ( isset($_GET['message']) )
 	$_GET['message'] = absint( $_GET['message'] );
