@@ -366,7 +366,7 @@ function step3() {
 	$email = $wpdb->escape( $_POST[ 'email' ] );
 	if( $email == '' )
 		die( 'You must enter an email address!' );
-	$weblog_title = $wpdb->escape( $_POST[ 'weblog_title' ] );
+	$weblog_title = stripslashes( $_POST[ 'weblog_title' ] );
 
 	// set up site tables
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_email', '".$email."')" );
