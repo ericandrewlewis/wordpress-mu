@@ -511,7 +511,7 @@ function blogswitch_ob_content( $content ) {
 }
 
 function blogswitch_markup() {
-	global $current_user, $blog_id; // current blog
+	global $current_user, $current_blog;
 	$list = array();
 	$options = array();
 
@@ -526,7 +526,7 @@ function blogswitch_markup() {
 		$parsed = parse_url( $blog->siteurl );
 		$domain = $parsed['host'];
 
-		if ( $_SERVER['HTTP_HOST'] === $domain ) {
+		if ( $current_blog->blog_id == $blog->userblog_id ) {
 			$current  = ' class="current"';
 			$selected = ' selected="selected"';
 		} else {
@@ -539,7 +539,7 @@ function blogswitch_markup() {
 		$list_item = "<li><a href='$url'$current>$name</a></li>";
 		$option_item = "<option value='$url'$selected>$name</option>";
 
-		if ( $blog_id == $blog->userblog_id ) {
+		if ( $current_blog->blog_id == $blog->userblog_id ) {
 			$list[-2] = $list_item;
 			$options[] = $option_item; // [sic] don't reorder dropdown based on current blog
 		} elseif ( $primary_blog == $blog->userblog_id ) {
