@@ -341,7 +341,7 @@ class WP_User_Search {
 		if ( $this->role )
 			$this->query_from_where .= " INNER JOIN $wpdb->usermeta ON $wpdb->users.ID = $wpdb->usermeta.user_id WHERE $wpdb->usermeta.meta_key = '{$wpdb->prefix}capabilities' AND $wpdb->usermeta.meta_value LIKE '%$this->role%'";
 		else
-			$this->query_from_where .= " WHERE 1=1";
+			$this->query_from_where .= ", $wpdb->usermeta WHERE $wpdb->users.ID = $wpdb->usermeta.user_id AND meta_key = '{$wpdb->prefix}capabilities'";
 		$this->query_from_where .= " $search_sql";
 
 	}
