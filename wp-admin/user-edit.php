@@ -70,9 +70,6 @@ $parent_file = 'users.php';
 wp_reset_vars(array('action', 'redirect', 'profile', 'user_id', 'wp_http_referer'));
 
 $wp_http_referer = remove_query_arg(array('update', 'delete_count'), stripslashes($wp_http_referer));
-// Only allow site admins to edit every user.
-if ( !is_site_admin() && ($user_id != $current_user->ID) )
-	wp_die('You do not have permission to edit this user.');
 
 $user_id = (int) $user_id;
 
@@ -84,6 +81,10 @@ if ( !$user_id )
 		wp_die(__('Invalid user ID.'));
 	}
 
+// Only allow site admins to edit every user. 
+if ( !is_site_admin() && ($user_id != $current_user->ID) ) 
+	wp_die('You do not have permission to edit this user.'); 
+	
 switch ($action) {
 case 'switchposts':
 
@@ -106,7 +107,7 @@ if ( $is_profile_page ) {
 
 $cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$user_id}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 $errors = edit_user($user_id);
-if( $cap == null )
+if( $cap == null ) // stops users being added to current blog when they are edited
 	$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$user_id}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 
 if( !is_wp_error( $errors ) ) {
