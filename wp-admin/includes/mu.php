@@ -407,7 +407,7 @@ function wpmu_menu() {
 	if( is_array( $menu_perms ) == false )
 		$menu_perms = array();
 	if( $menu_perms[ 'plugins' ] == 1 )
-		$menu[30] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+		$menu[35] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
 }
 add_action( '_admin_menu', 'wpmu_menu' );
 
