@@ -30,8 +30,6 @@ if ( ! empty($cat_ID) ) {
             <?php _e('The name is used to identify the category almost everywhere, for example under the post or in the category widget.'); ?></td>
 		</tr>
 		<tr class="form-field">
-			<th scope="row" valign="top"><label for="category_parent"><?php _e('Category parent:') ?></label></th>
-		<tr class="form-field">
 			<th scope="row" valign="top"><label for="category_parent"><?php _e('Category Parent') ?></label></th>
 			<td>
 	  			<?php wp_dropdown_categories('hide_empty=0&name=category_parent&orderby=name&selected=' . $category->parent . '&hierarchical=1&show_option_none=' . __('None')); ?><br />
