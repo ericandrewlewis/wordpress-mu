@@ -12,8 +12,8 @@ $action = $_REQUEST['action'];
 $update = '';
 
 if ( empty($action) ) {
-	if ( isset($_GET['deleteit']) )
-		$action = 'delete';
+	if ( isset($_GET['removeuser']) )
+		$action = 'removeuser';
 	elseif ( isset($_GET['changeit']) && !empty($_GET['new_role']) )
 		$action = 'promote';
 }
@@ -192,14 +192,14 @@ case 'removeuser':
 
 	check_admin_referer('bulk-users');
 
-	if (empty($_POST['users'])) {
+	if (empty($_GET['users'])) {
 		wp_redirect('users.php');
 	}
 
 	if ( !current_user_can('edit_users') )
 		$error = new WP_Error('edit_users', __('You can&#8217;t remove users.'));
 
-	$userids = $_POST['users'];
+	$userids = $_GET['users'];
 
 	include ('admin-header.php');
 ?>
@@ -422,7 +422,7 @@ unset($role_links);
 <?php endif; ?>
 
 <div class="alignleft">
-<input type="submit" value="<?php _e('Delete'); ?>" name="deleteit" class="button-secondary delete" />
+<input type="submit" value="<?php _e('Delete'); ?>" name="removeuser" class="button-secondary delete" />
 <select name="new_role"><option value=''><?php _e('Change role to&hellip;') ?></option>"<?php wp_dropdown_roles(); ?></select>
 <input type="submit" value="<?php _e('Change'); ?>" name="changeit" class="button-secondary" />
 <?php wp_nonce_field('bulk-users'); ?>
