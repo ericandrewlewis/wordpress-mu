@@ -12,7 +12,7 @@ $action = $_REQUEST['action'];
 $update = '';
 
 if ( empty($action) ) {
-	if ( isset($_GET['removeuser']) )
+	if ( isset($_GET['removeit']) )
 		$action = 'removeuser';
 	elseif ( isset($_GET['changeit']) && !empty($_GET['new_role']) )
 		$action = 'promote';
@@ -166,14 +166,14 @@ break;
 case 'doremove':
 	check_admin_referer('remove-users');
 
-	if ( empty($_POST['users']) ) {
+	if ( empty($_REQUEST['users']) ) {
 		wp_redirect('users.php');
 	}
 
 	if ( !current_user_can('edit_users') )
 		die(__('You can&#8217;t remove users.'));
 
-	$userids = $_POST['users'];
+	$userids = $_REQUEST['users'];
 
 	$update = 'remove';
  	foreach ($userids as $id) {
@@ -192,14 +192,14 @@ case 'removeuser':
 
 	check_admin_referer('bulk-users');
 
-	if (empty($_GET['users'])) {
+	if (empty($_REQUEST['users'])) {
 		wp_redirect('users.php');
 	}
 
 	if ( !current_user_can('edit_users') )
 		$error = new WP_Error('edit_users', __('You can&#8217;t remove users.'));
 
-	$userids = $_GET['users'];
+	$userids = $_REQUEST['users'];
 
 	include ('admin-header.php');
 ?>
@@ -234,7 +234,7 @@ case 'removeuser':
 break;
 
 case 'adduser':
-	die(__('This function is disabled. Add a user from your community.'));
+	wp_die(__('This function is disabled. Add a user from your community.'));
 	check_admin_referer('add-user');
 
 	if ( ! current_user_can('create_users') )
@@ -256,7 +256,7 @@ case 'addexistinguser':
 	if ( !current_user_can('edit_users') )
 		die(__('You can&#8217;t edit users.'));
 
-	$new_user_email = wp_specialchars(trim($_POST['newuser']));
+	$new_user_email = wp_specialchars(trim($_REQUEST['newuser']));
 	/* checking that username has been typed */
 	if ( !empty($new_user_email) ) {
 		if ( $user_id = email_exists( $new_user_email ) ) {
@@ -264,7 +264,7 @@ case 'addexistinguser':
 			if( ($username != null && is_site_admin( $username ) == false ) && ( array_key_exists($blog_id, get_blogs_of_user($user_id)) ) ) {
 				$location = 'users.php?update=add_existing';
 			} else {
-				add_user_to_blog('', $user_id, $_POST[ 'new_role' ]);
+				add_user_to_blog('', $user_id, $_REQUEST[ 'new_role' ]);
 				do_action( "added_existing_user", $user_id );
 				$location = 'users.php?update=add';
 			}
@@ -278,6 +278,7 @@ case 'addexistinguser':
 	wp_redirect('users.php');
 	die();
 break;
+
 default:
 
 	if ( !empty($_GET['_wp_http_referer']) ) {
@@ -422,7 +423,7 @@ unset($role_links);
 <?php endif; ?>
 
 <div class="alignleft">
-<input type="submit" value="<?php _e('Delete'); ?>" name="removeuser" class="button-secondary delete" />
+<input type="submit" value="<?php _e('Remove'); ?>" name="removeit" class="button-secondary delete" />
 <select name="new_role"><option value=''><?php _e('Change role to&hellip;') ?></option>"<?php wp_dropdown_roles(); ?></select>
 <input type="submit" value="<?php _e('Change'); ?>" name="changeit" class="button-secondary" />
 <?php wp_nonce_field('bulk-users'); ?>
