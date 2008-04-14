@@ -248,7 +248,6 @@ function signup_user($user_name = '', $user_email = '', $errors = '') {
 	$errors = $filtered_results['errors'];
 ?>
 <h2><?php printf( __('Get your own %s account in seconds'), $current_site->site_name ) ?></h2>
-<p><?php _e( "Fill out this one-step form and you'll be blogging seconds later!" ); ?></p>
 <form name="setupform" id="setupform" method="post" action="wp-signup.php">
 <input type="hidden" name="stage" value="validate-user-signup" />
 <?php do_action( "signup_hidden_fields" ); ?>
