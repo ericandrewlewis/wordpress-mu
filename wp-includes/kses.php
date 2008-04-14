@@ -518,6 +518,19 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols) {
 					break;
 				}
 
+			if ( $arreach['name'] == 'style' ) {
+				$orig_value = $arreach['value'];
+
+				$value = safecss_filter_attr($orig_value, $element);
+
+				if ( empty($value) )
+					continue;
+
+				$arreach['value'] = $value;
+
+				$arreach['whole'] = str_replace($orig_value, $value, $arreach['whole']);
+			}
+
 			if ($ok)
 				$attr2 .= ' '.$arreach['whole']; # it passed them
 		} # if !is_array($current)
@@ -592,7 +605,7 @@ function wp_kses_hair($attr, $allowed_protocols) {
 				if (preg_match('/^"([^"]*)"(\s+|$)/', $attr, $match))
 					# "value"
 					{
-					$thisval = wp_kses_bad_protocol($match[1], $allowed_protocols);
+					$thisval = ($attrname=='style') ? $match[1] : wp_kses_bad_protocol($match[1], $allowed_protocols);
 
 					$attrarr[] = array ('name' => $attrname, 'value' => $thisval, 'whole' => "$attrname=\"$thisval\"", 'vless' => 'n');
 					$working = 1;

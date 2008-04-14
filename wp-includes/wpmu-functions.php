@@ -1807,19 +1807,41 @@ function upload_is_file_too_big( $upload ) {
 }
 add_filter( "wp_upload_bits", "upload_is_file_too_big" );
 
-/*
-Strip class, id and style attributes from post HTML
-*/
-function wordpressmu_kses( $tags ) {
-	foreach( $tags as $tag => $attr ) {
-		if( is_array( $attr[ 'style' ] ) )
-			unset( $attr[ 'style' ] );
-		$tags[ $tag ] = $attr;
+function safecss_filter_attr( $css, $element ) {
+	$css = wp_kses_no_null($css);
+	$css = str_replace(array("\n","\r","\t"), '', $css);
+	$css_array = split( ';', trim( $css ) );
+	$allowed_attr = apply_filters( 'safe_style_css', array( 'text-align', 'margin', 'color', 'float', 
+	'border', 'background', 'background-color', 'border-bottom', 'border-bottom-color', 
+	'border-bottom-style', 'border-bottom-width', 'border-collapse', 'border-color', 'border-left',
+	'border-left-color', 'border-left-style', 'border-left-width', 'border-right', 'border-right-color', 
+	'border-right-style', 'border-right-width', 'border-spacing', 'border-style', 'border-top', 
+	'border-top-color', 'border-top-style', 'border-top-width', 'border-width', 'caption-side', 
+	'clear', 'cursor', 'direction', 'font', 'font-family', 'font-size', 'font-style', 
+	'font-variant', 'font-weight', 'height', 'letter-spacing', 'line-height', 'margin-bottom', 
+	'margin-left', 'margin-right', 'margin-top', 'overflow', 'padding', 'padding-bottom', 
+	'padding-left', 'padding-right', 'padding-top', 'text-decoration', 'text-indent', 'vertical-align', 
+	'width' ) );
+	$css = '';
+	foreach( $css_array as $css_item ) {
+		if( $css_item == '' )
+			continue;
+		$css_item = trim( $css_item );
+		$found = false;
+		if( strpos( $css_item, ':' ) === false ) {
+			$found = true;
+		} elseif( in_array( substr( $css_item, 0, strpos( $css_item, ':' ) ), $allowed_attr ) ) {
+			$found = true;
+		}
+		if( $found ) {
+			if( $css != '' )
+				$css .= ';';
+			$css .= $css_item;
+		}
 	}
-	return $tags;
+
+	return $css;
 }
-add_filter( 'edit_allowedtags', 'wordpressmu_kses' );
-add_filter( 'edit_allowedposttags', 'wordpressmu_kses' );
 
 function wordpressmu_authenticate_siteadmin( $user, $password ) {
 	if( is_site_admin( $user->user_login ) == false && ( $primary_blog = get_usermeta( $user->user_id, "primary_blog" ) ) ) {
