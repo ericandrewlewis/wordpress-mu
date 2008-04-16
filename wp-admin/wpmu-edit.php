@@ -249,16 +249,22 @@ switch( $_GET['action'] ) {
 		check_admin_referer('allblogs');
 		foreach ( (array) $_POST['allblogs'] as $key => $val ) {
 			if( $val != '0' && $val != '1' ) {
-				if( $_POST['blogfunction'] == 'delete' ) {
+				if ( isset($_POST['allblog_delete']) ) {
+					$blogfunction = 'all_delete';
 					wpmu_delete_blog( $val, true );
-				} elseif( $_POST['blogfunction'] == 'spam' ) {
+				} elseif ( isset($_POST['allblog_spam']) ) {
+					$blogfunction = 'all_spam';
 					update_blog_status( $val, "spam", '1', 0 );
+					set_time_limit(60); 
+				} elseif ( isset($_POST['allblog_notspam']) ) {
+					$blogfunction = 'all_notspam';
+					update_blog_status( $val, "spam", '0', 0 );
 					set_time_limit(60); 
 				}
 			}
 		}
 
-		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'all_'.$_POST['blogfunction']), $_SERVER['HTTP_REFERER'] ) );
+		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => $blogfunction), $_SERVER['HTTP_REFERER'] ) );
 		exit();
 	break;
 	
@@ -386,16 +392,20 @@ switch( $_GET['action'] ) {
 		foreach ( (array) $_POST['allusers'] as $key => $val ) {
 			if( $val != '' && $val != '0' && $val != '1' ) {
 				$user_details = get_userdata( $val );
-				if( $_POST['userfunction'] == 'delete' ) {
+				if ( isset($_POST['alluser_delete']) ) {
 					wpmu_delete_user($val);
-				} elseif( $_POST['userfunction'] == 'spam' ) {
+					$userfunction = 'all_delete';
+				} elseif ( isset($_POST['alluser_spam']) ) {
+					$userfunction = 'all_spam';
 					$blogs = get_blogs_of_user( $val, true );
 					foreach ( (array) $blogs as $key => $details ) {
+						if ( $details->userblog_id == 1 ) { continue; } // main blog not a spam !
 						update_blog_status( $details->userblog_id, "spam", '1' );
 						do_action( "make_spam_blog", $details->userblog_id );
 					}
 					update_user_status( $val, "spam", '1', 1 );
-				} elseif ( $_POST[ 'userfunction' ] == 'notspam' ) {
+				} elseif ( isset($_POST['alluser_notspam']) ) {
+					$userfunction = 'all_notspam';
 					$blogs = get_blogs_of_user( $val, true );
 					foreach ( (array) $blogs as $key => $details ) {
 						update_blog_status( $details->userblog_id, "spam", '0' );
@@ -404,7 +414,7 @@ switch( $_GET['action'] ) {
 				}
 			}
 		}		
-		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'all_'.$_POST['userfunction']), $_SERVER['HTTP_REFERER'] ) );
+		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => $userfunction), $_SERVER['HTTP_REFERER'] ) );
 		exit();
 	break;
 		

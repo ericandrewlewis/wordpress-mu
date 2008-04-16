@@ -1774,19 +1774,30 @@ add_filter( 'term_id_filter', 'global_terms', 10, 2 ); // taxonomy specific filt
 
 function choose_primary_blog() {
 	global $current_user;
-	echo __('Primary Blog:') . ' ';
-	$all_blogs = get_blogs_of_user( $current_user->ID );
-	if( count( $all_blogs ) > 1 ) {
-		$primary_blog = get_usermeta($current_user->ID, 'primary_blog');
+	?>
+	<table class="form-table">
+	<tr>
+		<th scope="row"><?php _e('Primary Blog:'); ?></th>
+		<td>
+		<?php
+		$all_blogs = get_blogs_of_user( $current_user->ID );
+		if( count( $all_blogs ) > 1 ) {
+			$primary_blog = get_usermeta($current_user->ID, 'primary_blog');
+			?>
+			<select name="primary_blog">
+				<?php foreach( (array) $all_blogs as $blog ) { ?>
+					<option value='<?php echo $blog->userblog_id ?>'<?php if( $primary_blog == $blog->userblog_id ) echo ' selected="selected"' ?>>http://<?php echo $blog->domain.$blog->path ?></option>
+				<?php } ?>
+			</select>
+			<?php
+		} else {
+			echo $_SERVER['HTTP_HOST'];
+		}
 		?>
-		<p><select name="primary_blog">
-			<?php foreach( (array) $all_blogs as $blog ) { ?>
-				<option value='<?php echo $blog->userblog_id ?>'<?php if( $primary_blog == $blog->userblog_id ) echo ' selected="selected"' ?>>http://<?php echo $blog->domain.$blog->path ?></option>
-			<?php } ?>
-		</select></p><?php
-	} else {
-		echo $_SERVER['HTTP_HOST'];
-	}       
+		</td>
+	</tr>
+	</table>
+	<?php	
 }
 add_action( 'profile_personal_options', 'choose_primary_blog' );
 

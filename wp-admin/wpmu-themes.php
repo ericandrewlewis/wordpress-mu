@@ -22,28 +22,29 @@ $allowed_themes = get_site_allowed_themes();
 	<form action='wpmu-edit.php?action=updatethemes' method='post'>
 		<h2><?php _e('Site Themes') ?></h2>
 		<p><?php _e('Disable themes site-wide. You can enable themes on a blog by blog basis.') ?></p>		
-		<table style="border:0; width:100%;" cellspacing="5" cellpadding="5">
+		<table class="widefat">
 			<thead>
-			<tr>
-				<th style="width:15%;"><?php _e('Active') ?></th>
-				<th style="width:15%;"><?php _e('Theme') ?></th>
-				<th style="width:70%;"><?php _e('Description') ?></th>
-			</tr>
+				<tr>
+					<th style="width:15%;text-align:center;"><?php _e('Active') ?></th>
+					<th style="width:25%;"><?php _e('Theme') ?></th>
+					<th style="width:60%;"><?php _e('Description') ?></th>
+				</tr>
 			</thead>
-			<tbody id="the-list">
+			<tbody id="plugins">
 			<?php
 			foreach( (array) $themes as $key => $theme ) :
 				$theme_key = wp_specialchars($theme['Stylesheet']);
-				$class = ('alternate' == $class) ? '' : 'alternate';
-				$enabled = $disabled = '';
+				$class = ('alt' == $class) ? '' : 'alt';
+				$class1 = $enabled = $disabled = '';
 				
 				if( isset( $allowed_themes[ $theme_key ] ) == true ) {
 					$enabled = 'checked="checked" ';
+					$class1 = ' active';
 				} else {
 					$disabled = 'checked="checked" ';
 				}
 				?>
-				<tr valign="top" class="<?php echo $class; ?>">
+				<tr valign="top" class="<?php echo $class.$class1; ?>">
 					<td style="text-align:center;">
 						<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="disabled_<?php echo $theme_key ?>" value="disabled" <?php echo $disabled ?> /> <?php _e('No') ?></label>
 						&nbsp;&nbsp;&nbsp; 

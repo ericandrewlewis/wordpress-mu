@@ -43,7 +43,7 @@ switch( $_GET['action'] ) {
 			}
 			echo "</ul>";
 			?>
-			<p><?php _e("If your browser doesn't start loading the next page automatically click this link:"); ?> <a href="wpmu-upgrade-site.php?action=upgrade&amp;n=<?php echo ($n + 5) ?>"><?php _e("Next Blogs"); ?></a></p>
+			<p><?php _e("If your browser doesn't start loading the next page automatically click this link:"); ?> <a class="button" href="wpmu-upgrade-site.php?action=upgrade&amp;n=<?php echo ($n + 5) ?>"><?php _e("Next Blogs"); ?></a></p>
 			<script type='text/javascript'>
 				<!--
 				function nextpage() {
@@ -60,7 +60,7 @@ switch( $_GET['action'] ) {
 	
 	default: ?>
 		<p><?php _e("You can upgrade all the blogs on your site through this page. It works by calling the upgrade script of each blog automatically. Hit the link below to upgrade."); ?></p>
-		<p><a href="wpmu-upgrade-site.php?action=upgrade"><?php _e("Upgrade Site"); ?></a></p>
+		<p><a class="button" href="wpmu-upgrade-site.php?action=upgrade"><?php _e("Upgrade Site"); ?></a></p>
 	<?php
 	break;
 }

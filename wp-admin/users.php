@@ -506,24 +506,25 @@ foreach ( $wp_user_search->get_results() as $userid ) {
 
 <?php if( apply_filters('show_adduser_fields', true) ) {?>
 <div class="wrap">
-<h2 id="add-new-user"><?php _e('Add User From Community') ?></h2>
+<h2 id="add-new-user"><?php _e('Add user from community') ?></h2>
 <div class="narrow">
 <form action="" method="post" name="adduser" id="adduser">
 <?php wp_nonce_field('add-user') ?>
 <input type='hidden' name='action' value='addexistinguser'>
 <p><?php _e('Type the e-mail address of another user to add them to your blog.')?></p>
-<table>
-<tr><th scope="row"><?php _e('User&nbsp;E-Mail:')?> </th><td><input type="text" name="newuser" id="newuser"></td></tr>
-	<tr>
+
+<table class="form-table">
+	<tr class="form-field form-required">
+		<th scope="row"><?php _e('User&nbsp;E-Mail')?></th>
+		<td><input type="text" name="newuser" id="newuser" /></td>
+	</tr>
+	<tr class="form-field">
 		<th scope="row"><?php _e('Role:') ?></th>
-		<td><select name="new_role" id="new_role"><?php 
-		foreach($wp_roles->role_names as $role => $name) {
-			$selected = '';
-			if( $role == 'subscriber' )
-				$selected = 'selected="selected"';
-			echo "<option {$selected} value=\"{$role}\">{$name}</option>";
-		}
-		?></select></td>
+			<td>
+			<select name="new_role" id="new_role">
+				<?php wp_dropdown_roles('subscriber'); ?>
+			</select>
+		</td>
 	</tr>
 </table>
 <p class="submit">

@@ -3,7 +3,10 @@ require_once('admin.php');
 
 $title = __('WordPress MU &rsaquo; Admin &rsaquo; Blogs');
 $parent_file = 'wpmu-admin.php';
+
 wp_enqueue_script( 'listman' );
+wp_enqueue_script( 'admin-forms' );
+
 require_once('admin-header.php');
 if( is_site_admin() == false ) {
     wp_die( __('<p>You do not have permission to access this page.</p>') );
@@ -15,6 +18,9 @@ if ( $_GET['updated'] == 'true' ) {
 	<div id="message" class="updated fade"><p>
 		<?php
 		switch ($_GET['action']) {
+			case 'all_notspam':
+				_e('Blogs mark as not spam !');
+			break;
 			case 'all_spam':
 				_e('Blogs mark as spam !');
 			break;
@@ -285,24 +291,24 @@ switch( $_GET['action'] ) {
 		
 		$query = "SELECT * FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' ";
 		
-		if( !empty($_GET['s']) ) {
+		if( isset($_GET['blog_name']) ) {
 			$s = trim($_GET['s']);
 			$query = "SELECT blog_id, {$wpdb->blogs}.domain, {$wpdb->blogs}.path, registered, last_updated
 				FROM {$wpdb->blogs}, {$wpdb->site}
 				WHERE site_id = '{$wpdb->siteid}'
 				AND {$wpdb->blogs}.site_id = {$wpdb->site}.id
 				AND ( {$wpdb->blogs}.domain LIKE '%{$s}%' OR {$wpdb->blogs}.path LIKE '%{$s}%' )";
-		} elseif( !empty($_GET['blog_id']) ) {
+		} elseif( isset($_GET['blog_id']) ) {
 			$query = "SELECT * 
 				FROM {$wpdb->blogs}
 				WHERE site_id = '{$wpdb->siteid}'
-				AND   blog_id = '".intval($_GET['blog_id'])."'";
-		} elseif( !empty($_GET['ip_address']) ) {
+				AND   blog_id = '".intval($_GET['s'])."'";
+		} elseif( isset($_GET['blog_ip']) ) {
 			$query = "SELECT *
 				FROM {$wpdb->blogs}, {$wpdb->registration_log}
 				WHERE site_id = '{$wpdb->siteid}'
 				AND {$wpdb->blogs}.blog_id = {$wpdb->registration_log}.blog_id
-				AND {$wpdb->registration_log}.IP LIKE ('%".$_GET['ip_address']."%')";
+				AND {$wpdb->registration_log}.IP LIKE ('%".$_GET['s']."%')";
 		}
 		
 		if( isset( $_GET['sortby'] ) == false ) {
@@ -321,7 +327,7 @@ switch( $_GET['action'] ) {
 
 		$query .= ( $_GET['order'] == 'DESC' ) ? 'DESC' : 'ASC';
 		
-		if( !empty($_GET['s']) ||  !empty($_GET['blog_id']) || !empty($_GET['ip_address'])) {
+		if( !empty($_GET['s']) ) {
 			$blog_list = $wpdb->get_results( $query, ARRAY_A );	
 			$total = count($blog_list);	
 		} else {
@@ -341,83 +347,52 @@ switch( $_GET['action'] ) {
 			'current' => $apage
 		));
 		?>
-		<script type="text/javascript">
-		<!--
-		var checkflag = "false";
-		
-		function check_all_rows() {
-			var button1 = document.getElementById('check_all1'); 
-			var button2 = document.getElementById('check_all2');
-	  
-			field = document.formlist;
-			if (checkflag == "false") {
-				for (i = 0; i < field.length; i++) {
-					if( field[i].name == 'allblogs[]' ) {
-						field[i].checked = true;
-					}
-				}
-				checkflag = "true";
-				button1.value = "<?php _e('Uncheck All') ?>";
-				button2.value = "<?php _e('Uncheck All') ?>";
-			} else {
-				for (i = 0; i < field.length; i++) {
-					if( field[i].name == 'allblogs[]' ) {
-						field[i].checked = false;
-					}
-				}
-				checkflag = "false";
-				button1.value = "<?php _e('Check All') ?>"; 
-				button2.value = "<?php _e('Check All') ?>"
-			}
-		}		
-		//  -->
-		</script>
-		<div class="wrap">
-		<h2><?php _e('Blogs') ?></h2>
-		<div style="float:right; padding:0 20px; margin-top:20px;"> 
-			<?php if ( $blog_navigation ) echo "<p class='pagenav'>$blog_navigation</p>"; ?>
-		</div>
-		
-		<form id="searchform" action="wpmu-blogs.php" method="get"> 
-			<input type="hidden" name="action" value="blogs" />
-			<fieldset>
-				<legend><?php _e('Search blogs by name&hellip;') ?></legend> 
-				<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes(wp_specialchars($_GET['s'], 1)); ?>" size="17" />
-			</fieldset>
-			
-			<fieldset>
-				<legend><?php _e('by blog ID&hellip;') ?></legend> 
-				<input type="text" name="blog_id" value="<?php if (isset($_GET['blog_id'])) echo wp_specialchars($_GET['blog_id'], 1); ?>" size="10" />
-			</fieldset>
-			
-			<fieldset>
-				<legend><?php _e('by IP address&hellip;') ?></legend> 
-				<input type="text" name="ip_address" value="<?php if (isset($_GET['ip_address'])) echo wp_specialchars($_GET['ip_address'], 1); ?>" size="10" />
-			</fieldset>			
-			<input type="submit" name="submit" id="post-query-submit" value="<?php _e('Search') ?>" class="button" /> 
-		</form>
 
+		<div class="wrap" style="position:relative;">
+		<h2><?php _e('Blogs') ?></h2>
 		
-		<br style="clear:both;" />	
+		<form id="searchform" action="wpmu-blogs.php" method="get" style="position:absolute;right:0;top:0;">
+			<input type="hidden" name="action" value="blogs" />			
+			<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes(wp_specialchars($_GET['s'], 1)); ?>" size="17" />
+			<input type="submit" class="button" name="blog_name" value="<?php _e('Search blogs by name') ?>" />
+			<input type="submit" class="button" name="blog_id" value="<?php _e('by blog ID') ?>" />		
+			<input type="submit" class="button" name="blog_ip" value="<?php _e('by IP address') ?>" />		
+		</form>
+	
+		<form id="form-blog-list" action="wpmu-edit.php?action=allblogs" method="post">
+		
+		<div class="tablenav">
+			<?php if ( $blog_navigation ) echo "<div class='tablenav-pages'>$blog_navigation</div>"; ?>	
+
+			<div class="alignleft">
+				<input type="submit" value="<?php _e('Delete') ?>" name="allblog_delete" class="button-secondary delete" />
+				<input type="submit" value="<?php _e('Mark as Spam') ?>" name="allblog_spam" class="button-secondary" />
+				<input type="submit" value="<?php _e('Not Spam') ?>" name="allblog_notspam" class="button-secondary" />
+				<?php wp_nonce_field( 'allblogs' ); ?>
+				<br class="clear" />
+			</div>
+		</div>
+
+		<br class="clear" />
 		
 		<?php if( isset($_GET['s']) && !empty($_GET['s']) ) : ?>
 			<p><a href="wpmu-users.php?action=users&s=<?php echo stripslashes(wp_specialchars($_GET['s'], 1)) ?>"><?php _e('Search Users:') ?> <strong><?php echo stripslashes(wp_specialchars($_GET['s'], 1)); ?></strong></a></p>
-		<?php endif; ?>				
-	
+		<?php endif; ?>		
+
 		<?php
 		// define the columns to display, the syntax is 'internal name' => 'display name'
+		$blogname_columns = ( constant( "VHOST" ) == 'yes' ) ? __('Domain') : __('Path');
 		$posts_columns = array(
-		'id'           => __('ID'),
-		'blogname'     => __('Blog Name'),
-		'lastupdated'  => __('Last Updated'),
-		'registered'   => __('Registered'),
-		'users'        => __('Users'),
-		'plugins'      => __('Actions')
+			'id'           => __('ID'),
+			'blogname'     => $blogname_columns,
+			'lastupdated'  => __('Last Updated'),
+			'registered'   => __('Registered'),
+			'users'        => __('Users'),
+			'plugins'      => __('Actions')
 		);
 		$posts_columns = apply_filters('manage_posts_columns', $posts_columns);
 
 		// you can not edit these at the moment
-		$posts_columns['control_view'] 		= '';
 		$posts_columns['control_edit']      = '';
 		$posts_columns['control_backend']   = '';
 		$posts_columns['control_deactivate']= '';
@@ -427,20 +402,21 @@ switch( $_GET['action'] ) {
 
 		$sortby_url = "s=" . $_GET['s'] . "&amp;ip_address=" . $_GET['ip_address'];
 		?>
-		<form name="formlist" action="wpmu-edit.php?action=allblogs" method="post">
-		<input style="margin:5px 0;" id="check_all1" class="button" type="button" value="<?php _e('Check All') ?>" onclick="check_all_rows()" /> 
 		
 		<table width="100%" cellpadding="3" cellspacing="3" class="widefat">
 			<thead>
 				<tr>
-				<?php foreach($posts_columns as $column_id => $column_display_name) { ?>
-					<?php $column_link = "<a href='wpmu-blogs.php?{$sortby_url}&amp;sortby={$column_id}&amp;";
+				<th scope="col" class="check-column"><input type="checkbox" onclick="checkAll(document.getElementById('form-blog-list'));" /></th>
+				<?php foreach($posts_columns as $column_id => $column_display_name) {
+					$column_link = "<a href='wpmu-blogs.php?{$sortby_url}&amp;sortby={$column_id}&amp;";
 					if( $_GET['sortby'] == $column_id ) { 
 						$column_link .= $_GET[ 'order' ] == 'DESC' ? 'order=ASC&amp;' : 'order=DESC&amp;';
 					}
 					$column_link .= "apage={$apage}'>{$column_display_name}</a>";
-					$col_url = $column_id == 'users' || $column_id == 'plugins' ? $column_display_name : $column_link;
-					?><th scope="col"><?php echo $col_url ?></th>
+					
+					$col_url = ($column_id == 'users' || $column_id == 'plugins') ? $column_display_name : $column_link;
+					?>
+					<th scope="col"><?php echo $col_url ?></th>
 				<?php } ?>
 				</tr>
 			</thead>
@@ -465,15 +441,18 @@ switch( $_GET['action'] ) {
 					foreach( $posts_columns as $column_name=>$column_display_name ) {
 						switch($column_name) {
 							case 'id': ?>
+								<th scope="row" class="check-column">
+									<input type='checkbox' id='blog_<?php echo $blog['blog_id'] ?>' name='allblogs[]' value='<?php echo $blog['blog_id'] ?>' />
+								</th>
 								<th scope="row">
-									<input type='checkbox' id='blog_<?php echo $blog['blog_id'] ?>' name='allblogs[]' value='<?php echo $blog['blog_id'] ?>' /> <label for='blog_<?php echo $blog['blog_id'] ?>'><?php echo $blog['blog_id'] ?></label>
+									<?php echo $blog['blog_id'] ?>
 								</th>
 							<?php
 							break;
  
 							case 'blogname': ?>
 								<td valign="top">
-									<label for='blog_<?php echo $blog['blog_id'] ?>'><?php echo $blogname ?></label>
+									<a href="http://<?php echo $blog['domain']. $blog['path']; ?>" rel="permalink"><?php echo $blogname; ?></a>
 								</td>
 							<?php
 							break;
@@ -504,12 +483,6 @@ switch( $_GET['action'] ) {
 										}
 									}
 									?>
-								</td>
-							<?php
-							break;
-							case 'control_view': ?>
-								<td valign="top">
-									<a href="http://<?php echo $blog['domain']. $blog['path']; ?>" rel="permalink" class="edit"><?php _e('View'); ?></a>
 								</td>
 							<?php
 							break;
@@ -596,31 +569,15 @@ switch( $_GET['action'] ) {
 
 			</tbody>
 		</table>
-		
-		<div style="float:right; padding:0 20px; margin-top:20px;"> 
-			<?php if ( $blog_navigation ) echo "<p class='pagenav'>$blog_navigation</p>"; ?>
-		</div>
-		<input style="margin:5px 0;" id="check_all2" type="button" class="button" value="<?php _e('Check All') ?>" onclick="check_all_rows()" /> 
-		
-		<h3><?php _e('Update selected blogs:') ?></h3>
-		<ul style="list-style:none;">
-			<li><input type='radio' name='blogfunction' id='delete' value='delete' /> <label for='delete'><?php _e('Delete') ?></label></li>
-			<li><input type='radio' name='blogfunction' id='spam' value='spam' /> <label for='spam'><?php _e('Mark as Spam') ?></label></li>
-		</ul>
-		
-		<p class="submit" style="width: 220px">
-			<?php wp_nonce_field( "allblogs" ); ?>
-			<input type='hidden' name='redirect' value='<?php echo $_SERVER['REQUEST_URI'] ?>' />
-			<input type='submit' class="button" value='<?php _e('Apply Changes') ?>' /></p>
-		</form>
+		</form>		
 		</div>
 		
 		<div class="wrap">
 			<h2><?php _e('Add Blog') ?></h2>
 			<form method="post" action="wpmu-edit.php?action=addblog">
 				<?php wp_nonce_field('add-blog') ?>
-				<table cellpadding="3" cellspacing="3">
-					<tr>
+				<table class="form-table">
+					<tr class="form-field form-required">	
 						<th style="text-align:center;" scope='row'><?php _e('Blog Address') ?></th>
 						<td>
 						<?php if( constant( "VHOST" ) == 'yes' ) : ?>
@@ -630,12 +587,20 @@ switch( $_GET['action'] ) {
 						<?php endif; ?>
 						</td>
 					</tr>
-					<tr><th style="text-align:center;" scope='row'><?php _e('Blog Title') ?></th><td><input name="blog[title]" type="text" size="20" title="<?php _e('Title') ?>"/></td></tr>
-					<tr><th style="text-align:center;" scope='row'><?php _e('Admin Email') ?></th><td><input name="blog[email]" type="text" size="20" title="<?php _e('Email') ?>"/></td></tr>
-					<tr><td colspan='2'><?php _e('A new user will be created if the above email address is not in the database.') ?></td></tr>
-					<tr><td colspan='2'><?php _e('The username and password will be mailed to this email address.') ?></td></tr>
+					<tr class="form-field form-required">
+						<th style="text-align:center;" scope='row'><?php _e('Blog Title') ?></th>
+						<td><input name="blog[title]" type="text" size="20" title="<?php _e('Title') ?>"/></td>
+					</tr>
+					<tr class="form-field form-required">	
+						<th style="text-align:center;" scope='row'><?php _e('Admin Email') ?></th>
+						<td><input name="blog[email]" type="text" size="20" title="<?php _e('Email') ?>"/></td>
+					</tr>
+					<tr class="form-field">
+						<td colspan='2'><?php _e('A new user will be created if the above email address is not in the database.') ?><br /><?php _e('The username and password will be mailed to this email address.') ?></td>
+					</tr>
 				</table>
-				<input class="button" type="submit" name="go" value="<?php _e('Add Blog') ?>" />
+				<p class="submit">
+					<input class="button" type="submit" name="go" value="<?php _e('Add Blog') ?>" /></p>
 			</form>
 		</div>
 		<?php

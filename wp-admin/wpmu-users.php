@@ -3,7 +3,10 @@ require_once('admin.php');
 
 $title = __('WordPress MU &rsaquo; Admin &rsaquo; Users');
 $parent_file = 'wpmu-admin.php';
+
 wp_enqueue_script( 'listman' );
+wp_enqueue_script( 'admin-forms' );
+
 require_once('admin-header.php');
 
 if( is_site_admin() == false ) {
@@ -27,9 +30,6 @@ if ( $_GET['updated'] == 'true' ) {
 			case 'add':
 				_e('User added !');
 			break;
-			default:
-				_e('Options saved !');
-			break;
 		}
 		?>
 	</p></div>
@@ -37,7 +37,7 @@ if ( $_GET['updated'] == 'true' ) {
 }
 ?>
 
-<div class="wrap">
+<div class="wrap" style="position:relative;">
 	<?php
 	$apage = isset( $_GET['apage'] ) ? intval( $_GET['apage'] ) : 1;
 	$num = isset( $_GET['num'] ) ? intval( $_GET['num'] ) : 15;
@@ -87,84 +87,58 @@ if ( $_GET['updated'] == 'true' ) {
 	));
 	?>
 	<h2><?php _e("Users"); ?></h2>
-	
-	<div style="float:right; padding:0 20px; margin-top:20px;"> 
-		<?php if ( $user_navigation ) echo "<p class='pagenav'>$user_navigation</p>"; ?>
-	</div>
-	
-	<form action="wpmu-users.php" method="get" id="searchform"> 
-		<fieldset> 
-			<legend><?php _e('Search Users&hellip;') ?></legend> 
-			<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes(wp_specialchars($_GET['s'], 1)); ?>" size="17" /> 
-		</fieldset>			
-		<input class="button" id="post-query-submit" type="submit" name="submit" value="<?php _e('Search') ?>"  /> 
+	<form action="wpmu-users.php" method="get" style="position:absolute;right:0;top:0;"> 
+		<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes(wp_specialchars($_GET['s'], 1)); ?>" size="17" />
+		<input type="submit" id="post-query-submit" value="<?php _e('Search Users') ?>" class="button" />
 	</form>
 
-	<br style="clear:both;" />
-	
-	<?php if( isset($_GET['s']) && $_GET['s'] != '' ) : ?>
-		<p><a href="wpmu-blogs.php?action=blogs&amp;s=<?php echo stripslashes(wp_specialchars($_GET['s'], 1)); ?>"><?php _e('Search Blogs:') ?> <strong><?php echo stripslashes(wp_specialchars($_GET['s'], 1)) ?></strong></a></p>
-	<?php endif; ?>
+	<form id="form-user-list" action='wpmu-edit.php?action=allusers' method='post'>
+		<div class="tablenav">
+			<?php if ( $user_navigation ) echo "<div class='tablenav-pages'>$user_navigation</div>"; ?>	
 
-	<?php
-	// define the columns to display, the syntax is 'internal name' => 'display name'
-	$posts_columns = array(
-		'id'         => __('ID'),
-		'login'      => __('Login'),
-		'email'     => __('Email'),
-		'name'       => __('Name'),
-		'registered' => __('Registered'),
-		'blogs'      => __('Blogs')
-	);
-	$posts_columns = apply_filters('manage_posts_columns', $posts_columns);
+			<div class="alignleft">
+				<input type="submit" value="<?php _e('Delete') ?>" name="alluser_delete" class="button-secondary delete" />
+				<input type="submit" value="<?php _e('Mark as Spammers') ?>" name="alluser_spam" class="button-secondary" />
+				<input type="submit" value="<?php _e('Not Spam') ?>" name="alluser_notspam" class="button-secondary" />
+				<?php wp_nonce_field( 'allusers' ); ?>
+				<br class="clear" />
+			</div>
+		</div>
 
-	// you can not edit these at the moment
-	$posts_columns['control_edit']   = '';
-	$posts_columns['control_delete'] = '';
+		<br class="clear" />
+		
+		<?php if( isset($_GET['s']) && $_GET['s'] != '' ) : ?>
+			<p><a href="wpmu-blogs.php?action=blogs&amp;s=<?php echo stripslashes(wp_specialchars($_GET['s'], 1)); ?>"><?php _e('Search Blogs:') ?> <strong><?php echo stripslashes(wp_specialchars($_GET['s'], 1)) ?></strong></a></p>
+		<?php endif; ?>
 
-	?>
-	<script type="text/javascript">
-		<!--
-		var checkflag = "false";
-		function check_all_rows() {
-			field = document.formlist;
-			if (checkflag == "false") {
-				for (i = 0; i < field.length; i++) {
-					if( field[i].name == 'allusers[]' ) {
-						field[i].checked = true;
-					}
-				}
-				checkflag = "true";
-				return "<?php _e('Uncheck All') ?>"; 
-			} else {
-				for (i = 0; i < field.length; i++) {
-					if( field[i].name == 'allusers[]' ) {
-						field[i].checked = false;
-					}
-				}
-				checkflag = "false";
-				return "<?php _e('Check All') ?>"; 
-			}
-		}
-		//  -->
-	</script>
-
-	<form name="formlist" action='wpmu-edit.php?action=allusers' method='post'>
+		<?php
+		// define the columns to display, the syntax is 'internal name' => 'display name'
+		$posts_columns = array(
+			'checkbox'	 => '',
+			'id'         => __('ID'),
+			'login'      => __('Login'),
+			'email'      => __('Email'),
+			'name'       => __('Name'),
+			'registered' => __('Registered'),
+			'blogs'      => ''
+		);
+		$posts_columns = apply_filters('manage_posts_columns', $posts_columns);
+		?>
 		<table class="widefat" cellpadding="3" cellspacing="3">
 			<thead>
 			<tr>
-				<?php foreach( (array) $posts_columns as $column_id => $column_display_name) { ?>
-					<th scope="col">
-						<?php if( $column_id == 'blogs' ) {
-							_e('Blogs');
-						} else { ?>
-							<a href="wpmu-users.php?sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a>
-						<?php } ?>
-					</th>
+				<?php foreach( (array) $posts_columns as $column_id => $column_display_name) {
+					if( $column_id == 'blogs' ) {
+						echo '<th scope="col">'.__('Blogs').'</th>';
+					} elseif( $column_id == 'checkbox') {
+						echo '<th scope="col" class="check-column"><input type="checkbox" onclick="checkAll(document.getElementById(\'form-user-list\'));" /></th>';
+					} else { ?>
+						<th scope="col"><a href="wpmu-users.php?sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a></th>
+					<?php } ?>
 				<?php } ?>
 			</tr>
 			</thead>
-			<tbody id="the-list">
+			<tbody id="users" class="list:user user-list">
 			<?php if ($user_list) {
 				$bgcolor = '';
 				foreach ( (array) $user_list as $user) { 
@@ -175,13 +149,20 @@ if ( $_GET['updated'] == 'true' ) {
 					<?php
 					foreach( (array) $posts_columns as $column_name=>$column_display_name) :
 						switch($column_name) {
-							case 'id': ?>
-								<th scope="row"><input type='checkbox' id='user_<?php echo $user['ID'] ?>' name='allusers[]' value='<?php echo $user['ID'] ?>' /> <label for='user_<?php echo $user['ID'] ?>'><?php echo $user['ID'] ?></label></th>
+							case 'checkbox': ?>
+								<th scope="row" class="check-column"><input type='checkbox' id='user_<?php echo $user['ID'] ?>' name='allusers[]' value='<?php echo $user['ID'] ?>' /></th>
+							<?php 
+							break;
+							
+							case 'id': ?>								
+								<td><?php echo $user['ID'] ?></td>
 							<?php
 							break;
 
-							case 'login': ?>
-								<td><label for='user_<?php echo $user['ID'] ?>'><?php echo $user['user_login'] ?></label></td>
+							case 'login':
+								$edit = clean_url( add_query_arg( 'wp_http_referer', urlencode( clean_url( stripslashes( $_SERVER['REQUEST_URI'] ) ) ), "user-edit.php?user_id=".$user['ID'] ) );
+								?>
+								<td><strong><a href="<?php echo $edit; ?>" class="edit"><?php echo stripslashes($user['user_login']); ?></a></strong></td>
 							<?php
 							break;
 
@@ -218,16 +199,6 @@ if ( $_GET['updated'] == 'true' ) {
 							<?php
 							break;
 
-							case 'control_edit': ?>
-								<td><a href="user-edit.php?user_id=<?php echo $user['ID']; ?>" class="edit"><?php _e('Edit'); ?></a></td>
-							<?php
-							break;
-
-							case 'control_delete': ?>
-								<td><a href="wpmu-edit.php?action=confirm&amp;action2=deleteuser&amp;msg=<?php echo urlencode( __("You are about to delete this user.") ); ?>&amp;id=<?php echo $user['ID']; ?>&amp;redirect=<?php echo wpmu_admin_redirect_url(); ?>" class="delete" onclick="return deleteSomething( 'user', <?php echo $user['ID']; ?>, '<?php echo js_escape(sprintf(__("You are about to delete this user '%s'.\n'OK' to delete, 'Cancel' to stop."), $user['user_login'])); ?>' );"><?php _e('Delete'); ?></a></td>
-							<?php
-							break;
-
 							default: ?>
 								<td><?php do_action('manage_users_custom_column', $column_name, $user['ID']); ?></td>
 							<?php
@@ -248,24 +219,6 @@ if ( $_GET['updated'] == 'true' ) {
 			?> 
 			</tbody>
 		</table>
-		
-		<div style="float:right; padding:0 20px; margin-top:20px;"> 
-			<?php if ( $user_navigation ) echo "<p class='pagenav'>$user_navigation</p>"; ?>
-		</div>
-	
-		<p><input class="button" type="button" value="<?php _e('Check All') ?>" onclick="this.value=check_all_rows()" /></p>
-		
-		<h3><?php _e('Selected Users:') ?></h3>
-		<ul style="list-style:none;">
-			<li><input type='radio' name='userfunction' id='delete' value='delete' /> <label for='delete'><?php _e('Delete') ?></label></li>
-			<li><input type='radio' name='userfunction' id='spam' value='spam' /> <label for='spam'><?php _e('Mark as Spammers') ?></label></li>
-			<li><input type='radio' name='userfunction' id='notspam' value='notspam' /> <label for='spam'><?php _e('Not Spam') ?></label></li> 
-		</ul>
-		
-		<p class="submit" style="width: 220px">
-			<?php wp_nonce_field( "allusers" ); ?>
-			<input type='hidden' name='action' value='allusers' />
-			<input class="button" type='submit' value='<?php _e('Apply Changes') ?>' /></p>
 	</form>
 </div>
 
@@ -273,23 +226,24 @@ if ( $_GET['updated'] == 'true' ) {
 if( apply_filters('show_adduser_fields', true) ) :
 ?>
 <div class="wrap">
+	<h2><?php _e('Add user') ?></h2>
 	<form action="wpmu-edit.php?action=adduser" method="post">
-		<h2><?php _e('Add User') ?></h2>
-		
-		<table cellpadding="3" cellspacing="3">
-			<tr>
-				<th style="text-align:center;" scope='row'><?php _e('Username') ?></th>
-				<td><input type="text" name="user[username]" /></td>
-			</tr>
-			<tr>
-				<th style="text-align:center;" scope='row'><?php _e('Email') ?></th>
-				<td><input type="text" name="user[email]" /></td>
-			</tr>
-			<tr><td colspan='2'><?php _e('Username and password will be mailed to the above email address.') ?></td></tr>
-		</table>
-		<p>
-			<?php wp_nonce_field('add-user') ?>
-			<input class="button" type="submit" name="Add user" value="<?php _e('Add user') ?>" /></p>
+	<table class="form-table">
+		<tr class="form-field form-required">	
+			<th scope='row'><?php _e('Username') ?></th>
+			<td><input type="text" name="user[username]" /></td>
+		</tr>
+		<tr class="form-field form-required">	
+			<th scope='row'><?php _e('Email') ?></th>
+			<td><input type="text" name="user[email]" /></td>
+		</tr>
+		<tr class="form-field">
+			<td colspan='2'><?php _e('Username and password will be mailed to the above email address.') ?></td>
+		</tr>
+	</table>
+	<p class="submit">
+		<?php wp_nonce_field('add-user') ?>
+		<input class="button" type="submit" name="Add user" value="<?php _e('Add user') ?>" /></p>
 	</form>
 </div>
 <?php endif; ?>
