@@ -349,6 +349,10 @@ switch( $_GET['action'] ) {
 	// Common
 	case "confirm":
 		global $wp_locale;
+		if( !headers_sent() ){
+			nocache_headers();
+			header( 'Content-Type: text/html; charset=utf-8' );
+		}
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists('language_attributes') ) language_attributes(); ?>>
@@ -361,7 +365,7 @@ switch( $_GET['action'] ) {
 					<link rel="stylesheet" href="css/install-rtl.css" type="text/css" />
 				<?php endif; ?>
 			</head>
-			<body>
+			<body id="error-page">
 				<h1 id="logo"><img alt="WordPress" src="images/wordpress-logo.png" /></h1>
 				<form action='wpmu-edit.php?action=<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>' method='post'>
 					<input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET['action2'] ) ?>' />
@@ -370,7 +374,7 @@ switch( $_GET['action'] ) {
 					<?php wp_nonce_field( $_GET['action2'] ) ?>
 					<p>						
 						<?php echo wp_specialchars( $_GET['msg'] ) ?><br />
-						<input type='submit' value='<?php _e("Confirm"); ?>' /></p>					
+						<input class="button" type='submit' value='<?php _e("Confirm"); ?>' /></p>					
 				</form>
 			</body>
 		</html>
