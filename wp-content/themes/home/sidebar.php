@@ -2,14 +2,6 @@
 		<ul>
 			<?php 	/* Widgetized sidebar, if you have the plugin installed. */
 					if ( !function_exists('dynamic_sidebar') || !dynamic_sidebar() ) : ?>
-<?php if ( function_exists('dynamic_sidebar') && dynamic_sidebar() ) : ?>
-
-		</ul>
-	</div>
-<?php return; ?>
-
-<?php endif; ?>
-			
 			<li>
 				<?php include (TEMPLATEPATH . '/searchform.php'); ?>
 			</li>
