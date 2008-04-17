@@ -326,11 +326,13 @@ $wpdb->hide_errors();
 if( defined( 'MUPLUGINDIR' ) == false ) 
 	define( 'MUPLUGINDIR', 'wp-content/mu-plugins' );
 
-$plugins = glob( ABSPATH . MUPLUGINDIR . '/*.php' );
-if( is_array( $plugins ) ) {
-	foreach ( $plugins as $plugin ) {
-		if( is_file( $plugin ) )
-			include_once( $plugin );
+if( is_dir( ABSPATH . MUPLUGINDIR ) ) {
+	if( $dh = opendir( ABSPATH . MUPLUGINDIR ) ) {
+		while( ( $plugin = readdir( $dh ) ) !== false ) {
+			if( substr( $plugin, -4 ) == '.php' ) {
+				include_once( ABSPATH . MUPLUGINDIR . '/' . $plugin );
+			}
+		}
 	}
 }
 $wpdb->show_errors();
