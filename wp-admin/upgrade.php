@@ -51,10 +51,10 @@ switch($step) :
 			$backto = stripslashes(urldecode($_GET['backto']));
 			$backto = clean_url($backto, null, 'url');
 		}
-		if( $wpdb->get_row( "SELECT blog_id FROM wp_blog_versions WHERE blog_id = '{$wpdb->blogid}'" ) ) {
-			$wpdb->query( "UPDATE wp_blog_versions SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
+		if( $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blog_versions} WHERE blog_id = '{$wpdb->blogid}'" ) ) {
+			$wpdb->query( "UPDATE {$wpdb->blog_versions} SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
 		} else {
-			$wpdb->query( "INSERT INTO wp_blog_versions ( `blog_id` , `db_version` , `last_updated` ) VALUES ( '{$wpdb->blogid}', '{$wp_db_version}', NOW());" );
+			$wpdb->query( "INSERT INTO {$wpdb->blog_versions} ( `blog_id` , `db_version` , `last_updated` ) VALUES ( '{$wpdb->blogid}', '{$wp_db_version}', NOW());" );
 		}
 ?> 
 <h2><?php _e('Upgrade Complete'); ?></h2>
