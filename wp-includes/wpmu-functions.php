@@ -1389,7 +1389,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$user_id."' AND meta_key = '".$table_prefix."user_level'" );
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id != '".$user_id."' AND meta_key = '".$table_prefix."capabilities'" );
 	// Delete any caps that snuck into the previously active blog. (Hardcoded to blog 1 for now.) TODO: Get previous_blog_id.
-	if ( $user_id != 1 )
+	if ( !is_site_admin( $user->user_login ) && $user_id != 1 )
 		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$user_id."' AND meta_key = '" . $wpdb->base_prefix . "1_capabilities'" );
 
 	$wpdb->show_errors();
