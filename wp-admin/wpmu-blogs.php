@@ -502,11 +502,11 @@ switch( $_GET['action'] ) {
 							case 'control_spam': 
 								if( get_blog_status( $blog['blog_id'], "spam" ) == '1' ) { ?>
 									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=unspamblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to unspam the blog %s" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to mark as not spam this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Not Spam") ?></a>
+										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=unspamblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to unspam the blog %s" ), $blogname ) ) ?>"><?php _e("Not Spam") ?></a>
 									</td>
 								<?php } else { ?>
 									<td valign='top'>
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=spamblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to mark the blog %s as spam" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to mark as spam this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Spam") ?></a>
+										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=spamblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to mark the blog %s as spam" ), $blogname ) ) ?>""><?php _e("Spam") ?></a>
 									</td>
 								<?php }
 							break;
@@ -514,11 +514,11 @@ switch( $_GET['action'] ) {
 							case 'control_deactivate':
 								if( get_blog_status( $blog['blog_id'], "deleted" ) == '1' ) { ?>
 									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=activateblog&amp;ref=<?php echo urlencode( $_SERVER['REQUEST_URI'] ) ?>&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to activate this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Activate") ?></a>
+										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=activateblog&amp;ref=<?php echo urlencode( $_SERVER['REQUEST_URI'] ) ?>&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) ?>"><?php _e("Activate") ?></a>
 									</td>
 								<?php } else { ?>
 									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=deactivateblog&amp;ref=<?php echo urlencode( $_SERVER['REQUEST_URI'] ) ?>&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to deactivate the blog %s" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to deactive this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Deactivate") ?></a>
+										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=deactivateblog&amp;ref=<?php echo urlencode( $_SERVER['REQUEST_URI'] ) ?>&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to deactivate the blog %s" ), $blogname ) ) ?>"><?php _e("Deactivate") ?></a>
 									</td>
 								<?php }
 							break;
@@ -526,18 +526,18 @@ switch( $_GET['action'] ) {
 							case 'control_archive':
 								if( get_blog_status( $blog['blog_id'], "archived" ) == '1' ) { ?>
 									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=unarchiveblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to unarchive the blog %s" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to unarchive this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Unarchive") ?></a>
+										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=unarchiveblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to unarchive the blog %s" ), $blogname ) ) ?>"><?php _e("Unarchive") ?></a>
 									</td>
 								<?php } else { ?>
 									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=archiveblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to archive the blog %s" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to archive this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Archive") ?></a>
+										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=archiveblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to archive the blog %s" ), $blogname ) ) ?>"><?php _e("Archive") ?></a>
 									</td>
 								<?php }
 							break;
 
 							case 'control_delete': ?>
 								<td valign="top">
-									<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=deleteblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to delete the blog %s" ), $blogname ) ) ?>" onclick="return deleteSomething( 'blog', <?php echo $blog['blog_id']; ?>, '<?php echo js_escape(sprintf(__("You are about to delete this blog '%s'.\n'OK' to delete, 'Cancel' to stop."), $blogname)); ?>' );"><?php _e("Delete") ?></a>
+									<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=deleteblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to delete the blog %s" ), $blogname ) ) ?>"><?php _e("Delete") ?></a>
 								</td>
 							<?php break;
 
