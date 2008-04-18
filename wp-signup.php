@@ -224,7 +224,7 @@ function validate_another_blog_signup() {
 
 function confirm_another_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
-<h2><?php printf(__('The blog %s is yours.'), $domain.$path ) ?></h2>
+<h2><?php printf(__('The blog, %s, is yours.'), "<a href='http://{$domain}{$path}'>{$blog_title}</a>" ) ?></h2>
 <p><?php printf(__('<a href="http://%1$s">http://%2$s</a> is your new blog.  <a href="%3$s">Login</a> as "%4$s" using your existing password.'), $domain.$path, $domain.$path, "http://" . $domain.$path . "wp-login.php", $user_name) ?></p>
 <?php
 	do_action('signup_finished');
@@ -370,7 +370,7 @@ function validate_blog_signup() {
 
 function confirm_blog_signup($domain, $path, $blog_title, $user_name, $user_email, $meta) {
 ?>
-<h2><?php printf(__('Congratulations!  The blog %s is yours.'), $domain.$path) ?></h2>
+<h2><?php printf(__('Congratulations! Your new blog, %s, is almost ready.'), "<a href='http://{$domain}{$path}'>{$blog_title}</a>" ) ?></h2>
 <p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
 <p><?php printf(__('Check your inbox at <strong>%s</strong> and click the link given. It should arrive within 30 minutes.'),  $user_email) ?></p>
 <p><?php _e('If you do not activate your blog within two days, you will have to sign up again.'); ?></p>
