@@ -4,7 +4,6 @@ require_once('admin.php');
 $title = __('WordPress MU &rsaquo; Admin &rsaquo; Blogs');
 $parent_file = 'wpmu-admin.php';
 
-wp_enqueue_script( 'listman' );
 wp_enqueue_script( 'admin-forms' );
 
 require_once('admin-header.php');
