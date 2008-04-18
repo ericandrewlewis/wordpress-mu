@@ -160,4 +160,5 @@ function wp_reset_vars( $vars ) {
 		}
 	}
 }
+
 ?>
