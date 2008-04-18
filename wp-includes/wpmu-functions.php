@@ -1825,7 +1825,7 @@ function safecss_filter_attr( $css, $element ) {
 	$allowed_attr = apply_filters( 'safe_style_css', array( 'text-align', 'margin', 'color', 'float', 
 	'text-direction', 'font', 'font-family', 'font-size', 'font-style', 'font-variant', 'font-weight', 'height',
 	'margin-bottom', 'margin-left', 'margin-right', 'margin-top', 'padding', 'padding-bottom',
-	'padding-left', 'padding-right', 'padding-top', 'width', 'border', 'vertical-align' ) );
+	'padding-left', 'padding-right', 'padding-top', 'width', 'border', 'vertical-align', 'text-decoration' ) );
 	$css = '';
 	foreach( $css_array as $css_item ) {
 		if( $css_item == '' )
