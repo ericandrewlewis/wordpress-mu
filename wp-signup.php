@@ -201,11 +201,10 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 }
 
 function validate_another_blog_signup() {
-	global $current_user, $blog_id, $blog_title, $errors, $domain, $path;
+	global $wpdb, $current_user, $blog_id, $blog_title, $errors, $domain, $path;
 	$current_user = wp_get_current_user();
-	if( !is_user_logged_in() ) {
+	if( !is_user_logged_in() )
 		die();
-	}
 
 	$result = validate_blog_form();
 	extract($result);
@@ -218,7 +217,7 @@ function validate_another_blog_signup() {
 	$public = (int) $_POST['blog_public'];
 	$meta = apply_filters('signup_create_blog_meta', array ('lang_id' => 1, 'public' => $public));
 
-	wpmu_create_blog($domain, $path, $blog_title, $current_user->id, $meta);
+	wpmu_create_blog( $domain, $path, $blog_title, $current_user->id, $meta, $wpdb->siteid );
 	confirm_another_blog_signup($domain, $path, $blog_title, $current_user->user_login, $current_user->user_email, $meta);
 }
 
