@@ -624,4 +624,19 @@ function mu_dropdown_languages( $lang_files = array(), $current = '' ) {
 	$output = apply_filters('mu_dropdown_languages', $output, $lang_files, $current);	
 	echo implode("\n\t", $output);	
 }
+
+// Only show "Media" upload icon
+function mu_media_buttons() {
+	global $post_ID, $temp_ID;
+	$uploading_iframe_ID = (int) (0 == $post_ID ? $temp_ID : $post_ID);
+	$context = apply_filters('media_buttons_context', __('Add media: %s'));
+	$media_upload_iframe_src = "media-upload.php?post_id=$uploading_iframe_ID";
+	$media_title = __('Add Media');
+	$out = <<<EOF
+	<a href="{$media_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640" class="thickbox" title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>
+EOF;
+	printf($context, $out);
+}
+add_action( 'media_buttons', 'mu_media_buttons' );
+remove_action( 'media_buttons', 'media_buttons' );
 ?>
