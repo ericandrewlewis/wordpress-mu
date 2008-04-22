@@ -639,4 +639,20 @@ EOF;
 }
 add_action( 'media_buttons', 'mu_media_buttons' );
 remove_action( 'media_buttons', 'media_buttons' );
+
+/* Warn the admin if SECRET SALT information is missing from wp-config.php */
+function secret_salt_warning() {
+	if( !is_site_admin() )
+		return;
+	if( !defined( 'SECRET_KEY' ) || !defined( 'SECRET_SALT' ) ) {
+		$salt1 = wp_generate_password() . wp_generate_password();
+		$salt2 = wp_generate_password() . wp_generate_password();
+		$msg = sprintf( __( 'Warning! You must define SECRET_KEY and SECRET_SALT in <strong>%swp-config.php</strong><br />Please add the following code before the line, <code>/* That\'s all, stop editing! Happy blogging. */</code>' ), ABSPATH );
+		$msg .= "<blockquote>define('SECRET_KEY', '$salt1');<br />define('SECRET_SALT', '$salt2');</blockquote>";
+
+		echo "<div id='update-nag'>$msg</div>";
+	}
+}
+add_action( 'admin_notices', 'secret_salt_warning' );
+
 ?>
