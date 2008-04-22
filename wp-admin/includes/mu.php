@@ -655,4 +655,9 @@ function secret_salt_warning() {
 }
 add_action( 'admin_notices', 'secret_salt_warning' );
 
+function mu_dashboard() {
+	unregister_sidebar_widget( 'dashboard_plugins' );
+}
+add_action( 'wp_dashboard_setup', 'mu_dashboard' );
+
 ?>
