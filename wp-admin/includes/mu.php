@@ -660,4 +660,7 @@ function mu_dashboard() {
 }
 add_action( 'wp_dashboard_setup', 'mu_dashboard' );
 
+/* Unused update message called from Dashboard */
+function update_right_now_message() {
+}
 ?>
