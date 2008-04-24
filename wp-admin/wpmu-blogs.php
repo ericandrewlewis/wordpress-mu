@@ -73,8 +73,7 @@ switch( $_GET['action'] ) {
 		$editblog_roles = get_blog_option( $id, "{$wpdb->base_prefix}{$id}_user_roles" );
 		?>
 		<div class="wrap">
-		<h2><?php _e('Edit Blog'); ?></h2>
-		<a href='http://<?php echo $details['domain'].$details['path']; ?>'><?php echo $details['domain'].$details['path']; ?></a>
+		<h2><?php _e('Edit Blog'); ?> - <a href='http://<?php echo $details['domain'].$details['path']; ?>'><?php echo $details['domain'].$details['path']; ?></a></h2>		
 		<form method="post" action="wpmu-edit.php?action=updateblog"> 
 			<?php wp_nonce_field('editblog'); ?>
 			<input type="hidden" name="id" value="<?php echo $id ?>" /> 
@@ -82,62 +81,64 @@ switch( $_GET['action'] ) {
 			<tr>
 				<td valign="top">
 					<div class="wrap">
-						<table style="border:0; width:100%;" cellspacing="2" cellpadding="5" class="editform"> 
-							<tr valign="top"> 
+						<h3><?php _e('Blog info (wp_blogs)'); ?></h3>
+						<table class="form-table">
+							<tr class="form-field form-required">
 								<th scope="row"><?php _e('Domain') ?></th> 
 								<td>http://<input name="blog[domain]" type="text" id="domain" value="<?php echo $details['domain'] ?>" size="33" /></td>
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field form-required">
 								<th scope="row"><?php _e('Path') ?></th> 
 								<td><input name="blog[path]" type="text" id="path" value="<?php echo $details['path'] ?>" size="40" />
 								<br />(<?php _e( 'siteurl and home will be modified too' ); ?>)</td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e('Registered') ?></th> 
 								<td><input name="blog[registered]" type="text" id="blog_registered" value="<?php echo $details['registered'] ?>" size="40" /></td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e('Last Updated') ?></th> 
 								<td><input name="blog[last_updated]" type="text" id="blog_last_updated" value="<?php echo $details['last_updated'] ?>" size="40" /></td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e('Public') ?></th> 
 								<td>
 									<input type='radio' name='blog[public]' value='1' <?php if( $details['public'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
 									<input type='radio' name='blog[public]' value='0' <?php if( $details['public'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e( 'Archived' ); ?></th> 
 								<td>
 									<input type='radio' name='blog[archived]' value='1' <?php if( $details['archived'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
 									<input type='radio' name='blog[archived]' value='0' <?php if( $details['archived'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e( 'Mature' ); ?></th> 
 								<td>
 									<input type='radio' name='blog[mature]' value='1' <?php if( $details['mature'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
 									<input type='radio' name='blog[mature]' value='0' <?php if( $details['mature'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e( 'Spam' ); ?></th> 
 								<td>
 									<input type='radio' name='blog[spam]' value='1' <?php if( $details['spam'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
 									<input type='radio' name='blog[spam]' value='0' <?php if( $details['spam'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
-							<tr valign="top"> 
+							<tr class="form-field">
 								<th scope="row"><?php _e( 'Deleted' ); ?></th> 
 								<td>
 									<input type='radio' name='blog[deleted]' value='1' <?php if( $details['deleted'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
 									<input type='radio' name='blog[deleted]' value='0' <?php if( $details['deleted'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
-							<tr>
-								<td colspan="2"><br /><br /></td>
-							</tr>
+						</table>
+						
+						<h3><?php printf( __('Blog options (wp_%s_options)'), $id ); ?></h3>
+						<table class="form-table">
 							<?php
 							$editblog_default_role = 'subscriber';
 							foreach ( $options as $key => $val ) {
@@ -155,14 +156,14 @@ switch( $_GET['action'] ) {
 								}
 								if ( stristr($val['option_value'], "\r") || stristr($val['option_value'], "\n") || stristr($val['option_value'], "\r\n") ) {
 								?>
-									<tr valign="top"> 
+									<tr class="form-field">
 										<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val['option_name'] ) ) ?></th> 
 										<td><textarea rows="5" cols="40" name="option[<?php echo $val['option_name'] ?>]" type="text" id="<?php echo $val['option_name'] ?>"<?php echo $disabled ?>><?php echo wp_specialchars( stripslashes( $val['option_value'] ), 1 ) ?></textarea></td>
 									</tr>
 								<?php
 								} else {
 								?>
-									<tr valign="top"> 
+									<tr class="form-field">
 										<th scope="row"><?php echo ucwords( str_replace( "_", " ", $val['option_name'] ) ) ?></th> 
 										<td><input name="option[<?php echo $val['option_name'] ?>]" type="text" id="<?php echo $val['option_name'] ?>" value="<?php echo wp_specialchars( stripslashes( $val['option_value'] ), 1 ) ?>" size="40" <?php echo $disabled ?> /></td> 
 									</tr> 
@@ -172,7 +173,7 @@ switch( $_GET['action'] ) {
 							?>
 						</table>
 						<p class="submit">
-						<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
+							<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
 					</div>
 				</td>
 				<td valign="top">
@@ -189,27 +190,28 @@ switch( $_GET['action'] ) {
 						$theme_key = wp_specialchars( $theme['Stylesheet'] );
 						if( isset($allowed_themes[$theme_key] ) == false ) {
 							$checked = ( isset($blog_allowed_themes[ $theme_key ]) ) ? 'checked="checked"' : '';							
-							$out .= '<tr valign="top"> 
+							$out .= '<tr class="form-field form-required"> 
 									<th title="'.htmlspecialchars( $theme["Description"] ).'" scope="row">'.$key.'</th> 
 									<td><input name="theme['.$theme_key.']" type="checkbox" value="on" '.$checked.'/></td> 
 								</tr>';
 						}
 					}
 					
+							
 					if( $out != '' ) {
-						echo "<div class='wrap'><h3>" . __('Blog Themes') . "</h3>";
-						echo '<table width="100%" border="0" cellspacing="2" cellpadding="5" class="editform">';
-						echo '<tr><th>' . __('Theme') . '</th><th>' . __('Enable') . '</th></tr>';
-						echo $out;
-						echo "</table></div>";
+						echo "<h3>" . __('Blog Themes') . "</h3>";
+						echo '<table class="form-table">';						
+							echo '<tr class=""><th>' . __('Theme') . '</th><th>' . __('Enable') . '</th></tr>';
+							echo $out;
+						echo "</table>";
 					}
 					
 					// Blog users
 					$blogusers = get_users_of_blog( $id );
-					echo '<div class="wrap"><h3>' . __('Blog Users') . '</h3>';
+					echo '<h3>' . __('Blog Users') . '</h3>';
 					if( is_array( $blogusers ) ) {
-						echo '<table width="100%"><caption>' . __('Current Users') . '</caption>';
-						echo "<tr><th>" . __('User') . "</th><th>" . __('Role') . "</th><th>" . __('Password') . "</th><th>" . __('Remove') . "</th><th></th></tr>";
+						echo '<table class="form-table">';
+						echo "<tr><th>" . __('User') . "</th><th>" . __('Role') . "</th><th>" . __('Password') . "</th><th>" . __('Remove') . "</th></tr>";
 						reset($blogusers);
 						foreach ( (array) $blogusers as $key => $val ) {
 							$t = @unserialize( $val->meta_value );
@@ -217,14 +219,15 @@ switch( $_GET['action'] ) {
 								reset( $t );
 								$existing_role = key( $t );
 							}
-							echo "<tr><td>" . $val->user_login . "</td>";
+							echo '<tr><td><a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a></td>';
 							if( $val->user_id != $current_user->data->ID ) {
 								?>
 								<td>
 									<select name="role[<?php echo $val->user_id ?>]" id="new_role"><?php 
 										foreach( $editblog_roles as $role => $role_assoc ){
+											$name = translate_with_context($role_assoc['name']);
 											$selected = ( $role == $existing_role ) ? 'selected="selected"' : '';
-											echo "<option {$selected} value=\"{$role}\">{$role_assoc['name']}</option>";
+											echo "<option {$selected} value=\"{$role}\">{$name}</option>";
 										}
 										?>
 									</select>
@@ -237,16 +240,15 @@ switch( $_GET['action'] ) {
 							} else {
 								echo "<td><strong>" . __ ('N/A') . "</strong></td><td><strong>" . __ ('N/A') . "</strong></td><td><strong>" . __('N/A') . "</strong></td>";
 							}
-							echo '<td><a href="user-edit.php?user_id=' . $val->user_id . '">' . __('Edit') . "</a></td></tr>";
+							echo '</tr>';
 						}
 						echo "</table>";
 					}
 					
 					// New blog user
-					echo "<h3>" . __('Add a new user') . "</h3>";
-					?>
+					echo "<h3>" . __('Add a new user') . "</h3>"; ?>
 					<p><?php _e('As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.') ?></p>
-					<table>
+					<table class="form-table">
 						<tr>
 							<th scope="row"><?php _e('User&nbsp;Login:') ?></th>
 							<td><input type="text" name="newuser" id="newuser" /></td>
@@ -258,20 +260,20 @@ switch( $_GET['action'] ) {
 								<?php 
 								reset( $editblog_roles );
 								foreach( $editblog_roles as $role => $role_assoc ){
+									$name = translate_with_context($role_assoc['name']);
 									$selected = ( $role == $editblog_default_role ) ? 'selected="selected"' : '';
-									echo "<option {$selected} value=\"{$role}\">{$role_assoc['name']}</option>";
+									echo "<option {$selected} value=\"{$role}\">{$name}</option>";
 								}
 								?>
 								</select>
 							</td>
 						</tr>
 					</table>
-					</div>
 					
-					<div class="wrap">
-						<strong><?php _e('Misc Blog Actions') ?></strong>
-						<p><?php do_action( 'wpmueditblogaction', $id ); ?></p>
-					</div>
+					<h3><?php _e('Misc Blog Actions') ?></h3>
+					<table class="form-table">
+						<?php do_action( 'wpmueditblogaction', $id ); ?>
+					</table>
 					
 					<p class="submit">
 						<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>				
@@ -422,7 +424,7 @@ switch( $_GET['action'] ) {
 			<tbody id="the-list">
 			<?php
 			if ($blog_list) {
-				$bgcolor = '';
+				$bgcolor = $class = '';
 				$status_list = array( "archived" => "#fee", "spam" => "#faa", "deleted" => "#f55" );
 				foreach ($blog_list as $blog) { 
 					$class = ('alternate' == $class) ? '' : 'alternate';

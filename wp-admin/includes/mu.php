@@ -273,8 +273,10 @@ function upload_space_setting( $id ) {
 		$quota = '';
 	
 	?>
-	<strong><?php _e('Blog Upload Space Quota'); ?></strong>
-	<input type="text" size="3" name="option[blog_upload_space]" value="<?php echo $quota; ?>" /><?php _e('MB (Leave blank for site default)'); ?><br />
+	<tr>
+		<th><?php _e('Blog Upload Space Quota'); ?></th>
+		<td><input type="text" size="3" name="option[blog_upload_space]" value="<?php echo $quota; ?>" /><?php _e('MB (Leave blank for site default)'); ?></td>
+	</tr>
 	<?php
 }
 add_action('wpmueditblogaction', 'upload_space_setting');
@@ -523,7 +525,6 @@ function blogswitch_markup() {
 
 		// Use siteurl for this in case of mapping
 		$parsed = parse_url( $blog->siteurl );
-		$domain = $parsed['host'];
 
 		if ( $current_blog->blog_id == $blog->userblog_id ) {
 			$current  = ' class="current"';
