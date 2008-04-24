@@ -1078,11 +1078,7 @@ if ( !function_exists('wp_hash') ) :
 function wp_hash($data) {
 	$salt = wp_salt();
 
-	if ( function_exists('hash_hmac') ) {
-		return hash_hmac('md5', $data, $salt);
-	} else {
-		return md5($data . $salt);
-	}
+	return hash_hmac('md5', $data, $salt);
 }
 endif;
 
@@ -1174,12 +1170,11 @@ if ( !function_exists('wp_generate_password') ) :
  *
  * @return string The random password
  **/
-function wp_generate_password() {
-	$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-	$length = 7;
+function wp_generate_password($length = 12) {
+	$chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()";
 	$password = '';
 	for ( $i = 0; $i < $length; $i++ )
-		$password .= substr($chars, mt_rand(0, 61), 1);
+		$password .= substr($chars, mt_rand(0, strlen($chars) - 1), 1);
 	return $password;
 }
 endif;
@@ -1336,7 +1331,7 @@ if ( !function_exists('wp_login') ) :
  * global for why there was a failure can utilize it later.
  *
  * @since 1.2.2
- * @deprecated Use wp_signin()
+ * @deprecated Use wp_signon()
  * @global string $error Error when false is returned
  *
  * @param string $username User's username

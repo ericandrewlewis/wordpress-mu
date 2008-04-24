@@ -174,8 +174,9 @@ function wp_handle_upload( &$file, $overrides = false ) {
 
 	// Move the file to the uploads dir
 	$new_file = $uploads['path'] . "/$filename";
-	if ( false === @ move_uploaded_file( $file['tmp_name'], $new_file ) )
+	if ( false === @ move_uploaded_file( $file['tmp_name'], $new_file ) ) {
 		wp_die( __('There was a problem uploading your file. Please try again.' ) );
+	}
 
 	// Set correct file permissions
 	$stat = stat( dirname( $new_file ));
