@@ -108,7 +108,7 @@ if ( $can_switch_themes = current_user_can( 'switch_themes' ) )
 	<?php if ( $can_switch_themes ) : ?>
 		<a href="themes.php" class="rbutton"><?php _e('Change Theme'); ?></a>
 	<?php endif; ?>
-	<?php //update_right_now_message(); ?>
+	<?php update_right_now_message(); ?>
 </p>
 
 <?php do_action( 'rightnow_end' ); ?>
