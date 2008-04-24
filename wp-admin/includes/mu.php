@@ -399,7 +399,6 @@ function wpmu_menu() {
 	unset( $submenu['themes.php'][10] );
 	unset( $submenu['plugins.php'][5] );
 	unset( $submenu['plugins.php'][10] );
-	unset( $submenu['options-general.php'][40] );
 	unset( $submenu['edit.php'][30] );
 	unset( $menu['35'] ); // Plugins
 
