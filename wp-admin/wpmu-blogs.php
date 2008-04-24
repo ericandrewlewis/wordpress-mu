@@ -8,7 +8,7 @@ wp_enqueue_script( 'admin-forms' );
 
 require_once('admin-header.php');
 if( is_site_admin() == false ) {
-    wp_die( __('<p>You do not have permission to access this page.</p>') );
+    wp_die( __('You do not have permission to access this page.') );
 }
 $id = intval( $_GET['id'] );
 

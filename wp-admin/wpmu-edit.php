@@ -1,7 +1,7 @@
 <?php
 require_once('admin.php');
 if( is_site_admin() == false ) {
-    wp_die( __('<p>You do not have permission to access this page.</p>') );
+    wp_die( __('You do not have permission to access this page.') );
 }
 
 do_action('wpmuadminedit', '');
@@ -92,11 +92,11 @@ switch( $_GET['action'] ) {
 		$email = wp_specialchars( $blog['email'] );
 		
 		if ( empty($domain) || empty($email))
-			wp_die( __("<p>Missing blog address or email address.</p>") );
+			wp_die( __('Missing blog address or email address.') );
 		if( !is_email( $email ) ) 
-			wp_die( __("<p>Invalid email address</p>") ); 
+			wp_die( __('Invalid email address') ); 
 		
-		if( constant( "VHOST" ) == 'yes' ) {
+		if( constant('VHOST') == 'yes' ) {
 			$newdomain = $domain.".".$current_site->domain;
 			$path = $base;
 		} else {
@@ -109,7 +109,7 @@ switch( $_GET['action'] ) {
 			$password = generate_random_password();
 			$user_id = wpmu_create_user( $domain, $password, $email );
 			if(false == $user_id) {
-				wp_die( __("<p>There was an error creating the user</p>") );
+				wp_die( __('There was an error creating the user') );
 			} else {
 				wp_new_user_notification($user_id, $password);
 			}
@@ -126,14 +126,14 @@ switch( $_GET['action'] ) {
 			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add-blog'), $_SERVER['HTTP_REFERER'] ) );
 			exit();
 		} else {
-			die( $blog_id->get_error_message() );
+			wp_die( $blog_id->get_error_message() );
 		}
 	break;
 	
 	case "updateblog":
 		check_admin_referer('editblog');
 		if( empty( $_POST ) )
-			wp_die( __("You probably need to go back to the <a href='wpmu-blogs.php'>blogs page</a>") );
+			wp_die( __('You probably need to go back to the <a href="wpmu-blogs.php">blogs page</a>') );
 
 		// themes
 		if( is_array( $_POST['theme'] ) ) {
@@ -427,18 +427,18 @@ switch( $_GET['action'] ) {
 
 		$user = $_POST['user'];
 		if ( empty($user['username']) && empty($user['email']) ) {
-			wp_die( __("<p>Missing username and email.</p>") );
+			wp_die( __('Missing username and email.') );
 		} elseif ( empty($user['username']) ) {
-			wp_die( __("<p>Missing username.</p>") );
+			wp_die( __('Missing username.') );
 		} elseif ( empty($user['email']) ) {
-			wp_die( __("<p>Missing email.</p>") );
+			wp_die( __('<p>Missing email.') );
 		}
 
 		$password = generate_random_password();
 		$user_id = wpmu_create_user(wp_specialchars( strtolower( $user['username'] ) ), $password, wp_specialchars( $user['email'] ) );
 
 		if( false == $user_id ) {
- 			wp_die( __("<p>Duplicated username or email address.</p>") );
+ 			wp_die( __('Duplicated username or email address.') );
 		} else {
 			wp_new_user_notification($user_id, $password);
 		}
