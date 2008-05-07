@@ -664,4 +664,13 @@ add_action( 'wp_dashboard_setup', 'mu_dashboard' );
 /* Unused update message called from Dashboard */
 function update_right_now_message() {
 }
+
+function profile_update_primary_blog() {
+	global $current_user;
+
+	if ( isset( $_POST['primary_blog'] ) ) {
+		update_user_option( $current_user->id, 'primary_blog', (int) $_POST['primary_blog'], true );
+	}
+}
+add_action( 'personal_options_update', 'profile_update_primary_blog' );
 ?>
