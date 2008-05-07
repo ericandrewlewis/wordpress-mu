@@ -71,7 +71,7 @@ function wpmu_current_site() {
 	return $current_site;
 }
 
-$wpdb->hide_errors();
+$wpdb->suppress_errors();
 $sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" ); // usually only one site
 if( count( $sites ) == 1 ) {
 	$current_site = $sites[0];
@@ -169,7 +169,7 @@ if( $blog_id == false ) {
     }
 }
 
-$wpdb->show_errors();
+$wpdb->suppress_errors( false );
 
 if( '0' == $current_blog->public ) {
 	// This just means the blog shouldn't show up in google, etc. Only to registered members

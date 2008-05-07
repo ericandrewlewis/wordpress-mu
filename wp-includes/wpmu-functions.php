@@ -127,11 +127,11 @@ function get_blog_details( $id, $getall = true ) {
 		return $details;
 	}
 
-	$wpdb->hide_errors();
+	$wpdb->suppress_errors();
 	$details->blogname   = get_blog_option($id, 'blogname');
 	$details->siteurl    = get_blog_option($id, 'siteurl');
 	$details->post_count = get_blog_option($id, 'post_count');
-	$wpdb->show_errors();
+	$wpdb->suppress_errors( false );
 
 	$details = apply_filters('blog_details', $details);
 
@@ -369,9 +369,9 @@ function switch_to_blog( $new_blog ) {
 	$blog_id = $new_blog;
 
 	if( is_object( $wp_roles ) ) {
-		$wpdb->hide_errors();
+		$wpdb->suppress_errors();
 		$wp_roles->_init();
-		$wpdb->show_errors();
+		$wpdb->suppress_errors( false );
 	}
 	if ( is_object( $current_user ) ) {
 		$current_user->_init_caps();
@@ -413,9 +413,9 @@ function restore_current_blog() {
 	unset( $tmpoldblogdetails );
 
 	if( is_object( $wp_roles ) ) {
-		$wpdb->hide_errors();
+		$wpdb->suppress_errors();
 		$wp_roles->_init();
-		$wpdb->show_errors();
+		$wpdb->suppress_errors( false );
 	}
 	if ( is_object( $current_user ) ) {
 		$current_user->_init_caps();
@@ -1342,13 +1342,13 @@ function install_blog($blog_id, $blog_title = '') {
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."user_level'" );
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."capabilities'" );
 
-	$wpdb->show_errors();
+	$wpdb->suppress_errors( false );
 }
 
 function install_blog_defaults($blog_id, $user_id) {
 	global $wpdb, $wp_rewrite, $current_site, $table_prefix;
 
-	$wpdb->hide_errors();
+	$wpdb->suppress_errors();
 
 	// Default links
 	$wpdb->query("INSERT INTO $wpdb->links (link_url, link_name, link_category, link_owner, link_rss) VALUES ('http://wordpress.com/', 'WordPress.com', 1356, '$user_id', 'http://wordpress.com/feed/');");
@@ -1390,7 +1390,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	if ( !is_site_admin( $user->user_login ) && $user_id != 1 )
 		$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE  user_id = '".$user_id."' AND meta_key = '" . $wpdb->base_prefix . "1_capabilities'" );
 
-	$wpdb->show_errors();
+	$wpdb->suppress_errors( false );
 }
 
 function wpmu_welcome_notification($blog_id, $user_id, $password, $title, $meta = '') {
