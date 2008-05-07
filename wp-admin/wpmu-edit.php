@@ -431,7 +431,7 @@ switch( $_GET['action'] ) {
 		} elseif ( empty($user['username']) ) {
 			wp_die( __('Missing username.') );
 		} elseif ( empty($user['email']) ) {
-			wp_die( __('<p>Missing email.') );
+			wp_die( __('Missing email.') );
 		}
 
 		$password = generate_random_password();

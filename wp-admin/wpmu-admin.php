@@ -12,7 +12,7 @@ add_action( 'admin_head', 'index_css' );
 require_once('admin-header.php');
 
 if( is_site_admin() == false ) {
-	wp_die( __('<p>You do not have permission to access this page.</p>') );
+	wp_die( __('You do not have permission to access this page.') );
 }
 
 global $wpdb;

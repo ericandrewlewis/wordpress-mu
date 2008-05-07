@@ -4,13 +4,12 @@ require_once('admin.php');
 $title = __('WordPress MU &rsaquo; Admin &rsaquo; Users');
 $parent_file = 'wpmu-admin.php';
 
-wp_enqueue_script( 'listman' );
 wp_enqueue_script( 'admin-forms' );
 
 require_once('admin-header.php');
 
 if( is_site_admin() == false ) {
-	wp_die( __('<p>You do not have permission to access this page.</p>') );
+	wp_die( __('You do not have permission to access this page.') );
 }
 
 if ( $_GET['updated'] == 'true' ) {
