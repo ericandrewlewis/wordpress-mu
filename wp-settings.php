@@ -407,6 +407,14 @@ if ( !defined('SITECOOKIEPATH') )
  */
 if ( !defined('COOKIE_DOMAIN') )
 	define('COOKIE_DOMAIN', '.' . $current_site->domain);
+	
+/**
+ * It is possible to define this in wp-config.php
+ * @since 2.5.0
+ */
+if ( !defined( 'AUTOSAVE_INTERVAL' ) )
+	define( 'AUTOSAVE_INTERVAL', 60 );
+	
 
 require (ABSPATH . WPINC . '/vars.php');
 
