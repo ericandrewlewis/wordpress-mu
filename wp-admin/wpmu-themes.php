@@ -27,6 +27,7 @@ $allowed_themes = get_site_allowed_themes();
 				<tr>
 					<th style="width:15%;text-align:center;"><?php _e('Active') ?></th>
 					<th style="width:25%;"><?php _e('Theme') ?></th>
+					<th style="width:10%;"><?php _e('Version') ?></th>
 					<th style="width:60%;"><?php _e('Description') ?></th>
 				</tr>
 			</thead>
@@ -51,6 +52,7 @@ $allowed_themes = get_site_allowed_themes();
 						<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="enabled_<?php echo $theme_key ?>" value="enabled" <?php echo $enabled ?> /> <?php _e('Yes') ?></label>
 					</td>
 					<th scope="row" style="text-align:left;"><?php echo $key ?></th> 
+					<td><?php echo $theme['Version'] ?></td>
 					<td><?php echo $theme['Description'] ?></td>
 				</tr> 
 			<?php endforeach; ?>
