@@ -232,7 +232,7 @@ function step1() {
 }
 
 function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'password', $dbhost = 'localhost', $vhost = 'yes', $prefix = 'wp_' ) {
-	$weblog_title = 'My new WordPress MU Site';
+	$weblog_title = ucfirst( $_SERVER[ 'HTTP_HOST' ] ) . ' Blogs';
 	$email = '';
 	$hostname = $_SERVER[ 'HTTP_HOST' ];
 	if( substr( $_SERVER[ 'HTTP_HOST' ], 0, 4 ) == 'www.' )
@@ -366,9 +366,9 @@ function step3() {
 	$email = $wpdb->escape( $_POST[ 'email' ] );
 	if( $email == '' )
 		die( 'You must enter an email address!' );
-	$weblog_title = stripslashes( $_POST[ 'weblog_title' ] );
 
 	// set up site tables
+	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'site_name', '" . $wpdb->escape( $_POST[ 'weblog_title' ] ) . "')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_email', '".$email."')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'admin_user_id', '1')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'registration', 'none')" );
@@ -396,6 +396,8 @@ Thanks!
 
 --The Team @ SITE_NAME')" );
 	$wpdb->query( "INSERT INTO ".$wpdb->sitemeta." (meta_id, site_id, meta_key, meta_value) VALUES (NULL, 1, 'first_post', 'Welcome to <a href=\"SITE_URL\">SITE_NAME</a>. This is your first post. Edit or delete it, then start blogging!' )" );
+
+	$weblog_title = stripslashes( $_POST[ 'weblog_title' ] );
 
 	$pass = substr( md5( rand() ), 5, 12 );
 	$user_id = wpmu_create_user( 'admin', $pass, $email);
