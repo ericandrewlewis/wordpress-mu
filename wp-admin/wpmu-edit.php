@@ -90,6 +90,7 @@ switch( $_GET['action'] ) {
 		$blog = $_POST['blog'];
 		$domain = strtolower( wp_specialchars( $blog['domain'] ) );
 		$email = wp_specialchars( $blog['email'] );
+		$title = stripslashes( wp_specialchars( $blog['title'] ) );
 		
 		if ( empty($domain) || empty($email))
 			wp_die( __('Missing blog address or email address.') );
@@ -116,12 +117,12 @@ switch( $_GET['action'] ) {
 		}
 
 		$wpdb->hide_errors();
-		$blog_id = wpmu_create_blog($newdomain, $path, wp_specialchars( $blog['title'] ), $user_id , array( "public" => 1 ), $current_site->id);
+		$blog_id = wpmu_create_blog($newdomain, $path, $title, $user_id , array( "public" => 1 ), $current_site->id);
 		$wpdb->show_errors();
 		if( !is_wp_error($blog_id) ) {
 			if( get_user_option( $user_id, 'primary_blog' ) == 1 )
 				update_user_option( $user_id, 'primary_blog', $blog_id, true );
-			$content_mail = sprintf(__("New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, wp_specialchars($blog['title']) );
+			$content_mail = sprintf( __( "New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, $title );
 			wp_mail( get_site_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <' . get_site_option( 'admin_email' ) . '>' );
 			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add-blog'), $_SERVER['HTTP_REFERER'] ) );
 			exit();
