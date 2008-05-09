@@ -43,6 +43,8 @@ class wpdb {
 			'postmeta', 'terms', 'term_taxonomy', 'term_relationships');
 	var $charset;
 	var $collate;
+	var $blog_tables = array('posts', 'categories', 'post2cat', 'comments', 'links', 'link2cat', 'options', 'postmeta', 'terms', 'term_taxonomy', 'term_relationships');
+
 
 	/**
 	 * Connects to the database server and selects a database
@@ -122,6 +124,22 @@ class wpdb {
 
 		return $old_prefix;
 	}
+
+	function set_blog_id($blog_id, $site_id = '') {
+		if ( !empty($site_id) )
+			$this->siteid = $site_id;
+
+		$old_blog_id = $this->blogid;
+		$this->blogid = $blog_id;
+
+		$this->prefix = $this->base_prefix . $this->blogid . '_';
+
+		foreach ( $this->blog_tables as $table )
+			$this->$table = $this->prefix . $table;
+
+		return $old_blog_id;
+	}
+
 
 	/**
 	 * Selects a database using the current class's $this->dbh

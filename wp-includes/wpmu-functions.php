@@ -332,40 +332,8 @@ function switch_to_blog( $new_blog ) {
 
 	$switched_stack[] = $blog_id;
 
-	// backup
-	$tmpoldblogdetails['blogid']         = $wpdb->blogid;
-	$tmpoldblogdetails['posts']          = $wpdb->posts;
-	$tmpoldblogdetails['categories']     = $wpdb->categories;
-	$tmpoldblogdetails['post2cat']       = $wpdb->post2cat;
-	$tmpoldblogdetails['comments']       = $wpdb->comments;
-	$tmpoldblogdetails['links']          = $wpdb->links;
-	$tmpoldblogdetails['link2cat']       = $wpdb->link2cat;
-	$tmpoldblogdetails['linkcategories'] = $wpdb->linkcategories;
-	$tmpoldblogdetails['options']        = $wpdb->options;
-	$tmpoldblogdetails['postmeta']       = $wpdb->postmeta;
-	$tmpoldblogdetails['terms']          = $wpdb->terms;
-	$tmpoldblogdetails['term_taxonomy']  = $wpdb->term_taxonomy;
-	$tmpoldblogdetails['term_relationships'] = $wpdb->term_relationships;
-	$tmpoldblogdetails['prefix']         = $wpdb->prefix;
-	$tmpoldblogdetails['table_prefix']   = $table_prefix;
-	$tmpoldblogdetails['blog_id']        = $blog_id;
-
-	// fix the new prefix.
-	$table_prefix = $wpdb->base_prefix . $new_blog . "_";
-	$wpdb->prefix			= $table_prefix;
-	$wpdb->blogid           = $new_blog;
-	$wpdb->posts            = $table_prefix . 'posts';
-	$wpdb->categories       = $table_prefix . 'categories';
-	$wpdb->post2cat         = $table_prefix . 'post2cat';
-	$wpdb->comments         = $table_prefix . 'comments';
-	$wpdb->links            = $table_prefix . 'links';
-	$wpdb->link2cat         = $table_prefix . 'link2cat';
-	$wpdb->linkcategories   = $table_prefix . 'linkcategories';
-	$wpdb->options          = $table_prefix . 'options';
-	$wpdb->postmeta         = $table_prefix . 'postmeta';
-	$wpdb->terms            = $table_prefix . 'terms';
-	$wpdb->term_taxonomy    = $table_prefix . 'term_taxonomy';
-	$wpdb->term_relationships = $table_prefix . 'term_relationships';
+	$wpdb->set_blog_id($new_blog);
+	$table_prefix = $wpdb->prefix;
 	$blog_id = $new_blog;
 
 	if( is_object( $wp_roles ) ) {
@@ -373,11 +341,11 @@ function switch_to_blog( $new_blog ) {
 		$wp_roles->_init();
 		$wpdb->suppress_errors( false );
 	}
-	if ( is_object( $current_user ) ) {
-		$current_user->_init_caps();
-	}
 
-	do_action('switch_blog', $blog_id, $tmpoldblogdetails['blog_id']);
+	if ( is_object( $current_user ) )
+		$current_user->_init_caps();
+
+	do_action('switch_blog', $blog_id, array());
 	$switched = true;
 }
 
@@ -388,38 +356,23 @@ function restore_current_blog() {
 		return;
 
 	$blog = array_pop($switched_stack);
-
 	if ( $blog_id == $blog )
 		return;
 
-	// backup
-	$wpdb->blogid = $tmpoldblogdetails['blogid'];
-	$wpdb->posts = $tmpoldblogdetails['posts'];
-	$wpdb->categories = $tmpoldblogdetails['categories'];
-	$wpdb->post2cat = $tmpoldblogdetails['post2cat'];
-	$wpdb->comments = $tmpoldblogdetails['comments'];
-	$wpdb->links = $tmpoldblogdetails['links'];
-	$wpdb->link2cat = $tmpoldblogdetails['link2cat'];
-	$wpdb->linkcategories = $tmpoldblogdetails['linkcategories'];
-	$wpdb->options = $tmpoldblogdetails['options'];
-	$wpdb->postmeta = $tmpoldblogdetails['postmeta'];
-	$wpdb->terms = $tmpoldblogdetails['terms'];
-	$wpdb->term_taxonomy = $tmpoldblogdetails['term_taxonomy'];
-	$wpdb->term_relationships = $tmpoldblogdetails['term_relationships'];
-	$wpdb->prefix = $tmpoldblogdetails['prefix'];
-	$table_prefix = $tmpoldblogdetails['table_prefix'];
+	$wpdb->set_blog_id($blog);
 	$prev_blog_id = $blog_id;
-	$blog_id = $tmpoldblogdetails['blog_id'];
-	unset( $tmpoldblogdetails );
+	$blog_id = $blog;
+	$table_prefix = $wpdb->prefix;
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();
 		$wp_roles->_init();
 		$wpdb->suppress_errors( false );
 	}
-	if ( is_object( $current_user ) ) {
+
+	if ( is_object( $current_user ) )
 		$current_user->_init_caps();
-	}
+
 	do_action('switch_blog', $blog_id, $prev_blog_id);
 
 	$switched = false;
