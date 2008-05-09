@@ -204,8 +204,8 @@ function get_option( $setting ) {
 
 	if ( $switched != false || defined('WP_INSTALLING') != false ) {
 		wp_cache_delete($setting, 'options');
-		#wp_cache_delete('notoptions', 'options');
-		#wp_cache_delete('alloptions', 'options');
+		wp_cache_delete('notoptions', 'options');
+		wp_cache_delete('alloptions', 'options');
 	}
 
 	// prevent non-existent options from triggering multiple queries
