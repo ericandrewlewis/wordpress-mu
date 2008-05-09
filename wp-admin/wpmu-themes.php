@@ -47,9 +47,9 @@ $allowed_themes = get_site_allowed_themes();
 				?>
 				<tr valign="top" class="<?php echo $class.$class1; ?>">
 					<td style="text-align:center;">
-						<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="disabled_<?php echo $theme_key ?>" value="disabled" <?php echo $disabled ?> /> <?php _e('No') ?></label>
-						&nbsp;&nbsp;&nbsp; 
 						<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="enabled_<?php echo $theme_key ?>" value="enabled" <?php echo $enabled ?> /> <?php _e('Yes') ?></label>
+						&nbsp;&nbsp;&nbsp; 
+						<label><input name="theme[<?php echo $theme_key ?>]" type="radio" id="disabled_<?php echo $theme_key ?>" value="disabled" <?php echo $disabled ?> /> <?php _e('No') ?></label>
 					</td>
 					<th scope="row" style="text-align:left;"><?php echo $key ?></th> 
 					<td><?php echo $theme['Version'] ?></td>
