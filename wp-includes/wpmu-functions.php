@@ -322,10 +322,13 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 }
 
 function switch_to_blog( $new_blog ) {
-	global $tmpoldblogdetails, $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
+	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
 
 	if ( empty($new_blog) )
-		$new_blog = $blog_id;
+		return;
+
+	if ( $blog_id == $new_blog )
+		return;
 
 	if ( empty($switched_stack) )
 		$switched_stack = array();
@@ -350,7 +353,7 @@ function switch_to_blog( $new_blog ) {
 }
 
 function restore_current_blog() {
-	global $table_prefix, $tmpoldblogdetails, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
+	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
 
 	if ( !$switched )
 		return;
@@ -1856,6 +1859,11 @@ function promote_if_site_admin(&$user) {
     $user->user_level = 10;
     $cap_key = $wpdb->prefix . 'capabilities';
     $user->{$cap_key} = array( 'administrator' => '1' );
+}
+
+if( is_object( $wp_object_cache ) ) {
+	$wp_object_cache->global_groups = array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss');
+	$wp_object_cache->non_persistent_groups = array('comment', 'counts');
 }
 
 ?>
