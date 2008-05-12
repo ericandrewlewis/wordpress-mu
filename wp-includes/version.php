@@ -18,5 +18,5 @@ $wp_version = '2.5.1';
  */
 $wp_db_version = 7796;
 
-$wpmu_version = '1.5-RC2';
+$wpmu_version = '1.5.1';
 ?>
