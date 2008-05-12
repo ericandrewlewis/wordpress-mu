@@ -12,7 +12,7 @@ if( $_GET[ 'id' ] ) {
 	$id = intval( $_POST[ 'id' ] ); 
 }
 
-if( isset( $_POST['ref'] ) == false && empty( $_SERVER['HTTP_REFERER'] ) == false ) {
+if( isset( $_POST['ref'] ) == false && !empty($_SERVER['HTTP_REFERER']) ) {
 	$_POST['ref'] = $_SERVER['HTTP_REFERER'];
 }
 
@@ -24,28 +24,34 @@ switch( $_GET['action'] ) {
 			wp_die( __("You probably need to go back to the <a href='wpmu-options.php'>options page</a>") );
 
 		update_site_option( "WPLANG", $_POST['WPLANG'] );
+		
 		if( is_email( $_POST['admin_email'] ) )
 			update_site_option( "admin_email", $_POST['admin_email'] );
-		$illegal_names = split( ' ', $_POST['illegal_names'] );
-		
+
+		$illegal_names = split( ' ', $_POST['illegal_names'] );		
 		foreach( (array) $illegal_names as $name ) {
 			$name = trim( $name );
 			if( $name != '' )
 				$names[] = trim( $name );
 		}
-		
 		update_site_option( "illegal_names", $names );
+		
 		update_site_option( "registration", $_POST['registration'] );
 		update_site_option( "registrationnotification", $_POST['registrationnotification'] );
-		
+
 		if( $_POST['limited_email_domains'] != '' ) {
-			update_site_option( "limited_email_domains", split( ' ', $_POST['limited_email_domains'] ) );
+			$limited_email_domains = str_replace( ' ', "\n", $_POST[ 'limited_email_domains' ] );
+			$limited_email_domains = split( "\n", stripslashes( $limited_email_domains ) );
+			foreach( (array) $limited_email_domains as $domain ) {
+				$limited_email[] = trim( $domain );
+			}
+			update_site_option( "limited_email_domains", $limited_email );
 		} else {
 			update_site_option( "limited_email_domains", '' );
 		}
 		
 		if( $_POST['banned_email_domains'] != '' ) {
-			$banned_email_domains = split( "\n", stripslashes($_POST['banned_email_domains']) );
+			$banned_email_domains = split( "\n", stripslashes( $_POST[ 'banned_email_domains' ] ) );
 			foreach( (array) $banned_email_domains as $domain ) {
 				$banned[] = trim( $domain );
 			}

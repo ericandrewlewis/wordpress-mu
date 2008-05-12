@@ -99,9 +99,11 @@ if (isset($_GET['updated'])) {
 			<tr valign="top">
 				<th scope="row"><?php _e('Limited Email Registrations') ?></th> 
 				<td>
-					<input name="limited_email_domains" type="text" id="limited_email_domains" style="width: 95%" value="<?php echo get_site_option('limited_email_domains') == '' ? '' : @implode( " ", get_site_option('limited_email_domains') ); ?>" size="45" />
+					<?php $limited_email_domains = get_site_option('limited_email_domains');
+					$limited_email_domains = str_replace( ' ', "\n", $limited_email_domains ); ?>
+					<textarea name="limited_email_domains" id="limited_email_domains" cols='40' rows='5'><?php echo $limited_email_domains == '' ? '' : @implode( "\n", $limited_email_domains ); ?></textarea>
 					<br />
-					<?php _e('If you want to limit blog registrations to certain domains. Separate domains by spaces.') ?>
+					<?php _e('If you want to limit blog registrations to certain domains. One domain per line.') ?>
 				</td> 
 			</tr> 
 			
