@@ -150,6 +150,30 @@ Please see this page for instructions on upgrading your install:
 http://codex.wordpress.org/Upgrading_WPMU
 
 
+PERFORMANCE
+===========
+WordPress MU has a caching framework which allows third party developers
+to create cache engines that improve performance. 
+There are two types of caching plugins available for WordPress. 
+
+1. Object Cache.
+These work by storing commonly accessed data in a rapid access storage
+container such as RAM or directly on the filesystem. 
+To install these plugins copy them into your wp-content folder.
+Memcached: http://dev.wp-plugins.org/browser/memcached/trunk/
+Filesystem: http://neosmart.net/dl.php?id=14
+Xcache: http://neosmart.net/dl.php?id=12
+eAccelerator: http://neosmart.net/dl.php?id=13
+
+2. Full page cache. 
+These work by storing complete web pages and are generally faster than 
+object cache plugins at the expense of less flexibility. On a busy
+WordPress MU site these may in fact slow down your server due to 
+limitations in how the cached files are stored. Clearing out the cached
+files on a regular basis will alleviate this problem. YMMV.
+WP Super Cache: http://ocaoimh.ie/wp-super-cache/
+
+
 Support Forum and Bug Reports
 =============================
 Please read http://codex.wordpress.org/Debugging_WPMU before
