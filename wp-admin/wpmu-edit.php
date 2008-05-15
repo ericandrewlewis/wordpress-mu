@@ -67,6 +67,7 @@ switch( $_GET['action'] ) {
 		update_site_option( "first_post", $_POST['first_post'] );
 		update_site_option( "welcome_email", $_POST['welcome_email'] );
 		update_site_option( "fileupload_maxk", $_POST['fileupload_maxk'] );
+		update_site_option( "admin_notice_feed", clean_url( $_POST['admin_notice_feed'] ) );
 
 		$site_admins = explode( ' ', str_replace( ",", " ", $_POST['site_admins'] ) );
 		if ( is_array( $site_admins ) ) {

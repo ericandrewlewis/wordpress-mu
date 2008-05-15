@@ -673,4 +673,40 @@ function profile_update_primary_blog() {
 	}
 }
 add_action( 'personal_options_update', 'profile_update_primary_blog' );
+
+function admin_notice_feed() {
+	global $current_user;
+	if( substr( $_SERVER[ 'PHP_SELF' ], -19 ) != '/wp-admin/index.php' )
+		return;
+
+	if( $_GET[ 'feed_dismiss' ] )
+		update_user_option( $current_user->id, 'admin_feed_dismiss', $_GET[ 'feed_dismiss' ], true );
+
+	$url = get_site_option( 'admin_notice_feed' );
+	if( $url == '' )
+		return;
+	include_once( ABSPATH . 'wp-includes/rss.php' );
+	$rss = @fetch_rss( $url );
+	if( isset($rss->items) && 1 <= count($rss->items) ) {
+		if( md5( $rss->items[0][ 'title' ] ) == get_user_option( 'admin_feed_dismiss', $current_user->id ) )
+			return;
+		$item = $rss->items[0];
+		$msg = "<h3>" . wp_specialchars( $item[ 'title' ] ) . "</h3>\n";
+		if ( isset($item['description']) )
+			$content = $item['description'];
+		elseif ( isset($item['summary']) )
+			$content = $item['summary'];
+		elseif ( isset($item['atom_content']) )
+			$content = $item['atom_content'];
+		else
+			$content = __( 'something' );
+		$content = wp_html_excerpt($content, 200) . ' ...';
+		$link = clean_url( strip_tags( $item['link'] ) );
+		$msg .= "<p>" . $content . " <a href='$link'>" . __( 'Read More' ) . "</a> <a href='index.php?feed_dismiss=" . md5( $item[ 'title' ] ) . "'>" . __( "Dismiss" ) . "</a></p>";
+		echo "<div class='updated fade'>$msg</div>";
+	} elseif( is_site_admin() ) {
+		echo "<div id='update-nag'>Your feed at " . wp_specialchars( $url ) . " is empty.</div>";
+	}
+}
+add_action( 'admin_notices', 'admin_notice_feed' );
 ?>

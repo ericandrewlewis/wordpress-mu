@@ -130,6 +130,13 @@ if (isset($_GET['updated'])) {
 				<th scope="row"><?php _e('Max upload file size') ?></th> 
 				<td><input name="fileupload_maxk" type="text" id="fileupload_maxk" value="<?php echo get_site_option('fileupload_maxk', 300) ?>" size="5" /> KB</td>
 			</tr> 
+			<tr valign="top"> 
+				<th scope="row"><?php _e('Admin Notice Feed') ?></th> 
+				<td><input name="admin_notice_feed" style="width: 95%" type="text" id="admin_notice_feed" value="<?php echo get_site_option( 'admin_notice_feed' ) ?>" size="80" /><br />
+				<?php _e( 'Display the latest post from this RSS or Atom feed on all blog dashboards. Leave blank to disable.' ); ?><br />
+				<?php if( get_site_option( 'admin_notice_feed' ) != 'http://' . $current_site->domain . $current_site->path . 'feed/' )
+					echo __( "A good one to use would be the feed from your main blog: " ) . 'http://' . $current_site->domain . $current_site->path . 'feed/'; ?></td>
+			</tr> 
 		</table>
 
 		<h3><?php _e('Administration Settings') ?></h3> 
