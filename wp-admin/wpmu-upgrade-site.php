@@ -19,7 +19,7 @@ echo '<h2>'.__('Upgrade Site').'</h2>';
 switch( $_GET['action'] ) {
 	case "upgrade":
 		$n = ( isset($_GET['n']) ) ? intval($_GET['n']) : 0;
-		
+
 		$blogs = $wpdb->get_results( "SELECT * FROM {$wpdb->blogs} WHERE site_id = '{$wpdb->siteid}' AND spam = '0' AND deleted = '0' AND archived = '0' ORDER BY registered DESC LIMIT {$n}, 5", ARRAY_A );
 		if( is_array( $blogs ) ) {
 			echo "<ul>";
@@ -57,7 +57,7 @@ switch( $_GET['action'] ) {
 			echo '<p>'.__('All Done!').'</p>';
 		}
 	break;
-	
+
 	default: ?>
 		<p><?php _e("You can upgrade all the blogs on your site through this page. It works by calling the upgrade script of each blog automatically. Hit the link below to upgrade."); ?></p>
 		<p><a class="button" href="wpmu-upgrade-site.php?action=upgrade"><?php _e("Upgrade Site"); ?></a></p>
