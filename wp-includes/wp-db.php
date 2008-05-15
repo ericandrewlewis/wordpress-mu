@@ -233,15 +233,10 @@ class wpdb {
 		if ( !$this->show_errors )
 			return false;
 
-		$str = htmlspecialchars($str, ENT_QUOTES);
-		$query = htmlspecialchars($this->last_query, ENT_QUOTES);
-
 		// If there is an error then take note of it
-		$msg = "WordPress database error: [$str]\n$query\n";
+		$msg = "WordPress database error: [$str]\n{$this->query}\n";
 		if( defined( 'ERRORLOGFILE' ) )
 			error_log( $msg, 3, CONSTANT( 'ERRORLOGFILE' ) );
-		else
-			error_log( $msg, 0 );
 		if( defined( 'DIEONDBERROR' ) )
 			die( $msg );
 	}
