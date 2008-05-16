@@ -359,7 +359,7 @@ switch( $_GET['action'] ) {
 
 		<form id="searchform" action="wpmu-blogs.php" method="get" style="position:absolute;right:0;top:0;">
 			<input type="hidden" name="action" value="blogs" />
-			<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes($s); ?>" size="17" />
+			<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes( wp_specialchars( $s, 1 ) ); ?>" size="17" />
 			<input type="submit" class="button" name="blog_name" value="<?php _e('Search blogs by name') ?>" />
 			<input type="submit" class="button" name="blog_id" value="<?php _e('by blog ID') ?>" />
 			<input type="submit" class="button" name="blog_ip" value="<?php _e('by IP address') ?>" />
