@@ -1138,6 +1138,7 @@ function wpmu_create_user( $user_name, $password, $email) {
 }
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
+	global $wp_object_cache;
 	$domain = sanitize_user( $domain );
 	$title = strip_tags( $title );
 	$user_id = (int) $user_id;
@@ -1151,6 +1152,7 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	if ( !defined("WP_INSTALLING") )
 		define( "WP_INSTALLING", true );
+	if( is_object( $wp_object_cache ) ) $wp_object_cache->cache_enabled = false;
 
 	if ( ! $blog_id = insert_blog($domain, $path, $site_id) )
 		return new WP_Error('insert_blog', __('Could not create blog.'));
