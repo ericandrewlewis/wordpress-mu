@@ -499,7 +499,7 @@ switch($action) {
 }
 ?>
 <br /><br />
-<div align='center'>
+<div style="text-align:center;">
 <a href="http://mu.wordpress.org/">WordPress &micro;</a> | <a href="http://mu.wordpress.org/forums/">Support Forums</a>
 </div>
 </body>
