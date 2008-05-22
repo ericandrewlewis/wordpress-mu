@@ -337,6 +337,7 @@ function switch_to_blog( $new_blog ) {
 
 	$wpdb->set_blog_id($new_blog);
 	$table_prefix = $wpdb->prefix;
+	$prev_blog_id = $blog_id;
 	$blog_id = $new_blog;
 
 	if( is_object( $wp_roles ) ) {
@@ -348,7 +349,7 @@ function switch_to_blog( $new_blog ) {
 	if ( is_object( $current_user ) )
 		$current_user->_init_caps();
 
-	do_action('switch_blog', $blog_id, array());
+	do_action('switch_blog', $blog_id, $prev_blog_id);
 	$switched = true;
 }
 
