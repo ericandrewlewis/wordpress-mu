@@ -352,7 +352,7 @@ function step2() {
 }
 
 function step3() {
-	global $wpdb, $current_site, $dirs, $wp_version;
+	global $wpdb, $current_site, $dirs, $wpmu_version;
 	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
 	if( $base != "/") {
 		$base .= "/";
@@ -440,7 +440,7 @@ Thanks!
 	<p>Thanks for installing WordPress &micro;!<br /><br />
 	
 	Donncha<br />
-	<code>wpmu version: <?php echo $wp_version ?></code></p>
+	<code>wpmu version: <?php echo $wpmu_version ?></code></p>
 	<?php
 }
 
