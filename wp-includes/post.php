@@ -694,7 +694,7 @@ function get_post_custom($post_id = 0) {
 	if ( ! wp_cache_get($post_id, 'post_meta') )
 		update_postmeta_cache($post_id);
 
-	return wp_cache_get($post_id, 'post_meta');
+	return (array)wp_cache_get($post_id, 'post_meta');
 }
 
 /**
