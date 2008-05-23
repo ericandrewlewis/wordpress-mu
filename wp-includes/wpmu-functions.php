@@ -391,7 +391,7 @@ function get_blogs_of_user( $id, $all = false ) {
 
 	$blogs = $match = array();
 	foreach ( (array) $user as $key => $value ) {
-		if ( strstr( $key, '_capabilities') && strstr( $key, 'wp_') ) {
+		if ( strstr( $key, '_capabilities') && strstr( $key, $wpdb->base_prefix) ) {
 			preg_match('/' . $wpdb->base_prefix . '(\d+)_capabilities/', $key, $match);
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) && ( $all == true || $all == false && ( $blog->archived == 0 && $blog->spam == 0 && $blog->deleted == 0 ) ) ) {
