@@ -322,7 +322,7 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 }
 
 function switch_to_blog( $new_blog ) {
-	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
+	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache, $switched_to;
 
 	if ( empty($new_blog) )
 		return;
@@ -339,6 +339,7 @@ function switch_to_blog( $new_blog ) {
 	$table_prefix = $wpdb->prefix;
 	$prev_blog_id = $blog_id;
 	$blog_id = $new_blog;
+	$switched_to = $blog_id;
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();
@@ -354,7 +355,7 @@ function switch_to_blog( $new_blog ) {
 }
 
 function restore_current_blog() {
-	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
+	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache, $switched_to;
 
 	if ( !$switched )
 		return;
@@ -367,6 +368,7 @@ function restore_current_blog() {
 	$prev_blog_id = $blog_id;
 	$blog_id = $blog;
 	$table_prefix = $wpdb->prefix;
+	$switched_to = $blog_id;
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();

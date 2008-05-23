@@ -203,9 +203,18 @@ function get_option( $setting ) {
 		return $pre;
 
 	if ( $switched != false || defined('WP_INSTALLING') != false ) {
-		wp_cache_delete($setting, 'options');
-		wp_cache_delete('notoptions', 'options');
-		wp_cache_delete('alloptions', 'options');
+		global $blog_id, $switched_to;
+		if( $switched_to != $blog_id && function_exists('error_log') ) {
+			$msg = "{$_SERVER[ 'HTTP_HOST' ]}{$_SERVER[ 'REQUEST_URI' ]} blog_id changed without calling switch_to_blog(). Current value: $blog_id";
+			if( defined( 'ERRORLOGFILE' ) ) {
+				error_log( $msg, 3, CONSTANT( 'ERRORLOGFILE' ) );
+			} else {
+				error_log( $msg );
+			}
+		}
+		//wp_cache_delete($setting, 'options');
+		//wp_cache_delete('notoptions', 'options');
+		//wp_cache_delete('alloptions', 'options');
 	}
 
 	// prevent non-existent options from triggering multiple queries
