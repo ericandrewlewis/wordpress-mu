@@ -1170,17 +1170,19 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	if ( is_array($meta) ) foreach ($meta as $key => $value) {
 		update_blog_status( $blog_id, $key, $value );
-		update_blog_option( $blog_id, $key, $value );
+		update_option( $blog_id, $key, $value );
 	}
 
-	add_blog_option( $blog_id, 'WPLANG', get_site_option( 'WPLANG' ) );
+	add_option( $blog_id, 'WPLANG', get_site_option( 'WPLANG' ) );
 
-	update_blog_option( $blog_id, 'blog_public', $meta['public'] );
+	update_option( $blog_id, 'blog_public', $meta['public'] );
 	delete_blog_option( $blog_id, 'public' );
 
 	if(get_usermeta( $user_id, 'primary_blog' ) == 1 )
 		update_usermeta( $user_id, 'primary_blog', $blog_id );
 
+
+	restore_current_blog();
 
 	do_action( 'wpmu_new_blog', $blog_id, $user_id );
 
@@ -1267,14 +1269,12 @@ function install_blog($blog_id, $blog_title = '') {
 	populate_roles();
 	$wp_roles->_init();
 	// fix url.
-	wp_cache_delete('notoptions', 'options');
-	wp_cache_delete('alloptions', 'options');
 	update_option('siteurl', $url);
 	update_option('home', $url);
 	update_option('fileupload_url', $url . "files" );
 	update_option('upload_path', "wp-content/blogs.dir/" . $blog_id . "/files");
 	update_option('blogname', $blog_title);
-
+	update_option('admin_email', '');
 	$wpdb->query("UPDATE $wpdb->options SET option_value = '' WHERE option_name = 'admin_email'");
 
 	// Default category
@@ -1300,6 +1300,9 @@ function install_blog($blog_id, $blog_title = '') {
 	// remove all perms
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."user_level'" );
 	$wpdb->query( "DELETE FROM ".$wpdb->usermeta." WHERE meta_key = '".$table_prefix."capabilities'" );
+
+	wp_cache_delete('notoptions', 'options');
+	wp_cache_delete('alloptions', 'options');
 
 	$wpdb->suppress_errors( false );
 }
