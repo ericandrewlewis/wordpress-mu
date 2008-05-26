@@ -111,7 +111,7 @@ function retrieve_password() {
 }
 
 function reset_password($key) {
-	global $wpdb;
+	global $wpdb, $current_site;
 
 	$key = preg_replace('/[^a-z0-9]/i', '', $key);
 
@@ -131,7 +131,7 @@ function reset_password($key) {
 	$message .= sprintf(__('Password: %s'), $new_pass) . "\r\n";
 	$message .= get_option('siteurl') . "/wp-login.php\r\n";
 
-	if (  !wp_mail($user->user_email, sprintf(__('[%s] Your new password'), 'WordPress.com'), $message) )
+	if (  !wp_mail($user->user_email, sprintf(__('[%s] Your new password'), $current_site->site_name), $message) )
 		die('<p>' . __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function...') . '</p>');
 
 	// send a copy of password change notification to the admin
