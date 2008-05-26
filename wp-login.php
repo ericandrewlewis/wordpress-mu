@@ -131,7 +131,7 @@ function reset_password($key) {
 	$message .= sprintf(__('Password: %s'), $new_pass) . "\r\n";
 	$message .= get_option('siteurl') . "/wp-login.php\r\n";
 
-	if (  !wp_mail($user->user_email, sprintf(__('[%s] Your new password'), get_option('blogname')), $message) )
+	if (  !wp_mail($user->user_email, sprintf(__('[%s] Your new password'), 'WordPress.com'), $message) )
 		die('<p>' . __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function...') . '</p>');
 
 	// send a copy of password change notification to the admin
