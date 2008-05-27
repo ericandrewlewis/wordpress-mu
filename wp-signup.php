@@ -15,7 +15,7 @@ if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_
 do_action("signup_header");
 
 function signuppageheaders() {
-	echo "<meta name='robots' content='noindex,nofollow'>\n";
+	echo "<meta name='robots' content='noindex,nofollow' />\n";
 }
 
 if( $current_blog->domain . $current_blog->path != $current_site->domain . $current_site->path ) {
