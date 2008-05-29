@@ -1168,8 +1168,6 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	add_user_to_blog($blog_id, $user_id, 'administrator');
 
-	restore_current_blog();
-
 	if ( is_array($meta) ) foreach ($meta as $key => $value) {
 		update_blog_status( $blog_id, $key, $value );
 		update_option( $blog_id, $key, $value );
