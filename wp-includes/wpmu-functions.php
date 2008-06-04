@@ -322,7 +322,7 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 }
 
 function switch_to_blog( $new_blog ) {
-	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache, $switched_to;
+	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
 
 	if ( empty($new_blog) )
 		return;
@@ -339,7 +339,6 @@ function switch_to_blog( $new_blog ) {
 	$table_prefix = $wpdb->prefix;
 	$prev_blog_id = $blog_id;
 	$blog_id = $new_blog;
-	$switched_to = $blog_id;
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();
@@ -355,7 +354,7 @@ function switch_to_blog( $new_blog ) {
 }
 
 function restore_current_blog() {
-	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache, $switched_to;
+	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
 
 	if ( !$switched )
 		return;
@@ -368,7 +367,6 @@ function restore_current_blog() {
 	$prev_blog_id = $blog_id;
 	$blog_id = $blog;
 	$table_prefix = $wpdb->prefix;
-	$switched_to = $blog_id;
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();
@@ -1141,7 +1139,6 @@ function wpmu_create_user( $user_name, $password, $email) {
 }
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
-	global $wp_object_cache;
 	$domain = sanitize_user( $domain );
 	$title = strip_tags( $title );
 	$user_id = (int) $user_id;
@@ -1155,7 +1152,6 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	if ( !defined("WP_INSTALLING") )
 		define( "WP_INSTALLING", true );
-	if( is_object( $wp_object_cache ) ) $wp_object_cache->cache_enabled = false;
 
 	if ( ! $blog_id = insert_blog($domain, $path, $site_id) )
 		return new WP_Error('insert_blog', __('Could not create blog.'));
