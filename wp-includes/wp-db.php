@@ -25,26 +25,35 @@ class wpdb {
 	var $queries;
 	var $prefix = '';
 	var $ready = false;
+	var $blogid = 0;
+	var $siteid = 0;
 
-	// Our tables
-	var $posts;
+	// Global tables
+	var $blogs;
+	var $signups;
+	var $site;
+	var $sitemeta;
 	var $users;
+	var $usermeta;
+	var $sitecategories;
+	var $global_tables = array('blogs', 'signups', 'site', 'sitemeta', 'users', 'usermeta', 'sitecategories', 'registration_log', 'blog_versions');
+
+	// Blog tables
+	var $posts;
 	var $categories;
 	var $post2cat;
 	var $comments;
 	var $links;
 	var $options;
 	var $postmeta;
-	var $usermeta;
 	var $terms;
 	var $term_taxonomy;
 	var $term_relationships;
-	var $tables = array('users', 'usermeta', 'posts', 'categories', 'post2cat', 'comments', 'links', 'link2cat', 'options',
+	var $blog_tables = array('posts', 'categories', 'post2cat', 'comments', 'links', 'link2cat', 'options',
 			'postmeta', 'terms', 'term_taxonomy', 'term_relationships');
+
 	var $charset;
 	var $collate;
-	var $blog_tables = array('posts', 'categories', 'post2cat', 'comments', 'links', 'link2cat', 'options', 'postmeta', 'terms', 'term_taxonomy', 'term_relationships');
-
 
 	/**
 	 * Connects to the database server and selects a database
@@ -106,14 +115,20 @@ class wpdb {
 	}
 
 	function set_prefix($prefix) {
-
 		if ( preg_match('|[^a-z0-9_]|i', $prefix) )
 			return new WP_Error('invalid_db_prefix', 'Invalid database prefix'); // No gettext here
 
-		$old_prefix = $this->prefix;
-		$this->prefix = $prefix;
+		$old_prefix = $this->base_prefix;
+		$this->base_prefix = $prefix;
+		foreach ( $this->global_tables as $table )
+			$this->$table = $prefix . $table;
 
-		foreach ( $this->tables as $table )
+		if ( empty($this->blogid) )
+			return $old_prefix;
+
+		$this->prefix = $this->base_prefix . $this->blogid . '_';
+
+		foreach ( $this->blog_tables as $table )
 			$this->$table = $this->prefix . $table;
 
 		if ( defined('CUSTOM_USER_TABLE') )

@@ -4,7 +4,6 @@ if( $current_site && $current_blog )
 
 // depreciated
 $wpmuBaseTablePrefix = $table_prefix;
-$wpdb->base_prefix = $table_prefix;
 
 $domain = addslashes( $_SERVER['HTTP_HOST'] );
 if( substr( $domain, 0, 4 ) == 'www.' )
@@ -207,7 +206,5 @@ function is_installed() {
 		die( "<h1>Fatal Error</h1> " . $msg );
 	}
 }
-
-$table_prefix = $table_prefix . $blog_id . '_';
 
 ?>

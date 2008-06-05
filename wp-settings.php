@@ -201,51 +201,11 @@ if ( !defined('PLUGINDIR') )
 
 require (ABSPATH . WPINC . '/compat.php');
 require (ABSPATH . WPINC . '/functions.php');
-require (ABSPATH . WPINC . '/classes.php');
 
 require_wp_db();
-
+$wpdb->set_prefix($table_prefix); // set up global tables
 if ( !empty($wpdb->error) )
 	dead_db();
-
-$prefix = $wpdb->set_prefix($table_prefix);
-
-if ( is_wp_error($prefix) )
-	wp_die('<strong>ERROR</strong>: <code>$table_prefix</code> in <code>wp-config.php</code> can only contain numbers, letters, and underscores.');
-// Table names. prefix is bare "wp_"
-$wpdb->blogs		= $wpdb->prefix . 'blogs';
-$wpdb->site		= $wpdb->prefix . 'site';
-$wpdb->sitemeta		= $wpdb->prefix . 'sitemeta';
-$wpdb->sitecategories	= $wpdb->prefix . 'sitecategories';
-$wpdb->signups		= $wpdb->prefix . 'signups';
-$wpdb->registration_log	= $wpdb->prefix . 'registration_log';
-$wpdb->blog_versions	= $wpdb->prefix . 'blog_versions';
-
-if( defined( 'SUNRISE' ) )
-	include_once( ABSPATH . 'wp-content/sunrise.php' );
-
-require_once ( ABSPATH . 'wpmu-settings.php' );
-$prefix = $table_prefix;
-$wpdb->prefix           = $table_prefix; // prefix now includes a blog_id
-$wpdb->posts            = $wpdb->prefix . 'posts';
-$wpdb->categories       = $wpdb->prefix . 'categories';
-$wpdb->post2cat         = $wpdb->prefix . 'post2cat';
-$wpdb->comments         = $wpdb->prefix . 'comments';
-$wpdb->link2cat         = $wpdb->prefix . 'link2cat';
-$wpdb->links            = $wpdb->prefix . 'links';
-$wpdb->linkcategories   = $wpdb->prefix . 'linkcategories';
-$wpdb->options          = $wpdb->prefix . 'options';
-$wpdb->postmeta         = $wpdb->prefix . 'postmeta';
-$wpdb->terms            = $wpdb->prefix . 'terms';
-$wpdb->term_taxonomy    = $wpdb->prefix . 'term_taxonomy';
-$wpdb->term_relationships = $wpdb->prefix . 'term_relationships';
-$wpdb->siteid           = $current_blog->site_id;
-$wpdb->blogid           = $current_blog->blog_id;
-
-if ( defined('CUSTOM_USER_TABLE') )
-	$wpdb->users = CUSTOM_USER_TABLE;
-if ( defined('CUSTOM_USER_META_TABLE') )
-	$wpdb->usermeta = CUSTOM_USER_META_TABLE;
 
 if ( !defined( 'WP_INSTALLING' ) && file_exists(ABSPATH . 'wp-content/object-cache.php') )
 	require_once (ABSPATH . 'wp-content/object-cache.php');
@@ -254,15 +214,30 @@ else
 
 wp_cache_init();
 
+if( defined( 'SUNRISE' ) )
+	include_once( ABSPATH . 'wp-content/sunrise.php' );
+
+require_once ( ABSPATH . 'wpmu-settings.php' );
+$wpdb->blogid           = $current_blog->blog_id;
+$wpdb->siteid           = $current_blog->site_id;
+$wpdb->set_prefix($table_prefix); // set up blog tables
+$table_prefix = $table_prefix . $blog_id . '_';
+
+wp_cache_init(); // need to init cache again after blog_id is set
+if ( defined('CUSTOM_USER_TABLE') )
+	$wpdb->users = CUSTOM_USER_TABLE;
+if ( defined('CUSTOM_USER_META_TABLE') )
+	$wpdb->usermeta = CUSTOM_USER_META_TABLE;
+
 if( !defined( "UPLOADS" ) )
 	define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files/" );
-
-require (ABSPATH . WPINC . '/plugin.php');
-require (ABSPATH . WPINC . '/default-filters.php');
 
 if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
 	return;
 
+require (ABSPATH . WPINC . '/classes.php');
+require (ABSPATH . WPINC . '/plugin.php');
+require (ABSPATH . WPINC . '/default-filters.php');
 include_once(ABSPATH . WPINC . '/streams.php');
 include_once(ABSPATH . WPINC . '/gettext.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
