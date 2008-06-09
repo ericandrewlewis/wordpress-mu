@@ -232,12 +232,13 @@ if ( defined('CUSTOM_USER_META_TABLE') )
 if( !defined( "UPLOADS" ) )
 	define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files/" );
 
-if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
-	return;
-
 require (ABSPATH . WPINC . '/classes.php');
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
+
+if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
+	return;
+
 include_once(ABSPATH . WPINC . '/streams.php');
 include_once(ABSPATH . WPINC . '/gettext.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
