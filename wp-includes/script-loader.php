@@ -80,8 +80,8 @@ class WP_Scripts {
 		$this->add( 'dimensions', '/wp-includes/js/jquery/jquery.dimensions.min.js', array('jquery'), '1.1.2');
 		$this->add( 'suggest', '/wp-includes/js/jquery/suggest.js', array('dimensions'), '1.1');
 		$this->add( 'schedule', '/wp-includes/js/jquery/jquery.schedule.js', array('jquery'), '20');
-		$this->add( 'thickbox', '/wp-includes/js/thickbox/thickbox.js', array('jquery'), '3.1');
-		$this->add( 'swfupload', '/wp-includes/js/swfupload/swfupload.js', false, '2.0.2');
+		$this->add( 'thickbox', '/wp-includes/js/thickbox/thickbox.js', array('jquery'), '3.1-20080430');
+		$this->add( 'swfupload', '/wp-includes/js/swfupload/swfupload.js', false, '2.0.2-20080430');
 		$this->add( 'swfupload-degrade', '/wp-includes/js/swfupload/plugins/swfupload.graceful_degradation.js', array('swfupload'), '2.0.2');
 		$this->localize( 'swfupload-degrade', 'uploadDegradeOptions', array(
 			'is_lighttpd_before_150' => is_lighttpd_before_150(),
@@ -144,7 +144,7 @@ class WP_Scripts {
 				'save' => __('Save'),
 				'cancel' => __('Cancel'),
 			) );
-			$this->add( 'post', '/wp-admin/js/post.js', array('suggest', 'jquery-ui-tabs', 'wp-lists', 'postbox', 'slug'), '20080519' );
+			$this->add( 'post', '/wp-admin/js/post.js', array('suggest', 'jquery-ui-tabs', 'wp-lists', 'postbox', 'slug'), '20080422' );
 			$this->localize( 'post', 'postL10n', array(
 				'tagsUsed' =>  __('Tags used on this post:'),
 				'add' => attribute_escape(__('Add')),
@@ -164,7 +164,7 @@ class WP_Scripts {
 					'cancel' => __('Cancel'),
 					'edit' => __('Edit'),
 				) );
-			$this->add( 'media-upload', '/wp-admin/js/media-upload.js', false, '20080109' );
+			$this->add( 'media-upload', '/wp-admin/js/media-upload.js', false, '20080430' );
 			$this->localize( 'upload', 'uploadL10n', array(
 				'browseTitle' => attribute_escape(__('Browse your files')),
 				'back' => __('&laquo; Back'),
@@ -187,7 +187,7 @@ class WP_Scripts {
 				'saveText' => attribute_escape(__('Save &raquo;')),
 				'confirmText' => __("Are you sure you want to delete the file '%title%'?\nClick ok to delete or cancel to go back.")
 			) );
-			$this->add( 'admin-widgets', '/wp-admin/js/widgets.js', array( 'interface' ), '20080407c' );
+			$this->add( 'admin-widgets', '/wp-admin/js/widgets.js', array( 'interface' ), '20080503' );
 			$this->localize( 'admin-widgets', 'widgetsL10n', array(
 				'add' => __('Add'),
 				'edit' => __('Edit'),

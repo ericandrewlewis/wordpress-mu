@@ -1058,14 +1058,14 @@ function wp_get_object_terms($object_ids, $taxonomies, $args = array()) {
 	if ( count($taxonomies) > 1 ) {
 		foreach ( $taxonomies as $index => $taxonomy ) {
 			$t = get_taxonomy($taxonomy);
-			if ( is_array($t->args) && $args != array_merge($args, $t->args) ) {
+			if ( isset($t->args) && is_array($t->args) && $args != array_merge($args, $t->args) ) {
 				unset($taxonomies[$index]);
 				$terms = array_merge($terms, wp_get_object_terms($object_ids, $taxonomy, array_merge($args, $t->args)));
 			}
 		}
 	} else {
 		$t = get_taxonomy($taxonomies[0]);
-		if ( is_array($t->args) )
+		if ( isset($t->args) && is_array($t->args) )
 			$args = array_merge($args, $t->args);
 	}
 
@@ -1199,14 +1199,16 @@ function wp_insert_term( $term, $taxonomy, $args = array() ) {
 	if ( ! $term_id = is_term($slug) ) {
 		$maxterm = $wpdb->get_var( "SELECT max(term_id) FROM {$wpdb->terms}" );
 		$term_id = mt_rand( $maxterm+100, $maxterm+4000 );
-		$wpdb->query("INSERT INTO $wpdb->terms (term_id, name, slug, term_group) VALUES ('$term_id', '$name', '$slug', '$term_group')");
+		if ( false === $wpdb->insert( $wpdb->terms, compact( 'term_id', 'name', 'slug', 'term_group' ) ) )
+			return new WP_Error('db_insert_error', __('Could not insert term into the database'), $wpdb->last_error);
 	} else if ( is_taxonomy_hierarchical($taxonomy) && !empty($parent) ) {
 		// If the taxonomy supports hierarchy and the term has a parent, make the slug unique
 		// by incorporating parent slugs.
 		$slug = wp_unique_term_slug($slug, (object) $args);
 		$maxterm = $wpdb->get_var( "SELECT max(term_id) FROM {$wpdb->terms}" );
 		$term_id = mt_rand( $maxterm+100, $maxterm+4000 );
-		$wpdb->query("INSERT INTO $wpdb->terms (term_id, name, slug, term_group) VALUES ('$term_id', '$name', '$slug', '$term_group')");
+		if ( false === $wpdb->insert( $wpdb->terms, compact( 'term_id','name', 'slug', 'term_group' ) ) )
+			return new WP_Error('db_insert_error', __('Could not insert term into the database'), $wpdb->last_error);
 	}
 
 	if ( empty($slug) ) {

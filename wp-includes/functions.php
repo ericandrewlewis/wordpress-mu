@@ -1431,6 +1431,7 @@ function _config_wp_siteurl( $url = '' ) {
 	return $url;
 }
 
+
 function _mce_set_direction( $input ) {
 	global $wp_locale;
 
@@ -1442,6 +1443,7 @@ function _mce_set_direction( $input ) {
 
 	return $input;
 }
+
 
 function smilies_init() {
 	global $wpsmiliestrans, $wp_smiliessearch, $wp_smiliesreplace;
