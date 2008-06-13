@@ -157,6 +157,7 @@ if( $blog_id == false ) {
 	    // default to using the "main" blog.
 	    $blog_id = 1;
 	}
+	$current_blog->blog_id = $blog_id;
     } else {
 	$check = $wpdb->get_results( "SELECT * FROM $wpdb->site" );
 	if( $check == false ) {
