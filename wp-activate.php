@@ -1,6 +1,7 @@
 <?php
 define( "WP_INSTALLING", true );
 require ('wp-config.php');
+require( 'wp-blog-header.php' );
 require_once( ABSPATH . WPINC . '/registration.php');
 
 if( is_object( $wp_object_cache ) ) $wp_object_cache->cache_enabled = false;
