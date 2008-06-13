@@ -839,6 +839,9 @@ function human_time_diff( $from, $to = '' ) {
 function wp_trim_excerpt($text) { // Fakes an excerpt if needed
 	if ( '' == $text ) {
 		$text = get_the_content('');
+		
+		$text = strip_shortcodes( $text ); 
+		
 		$text = apply_filters('the_content', $text);
 		$text = str_replace(']]>', ']]&gt;', $text);
 		$text = strip_tags($text);
@@ -1129,6 +1132,10 @@ function wp_richedit_pre($text) {
 	$output = str_replace('&lt;', '&amp;lt;', $output);
 	$output = str_replace('&gt;', '&amp;gt;', $output);
 
+	// These should be entities too
+	$output = str_replace('<', '&lt;', $output);
+	$output = str_replace('>', '&gt;', $output);
+	
 	return apply_filters('richedit_pre', $output);
 }
 

@@ -241,7 +241,7 @@ function get_comment_count( $post_id = 0 ) {
 
 	$where = '';
 	if ( $post_id > 0 ) {
-		$where = "WHERE comment_post_ID = {$post_id}";
+		$where = $wpdb->prepare("WHERE comment_post_ID = %d", $post_id);
 	}
 
 	$totals = (array) $wpdb->get_results("
@@ -344,7 +344,7 @@ function wp_allow_comment($commentdata) {
 		$post_author = $wpdb->get_var($wpdb->prepare("SELECT post_author FROM $wpdb->posts WHERE ID = %d LIMIT 1", $comment_post_ID));
 	}
 
-	if ( $userdata && ( $user_id == $post_author || $user->has_cap('level_9') ) ) {
+	if ( $userdata && ( $user_id == $post_author || $user->has_cap('moderate_comments') ) ) {
 		// The author and the admins get respect.
 		$approved = 1;
 	 } else {
@@ -379,7 +379,7 @@ function check_comment_flood_db( $ip, $email, $date ) {
 	global $wpdb;
 	if ( current_user_can( 'manage_options' ) )
 		return; // don't throttle admins
-	if ( $lasttime = $wpdb->get_var("SELECT comment_date_gmt FROM $wpdb->comments WHERE comment_author_IP = '$ip' OR comment_author_email = '$email' ORDER BY comment_date DESC LIMIT 1") ) {
+	if ( $lasttime = $wpdb->get_var( $wpdb->prepare("SELECT comment_date_gmt FROM $wpdb->comments WHERE comment_author_IP = %s OR comment_author_email = %s ORDER BY comment_date DESC LIMIT 1", $ip, $email) ) ) {
 		$time_lastcomment = mysql2date('U', $lasttime);
 		$time_newcomment  = mysql2date('U', $date);
 		$flood_die = apply_filters('comment_flood_filter', false, $time_lastcomment, $time_newcomment);
@@ -448,29 +448,38 @@ function wp_blacklist_check($author, $email, $url, $comment, $user_ip, $user_age
 	return false;
 }
 
-function wp_count_comments() {
+function wp_count_comments( $post_id = 0 ) {
 	global $wpdb;
 
-	$count = wp_cache_get('comments', 'counts');
+	$post_id = (int) $post_id;
+
+	$count = wp_cache_get("comments-{$post_id}", 'counts');
 
 	if ( false !== $count )
 		return $count;
 
-	$count = $wpdb->get_results( "SELECT comment_approved, COUNT( * ) AS num_comments FROM {$wpdb->comments} GROUP BY comment_approved", ARRAY_A );
+	$where = '';
+	if( $post_id > 0 )
+		$where = $wpdb->prepare( "WHERE comment_post_ID = %d", $post_id );
 
+	$count = $wpdb->get_results( "SELECT comment_approved, COUNT( * ) AS num_comments FROM {$wpdb->comments} {$where} GROUP BY comment_approved", ARRAY_A );
+
+	$total = 0;
 	$stats = array( );
 	$approved = array('0' => 'moderated', '1' => 'approved', 'spam' => 'spam');
 	foreach( (array) $count as $row_num => $row ) {
+		$total += $row['num_comments'];
 		$stats[$approved[$row['comment_approved']]] = $row['num_comments'];
 	}
 
+	$stats['total_comments'] = $total;
 	foreach ( $approved as $key ) {
 		if ( empty($stats[$key]) )
 			$stats[$key] = 0;
 	}
 
 	$stats = (object) $stats;
-	wp_cache_set('comments', $stats, 'counts');
+	wp_cache_set("comments-{$post_id}", $stats, 'counts');
 
 	return $stats;
 }
@@ -495,7 +504,7 @@ function wp_delete_comment($comment_id) {
 
 	$comment = get_comment($comment_id);
 
-	if ( ! $wpdb->query("DELETE FROM $wpdb->comments WHERE comment_ID='$comment_id' LIMIT 1") )
+	if ( ! $wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->comments WHERE comment_ID = %d LIMIT 1", $comment_id) ) )
 		return false;
 
 	$post_id = $comment->comment_post_ID;
@@ -578,7 +587,7 @@ function wp_get_current_commenter() {
  */
 function wp_insert_comment($commentdata) {
 	global $wpdb;
-	extract($commentdata, EXTR_SKIP);
+	extract(stripslashes_deep($commentdata), EXTR_SKIP);
 
 	if ( ! isset($comment_author_IP) )
 		$comment_author_IP = '';
@@ -593,11 +602,10 @@ function wp_insert_comment($commentdata) {
 	if ( ! isset($user_id) )
 		$user_id = 0;
 
-	$result = $wpdb->query("INSERT INTO $wpdb->comments
+	$result = $wpdb->query( $wpdb->prepare("INSERT INTO $wpdb->comments
 	(comment_post_ID, comment_author, comment_author_email, comment_author_url, comment_author_IP, comment_date, comment_date_gmt, comment_content, comment_approved, comment_agent, comment_type, comment_parent, user_id)
-	VALUES
-	('$comment_post_ID', '$comment_author', '$comment_author_email', '$comment_author_url', '$comment_author_IP', '$comment_date', '$comment_date_gmt', '$comment_content', '$comment_approved', '$comment_agent', '$comment_type', '$comment_parent', '$user_id')
-	");
+	VALUES (%d, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %d, %d)",
+	$comment_post_ID, $comment_author, $comment_author_email, $comment_author_url, $comment_author_IP, $comment_date, $comment_date_gmt, $comment_content, $comment_approved, $comment_agent, $comment_type, $comment_parent, $user_id) );
 
 	$id = (int) $wpdb->insert_id;
 
@@ -722,18 +730,17 @@ function wp_set_comment_status($comment_id, $comment_status) {
 
 	switch ( $comment_status ) {
 		case 'hold':
-			$query = "UPDATE $wpdb->comments SET comment_approved='0' WHERE comment_ID='$comment_id' LIMIT 1";
+			$query = $wpdb->prepare("UPDATE $wpdb->comments SET comment_approved='0' WHERE comment_ID = %d LIMIT 1", $comment_id);
 			break;
 		case 'approve':
-			$query = "UPDATE $wpdb->comments SET comment_approved='1' WHERE comment_ID='$comment_id' LIMIT 1";
+			$query = $wpdb->prepare("UPDATE $wpdb->comments SET comment_approved='1' WHERE comment_ID = %d LIMIT 1", $comment_id);
 			if ( get_option('comments_notify') ) {
 				$comment = get_comment($comment_id);
 				wp_notify_postauthor($comment_id, $comment->comment_type);
 			}
-
 			break;
 		case 'spam':
-			$query = "UPDATE $wpdb->comments SET comment_approved='spam' WHERE comment_ID='$comment_id' LIMIT 1";
+			$query = $wpdb->prepare("UPDATE $wpdb->comments SET comment_approved='spam' WHERE comment_ID = %d LIMIT 1", $comment_id);
 			break;
 		case 'delete':
 			return wp_delete_comment($comment_id);
@@ -781,22 +788,29 @@ function wp_update_comment($commentarr) {
 	$commentarr = wp_filter_comment( $commentarr );
 
 	// Now extract the merged array.
-	extract($commentarr, EXTR_SKIP);
+	extract(stripslashes_deep($commentarr), EXTR_SKIP);
 
 	$comment_content = apply_filters('comment_save_pre', $comment_content);
 
 	$comment_date_gmt = get_gmt_from_date($comment_date);
 
-	$wpdb->query(
-		"UPDATE $wpdb->comments SET
-			comment_content      = '$comment_content',
-			comment_author       = '$comment_author',
-			comment_author_email = '$comment_author_email',
-			comment_approved     = '$comment_approved',
-			comment_author_url   = '$comment_author_url',
-			comment_date         = '$comment_date',
-			comment_date_gmt     = '$comment_date_gmt'
-		WHERE comment_ID = $comment_ID" );
+	$wpdb->query( $wpdb->prepare("UPDATE $wpdb->comments SET
+			comment_content      = %s,
+			comment_author       = %s,
+			comment_author_email = %s,
+			comment_approved     = %s,
+			comment_author_url   = %s,
+			comment_date         = %s,
+			comment_date_gmt     = %s
+		WHERE comment_ID = %d",
+			$comment_content,
+			$comment_author,
+			$comment_author_email,
+			$comment_approved,
+			$comment_author_url,
+			$comment_date,
+			$comment_date_gmt,
+			$comment_ID) );
 
 	$rval = $wpdb->rows_affected;
 
@@ -892,8 +906,8 @@ function wp_update_comment_count_now($post_id) {
 		return false;
 
 	$old = (int) $post->comment_count;
-	$new = (int) $wpdb->get_var("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_post_ID = '$post_id' AND comment_approved = '1'");
-	$wpdb->query("UPDATE $wpdb->posts SET comment_count = '$new' WHERE ID = '$post_id'");
+	$new = (int) $wpdb->get_var( $wpdb->prepare("SELECT COUNT(*) FROM $wpdb->comments WHERE comment_post_ID = %d AND comment_approved = '1'", $post_id) );
+	$wpdb->query( $wpdb->prepare("UPDATE $wpdb->posts SET comment_count = %d WHERE ID = %d", $new, $post_id) );
 
 	if ( 'page' == $post->post_type )
 		clean_page_cache( $post_id );
@@ -987,18 +1001,22 @@ function discover_pingback_server_uri($url, $timeout_bytes = 2048) {
 			$pingback_server_url_len = $pingback_href_end - $pingback_href_start;
 			$pingback_server_url = substr($contents, $pingback_href_start, $pingback_server_url_len);
 			// We may find rel="pingback" but an incomplete pingback URL
-			if ( $pingback_server_url_len > 0 ) // We got it!
+			if ( $pingback_server_url_len > 0 ) { // We got it!
+				fclose($fp);
 				return $pingback_server_url;
+			}
 		}
 		$byte_count += strlen($line);
 		if ( $byte_count > $timeout_bytes ) {
 			// It's no use going further, there probably isn't any pingback
 			// server to find in this file. (Prevents loading large files.)
+			fclose($fp);
 			return false;
 		}
 	}
 
 	// We didn't find anything.
+	fclose($fp);
 	return false;
 }
 
@@ -1021,7 +1039,7 @@ function do_all_pings() {
 
 	// Do Enclosures
 	while ($enclosure = $wpdb->get_row("SELECT * FROM {$wpdb->posts}, {$wpdb->postmeta} WHERE {$wpdb->posts}.ID = {$wpdb->postmeta}.post_id AND {$wpdb->postmeta}.meta_key = '_encloseme' LIMIT 1")) {
-		$wpdb->query("DELETE FROM {$wpdb->postmeta} WHERE post_id = {$enclosure->ID} AND meta_key = '_encloseme';");
+		$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->postmeta} WHERE post_id = %d AND meta_key = '_encloseme';", $enclosure->ID) );
 		do_enclose($enclosure->post_content, $enclosure->ID);
 	}
 
@@ -1048,11 +1066,11 @@ function do_all_pings() {
 function do_trackbacks($post_id) {
 	global $wpdb;
 
-	$post = $wpdb->get_row("SELECT * FROM $wpdb->posts WHERE ID = $post_id");
+	$post = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->posts WHERE ID = %d", $post_id) );
 	$to_ping = get_to_ping($post_id);
 	$pinged  = get_pung($post_id);
 	if ( empty($to_ping) ) {
-		$wpdb->query("UPDATE $wpdb->posts SET to_ping = '' WHERE ID = '$post_id'");
+		$wpdb->query( $wpdb->prepare("UPDATE $wpdb->posts SET to_ping = '' WHERE ID = %d", $post_id) );
 		return;
 	}
 
@@ -1073,7 +1091,7 @@ function do_trackbacks($post_id) {
 				trackback($tb_ping, $post_title, $excerpt, $post_id);
 				$pinged[] = $tb_ping;
 			} else {
-				$wpdb->query("UPDATE $wpdb->posts SET to_ping = TRIM(REPLACE(to_ping, '$tb_ping', '')) WHERE ID = '$post_id'");
+				$wpdb->query( $wpdb->prepare("UPDATE $wpdb->posts SET to_ping = TRIM(REPLACE(to_ping, '$tb_ping', '')) WHERE ID = %d", $post_id) );
 			}
 		}
 	}
@@ -1238,8 +1256,8 @@ function trackback($trackback_url, $title, $excerpt, $ID) {
 	@fclose($fs);
 
 	$tb_url = addslashes( $tb_url );
-	$wpdb->query("UPDATE $wpdb->posts SET pinged = CONCAT(pinged, '\n', '$tb_url') WHERE ID = '$ID'");
-	return $wpdb->query("UPDATE $wpdb->posts SET to_ping = TRIM(REPLACE(to_ping, '$tb_url', '')) WHERE ID = '$ID'");
+	$wpdb->query( $wpdb->prepare("UPDATE $wpdb->posts SET pinged = CONCAT(pinged, '\n', '$tb_url') WHERE ID = %d", $ID) );
+	return $wpdb->query( $wpdb->prepare("UPDATE $wpdb->posts SET to_ping = TRIM(REPLACE(to_ping, '$tb_url', '')) WHERE ID = %d", $ID) );
 }
 
 /**

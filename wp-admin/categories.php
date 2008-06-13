@@ -126,6 +126,7 @@ endif; ?>
 <?php endif; ?>
 
 <p id="post-search">
+	<label class="hidden" for="post-search-input"><?php _e('Search Categories'); ?>:</label>
 	<input type="text" id="post-search-input" name="s" value="<?php echo attribute_escape(stripslashes($_GET['s'])); ?>" />
 	<input type="submit" value="<?php _e( 'Search Categories' ); ?>" class="button" />
 </p>
@@ -147,7 +148,7 @@ endif; ?>
 <table class="widefat">
 	<thead>
 	<tr>
-		<th scope="col" class="check-column"><input type="checkbox" onclick="checkAll(document.getElementById('posts-filter'));" /></th>
+		<th scope="col" class="check-column"><input type="checkbox" /></th>
         <th scope="col"><?php _e('Name') ?></th>
         <th scope="col"><?php _e('Description') ?></th>
         <th scope="col" class="num"><?php _e('Posts') ?></th>

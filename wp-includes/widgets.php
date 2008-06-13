@@ -95,6 +95,8 @@ function register_sidebar_widget($name, $output_callback, $classname = '') {
 function wp_register_sidebar_widget($id, $name, $output_callback, $options = array()) {
 	global $wp_registered_widgets;
 
+	$id = strtolower($id);
+
 	if ( empty($output_callback) ) {
 		unset($wp_registered_widgets[$id]);
 		return;
@@ -164,6 +166,8 @@ function register_widget_control($name, $control_callback, $width = '', $height 
  */
 function wp_register_widget_control($id, $name, $control_callback, $options = array()) {
 	global $wp_registered_widget_controls;
+	
+	$id = strtolower($id);
 
 	if ( empty($control_callback) ) {
 		unset($wp_registered_widget_controls[$id]);
@@ -306,9 +310,9 @@ function wp_get_sidebars_widgets($update = true) {
 					$_sidebars_widgets[$index][$i] = $id;
 					continue;
 				}
-				
+
 				$found = false;
-				
+
 				foreach ( $wp_registered_widgets as $widget_id => $widget ) {
 					if ( strtolower($widget['name']) == strtolower($name) ) {
 						$_sidebars_widgets[$index][$i] = $widget['id'];
@@ -320,10 +324,10 @@ function wp_get_sidebars_widgets($update = true) {
 						break;
 					}
 				}
-				
+
 				if ( $found )
 					continue;
-				
+
 				unset($_sidebars_widgets[$index][$i]);
 			}
 			$_sidebars_widgets['array_version'] = 2;
@@ -381,7 +385,7 @@ function wp_widget_pages( $args ) {
 	extract( $args );
 	$options = get_option( 'widget_pages' );
 
-	$title = empty( $options['title'] ) ? __( 'Pages' ) : $options['title'];
+	$title = empty( $options['title'] ) ? __( 'Pages' ) : apply_filters('widget_title', $options['title']);
 	$sortby = empty( $options['sortby'] ) ? 'menu_order' : $options['sortby'];
 	$exclude = empty( $options['exclude'] ) ? '' : $options['exclude'];
 
@@ -461,6 +465,7 @@ function wp_widget_search($args) {
 		<?php echo $before_widget; ?>
 			<form id="searchform" method="get" action="<?php bloginfo('home'); ?>">
 			<div>
+			<label class="hidden" for="s"><?php _e('Search for:'); ?></label>
 			<input type="text" name="s" id="s" size="15" /><br />
 			<input type="submit" value="<?php echo attribute_escape(__('Search')); ?>" />
 			</div>
@@ -474,7 +479,7 @@ function wp_widget_archives($args) {
 	$options = get_option('widget_archives');
 	$c = $options['count'] ? '1' : '0';
 	$d = $options['dropdown'] ? '1' : '0';
-	$title = empty($options['title']) ? __('Archives') : $options['title'];
+	$title = empty($options['title']) ? __('Archives') : apply_filters('widget_title', $options['title']);
 
 	echo $before_widget;
 	echo $before_title . $title . $after_title;
@@ -522,7 +527,7 @@ function wp_widget_archives_control() {
 function wp_widget_meta($args) {
 	extract($args);
 	$options = get_option('widget_meta');
-	$title = empty($options['title']) ? __('Meta') : $options['title'];
+	$title = empty($options['title']) ? __('Meta') : apply_filters('widget_title', $options['title']);
 ?>
 		<?php echo $before_widget; ?>
 			<?php echo $before_title . $title . $after_title; ?>
@@ -556,7 +561,7 @@ function wp_widget_meta_control() {
 function wp_widget_calendar($args) {
 	extract($args);
 	$options = get_option('widget_calendar');
-	$title = $options['title'];
+	$title = apply_filters('widget_title', $options['title']);
 	if ( empty($title) )
 		$title = '&nbsp;';
 	echo $before_widget . $before_title . $title . $after_title;
@@ -593,7 +598,7 @@ function wp_widget_text($args, $widget_args = 1) {
 	if ( !isset($options[$number]) )
 		return;
 
-	$title = $options[$number]['title'];
+	$title = apply_filters('widget_title', $options[$number]['title']);
 	$text = apply_filters( 'widget_text', $options[$number]['text'] );
 ?>
 		<?php echo $before_widget; ?>
@@ -705,7 +710,7 @@ function wp_widget_categories($args, $widget_args = 1) {
 	$h = $options[$number]['hierarchical'] ? '1' : '0';
 	$d = $options[$number]['dropdown'] ? '1' : '0';
 
-	$title = empty($options[$number]['title']) ? __('Categories') : $options[$number]['title'];
+	$title = empty($options[$number]['title']) ? __('Categories') : apply_filters('widget_title', $options[$number]['title']);
 
 	echo $before_widget;
 	echo $before_title . $title . $after_title;
@@ -733,7 +738,10 @@ function wp_widget_categories($args, $widget_args = 1) {
 	} else {
 ?>
 		<ul>
-		<?php wp_list_categories($cat_args . '&title_li='); ?>
+		<?php 
+			$cat_args['title_li'] = '';
+			wp_list_categories($cat_args); 
+		?>
 		</ul>
 <?php
 	}
@@ -891,7 +899,7 @@ function wp_widget_recent_entries($args) {
 
 	extract($args);
 	$options = get_option('widget_recent_entries');
-	$title = empty($options['title']) ? __('Recent Posts') : $options['title'];
+	$title = empty($options['title']) ? __('Recent Posts') : apply_filters('widget_title', $options['title']);
 	if ( !$number = (int) $options['number'] )
 		$number = 10;
 	else if ( $number < 1 )
@@ -899,7 +907,7 @@ function wp_widget_recent_entries($args) {
 	else if ( $number > 15 )
 		$number = 15;
 
-	$r = new WP_Query("showposts=$number&what_to_show=posts&nopaging=0&post_status=publish");
+	$r = new WP_Query(array('showposts' => $number, 'what_to_show' => 'posts', 'nopaging' => 0, 'post_status' => 'publish'));
 	if ($r->have_posts()) :
 ?>
 		<?php echo $before_widget; ?>
@@ -956,7 +964,7 @@ function wp_widget_recent_comments($args) {
 	global $wpdb, $comments, $comment;
 	extract($args, EXTR_SKIP);
 	$options = get_option('widget_recent_comments');
-	$title = empty($options['title']) ? __('Recent Comments') : $options['title'];
+	$title = empty($options['title']) ? __('Recent Comments') : apply_filters('widget_title', $options['title']);
 	if ( !$number = (int) $options['number'] )
 		$number = 5;
 	else if ( $number < 1 )
@@ -1062,11 +1070,12 @@ function wp_widget_rss($args, $widget_args = 1) {
 		$title = $desc;
 	if ( empty($title) )
 		$title = __('Unknown Feed');
+	$title = apply_filters('widget_title', $title );
 	$url = clean_url(strip_tags($url));
 	if ( file_exists(dirname(__FILE__) . '/rss.png') )
-		$icon = str_replace(ABSPATH, get_option('siteurl').'/', dirname(__FILE__)) . '/rss.png';
+		$icon = str_replace(ABSPATH, site_url() . '/', dirname(__FILE__)) . '/rss.png';
 	else
-		$icon = get_option('siteurl').'/wp-includes/images/rss.png';
+		$icon = includes_url('images/rss.png');
 	$title = "<a class='rsswidget' href='$url' title='" . attribute_escape(__('Syndicate this content')) ."'><img style='background:orange;color:white;border:none;' width='14' height='14' src='$icon' alt='RSS' /></a> <a class='rsswidget' href='$link' title='$desc'>$title</a>";
 
 	echo $before_widget;
@@ -1141,7 +1150,7 @@ function wp_widget_rss_output( $rss, $args = array() ) {
 
 				if ( $date ) {
 					if ( $date_stamp = strtotime( $date ) )
-						$date = '<span class="rss-date">' . date_i18n( get_option( 'date_format' ), $date_stamp ) . '</span>';
+						$date = ' <span class="rss-date">' . date_i18n( get_option( 'date_format' ), $date_stamp ) . '</span>';
 					else
 						$date = '';
 				}
@@ -1354,7 +1363,7 @@ function wp_widget_rss_register() {
 function wp_widget_tag_cloud($args) {
 	extract($args);
 	$options = get_option('widget_tag_cloud');
-	$title = empty($options['title']) ? __('Tags') : $options['title'];
+	$title = empty($options['title']) ? __('Tags') : apply_filters('widget_title', $options['title']);
 
 	echo $before_widget;
 	echo $before_title . $title . $after_title;
@@ -1497,7 +1506,7 @@ function widget_many_control( $widget_args = 1 ) {
 			$options[$widget_number] = array( 'something' => $something );  // Even simple widgets should store stuff in array, rather than in scalar
 		}
 
-		update_option('widget_text', $options);
+		update_option('widget_many', $options);
 
 		$updated = true; // So that we don't go through this more than once
 	}
@@ -1539,8 +1548,8 @@ function widget_many_register() {
 		// $id should look like {$id_base}-{$o}
 		$id = "many-$o"; // Never never never translate an id
 		$registered = true;
-		wp_register_sidebar_widget( $id, $name, 'wp_widget_text', $widget_ops, array( 'number' => $o ) );
-		wp_register_widget_control( $id, $name, 'wp_widget_text_control', $control_ops, array( 'number' => $o ) );
+		wp_register_sidebar_widget( $id, $name, 'widget_many', $widget_ops, array( 'number' => $o ) );
+		wp_register_widget_control( $id, $name, 'widget_many_control', $control_ops, array( 'number' => $o ) );
 	}
 
 	// If there are none, we register the widget's existance with a generic template

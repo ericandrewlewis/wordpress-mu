@@ -442,9 +442,14 @@ function get_search_comments_feed_link($search_query = '', $feed = '') {
 	return $link;
 }
 
-function get_edit_post_link( $id = 0 ) {
+function get_edit_post_link( $id = 0, $context = 'display' ) {
 	if ( !$post = &get_post( $id ) )
 		return;
+
+	if ( 'display' == $context )
+		$action = 'action=edit&amp;';
+	else
+		$action = 'action=edit&';
 
 	switch ( $post->post_type ) :
 	case 'page' :
@@ -459,6 +464,13 @@ function get_edit_post_link( $id = 0 ) {
 		$file = 'media';
 		$var  = 'attachment_id';
 		break;
+	case 'revision' :
+		if ( !current_user_can( 'edit_post', $post->ID ) )
+			return;
+		$file = 'revision';
+		$var  = 'revision';
+		$action = '';
+		break;
 	default :
 		if ( !current_user_can( 'edit_post', $post->ID ) )
 			return;
@@ -467,7 +479,7 @@ function get_edit_post_link( $id = 0 ) {
 		break;
 	endswitch;
 	
-	return apply_filters( 'get_edit_post_link', get_bloginfo( 'wpurl' ) . "/wp-admin/$file.php?action=edit&amp;$var=$post->ID", $post->ID );
+	return apply_filters( 'get_edit_post_link', get_bloginfo( 'wpurl' ) . "/wp-admin/$file.php?{$action}$var=$post->ID", $post->ID );
 }
 
 function edit_post_link( $link = 'Edit This', $before = '', $after = '' ) {
@@ -728,6 +740,82 @@ function posts_nav_link($sep=' &#8212; ', $prelabel='&laquo; Previous Page', $nx
 			next_posts_link($nxtlabel);
 		}
 	}
+}
+
+function get_shortcut_link() {
+	$link = "javascript:
+			var d=document;
+			var w=window;
+			var e=w.getSelection;
+			var k=d.getSelection;
+			var x=d.selection;
+			var s=(e?e():(k)?k():(x?x.createRange().text:0));
+			var f='" . admin_url('press-this.php') . "';
+			var l=d.location;
+			var e=encodeURIComponent;
+			var u= '?u=' + e(l.href);
+			var t= '&t=' + e(d.title);
+			var s= '&s=' + e(s);
+			var v='&v=1';
+			var g= f+u+t+s+v;
+			function a(){
+				if(!w.open(g,'t','toolbar=0,resizable=0,scrollbars=1,status=1,width=700,height=500')){
+					l.href=g;
+				}
+			}
+			if(/Firefox/.test(navigator.userAgent)){
+				setTimeout(a,0);
+			}else{
+				a();
+			}
+			void(0);";
+
+	$link = str_replace(array("\r", "\n", "\t"),  '', $link);
+
+	return apply_filters('shortcut_link', $link);
+}
+
+// return the site_url option, using https if is_ssl() is true
+// if $scheme is 'http' or 'https' it will override is_ssl()
+function site_url($path = '', $scheme = null) {
+	// should the list of allowed schemes be maintained elsewhere?
+	if ( !in_array($scheme, array('http', 'https')) ) {
+		if ( ('login' == $scheme) && ( force_ssl_login() || force_ssl_admin() ) )
+			$scheme = 'https';
+		elseif ( ('admin' == $scheme) && force_ssl_admin() )
+			$scheme = 'https';
+		else
+			$scheme = ( is_ssl() ? 'https' : 'http' );
+	}
+
+	$url = str_replace( 'http://', "{$scheme}://", get_option('siteurl') );
+
+	if ( !empty($path) && is_string($path) && strpos($path, '..') === false )
+		$url .= '/' . ltrim($path, '/');
+
+	return $url;
+}
+
+function admin_url($path = '') {
+	global $_wp_admin_url;
+
+	$url = site_url('wp-admin/', 'admin');
+
+	if ( !empty($path) && is_string($path) && strpos($path, '..') === false )
+		$url .= ltrim($path, '/');
+
+	return $url;
+}
+
+function includes_url($path = '') {
+	global $_wp_includes_url;
+
+	$url = site_url() . '/' . WPINC . '/';
+
+	if ( !empty($path) && is_string($path) && strpos($path, '..') === false )
+		$url .= ltrim($path, '/');
+
+	return $url;
 }
 
 ?>

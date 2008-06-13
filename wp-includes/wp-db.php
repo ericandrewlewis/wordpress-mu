@@ -104,9 +104,19 @@ class wpdb {
 
 		$this->ready = true;
 
-		if ( !empty($this->charset) && version_compare(mysql_get_server_info($this->dbh), '4.1.0', '>=') )
- 			$this->query("SET NAMES '$this->charset'");
-
+		if ( $this->supports_collation() ) {
+			$collation_query = '';
+			if ( !empty($this->charset) ) {
+				$collation_query = "SET NAMES '{$this->charset}'";
+				if (!empty($this->collate) )
+					$collation_query .= " COLLATE '{$this->collate}'";
+			}
+			
+			if ( !empty($collation_query) )
+				$this->query($collation_query);
+			
+		}
+		
 		$this->select($dbname, $this->dbh);
 	}
 
@@ -115,6 +125,7 @@ class wpdb {
 	}
 
 	function set_prefix($prefix) {
+
 		if ( preg_match('|[^a-z0-9_]|i', $prefix) )
 			return new WP_Error('invalid_db_prefix', 'Invalid database prefix'); // No gettext here
 

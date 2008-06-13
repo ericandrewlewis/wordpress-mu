@@ -389,7 +389,7 @@ function comments_number( $zero = false, $one = false, $more = false, $deprecate
 	$number = get_comments_number($id);
 
 	if ( $number > 1 )
-		$output = str_replace('%', $number, ( false === $more ) ? __('% Comments') : $more);
+		$output = str_replace('%', number_format_i18n($number), ( false === $more ) ? __('% Comments') : $more);
 	elseif ( $number == 0 )
 		$output = ( false === $zero ) ? __('No Comments') : $zero;
 	else // must be one
@@ -665,7 +665,7 @@ function comments_template( $file = '/comments.php' ) {
 	if ( file_exists( $include ) )
 		require( $include );
 	else
-		require( ABSPATH . 'wp-content/themes/default/comments.php');
+		require( WP_CONTENT_DIR . '/themes/default/comments.php');
 }
 
 /**

@@ -1,7 +1,44 @@
 <?php
-require( dirname(__FILE__) . '/wp-config.php' );
+/**
+ * WordPress User Page
+ *
+ * Handles authentication, registering, resetting passwords, forgot password,
+ * and other user handling.
+ *
+ * @package WordPress
+ */
 
-// Rather than duplicating this HTML all over the place, we'll stick it in function
+/** Make sure that the WordPress bootstrap has ran before continuing. */
+require( dirname(__FILE__) . '/wp-load.php' );
+
+// Redirect to https login if forced to use SSL
+if ( (force_ssl_admin() || force_ssl_login()) && !is_ssl() ) {
+	if ( 0 === strpos($_SERVER['REQUEST_URI'], 'http') ) {
+		wp_redirect(preg_replace('|^http://|', 'https://', $_SERVER['REQUEST_URI']));
+		exit();
+	} else {
+		wp_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+		exit();			
+	}
+}
+
+/**
+ * login_header() - Outputs the header for the login page
+ *
+ * @package WordPress
+ * @uses do_action() Calls the 'login_head' for outputting HTML in the Login
+ *		header.
+ * @uses apply_filters() Calls 'login_headerurl' for the top login link.
+ * @uses apply_filters() Calls 'login_headertitle' for the top login title.
+ * @uses apply_filters() Calls 'login_message' on the message to display in the
+ *		header.
+ * @uses $error The error global, which is checked for displaying errors.
+ *
+ * @param string $title Optional. WordPress Login Page title to display in
+ *		<title/> element.
+ * @param string $message Optional. Message to display in header.
+ * @param WP_Error $wp_error Optional. WordPress Error Object
+ */
 function login_header($title = 'Login', $message = '', $wp_error = '') {
 	global $error, $current_site;
 
@@ -14,8 +51,8 @@ function login_header($title = 'Login', $message = '', $wp_error = '') {
 	<title><?php bloginfo('name'); ?> &rsaquo; <?php echo $title; ?></title>
 	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php bloginfo('charset'); ?>" />
 	<?php
-	wp_admin_css( 'css/login' );
-	wp_admin_css( 'css/colors-fresh' );
+	wp_admin_css( 'login', true );
+	wp_admin_css( 'colors-fresh', true );
 	?>
 	<script type="text/javascript">
 		function focusit() {
@@ -56,6 +93,15 @@ function login_header($title = 'Login', $message = '', $wp_error = '') {
 	}
 } // End of login_header()
 
+/**
+ * retrieve_password() - Handles sending password retrieval email to user
+ *
+ * {@internal Missing Long Description}}
+ *
+ * @uses $wpdb WordPress Database object
+ *
+ * @return bool|WP_Error True: when finish. WP_Error on error
+ */
 function retrieve_password() {
 	global $wpdb, $current_site;
 
@@ -90,14 +136,14 @@ function retrieve_password() {
 	do_action('retreive_password', $user_login);  // Misspelled and deprecated
 	do_action('retrieve_password', $user_login);
 
-	//$key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
-	//if ( empty($key) ) {
+	$key = $wpdb->get_var($wpdb->prepare("SELECT user_activation_key FROM $wpdb->users WHERE user_login = %s", $user_login));
+	if ( empty($key) ) {
 		// Generate something random for a key...
 		$key = wp_generate_password(20, false);
 		do_action('retrieve_password_key', $user_login, $key);
 		// Now insert the new md5 key into the db
 		$wpdb->query($wpdb->prepare("UPDATE $wpdb->users SET user_activation_key = %s WHERE user_login = %s", $key, $user_login));
-	//}
+	}
 	$message = __('Someone has asked to reset the password for the following site and username.') . "\r\n\r\n";
 	$message .= 'http://' . trailingslashit( $current_site->domain . $current_site->path ) . "\r\n\r\n";
 	$message .= sprintf(__('Username: %s'), $user_login) . "\r\n\r\n";
@@ -110,6 +156,16 @@ function retrieve_password() {
 	return true;
 }
 
+/**
+ * reset_password() - Handles resetting the user's password
+ *
+ * {@internal Missing Long Description}}
+ *
+ * @uses $wpdb WordPress Database object
+ *
+ * @param string $key Hash to validate sending user's password
+ * @return bool|WP_Error
+ */
 function reset_password($key) {
 	global $wpdb, $current_site;
 
@@ -143,6 +199,15 @@ function reset_password($key) {
 	return true;
 }
 
+/**
+ * register_new_user() - Handles registering a new user
+ *
+ * {@internal Missing Long Description}}
+ *
+ * @param string $user_login User's username for logging in
+ * @param string $user_email User's email address to send password and add
+ * @return int|WP_Error Either user's ID or error on failure.
+ */
 function register_new_user($user_login, $user_email) {
 	$errors = new WP_Error();
 
@@ -257,10 +322,10 @@ case 'retrievepassword' :
 
 <p id="nav">
 <?php if (get_option('users_can_register')) : ?>
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Log in') ?></a> |
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=register"><?php _e('Register') ?></a>
+<a href="<?php echo site_url('wp-login.php', 'login') ?>"><?php _e('Log in') ?></a> |
+<a href="<?php echo site_url('wp-login.php?action=register', 'login') ?>"><?php _e('Register') ?></a>
 <?php else : ?>
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Log in') ?></a>
+<a href="<?php echo site_url('wp-login.php', 'login') ?>"><?php _e('Log in') ?></a>
 <?php endif; ?>
 </p>
 
@@ -328,8 +393,8 @@ case 'register' :
 </form>
 
 <p id="nav">
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php"><?php _e('Log in') ?></a> |
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a>
+<a href="<?php echo site_url('wp-login.php', 'login') ?>"><?php _e('Log in') ?></a> |
+<a href="<?php echo site_url('wp-login.php?action=lostpassword', 'login') ?>" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a>
 </p>
 
 </div>
@@ -348,12 +413,17 @@ default:
 	else
 		$redirect_to = 'wp-admin/';
 
-	$user = wp_signon();
+	if ( is_ssl() && force_ssl_login() && !force_ssl_admin() && ( 0 !== strpos($redirect_to, 'https') ) )
+		$secure_cookie = false;
+	else
+		$secure_cookie = '';
+
+	$user = wp_signon('', $secure_cookie);
 
 	if ( !is_wp_error($user) ) {
 		// If the user can't edit posts, send them to their profile.
 		if ( !$user->has_cap('edit_posts') && ( empty( $redirect_to ) || $redirect_to == 'wp-admin/' ) )
-			$redirect_to = get_option('siteurl') . '/wp-admin/profile.php';
+			$redirect_to = admin_url('profile.php');
 		wp_safe_redirect($redirect_to);
 		exit();
 	}
@@ -402,10 +472,10 @@ default:
 <p id="nav">
 <?php if ( isset($_GET['checkemail']) && in_array( $_GET['checkemail'], array('confirm', 'newpass') ) ) : ?>
 <?php elseif (get_option('users_can_register')) : ?>
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=register"><?php _e('Register') ?></a> |
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a>
+<a href="<?php echo site_url('wp-login.php?action=register', 'login') ?>"><?php _e('Register') ?></a> |
+<a href="<?php echo site_url('wp-login.php?action=lostpassword', 'login') ?>" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a>
 <?php else : ?>
-<a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=lostpassword" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a>
+<a href="<?php echo site_url('wp-login.php?action=lostpassword', 'login') ?>" title="<?php _e('Password Lost and Found') ?>"><?php _e('Lost your password?') ?></a>
 <?php endif; ?>
 </p>
 

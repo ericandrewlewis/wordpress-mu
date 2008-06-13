@@ -651,11 +651,12 @@ function is_server_error ($sc) {
 }
 
 class RSSCache {
-	var $BASE_CACHE = 'wp-content/cache';	// where the cache files are stored
+	var $BASE_CACHE;	// where the cache files are stored
 	var $MAX_AGE	= 43200;  		// when are files stale, default twelve hours
 	var $ERROR 		= '';			// accumulate error messages
 
 	function RSSCache ($base='', $age='') {
+		$this->BASE_CACHE = WP_CONTENT_DIR . '/cache';
 		if ( $base ) {
 			$this->BASE_CACHE = $base;
 		}
@@ -677,8 +678,8 @@ class RSSCache {
 		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 
 		if( $wp_object_cache->cache_enabled ) {
-			wp_cache_set( $cache_option, $rss, 'site-options' );
-			wp_cache_set( $cache_timestamp, $cache_timestamp, 'site-options' );
+			wp_cache_set( $cache_option, $rss, 'rss' );
+			wp_cache_set( $cache_timestamp, $cache_timestamp, 'rss' );
 		} else {
 			if( !get_site_option( $cache_option ) )
 				add_site_option( $cache_option, $rss );
@@ -701,17 +702,17 @@ class RSSCache {
 		$cache_option = 'rss_' . $this->file_name( $url );
 
 		if( $wp_object_cache->cache_enabled ) {
-			if( ! wp_cache_get( $cache_option, 'site-options' ) ) {
+			if( ! wp_cache_get( $cache_option, 'rss' ) ) {
 				$this->debug( "Cache doesn't contain: $url (cache option: $cache_option)" );
 				return 0;
 			}
-			return wp_cache_get( $cache_option, 'site-options' );
+			return wp_cache_get( $cache_option, 'rss' );
 		} else {
-			if ( ! get_option( $cache_option ) ) {
+			if ( ! get_site_option( $cache_option ) ) {
 				$this->debug( "Cache doesn't contain: $url (cache option: $cache_option)" );
 				return 0;
 			}
-			return get_option( $cache_option );
+			return get_site_option( $cache_option );
 		}
 	}
 
@@ -729,9 +730,9 @@ class RSSCache {
 		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 
 		if( $wp_object_cache->cache_enabled ) {
-			$mtime = wp_cache_get( $cache_timestamp, 'site-options' );
+			$mtime = wp_cache_get( $cache_timestamp, 'rss' );
 		} else {
-			$mtime = get_option($cache_timestamp);
+			$mtime = get_site_option($cache_timestamp);
 		}
 
 		if ( $mtime ) {

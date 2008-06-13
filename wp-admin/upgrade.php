@@ -1,9 +1,7 @@
 <?php
 define('WP_INSTALLING', true);
-if (!file_exists('../wp-config.php'))
-	die("There doesn't seem to be a <code>wp-config.php</code> file. I need this before we can get started. Need more help? <a href='http://codex.wordpress.org/Installing_WordPress#Step_3:_Set_up_wp-config.php'>We got it</a>. You can create a <code>wp-config.php</code> file through a web interface, but this doesn't work for all server setups. The safest way is to manually create the file.</p><p><a href='setup-config.php' class='button'>Create a Configuration File</a>");
 
-require('../wp-config.php');
+require('../wp-load.php');
 timer_start();
 require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
 
@@ -18,7 +16,7 @@ else
 <head>
 	<meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_option('blog_charset'); ?>" />
 	<title><?php _e('WordPress &rsaquo; Upgrade'); ?></title>
-	<?php wp_admin_css( 'css/install' ); ?>
+	<?php wp_admin_css( 'install', true ); ?>
 </head>
 <body>
 <h1 id="logo"><img alt="WordPress" src="images/wordpress-logo.png" /></h1>

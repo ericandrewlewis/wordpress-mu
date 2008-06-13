@@ -325,7 +325,7 @@ function wp_get_attachment_image_src($attachment_id, $size='thumbnail', $icon = 
 		return $image;
 
 	if ( $icon && $src = wp_mime_type_icon($attachment_id) ) {
-		$icon_dir = apply_filters( 'icon_dir', ABSPATH . WPINC . '/images/crystal' );
+		$icon_dir = apply_filters( 'icon_dir', includes_url('images/crystal') );
 		$src_file = $icon_dir . '/' . basename($src);
 		@list($width, $height) = getimagesize($src_file);
 	}
@@ -368,7 +368,8 @@ function gallery_shortcode($attr) {
 	}
 
 	extract(shortcode_atts(array(
-		'orderby'    => 'menu_order ASC, ID ASC',
+		'order'      => 'ASC',
+		'orderby'    => 'menu_order ID',
 		'id'         => $post->ID,
 		'itemtag'    => 'dl',
 		'icontag'    => 'dt',
@@ -378,7 +379,7 @@ function gallery_shortcode($attr) {
 	), $attr));
 
 	$id = intval($id);
-	$attachments = get_children("post_parent=$id&post_type=attachment&post_mime_type=image&orderby={$orderby}");
+	$attachments = get_children( array('post_parent' => $id, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => $order, 'orderby' => $orderby) );
 
 	if ( empty($attachments) )
 		return '';
@@ -452,7 +453,7 @@ function next_image_link() {
 function adjacent_image_link($prev = true) {
 	global $post;
 	$post = get_post($post);
-	$attachments = array_values(get_children("post_parent=$post->post_parent&post_type=attachment&post_mime_type=image&orderby=menu_order ASC, ID ASC"));
+	$attachments = array_values(get_children( array('post_parent' => $post->post_parent, 'post_status' => 'inherit', 'post_type' => 'attachment', 'post_mime_type' => 'image', 'order' => 'ASC', 'orderby' => 'menu_order ID') ));
 
 	foreach ( $attachments as $k => $attachment )
 		if ( $attachment->ID == $post->ID )

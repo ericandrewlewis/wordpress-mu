@@ -225,7 +225,7 @@ function wp_dashboard_dynamic_sidebar_params( $params ) {
 	}
 
 	if ( $widget_feed_link )
-		$links[] = '<img class="rss-icon" src="' . get_option( 'siteurl' ) . '/' . WPINC . '/images/rss.png" alt="' . __( 'rss icon' ) . '" /> <a href="' . clean_url( $widget_feed_link ) . '">' . __( 'RSS' ) . '</a>';
+		$links[] = '<img class="rss-icon" src="' . includes_url('images/rss.png') . '" alt="' . __( 'rss icon' ) . '" /> <a href="' . clean_url( $widget_feed_link ) . '">' . __( 'RSS' ) . '</a>';
 
 	$links = apply_filters( "wp_dashboard_widget_links_$widget_id", $links );
 
@@ -269,7 +269,7 @@ function wp_dashboard_recent_comments( $sidebar_args ) {
 
 	$lambda = create_function( '', 'return 5;' );
 	add_filter( 'option_posts_per_rss', $lambda ); // hack - comments query doesn't accept per_page parameter
-	$comments_query = new WP_Query('feed=rss2&withcomments=1');
+	$comments_query = new WP_Query(array('feed' => 'rss2', 'withcomments' => 1));
 	remove_filter( 'option_posts_per_rss', $lambda );
 
 	$is_first = true;
@@ -389,8 +389,7 @@ function wp_dashboard_secondary_output() {
 	$rss->items = array_slice($rss->items, 0, $items);
 	foreach ($rss->items as $item ) {
 		$title = wp_specialchars($item['title']);
-		$author = preg_replace( '|(.+?):.+|s', '$1', $item['title'] );
-		$post = preg_replace( '|.+?:(.+)|s', '$1', $item['title'] );
+		list($author,$post) = explode( ':', $title, 2 );
 		$link = clean_url($item['link']);
 
 		echo "\t<li><a href='$link'><span class='post'>$post</span><span class='hidden'> - </span><cite>$author</cite></a></li>\n";

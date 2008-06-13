@@ -116,6 +116,83 @@ function media_handle_upload($file_id, $post_id, $post_data = array()) {
 }
 
 
+function media_sideload_image($file, $post_id, $desc = null) {
+
+	if (!empty($file) ) {
+		// Upload File button was clicked
+		
+		$file_array['name'] = basename($file);
+		$file_array['tmp_name'] = download_url($file);
+		$desc = @$desc;
+		
+		$sideload = media_handle_sideload($file_array, $post_id, $desc);
+
+		$id = $sideload['id'];
+		$src = $sideload['src'];
+		
+		unset($file_array['tmp_name']);
+		unset($file_array);
+		
+		if ( is_wp_error($id) ) {
+			$errors['upload_error'] = $id;
+			$id = false;
+		}
+	}
+	
+	if ( !empty($src) && !strpos($src, '://') )
+		
+		$src = "http://$src";
+		$alt = @$desc;
+		
+		if ( !empty($src) )
+			$html = "<img src='$src' alt='$alt' />";
+			return $html;
+	
+}
+
+function media_handle_sideload($file_array, $post_id, $desc = null, $post_data = array()) {
+	$overrides = array('test_form'=>false);
+	$file = wp_handle_sideload($file_array, $overrides);
+
+	if ( isset($file['error']) )
+		return new wp_error( 'upload_error', $file['error'] );
+
+	$url = $file['url'];
+	$type = $file['type'];
+	$file = $file['file'];
+	$title = preg_replace('/\.[^.]+$/', '', basename($file));
+	$content = '';
+
+	// use image exif/iptc data for title and caption defaults if possible
+	if ( $image_meta = @wp_read_image_metadata($file) ) {
+		if ( trim($image_meta['title']) )
+			$title = $image_meta['title'];
+		if ( trim($image_meta['caption']) )
+			$content = $image_meta['caption'];
+	}
+	
+	$title = @$desc;
+
+	// Construct the attachment array
+	$attachment = array_merge( array(
+		'post_mime_type' => $type,
+		'guid' => $url,
+		'post_parent' => $post_id,
+		'post_title' => $title,
+		'post_content' => $content,
+	), $post_data );
+
+	// Save the data
+	$id = wp_insert_attachment($attachment, $file, $post_parent);
+	if ( !is_wp_error($id) ) {
+		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
+	}
+
+	return array('id' => $id, 'src' => $url);
+
+}
+
+
 // wrap iframe content (produced by $content_func) in a doctype, html head/body etc
 // any additional function args will be passed to content_func
 function wp_iframe($content_func /* ... */) {
@@ -126,9 +203,12 @@ function wp_iframe($content_func /* ... */) {
 <meta http-equiv="Content-Type" content="<?php bloginfo('html_type'); ?>; charset=<?php echo get_option('blog_charset'); ?>" />
 <title><?php bloginfo('name') ?> &rsaquo; <?php _e('Uploads'); ?> &#8212; <?php _e('WordPress'); ?></title>
 <?php
-wp_admin_css( 'css/global' );
-wp_admin_css();
-wp_admin_css( 'css/colors' );
+wp_enqueue_style( 'global' );
+wp_enqueue_style( 'wp-admin' );
+wp_enqueue_style( 'colors' );
+if ( 0 === strpos( $content_func, 'media' ) )
+	wp_enqueue_style( 'media' );
+
 ?>
 <script type="text/javascript">
 //<![CDATA[
@@ -136,6 +216,7 @@ function addLoadEvent(func) {if ( typeof wpOnload!='function'){wpOnload=func;}el
 //]]>
 </script>
 <?php
+do_action('admin_print_styles');
 do_action('admin_print_scripts');
 do_action('admin_head');
 if ( is_string($content_func) )
@@ -167,39 +248,15 @@ function media_buttons() {
 	$audio_title = __('Add Audio');
 	$out = <<<EOF
 
-	<a href="{$image_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640" class="thickbox" title='$image_title'><img src='images/media-button-image.gif' alt='$image_title' /></a>
-	<a href="{$video_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640" class="thickbox" title='$video_title'><img src='images/media-button-video.gif' alt='$video_title' /></a>
-	<a href="{$audio_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640" class="thickbox" title='$audio_title'><img src='images/media-button-music.gif' alt='$audio_title' /></a>
-	<a href="{$media_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640" class="thickbox" title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>
+	<a href="{$image_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$image_title'><img src='images/media-button-image.gif' alt='$image_title' /></a>
+	<a href="{$video_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$video_title'><img src='images/media-button-video.gif' alt='$video_title' /></a>
+	<a href="{$audio_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$audio_title'><img src='images/media-button-music.gif' alt='$audio_title' /></a>
+	<a href="{$media_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>
 
 EOF;
 	printf($context, $out);
 }
 add_action( 'media_buttons', 'media_buttons' );
-
-function media_buttons_head() {
-$siteurl = get_option('siteurl');
-echo "<style type='text/css' media='all'>
-	@import '{$siteurl}/wp-includes/js/thickbox/thickbox.css?ver=20080430';
-	div#TB_title {
-		background-color: #222222;
-		color: #cfcfcf;
-	}
-	div#TB_title a, div#TB_title a:visited {
-		color: #cfcfcf;
-	}
-	#TB_window {
-		top: 20px;
-	}
-</style>\n";
-}
-
-add_action( 'admin_print_scripts', 'media_buttons_head' );
-
-function media_admin_css() {
-	wp_admin_css('css/media');
-}
-
 add_action('media_upload_media', 'media_upload_handler');
 
 function media_upload_form_handler() {
@@ -213,6 +270,8 @@ function media_upload_form_handler() {
 			$post['post_title'] = $attachment['post_title'];
 		if ( isset($attachment['post_excerpt']) )
 			$post['post_excerpt'] = $attachment['post_excerpt'];
+		if ( isset($attachment['menu_order']) )
+			$post['menu_order'] = $attachment['menu_order'];
 
 		$post = apply_filters('attachment_fields_to_save', $post, $attachment);
 
@@ -413,6 +472,7 @@ function media_upload_gallery() {
 			$errors = $return;
 	}
 
+	wp_enqueue_script('admin-gallery');
 	return wp_iframe( 'media_upload_gallery_form', $errors );
 }
 
@@ -549,6 +609,10 @@ function get_attachment_fields_to_edit($post, $errors = null) {
 				</script>\n",
 			'helps'      => __('Enter a link URL or click above for presets.'),
 		),
+    	'menu_order'   => array(
+			'label'      => __('Order'),
+			'value'      => $edit_post->menu_order
+		),
 	);
 
 	foreach ( get_attachment_taxonomies($post) as $taxonomy ) {
@@ -586,7 +650,7 @@ function get_media_items( $post_id, $errors ) {
 		if ( $post && $post->post_type == 'attachment' )
 			$attachments = array($post->ID => $post);
 		else
-			$attachments = get_children("post_parent=$post_id&post_type=attachment&orderby=menu_order ASC, ID&order=DESC");
+			$attachments = get_children( array( 'post_parent' => $post_id, 'post_type' => 'attachment', 'orderby' => 'menu_order ASC, ID', 'order' => 'DESC') );
 	} else {
 		if ( is_array($GLOBALS['wp_the_query']->posts) )
 			foreach ( $GLOBALS['wp_the_query']->posts as $attachment )
@@ -679,9 +743,11 @@ function get_media_item( $attachment_id, $args = null ) {
 	if ( $send )
 		$send = "<input type='submit' class='button' name='send[$attachment_id]' value='" . attribute_escape( __( 'Insert into Post' ) ) . "' />";
 	if ( $delete )
-		$delete = "<a href='$delete_href' id='del[$attachment_id]' disabled='disabled' class='delete'>" . __('Delete') . "</button>";
+		$delete = "<a href=\"#\" class=\"del-link\" onclick=\"document.getElementById('del_attachment_$attachment_id').style.display='block';return false;\">" . __('Delete') . "</a>";
 	if ( ( $send || $delete ) && !isset($form_fields['buttons']) )
-		$form_fields['buttons'] = array('tr' => "\t\t<tr class='submit'><td></td><td class='savesend'>$send $delete</td></tr>\n");
+		$form_fields['buttons'] = array('tr' => "\t\t<tr class='submit'><td></td><td class='savesend'>$send $delete
+		<div id=\"del_attachment_$attachment_id\" class=\"del-attachment\" style=\"display:none;\">" . sprintf(__("You are about to delete <strong>%s</strong>."), $filename) . " <a href=\"$delete_href\" id=\"del[$attachment_id]\" class=\"delete\">" . __('Continue') . "</a>
+		<a href=\"#\" class=\"del-link\" onclick=\"this.parentNode.style.display='none';return false;\">" . __('Cancel') . "</a></div></td></tr>\n");
 
 	$hidden_fields = array();
 
@@ -703,6 +769,7 @@ function get_media_item( $attachment_id, $args = null ) {
 		}
 
 		$required = $field['required'] ? '<abbr title="required" class="required">*</abbr>' : '';
+		$aria_required = $field['required'] ? " aria-required='true' " : '';
 		$class  = $id;
 		$class .= $field['required'] ? ' form-required' : '';
 
@@ -710,9 +777,9 @@ function get_media_item( $attachment_id, $args = null ) {
 		if ( !empty($field[$field['input']]) )
 			$item .= $field[$field['input']];
 		elseif ( $field['input'] == 'textarea' ) {
-			$item .= "<textarea type='text' id='$name' name='$name'>" . attribute_escape( $field['value'] ) . "</textarea>";
+			$item .= "<textarea type='text' id='$name' name='$name'>" . attribute_escape( $field['value'] ) . $aria_required . "</textarea>";
 		} else {
-			$item .= "<input type='text' id='$name' name='$name' value='" . attribute_escape( $field['value'] ) . "' />";
+			$item .= "<input type='text' id='$name' name='$name' value='" . attribute_escape( $field['value'] ) . "'" . $aria_required . "/>";
 		}
 		if ( !empty($field['helps']) )
 			$item .= "<p class='help'>" . join( "</p>\n<p class='help'>", array_unique((array) $field['helps']) ) . '</p>';
@@ -757,7 +824,7 @@ function media_upload_header() {
 function media_upload_form( $errors = null ) {
 	global $type, $tab;
 
-	$flash_action_url = get_option('siteurl') . "/wp-admin/async-upload.php";
+	$flash_action_url = admin_url('async-upload.php');
 
 	// If Mac and mod_security, no Flash. :(
 	$flash = true;
@@ -788,7 +855,7 @@ function media_upload_form( $errors = null ) {
 jQuery(function($){
 	swfu = new SWFUpload({
 			upload_url : "<?php echo attribute_escape( $flash_action_url ); ?>",
-			flash_url : "<?php echo get_option('siteurl').'/wp-includes/js/swfupload/swfupload_f9.swf'; ?>",
+			flash_url : "<?php echo includes_url('js/swfupload/swfupload_f9.swf'); ?>",
 			file_post_name: "async-upload",
 			file_types: "<?php echo apply_filters('upload_file_glob', '*.*'); ?>",
 			post_params : {
@@ -819,12 +886,11 @@ jQuery(function($){
 //-->
 </script>
 
-
 <div id="flash-upload-ui">
 <?php do_action('pre-flash-upload-ui'); ?>
 	<p><input id="flash-browse-button" type="button" value="<?php echo attribute_escape( __( 'Choose files to upload' ) ); ?>" class="button" /></p>
 <?php do_action('post-flash-upload-ui'); ?>
-	<p><?php _e('After a file has been uploaded, you can add titles and descriptions.'); ?></p>
+	<p class="howto"><?php _e('After a file has been uploaded, you can add titles and descriptions.'); ?></p>
 </div>
 
 <?php endif; // $flash ?>
@@ -850,7 +916,8 @@ function media_upload_type_form($type = 'file', $errors = null, $id = null) {
 
 	$post_id = intval($_REQUEST['post_id']);
 
-	$form_action_url = get_option('siteurl') . "/wp-admin/media-upload.php?type=$type&tab=type&post_id=$post_id";
+	$form_action_url = admin_url("media-upload.php?type=$type&tab=type&post_id=$post_id");
+	$form_action_url = apply_filters('media_upload_form_url', $form_action_url, $type);
 
 	$callback = "type_form_$type";
 ?>
@@ -900,7 +967,7 @@ function media_upload_gallery_form($errors) {
 
 	$post_id = intval($_REQUEST['post_id']);
 
-	$form_action_url = get_option('siteurl') . "/wp-admin/media-upload.php?type={$GLOBALS['type']}&tab=gallery&post_id=$post_id";
+	$form_action_url = admin_url("media-upload.php?type={$GLOBALS['type']}&tab=gallery&post_id=$post_id");
 
 ?>
 
@@ -939,7 +1006,7 @@ function media_upload_library_form($errors) {
 
 	$post_id = intval($_REQUEST['post_id']);
 
-	$form_action_url = get_option('siteurl') . "/wp-admin/media-upload.php?type={$GLOBALS['type']}&tab=library&post_id=$post_id";
+	$form_action_url = admin_url("media-upload.php?type={$GLOBALS['type']}&tab=library&post_id=$post_id");
 
 	$_GET['paged'] = intval($_GET['paged']);
 	if ( $_GET['paged'] < 1 )
@@ -960,6 +1027,7 @@ function media_upload_library_form($errors) {
 <input type="hidden" name="post_mime_type" value="<?php echo attribute_escape( $_GET['post_mime_type'] ); ?>" />
 
 <div id="search-filter">
+	<label class="hidden" for="post-search-input"><?php _e('Search Media');?>:</label>
 	<input type="text" id="post-search-input" name="s" value="<?php the_search_query(); ?>" />
 	<input type="submit" value="<?php echo attribute_escape( __( 'Search Media' ) ); ?>" class="button" />
 </div>
@@ -1085,14 +1153,14 @@ function type_form_image() {
 				<span class="alignleft"><label for="insertonly[src]">' . __('Image URL') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[src]" name="insertonly[src]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[src]" name="insertonly[src]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr>
 			<th valign="top" scope="row" class="label">
 				<span class="alignleft"><label for="insertonly[alt]">' . __('Description') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[alt]" name="insertonly[alt]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[alt]" name="insertonly[alt]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr><td></td><td class="help">' . __('Alternate text, e.g. "The Mona Lisa"') . '</td></tr>
 		<tr class="align">
@@ -1126,14 +1194,14 @@ function type_form_audio() {
 				<span class="alignleft"><label for="insertonly[href]">' . __('Audio File URL') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[href]" name="insertonly[href]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[href]" name="insertonly[href]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr>
 			<th valign="top" scope="row" class="label">
 				<span class="alignleft"><label for="insertonly[title]">' . __('Title') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[title]" name="insertonly[title]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[title]" name="insertonly[title]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr><td></td><td class="help">' . __('Link text, e.g. "Still Alive by Jonathan Coulton"') . '</td></tr>
 		<tr>
@@ -1154,14 +1222,14 @@ function type_form_video() {
 				<span class="alignleft"><label for="insertonly[href]">' . __('Video URL') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[href]" name="insertonly[href]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[href]" name="insertonly[href]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr>
 			<th valign="top" scope="row" class="label">
 				<span class="alignleft"><label for="insertonly[title]">' . __('Title') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[title]" name="insertonly[title]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[title]" name="insertonly[title]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr><td></td><td class="help">' . __('Link text, e.g. "Lucy on YouTube"') . '</td></tr>
 		<tr>
@@ -1182,14 +1250,14 @@ function type_form_file() {
 				<span class="alignleft"><label for="insertonly[href]">' . __('URL') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[href]" name="insertonly[href]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[href]" name="insertonly[href]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr>
 			<th valign="top" scope="row" class="label">
 				<span class="alignleft"><label for="insertonly[title]">' . __('Title') . '</label></span>
 				<span class="alignright"><abbr title="required" class="required">*</abbr></span>
 			</th>
-			<td class="field"><input id="insertonly[title]" name="insertonly[title]" value="" type="text"></td>
+			<td class="field"><input id="insertonly[title]" name="insertonly[title]" value="" type="text" aria-required="true"></td>
 		</tr>
 		<tr><td></td><td class="help">' . __('Link text, e.g. "Ransom Demands (PDF)"') . '</td></tr>
 		<tr>
@@ -1211,12 +1279,9 @@ add_action('media_upload_image', 'media_upload_image');
 add_action('media_upload_audio', 'media_upload_audio');
 add_action('media_upload_video', 'media_upload_video');
 add_action('media_upload_file', 'media_upload_file');
-add_action('admin_head_media_upload_type_form', 'media_admin_css');
 
 add_filter('media_upload_gallery', 'media_upload_gallery');
-add_action('admin_head_media_upload_gallery_form', 'media_admin_css');
 
 add_filter('media_upload_library', 'media_upload_library');
-add_action('admin_head_media_upload_library_form', 'media_admin_css');
 
 ?>

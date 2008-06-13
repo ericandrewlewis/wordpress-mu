@@ -2,9 +2,9 @@
 define('WP_ADMIN', TRUE);
 
 if ( defined('ABSPATH') )
-	require_once( ABSPATH . 'wp-config.php');
+	require_once(ABSPATH . 'wp-load.php');
 else
-    require_once('../wp-config.php');
+	require_once('../wp-load.php');
 
 if ( get_option('db_version') != $wp_db_version ) {
 	require_once('../wp-includes/class-snoopy.php');
@@ -27,8 +27,8 @@ $time_format = get_option('time_format');
 
 wp_reset_vars(array('profile', 'redirect', 'redirect_url', 'a', 'popuptitle', 'popupurl', 'text', 'trackback', 'pingback'));
 
-wp_admin_css_color('classic', __('Classic'), get_option( 'siteurl' ) . "/wp-admin/css/colors-classic.css", array('#07273E', '#14568A', '#D54E21', '#2683AE'));
-wp_admin_css_color('fresh', __('Fresh'), get_option( 'siteurl' ) . "/wp-admin/css/colors-fresh.css", array('#464646', '#CEE1EF', '#D54E21', '#2683AE'));
+wp_admin_css_color('classic', __('Classic'), admin_url("css/colors-classic.css"), array('#07273E', '#14568A', '#D54E21', '#2683AE'));
+wp_admin_css_color('fresh', __('Fresh'), admin_url("css/colors-fresh.css"), array('#464646', '#CEE1EF', '#D54E21', '#2683AE'));
 
 wp_enqueue_script( 'common' );
 wp_enqueue_script( 'jquery-color' );

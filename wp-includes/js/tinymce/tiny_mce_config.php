@@ -4,7 +4,7 @@
  * $Id: tiny_mce_gzip.php 315 2007-10-25 14:03:43Z spocke $
  *
  * @author Moxiecode
- * @copyright Copyright © 2005-2006, Moxiecode Systems AB, All rights reserved.
+ * @copyright Copyright Â© 2005-2006, Moxiecode Systems AB, All rights reserved.
  *
  * This file compresses the TinyMCE JavaScript using GZip.
  **/
@@ -12,7 +12,7 @@
 // Discard any buffers
 while ( @ob_end_clean() );
 
-@ require('../../../wp-config.php');
+@ require('../../../wp-load.php');
 
 function getFileContents($path) {
 
@@ -70,7 +70,7 @@ http://wiki.moxiecode.com/index.php/TinyMCE:Plugins/spellchecker
 */
 $mce_spellchecker_languages = apply_filters('mce_spellchecker_languages', '+English=en,Danish=da,Dutch=nl,Finnish=fi,French=fr,German=de,Italian=it,Polish=pl,Portuguese=pt,Spanish=es,Swedish=sv');
 
-$plugins = array( 'safari', 'inlinepopups', 'autosave', 'spellchecker', 'paste', 'wordpress', 'media', 'fullscreen' );
+$plugins = array( 'safari', 'inlinepopups', 'autosave', 'spellchecker', 'paste', 'wordpress', 'media', 'fullscreen', 'wpeditimage' );
 
 /* 
 The following filter takes an associative array of external plugins for TinyMCE in the form 'plugin_name' => 'url'.
@@ -122,7 +122,7 @@ if ( ! empty($mce_external_plugins) ) {
 }
 $plugins = implode($plugins, ',');
 
-$mce_buttons = apply_filters('mce_buttons', array('bold', 'italic', 'strikethrough', '|', 'bullist', 'numlist', 'blockquote', '|', 'justifyleft', 'justifycenter', 'justifyright', '|', 'link', 'unlink', 'image', 'wp_more', '|', 'spellchecker', 'fullscreen', 'wp_adv' ));
+$mce_buttons = apply_filters('mce_buttons', array('bold', 'italic', 'strikethrough', '|', 'bullist', 'numlist', 'blockquote', '|', 'justifyleft', 'justifycenter', 'justifyright', '|', 'link', 'unlink', 'wp_more', '|', 'spellchecker', 'fullscreen', 'wp_adv' ));
 $mce_buttons = implode($mce_buttons, ',');
 
 $mce_buttons_2 = apply_filters('mce_buttons_2', array('formatselect', 'underline', 'justifyfull', 'forecolor', '|', 'pastetext', 'pasteword', 'removeformat', '|', 'media', 'charmap', '|', 'outdent', 'indent', '|', 'undo', 'redo', 'wp_help' ));
@@ -206,14 +206,14 @@ if ( $msie = strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') ) {
 }
 
 // Cache path, this is where the .gz files will be stored
-$cache_path = ABSPATH . 'wp-content/uploads/js_cache'; 
+$cache_path = WP_CONTENT_DIR . '/uploads/js_cache'; 
 if ( $disk_cache && ! is_dir($cache_path) )
 	$disk_cache = wp_mkdir_p($cache_path);
 
 $cache_ext = '.js';
 $plugins = explode( ',', $initArray['plugins'] );
 $theme = ( 'simple' == $initArray['theme'] ) ? 'simple' : 'advanced';
-$language = isset($initArray['language']) ? substr( $initArray['language'], 0, 2 ) : 'en';
+$language = ( isset($initArray['language']) && ! empty($initArray['language']) ) ? substr( $initArray['language'], 0, 2 ) : 'en';
 $cacheKey = $mce_options = '';	
 
 // Check if browser supports gzip
@@ -226,7 +226,7 @@ if ( $compress && isset($_SERVER['HTTP_ACCEPT_ENCODING']) ) {
 // Setup cache info
 if ( $disk_cache ) {
 
-	$cacheKey = apply_filters('tiny_mce_version', '20080414');
+	$cacheKey = apply_filters('tiny_mce_version', '20080606');
 
 	foreach ( $initArray as $v )
 		$cacheKey .= $v;
@@ -273,7 +273,7 @@ if ( $mce_deprecated ) $mce_options .= $mce_deprecated;
 
 $mce_options = rtrim( trim($mce_options), '\n\r,' );
 
-$content = 'var tinyMCEPreInit = { settings : { themes : "' . $theme . '", plugins : "' . $initArray['plugins'] . '", languages : "' . $language . '", debug : false }, base : "' . $baseurl . '", suffix : "" };';
+$content = 'var tinyMCEPreInit = { settings : { themes : "' . $theme . '", plugins : "' . $initArray['plugins'] . '", languages : "' . $language . '", debug : false }, base : "' . $baseurl . '", suffix : "", query : "ver=3091" };';
 
 // Load patch
 $content .= getFileContents( 'tiny_mce_ext.js' );

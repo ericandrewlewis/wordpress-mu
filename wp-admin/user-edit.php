@@ -169,7 +169,7 @@ include ('admin-header.php');
 <?php endif; ?>
 <tr>
 <th scope="row"><?php _e('Admin Color Scheme')?></th>
-<td>
+<td><fieldset><legend class="hidden"><?php _e('Admin Color Scheme')?></legend>
 <?php
 $current_color = get_user_option('admin_color', $user_id);
 if ( empty($current_color) )
@@ -188,7 +188,7 @@ foreach ( $_wp_admin_css_colors as $color => $color_info ): ?>
 	<label for="admin_color_<?php echo $color; ?>"><?php echo $color_info->name ?></label>
 </div>
 <?php endforeach; ?>
-</td>
+</fieldset></td>
 </tr>
 </table>
 

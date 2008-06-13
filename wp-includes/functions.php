@@ -1071,7 +1071,7 @@ function wp_upload_dir( $time = NULL ) {
 	$siteurl = get_option( 'siteurl' );
 	$upload_path = get_option( 'upload_path' );
 	if ( trim($upload_path) === '' )
-		$upload_path = 'wp-content/uploads';
+		$upload_path = WP_CONTENT_DIR . '/uploads';
 	$dir = $upload_path;
 
 	// $dir is absolute, $path is (maybe) relative to ABSPATH
@@ -1556,8 +1556,8 @@ function wp_ob_end_flush_all() {
  */
 function require_wp_db() {
 	global $wpdb;
-	if ( file_exists( ABSPATH . 'wp-content/db.php' ) )
-		require_once( ABSPATH . 'wp-content/db.php' );
+	if ( file_exists( WP_CONTENT_DIR . '/db.php' ) )
+		require_once( WP_CONTENT_DIR . '/db.php' );
 	else
 		require_once( ABSPATH . WPINC . '/wp-db.php' );
 }
@@ -1566,8 +1566,8 @@ function dead_db() {
 	global $wpdb;
 
 	// Load custom DB error template, if present.
-	if ( file_exists( ABSPATH . 'wp-content/db-error.php' ) ) {
-		require_once( ABSPATH . 'wp-content/db-error.php' );
+	if ( file_exists( WP_CONTENT_DIR . '/db-error.php' ) ) {
+		require_once( WP_CONTENT_DIR . '/db-error.php' );
 		die();
 	}
 
@@ -1668,9 +1668,9 @@ function _deprecated_function($function, $version, $replacement=null) {
 	// Allow plugin to filter the output error trigger
 	if( defined('WP_DEBUG') && ( true === WP_DEBUG ) && apply_filters( 'deprecated_function_trigger_error', true )) {
 		if( !is_null($replacement) )
-			trigger_error( printf( __("%1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead."), $function, $version, $replacement ) );
+			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead.'), $function, $version, $replacement ) );
 		else
-			trigger_error( printf( __("%1$s is <strong>deprecated</strong> since version %2$s with no alternative available."), $function, $version ) );
+			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since version %2$s with no alternative available.'), $function, $version ) );
 	}
 }
 
@@ -1703,9 +1703,9 @@ function _deprecated_file($file, $version, $replacement=null) {
 	// Allow plugin to filter the output error trigger
 	if( defined('WP_DEBUG') && ( true === WP_DEBUG ) && apply_filters( 'deprecated_file_trigger_error', true )) {
 		if( !is_null($replacement) )
-			trigger_error( printf( __("%1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead."), $file, $version, $replacement ) );
+			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since version %2$s! Use %3$s instead.'), $file, $version, $replacement ) );
 		else
-			trigger_error( printf( __("%1$s is <strong>deprecated</strong> since version %2$s with no alternative available."), $file, $version ) );
+			trigger_error( sprintf( __('%1$s is <strong>deprecated</strong> since version %2$s with no alternative available.'), $file, $version ) );
 	}
 }
 
@@ -1761,6 +1761,34 @@ function validate_file( $file, $allowed_files = '' ) {
 		return 3;
 
 	return 0;
+}
+
+function is_ssl() {
+	return ( 'on' == strtolower($_SERVER['HTTPS']) ) ? true : false; 
+}
+
+function force_ssl_login($force = '') {
+	static $forced;
+
+	if ( '' != $force ) {
+		$old_forcded = $forced;
+		$forced = $force;
+		return $old_forced;
+	}
+
+	return $forced;
+}
+
+function force_ssl_admin($force = '') {
+	static $forced;
+
+	if ( '' != $force ) {
+		$old_forcded = $forced;
+		$forced = $force;
+		return $old_forced;
+	}
+
+	return $forced;
 }
 
 ?>

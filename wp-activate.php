@@ -1,6 +1,9 @@
 <?php
 define( "WP_INSTALLING", true );
-require ('wp-config.php');
+
+/** Sets up the WordPress Environment. */
+require( dirname(__FILE__) . '/wp-load.php' );
+
 require( 'wp-blog-header.php' );
 require_once( ABSPATH . WPINC . '/registration.php');
 

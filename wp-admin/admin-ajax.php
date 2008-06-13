@@ -1,7 +1,7 @@
 <?php
 define('DOING_AJAX', true);
 
-require_once('../wp-config.php');
+require_once('../wp-load.php');
 require_once('includes/admin.php');
 
 if ( !is_user_logged_in() )
@@ -15,7 +15,7 @@ if ( isset($_GET['action']) && 'ajax-tag-search' == $_GET['action'] ) {
 
 	if ( strstr( $s, ',' ) )
 		die; // it's a multiple tag insert, we won't find anything
-	$results = $wpdb->get_col( "SELECT name FROM $wpdb->terms WHERE name LIKE ('%$s%')" );
+	$results = $wpdb->get_col( $wpdb->prepare("SELECT name FROM $wpdb->terms WHERE name LIKE (%s)", '%' . $s . '%') );
 	echo join( $results, "\n" );
 	die;
 }
@@ -462,10 +462,11 @@ case 'add-user' :
 	$x->send();
 	break;
 case 'autosave' : // The name of this action is hardcoded in edit_post()
-	$nonce_age = check_ajax_referer( 'autosave', 'autosavenonce');
+	define( 'DOING_AUTOSAVE', true );
+
+	$nonce_age = check_ajax_referer( 'autosave', 'autosavenonce' );
 	global $current_user;
 
-	$_POST['post_status'] = 'draft';
 	$_POST['post_category'] = explode(",", $_POST['catslist']);
 	$_POST['tags_input'] = explode(",", $_POST['tags_input']);
 	if($_POST['post_type'] == 'page' || empty($_POST['post_category']))
@@ -479,8 +480,9 @@ case 'autosave' : // The name of this action is hardcoded in edit_post()
 
 	$supplemental = array();
 
-	$id = 0;
+	$id = $revision_id = 0;
 	if($_POST['post_ID'] < 0) {
+		$_POST['post_status'] = 'draft';
 		$_POST['temp_ID'] = $_POST['post_ID'];
 		if ( $do_autosave ) {
 			$id = wp_write_post();
@@ -511,8 +513,18 @@ case 'autosave' : // The name of this action is hardcoded in edit_post()
 			if ( !current_user_can('edit_post', $post_ID) )
 				die(__('You are not allowed to edit this post.'));
 		}
+
 		if ( $do_autosave ) {
-			$id = edit_post();
+			// Drafts are just overwritten by autosave
+			if ( 'draft' == $post->post_status ) {
+				$id = edit_post();
+			} else { // Non drafts are not overwritten.  The autosave is stored in a special post revision.
+				$revision_id = wp_create_post_autosave( $post->ID );
+				if ( is_wp_error($revision_id) )
+					$id = $revision_id;
+				else
+					$id = $post->ID;
+			}
 			$data = $message;
 		} else {
 			$id = $post->ID;

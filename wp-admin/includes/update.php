@@ -119,25 +119,24 @@ function wp_update_plugins() {
 }
 add_action( 'load-plugins.php', 'wp_update_plugins' );
 
-function wp_plugin_update_row( $file ) {
-	global $plugin_data;
+function wp_plugin_update_row( $file, $plugin_data ) {
 	$current = get_option( 'update_plugins' );
 	if ( !isset( $current->response[ $file ] ) )
 		return false;
 
 	$r = $current->response[ $file ];
 
-	echo "<tr><td colspan='5' class='plugin-update'>";
-	if ( !current_user_can('edit_plugins') )
+	echo '<tr><td colspan="5" class="plugin-update">';
+	if ( ! current_user_can('update_plugins') )
 		printf( __('There is a new version of %1$s available. <a href="%2$s">Download version %3$s here</a>.'), $plugin_data['Name'], $r->url, $r->new_version);
 	else if ( empty($r->package) )
 		printf( __('There is a new version of %1$s available. <a href="%2$s">Download version %3$s here</a> <em>automatic upgrade unavailable for this plugin</em>.'), $plugin_data['Name'], $r->url, $r->new_version);
 	else
-		printf( __('There is a new version of %1$s available. <a href="%2$s">Download version %3$s here</a> or <a href="%4$s">upgrade automatically</a>.'), $plugin_data['Name'], $r->url, $r->new_version, wp_nonce_url("update.php?action=upgrade-plugin&amp;plugin=$file", 'upgrade-plugin_' . $file) );
+		printf( __('There is a new version of %1$s available. <a href="%2$s">Download version %3$s here</a> or <a href="%4$s">upgrade automatically</a>.'), $plugin_data['Name'], $r->url, $r->new_version, wp_nonce_url('update.php?action=upgrade-plugin&amp;plugin=' . $file, 'upgrade-plugin_' . $file) );
 	
-	echo "</td></tr>";
+	echo '</td></tr>';
 }
-add_action( 'after_plugin_row', 'wp_plugin_update_row' );
+add_action( 'after_plugin_row', 'wp_plugin_update_row', 10, 2 );
 
 function wp_update_plugin($plugin, $feedback = '') {
 	global $wp_filesystem;
@@ -151,7 +150,7 @@ function wp_update_plugin($plugin, $feedback = '') {
 		return new WP_Error('up_to_date', __('The plugin is at the latest version.'));
 
 	// Is a filesystem accessor setup?
-	if ( ! $wp_filesystem || !is_object($wp_filesystem) )
+	if ( ! $wp_filesystem || ! is_object($wp_filesystem) )
 		WP_Filesystem();
 
 	if ( ! is_object($wp_filesystem) )
@@ -160,11 +159,18 @@ function wp_update_plugin($plugin, $feedback = '') {
 	if ( $wp_filesystem->errors->get_error_code() )
 		return new WP_Error('fs_error', __('Filesystem error'), $wp_filesystem->errors);
 
-	//Get the Base folder
-	$base = $wp_filesystem->get_base_dir();
+	//Get the base plugin folder
+	$plugins_dir = $wp_filesystem->wp_plugins_dir();
+	if ( empty($plugins_dir) )
+		return new WP_Error('fs_no_plugins_dir', __('Unable to locate WordPress Plugin directory.'));
+
+	//And the same for the Content directory.
+	$content_dir = $wp_filesystem->wp_content_dir();
+	if( empty($content_dir) )
+		return new WP_Error('fs_no_content_dir', __('Unable to locate WordPress Content directory (wp-content).'));
 	
-	if ( empty($base) )
-		return new WP_Error('fs_nowordpress', __('Unable to locate WordPress directory.'));
+	$plugins_dir = trailingslashit( $plugins_dir );
+	$content_dir = trailingslashit( $content_dir );
 
 	// Get the URL to the zip file
 	$r = $current->response[ $plugin ];
@@ -175,12 +181,12 @@ function wp_update_plugin($plugin, $feedback = '') {
 	// Download the package
 	$package = $r->package;
 	apply_filters('update_feedback', sprintf(__('Downloading update from %s'), $package));
-	$file = download_url($package);
+	$download_file = download_url($package);
 
-	if ( is_wp_error($file) )
-		return new WP_Error('download_failed', __('Download failed.'), $file->get_error_message());
+	if ( is_wp_error($download_file) )
+		return new WP_Error('download_failed', __('Download failed.'), $download_file->get_error_message());
 
-	$working_dir = $base . 'wp-content/upgrade/' . basename($plugin, '.php');
+	$working_dir = $content_dir . 'upgrade/' . basename($plugin, '.php');
 
 	// Clean up working directory
 	if ( $wp_filesystem->is_dir($working_dir) )
@@ -188,15 +194,15 @@ function wp_update_plugin($plugin, $feedback = '') {
 
 	apply_filters('update_feedback', __('Unpacking the update'));
 	// Unzip package to working directory
-	$result = unzip_file($file, $working_dir);
+	$result = unzip_file($download_file, $working_dir);
+	
+	// Once extracted, delete the package
+	unlink($download_file);
+	
 	if ( is_wp_error($result) ) {
-		unlink($file);
 		$wp_filesystem->delete($working_dir, true);
 		return $result;
 	}
-
-	// Once extracted, delete the package
-	unlink($file);
 
 	if ( is_plugin_active($plugin) ) {
 		//Deactivate the plugin silently, Prevent deactivation hooks from running.
@@ -206,25 +212,25 @@ function wp_update_plugin($plugin, $feedback = '') {
 
 	// Remove the existing plugin.
 	apply_filters('update_feedback', __('Removing the old version of the plugin'));
-	$plugin_dir = dirname($base . PLUGINDIR . "/$plugin");
-	$plugin_dir = trailingslashit($plugin_dir);
+	$this_plugin_dir = trailingslashit( dirname($plugins_dir . $plugin) );
 	
 	// If plugin is in its own directory, recursively delete the directory.
-	if ( strpos($plugin, '/') && $plugin_dir != $base . PLUGINDIR . '/' ) //base check on if plugin includes directory seperator AND that its not the root plugin folder
-		$deleted = $wp_filesystem->delete($plugin_dir, true);
+	if ( strpos($plugin, '/') && $this_plugin_dir != $plugins_dir ) //base check on if plugin includes directory seperator AND that its not the root plugin folder
+		$deleted = $wp_filesystem->delete($this_plugin_dir, true);
 	else
-		$deleted = $wp_filesystem->delete($base . PLUGINDIR . "/$plugin");
+		$deleted = $wp_filesystem->delete($plugins_dir . $plugin);
 
-	if ( !$deleted ) {
+	if ( ! $deleted ) {
 		$wp_filesystem->delete($working_dir, true);
 		return new WP_Error('delete_failed', __('Could not remove the old plugin'));
 	}
 
 	apply_filters('update_feedback', __('Installing the latest version'));
 	// Copy new version of plugin into place.
-	if ( !copy_dir($working_dir, $base . PLUGINDIR) ) {
+	$result = copy_dir($working_dir, $plugins_dir);
+	if ( is_wp_error($result) ) {
 		//$wp_filesystem->delete($working_dir, true); //TODO: Uncomment? This DOES mean that the new files are available in the upgrade folder if it fails.
-		return new WP_Error('install_failed', __('Installation failed'));
+		return $result;
 	}
 
 	//Get a list of the directories in the working directory before we delete it, We need to know the new folder for the plugin
@@ -237,13 +243,13 @@ function wp_update_plugin($plugin, $feedback = '') {
 	delete_option('update_plugins');
 	
 	if( empty($filelist) )
-		return false; //We couldnt find any files in the working dir
+		return false; //We couldnt find any files in the working dir, therefor no plugin installed? Failsafe backup.
 	
 	$folder = $filelist[0];
-	$plugin = get_plugins('/' . $folder); //Pass it with a leading slash, search out the plugins in the folder, 
+	$plugin = get_plugins('/' . $folder); //Ensure to pass with leading slash
 	$pluginfiles = array_keys($plugin); //Assume the requested plugin is the first in the list
 
-	return  $folder . '/' . $pluginfiles[0]; //Pass it without a leading slash as WP requires
+	return  $folder . '/' . $pluginfiles[0];
 }
 
 */

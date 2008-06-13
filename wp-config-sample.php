@@ -39,6 +39,7 @@ define( "WP_USE_MULTIPLE_DB", false );
 
 /* That's all, stop editing! Happy blogging. */
 
-define('ABSPATH', dirname(__FILE__).'/');
-require_once(ABSPATH.'wp-settings.php');
+if ( !defined('ABSPATH') )
+	define('ABSPATH', dirname(__FILE__) . '/');
+require_once(ABSPATH . 'wp-settings.php');
 ?>
