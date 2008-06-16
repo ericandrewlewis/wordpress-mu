@@ -1,6 +1,8 @@
 <?php
 define( "WP_INSTALLING", true );
-require( 'wp-config.php' );
+
+/** Sets up the WordPress Environment. */
+require( dirname(__FILE__) . '/wp-load.php' );
 
 add_action( 'wp_head', 'signuppageheaders' ) ;
 
