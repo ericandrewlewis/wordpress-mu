@@ -149,7 +149,7 @@ foreach( $recently_activated as $key => $time )
 if( $recently_activated != get_option('recently_activated') ) //If array changed, update it.
 	update_option('recently_activated', $recently_activated);
 
-$all_plugins = get_plugins();
+$all_plugins = apply_filters( 'all_plugins', get_plugins() );
 
 $plugins_allowedtags = array('a' => array('href' => array(),'title' => array()),'abbr' => array('title' => array()),'acronym' => array('title' => array()),'code' => array(),'em' => array(),'strong' => array());
 
