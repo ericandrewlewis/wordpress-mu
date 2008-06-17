@@ -1909,4 +1909,17 @@ function wpmu_upload_bypass_url($url) {
 
 add_filter('media_upload_form_url', 'wpmu_upload_bypass_url');
 
+function mu_locale( $locale ) {
+	if( defined('WP_INSTALLING') == false ) {
+		$mu_locale = get_option('WPLANG');
+		if( $mu_locale === false )
+			$mu_locale = get_site_option('WPLANG');
+
+		if( $mu_locale !== false )
+			return $mu_locale;
+	}
+	return $locale;
+}
+add_filter( 'locale', 'mu_locale' );
+
 ?>

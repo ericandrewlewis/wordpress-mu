@@ -311,12 +311,6 @@ $cookiehash = '';
  */
 define('COOKIEHASH', '' );
 
-if( defined('WP_INSTALLING') == false ) {
-	$locale = get_option('WPLANG');
-	if( $locale === false )
-		$locale = get_site_option('WPLANG');
-}
-
 $wpdb->hide_errors();
 if( defined( 'MUPLUGINDIR' ) == false ) 
 	define( 'MUPLUGINDIR', 'wp-content/mu-plugins' );
