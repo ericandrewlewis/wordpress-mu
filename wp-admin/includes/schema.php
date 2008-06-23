@@ -185,7 +185,7 @@ CREATE TABLE IF NOT EXISTS $wpdb->registration_log (
   PRIMARY KEY  (ID),
   KEY IP (IP)
 ) $charset_collate;
-CREATE TABLE $wpdb->site (
+CREATE TABLE IF NOT EXISTS $wpdb->site (
   id bigint(20) NOT NULL auto_increment,
   domain varchar(200) NOT NULL default '',
   path varchar(100) NOT NULL default '',
