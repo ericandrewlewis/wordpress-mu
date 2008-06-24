@@ -282,6 +282,9 @@ function wp_load_alloptions() {
 function _get_option_cache( $setting ) {
 	global $_wp_alloptions;
 	global $blog_id;
+	
+	if( defined( 'WP_INSTALLING' ) )
+		return false;
 
 	wp_load_alloptions();
 
