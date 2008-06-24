@@ -371,17 +371,19 @@ function wp_load_alloptions() {
 	global $_wp_alloptions;
 	global $blog_id;
 
-	if ( !empty($_wp_alloptions[$blog_id]) )
-		return $_wp_alloptions[$blog_id];
+	if( !defined( 'WP_INSTALLING' ) ) {
+		if ( !empty($_wp_alloptions[$blog_id]) )
+			return $_wp_alloptions[$blog_id];
 
-	$alloptions = wp_cache_get('alloptions', 'options');
+		$alloptions = wp_cache_get('alloptions', 'options');
 
-	if ( false !== $alloptions ) {
-		$_wp_alloptions[$blog_id] = $alloptions;
-		return $alloptions;
+		if ( false !== $alloptions ) {
+			$_wp_alloptions[$blog_id] = $alloptions;
+			return $alloptions;
+		}
+
+		$_wp_alloptions[$blog_id] = array();
 	}
-
-	$_wp_alloptions[$blog_id] = array();
 
 	$suppress = $wpdb->suppress_errors();
 	if ( !$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" ) )
@@ -399,9 +401,6 @@ function _get_option_cache( $setting ) {
 	global $_wp_alloptions;
 	global $blog_id;
 	
-	if( defined( 'WP_INSTALLING' ) )
-		return false;
-
 	wp_load_alloptions();
 
 	if ( isset($_wp_alloptions[$blog_id][$setting]) )
