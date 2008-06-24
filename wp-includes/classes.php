@@ -429,7 +429,8 @@ class Walker {
 		if ( $max_depth == 0 ||
 		     ($max_depth != 0 &&  $max_depth > $depth+1 )) { //whether to descend
 
-			for ( $i = 0; $i < sizeof( $children_elements ); $i++ ) {
+			$num_elements = sizeof( $children_elements );
+			for ( $i = 0; $i < $num_elements; $i++ ) {
 
 				$child = $children_elements[$i];
 				if ( $child->$parent_field == $element->$id_field ) {
@@ -442,6 +443,7 @@ class Walker {
 					}
 
 					array_splice( $children_elements, $i, 1 );
+					$num_elements--;
 					$this->display_element( $child, $children_elements, $max_depth, $depth + 1, $args, $output );
 					$i = -1;
 				}
@@ -508,12 +510,14 @@ class Walker {
 		if ( !$top_level_elements ) {
 
 			$root = $children_elements[0];
-			for ( $i = 0; $i < sizeof( $children_elements ); $i++ ) {
+			$num_elements = sizeof($children_elements);
+			for ( $i = 0; $i < $num_elements; $i++ ) {
 
 				$child = $children_elements[$i];
 				if ($root->$parent_field == $child->$parent_field ) {
 					$top_level_elements[] = $child;
 					array_splice( $children_elements, $i, 1 );
+					$num_elements--;
 					$i--;
 				}
 			}

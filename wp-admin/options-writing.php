@@ -57,6 +57,26 @@ endforeach;
 </tr>
 </table>
 
+<h3><?php _e('Remote Publishing') ?></h3>
+<p><?php printf(__('To post to WordPress from a desktop blogging client or remote website that uses the Atom Publishing Protocol or one of the XML-RPC publishing interfaces you must enable them below.')) ?></p>
+<table class="form-table">
+<tr valign="top">
+<th scope="row"><?php _e('Atom Publishing Protocol') ?></th>
+<td><fieldset><legend class="hidden"><?php _e('Atom Publishing Protocol') ?></legend>
+<label for="enable_app">
+<input name="enable_app" type="checkbox" id="enable_app" value="1" <?php checked('1', get_option('enable_app')); ?> />
+<?php _e('Enable the Atom Publishing Protocol.') ?></label><br />
+</fieldset></td>
+</tr>
+<tr valign="top">
+<th scope="row"><?php _e('XML-RPC') ?></th>
+<td><fieldset><legend class="hidden"><?php _e('XML-RPC') ?></legend>
+<label for="enable_xmlrpc">
+<input name="enable_xmlrpc" type="checkbox" id="enable_xmlrpc" value="1" <?php checked('1', get_option('enable_xmlrpc')); ?> />
+<?php _e('Enable the WordPress, Movable Type, MetaWeblog and Blogger XML-RPC publishing protocols.') ?></label><br />
+</fieldset></td>
+</tr></table>
+
 
 <p class="submit">
 <input type="hidden" name="action" value="update" />

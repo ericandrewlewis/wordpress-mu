@@ -35,7 +35,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'editor_functions', '/wp-admin/js/editor.js', false, '20080325' );
 
 	// Modify this version when tinyMCE plugins are changed.
-	$mce_version = apply_filters('tiny_mce_version', '20080606');
+	$mce_version = apply_filters('tiny_mce_version', '20080622');
 	$scripts->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('editor_functions'), $mce_version );
 
 	$scripts->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.6');
@@ -46,7 +46,7 @@ function wp_default_scripts( &$scripts ) {
 		'broken' => __('An unidentified error has occurred.')
 	) );
 
-	$scripts->add( 'autosave', '/wp-includes/js/autosave.js', array('schedule', 'wp-ajax-response'), '20080508' );
+	$scripts->add( 'autosave', '/wp-includes/js/autosave.js', array('schedule', 'wp-ajax-response'), '20080622' );
 
 	$scripts->add( 'wp-lists', '/wp-includes/js/wp-lists.js', array('wp-ajax-response'), '20080411' );
 	$scripts->localize( 'wp-lists', 'wpListL10n', array(
@@ -136,7 +136,7 @@ function wp_default_scripts( &$scripts ) {
 			'save' => __('Save'),
 			'cancel' => __('Cancel'),
 		) );
-		$scripts->add( 'post', '/wp-admin/js/post.js', array('suggest', 'jquery-ui-tabs', 'wp-lists', 'postbox', 'slug'), '20080519' );
+		$scripts->add( 'post', '/wp-admin/js/post.js', array('suggest', 'jquery-ui-tabs', 'wp-lists', 'postbox', 'slug'), '20080623' );
 		$scripts->localize( 'post', 'postL10n', array(
 			'tagsUsed' =>  __('Tags used on this post:'),
 			'add' => attribute_escape(__('Add')),
@@ -226,7 +226,7 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'install', '/wp-admin/css/install.css' );
 	$styles->add( 'theme-editor', '/wp-admin/css/theme-editor.css' );
 	$styles->add( 'press-this', '/wp-admin/css/press-this.css' );
-	$styles->add( 'thickbox', '/wp-includes/js/thickbox/thickbox.css' );
+	$styles->add( 'thickbox', '/wp-includes/js/thickbox/thickbox.css', array(), '20080613' );
 	$styles->add( 'login', '/wp-admin/css/login.css' );
 
 	foreach ( $rtl_styles as $rtl_style )

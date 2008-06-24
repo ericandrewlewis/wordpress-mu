@@ -203,7 +203,7 @@ function wp_list_bookmarks($args = '') {
 
 	if ( $categorize ) {
 		//Split the bookmarks into ul's for each category
-		$cats = get_terms('link_category', array('category_name' => $category_name, 'include' => $category, 'orderby' => $category_orderby, 'order' => $category_order, 'hierarchical' => 0));
+		$cats = get_terms('link_category', array('name__like' => $category_name, 'include' => $category, 'orderby' => $category_orderby, 'order' => $category_order, 'hierarchical' => 0));
 
 		foreach ( (array) $cats as $cat ) {
 			$params = array_merge($r, array('category'=>$cat->term_id));
@@ -212,7 +212,7 @@ function wp_list_bookmarks($args = '') {
 				continue;
 			$output .= str_replace(array('%id', '%class'), array("linkcat-$cat->term_id", $class), $category_before);
 			$catname = apply_filters( "link_category", $cat->name );
-			$output .= "$title_before$catname$title_after\n\t<ul>\n";
+			$output .= "$title_before$catname$title_after\n\t<ul class='xoxo blogroll'>\n";
 			$output .= _walk_bookmarks($bookmarks, $r);
 			$output .= "\n\t</ul>\n$category_after\n";
 		}
@@ -223,7 +223,7 @@ function wp_list_bookmarks($args = '') {
 		if ( !empty($bookmarks) ) {
 			if ( !empty( $title_li ) ){
 				$output .= str_replace(array('%id', '%class'), array("linkcat-$category", $class), $category_before);
-				$output .= "$title_before$title_li$title_after\n\t<ul>\n";
+				$output .= "$title_before$title_li$title_after\n\t<ul class='xoxo blogroll'>\n";
 				$output .= _walk_bookmarks($bookmarks, $r);
 				$output .= "\n\t</ul>\n$category_after\n";
 			} else {

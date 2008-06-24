@@ -39,11 +39,14 @@ header('Content-Type: text/xml; charset=' . get_option('blog_charset'), true);
     <engineLink>http://wordpress.org/</engineLink>
     <homePageLink><?php bloginfo_rss('url') ?></homePageLink>
     <apis>
+    <?php if ( get_option('enable_xmlrpc') ) :?>
       <api name="WordPress" blogID="1" preferred="true" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
       <api name="Movable Type" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
       <api name="MetaWeblog" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
       <api name="Blogger" blogID="1" preferred="false" apiLink="<?php bloginfo_rss('wpurl') ?>/xmlrpc.php" />
+    <?php endif; if ( get_option('enable_app') ) :?>
       <api name="Atom" blogID="" preferred="false" apiLink="<?php echo apply_filters('atom_service_url', (get_bloginfo('url')."/wp-app.php/service"))?>" />
+    <?php endif; ?>
     </apis>
   </service>
 </rsd>
@@ -108,7 +111,7 @@ if ( isset($HTTP_RAW_POST_DATA) )
 class wp_xmlrpc_server extends IXR_Server {
 
 	function wp_xmlrpc_server() {
-		$this->methods = array(
+		$xmlrpc_methods = array(
 			// WordPress API
 			'wp.getUsersBlogs'		=> 'this:wp_getUsersBlogs',
 			'wp.getPage'			=> 'this:wp_getPage',
@@ -127,6 +130,8 @@ class wp_xmlrpc_server extends IXR_Server {
 			'wp.getPostStatusList'	=> 'this:wp_getPostStatusList',
 			'wp.getPageStatusList'	=> 'this:wp_getPageStatusList',
 			'wp.getPageTemplates'	=> 'this:wp_getPageTemplates',
+			'wp.getOptions'			=> 'this:wp_getOptions',
+			'wp.setOptions'			=> 'this:wp_setOptions',
 
 			// Blogger API
 			'blogger.getUsersBlogs' => 'this:blogger_getUsersBlogs',
@@ -162,8 +167,10 @@ class wp_xmlrpc_server extends IXR_Server {
 			'mt.supportedMethods' => 'this:mt_supportedMethods',
 			'mt.supportedTextFilters' => 'this:mt_supportedTextFilters',
 			'mt.getTrackbackPings' => 'this:mt_getTrackbackPings',
-			'mt.publishPost' => 'this:mt_publishPost',
-
+			'mt.publishPost' => 'this:mt_publishPost'
+		);
+		
+		$xmlrpc_functions = array (
 			// PingBack
 			'pingback.ping' => 'this:pingback_ping',
 			'pingback.extensions.getPingbacks' => 'this:pingback_extensions_getPingbacks',
@@ -171,6 +178,15 @@ class wp_xmlrpc_server extends IXR_Server {
 			'demo.sayHello' => 'this:sayHello',
 			'demo.addTwoNumbers' => 'this:addTwoNumbers'
 		);
+
+		if ( get_option('enable_xmlrpc') )
+		{
+			$this->methods = array_merge($xmlrpc_methods,$xmlrpc_functions);
+		} else {
+			$this->methods = $xmlrpc_functions;
+		}
+		
+		$this->initialise_blog_option_info( );
 		$this->methods = apply_filters('xmlrpc_methods', $this->methods);
 		$this->IXR_Server($this->methods);
 	}
@@ -253,6 +269,58 @@ class wp_xmlrpc_server extends IXR_Server {
 				add_meta($post_id);
 			}
 		}
+	}
+
+	function initialise_blog_option_info( ) {
+		global $wp_version;
+
+		$this->blog_options = array(
+			// Read only options
+			'software_name'		=> array(
+				'desc'			=> __( 'Software Name' ),
+				'readonly'		=> true,
+				'value'			=> 'WordPress'
+			),
+			'software_version'	=> array(
+				'desc'			=> __( 'Software Version' ),
+				'readonly'		=> true,
+				'value'			=> $wp_version
+			),
+			'blog_url'			=> array(
+				'desc'			=> __( 'Blog URL' ),
+				'readonly'		=> true,
+				'option'		=> 'siteurl'
+			),
+
+			// Updatable options
+			'time_zone'			=> array(
+				'desc'			=> __( 'Time Zone' ),
+				'readonly'		=> false,
+				'option'		=> 'gmt_offset'
+			),
+			'blog_title'		=> array(
+				'desc'			=> __( 'Blog Title' ),
+				'readonly'		=> false,
+				'option'			=> 'blogname'
+			),
+			'blog_tagline'		=> array(
+				'desc'			=> __( 'Blog Tagline' ),
+				'readonly'		=> false,
+				'option'		=> 'blogdescription'
+			),
+			'date_format'		=> array(
+				'desc'			=> __( 'Date Format' ),
+				'readonly'		=> false,
+				'option'		=> 'date_format'
+			),
+			'time_format'		=> array(
+				'desc'			=> __( 'Time Format' ),
+				'readonly'		=> false,
+				'option'		=> 'time_format'
+			)
+		);
+
+		$this->blog_options = apply_filters( 'xmlrpc_blog_options', $this->blog_options );
 	}
 
 	/**
@@ -862,6 +930,77 @@ class wp_xmlrpc_server extends IXR_Server {
 		return $templates;
 	}
 
+	function wp_getOptions( $args ) {
+		$this->escape( $args );
+
+		$blog_id	= (int) $args[0];
+		$username	= $args[1];
+		$password	= $args[2];
+		$options	= (array) $args[3];
+
+		if( !$this->login_pass_ok( $username, $password ) )
+			return new IXR_Error( 403, __( 'Bad login/pass combination.' ) );
+
+		$user = set_current_user( 0, $username );
+
+		// If no specific options where asked for, return all of them
+		if (count( $options ) == 0 ) {
+			$options = array_keys($this->blog_options);
+		}
+
+		return $this->_getOptions($options);
+	}
+
+	function _getOptions($options)
+	{
+		$data = array( );
+		foreach( $options as $option ) {
+			if( array_key_exists( $option, $this->blog_options ) )
+			{
+				$data[$option] = $this->blog_options[$option];
+				//Is the value static or dynamic?
+				if( isset( $data[$option]['option'] ) ) {
+					$data[$option]['value'] = get_option( $data[$option]['option'] );
+					unset($data[$option]['option']);
+				}
+			}
+		}
+
+		return $data;
+	}
+
+	function wp_setOptions( $args ) {
+		$this->escape( $args );
+
+		$blog_id	= (int) $args[0];
+		$username	= $args[1];
+		$password	= $args[2];
+		$options	= (array) $args[3];
+
+		if( !$this->login_pass_ok( $username, $password ) )
+			return new IXR_Error( 403, __( 'Bad login/pass combination.' ) );
+
+		$user = set_current_user( 0, $username );
+		if( !current_user_can( 'manage_options' ) )
+			return new IXR_Error( 403, __( 'You are not allowed to update options.' ) );
+
+		foreach( $options as $o_name => $o_value ) {
+			$option_names[] = $o_name;
+			if( empty( $o_value ) )
+				continue;
+
+			if( !array_key_exists( $o_name, $this->blog_options ) )
+				continue;
+
+			if( $this->blog_options[$o_name]['readonly'] == true )
+				continue;
+
+			update_option( $this->blog_options[$o_name]['option'], $o_value );
+		}
+
+		//Now return the updated values
+		return $this->_getOptions($option_names);
+	}
 
 	/* Blogger API functions
 	 * specs on http://plant.blogger.com/api and http://groups.yahoo.com/group/bloggerDev/

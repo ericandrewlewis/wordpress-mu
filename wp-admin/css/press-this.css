@@ -111,7 +111,7 @@ text-decoration: none;
 .howto {
 font-size: 11px;
 }
-#newtag { padding: 3px; }
+#newtag { width: 60%; padding: 3px; }
 
 #wphead {
 	height: 2em;
@@ -294,26 +294,38 @@ div#categories h2 {
 	height: 100px;
 }
 
+#img_container a {
+	display: block;
+	width: 79px;
+	height: 79px;
+	float: left;
+}
 #img_container img {
 	width: 75px;
 	height: 75px;
+	border: 0px;
 	padding: 2px;
 	background-color: #f4f4f4;
-	margin-right: 7px;
-	margin-bottom: 7px;
 	cursor: pointer;
 }
+#img_container a, #img_container a:link, #img_container a:visited {
+	border: 2px solid #ccc;
+	margin: 0 4px 4px 0;
+} 
+#img_container a:hover, #img_container a:active {
+	border: 2px solid #000;
+}
 .submit {
--moz-border-radius-bottomleft: 3px;
--khtml-border-bottom-left-radius: 3px;
--webkit-border-bottom-left-radius: 3px;
-border-bottom-left-radius: 3px;
--moz-border-radius-bottomright: 3px;
--khtml-border-bottom-right-radius: 3px;
--webkit-border-bottom-right-radius: 3px;
-border-bottom-right-radius: 3px;
-margin: 0;
-padding: 0;
+	-moz-border-radius-bottomleft: 3px;
+	-khtml-border-bottom-left-radius: 3px;
+	-webkit-border-bottom-left-radius: 3px;
+	border-bottom-left-radius: 3px;
+	-moz-border-radius-bottomright: 3px;
+	-khtml-border-bottom-right-radius: 3px;
+	-webkit-border-bottom-right-radius: 3px;
+	border-bottom-right-radius: 3px;
+	margin: 0;
+	padding: 0;
 }
 .submitbox {
 	width: 100%;
@@ -449,3 +461,47 @@ margin-bottom: .25em;
 	text-decoration: none;
 	padding-bottom: 2px;
 }
+
+#photo_directions {
+margin-top: .25em;
+display: block;
+position: relative;
+}
+#photo_directions span {
+display: block;
+position: absolute;
+top: 0;
+right: 3px;
+}
+#photo_saving {
+margin-bottom: 8px;
+}
+
+#post_status {
+	margin-left: 10px;
+	margin-bottom: 1em;
+	display: block;
+}
+
+#footer {
+	height: 65px;
+	display: block;
+	width: 640px;
+	padding: 10px 0 0 60px;
+	margin: 0;
+	position: absolute;
+	bottom: 0;
+	font-size: 12px;
+}
+
+#footer p {
+	margin: 0;
+	padding: 7px 0;
+}
+
+#footer p a {
+	text-decoration: none;
+}
+
+#footer p a:hover {
+	text-decoration: underline;

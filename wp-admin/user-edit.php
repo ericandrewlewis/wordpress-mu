@@ -41,6 +41,18 @@ function profile_js ( ) {
 		}
 
 	}
+	
+	function update_nickname ( ) {
+		
+		var nickname = jQuery('#nickname').val();
+		var display_nickname = jQuery('#display_nickname').val();
+		
+		if ( nickname == '' ) {
+			jQuery('#display_nickname').remove();
+		}
+		jQuery('#display_nickname').val(nickname).html(nickname);
+		
+	}
 
 	jQuery(function($) { 
 		$('#pass1').keyup( check_pass_strength ) 
@@ -49,6 +61,7 @@ function profile_js ( ) {
 	
 	jQuery(document).ready( function() {
 		jQuery('#pass1,#pass2').attr('autocomplete','off');
+		jQuery('#nickname').blur(update_nickname);
     });
 </script>
 <?php
@@ -252,16 +265,16 @@ echo $role_list . '</select></td></tr>';
 		<select name="display_name" id="display_name">
 		<?php
 			$public_display = array();
-			$public_display[] = $profileuser->display_name;
-			$public_display[] = $profileuser->nickname;
-			$public_display[] = $profileuser->user_login;
-			$public_display[] = $profileuser->first_name;
-			$public_display[] = $profileuser->first_name.' '.$profileuser->last_name;
-			$public_display[] = $profileuser->last_name.' '.$profileuser->first_name;
+			$public_display['display_displayname'] = $profileuser->display_name;
+			$public_display['display_nickname'] = $profileuser->nickname;
+			$public_display['display_username'] = $profileuser->user_login;
+			$public_display['display_firstname'] = $profileuser->first_name;
+			$public_display['display_firstlast'] = $profileuser->first_name.' '.$profileuser->last_name;
+			$public_display['display_lastfirst'] = $profileuser->last_name.' '.$profileuser->first_name;
 			$public_display = array_unique(array_filter(array_map('trim', $public_display)));
-			foreach($public_display as $item) {
+			foreach($public_display as $id => $item) {
 		?>
-			<option value="<?php echo $item; ?>"><?php echo $item; ?></option>
+			<option id="<?php echo $id; ?>" value="<?php echo $item; ?>"><?php echo $item; ?></option>
 		<?php
 			}
 		?>
@@ -312,11 +325,11 @@ $show_password_fields = apply_filters('show_password_fields', true);
 if ( $show_password_fields ) :
 ?>
 <tr>
-	<th><label for="pass1"><?php _e('New Password:'); ?></label></th>
+	<th><label for="pass1"><?php _e('New Password'); ?></label></th>
 	<td><input type="password" name="pass1" id="pass1" size="16" value="" /> <?php _e("If you would like to change the password type a new one. Otherwise leave this blank."); ?><br />
 		<input type="password" name="pass2" id="pass2" size="16" value="" /> <?php _e("Type your new password again."); ?><br />
 		<?php if ( $is_profile_page ): ?>
-		<p><strong><?php _e('Password Strength:'); ?></strong></p>
+		<p><strong><?php _e('Password Strength'); ?></strong></p>
 		<div id="pass-strength-result"><?php _e('Too short'); ?></div> <?php _e('Hint: Use upper and lower case characters, numbers and symbols like !"?$%^&amp;( in your password.'); ?>
 		<?php endif; ?>
 	</td>
@@ -336,7 +349,7 @@ if ( $show_password_fields ) :
 <br class="clear" />
 	<table width="99%" style="border: none;" cellspacing="2" cellpadding="3" class="editform">
 		<tr>
-			<th scope="row"><?php _e('Additional Capabilities:') ?></th>
+			<th scope="row"><?php _e('Additional Capabilities') ?></th>
 			<td><?php
 			$output = '';
 			foreach($profileuser->caps as $cap => $value) {
