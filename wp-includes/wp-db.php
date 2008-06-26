@@ -141,7 +141,6 @@ class wpdb {
 	var $signups;
 	var $site;
 	var $sitemeta;
-	var $usermeta;
 	var $sitecategories;
 	var $global_tables = array('blogs', 'signups', 'site', 'sitemeta', 'users', 'usermeta', 'sitecategories', 'registration_log', 'blog_versions');
 
