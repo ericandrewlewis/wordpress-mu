@@ -401,7 +401,6 @@ function wpmu_menu() {
 	unset( $submenu['themes.php'][10] );
 	unset( $submenu['plugins.php'][5] );
 	unset( $submenu['plugins.php'][10] );
-	unset( $submenu['edit.php'][30] );
 	unset( $menu['35'] ); // Plugins
 
 	$menu_perms = get_site_option( "menu_items" );
