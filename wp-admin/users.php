@@ -181,7 +181,7 @@ case 'doremove':
 			$update = 'err_admin_remove';
 			continue;
 		}
-		remove_user_from_blog($id);
+		remove_user_from_blog($id, $blog_id);
 	}
 
 	wp_redirect('users.php?update=' . $update);
