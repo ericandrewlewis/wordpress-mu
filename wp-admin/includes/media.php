@@ -65,10 +65,10 @@ function get_image_send_to_editor($id, $alt, $title, $align, $url='', $rel = fal
 function media_send_to_editor($html) {
 	?>
 <script type="text/javascript">
-<!--
-top.send_to_editor('<?php echo addslashes($html); ?>');
-top.tb_remove();
--->
+/* <![CDATA[ */
+var win = window.dialogArguments || opener || parent || top;
+win.send_to_editor('<?php echo addslashes($html); ?>');
+/* ]]> */
 </script>
 	<?php
 	exit;
@@ -850,7 +850,7 @@ jQuery(function($){
 			file_types: "<?php echo apply_filters('upload_file_glob', '*.*'); ?>",
 			post_params : {
 				"post_id" : "<?php echo $post_id; ?>",
-				"auth_cookie" : "<?php echo $_COOKIE[AUTH_COOKIE]; ?>",
+				"auth_cookie" : "<?php if ( is_ssl() ) echo $_COOKIE[SECURE_AUTH_COOKIE]; else echo $_COOKIE[AUTH_COOKIE]; ?>",
 				"_wpnonce" : "<?php echo wp_create_nonce('media-form'); ?>",
 				"type" : "<?php echo $type; ?>",
 				"tab" : "<?php echo $tab; ?>",
