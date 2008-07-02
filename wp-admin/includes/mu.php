@@ -631,11 +631,15 @@ remove_action( 'media_buttons', 'media_buttons' );
 function secret_salt_warning() {
 	if( !is_site_admin() )
 		return;
-	if( !defined( 'SECRET_KEY' ) || !defined( 'SECRET_SALT' ) ) {
-		$salt1 = wp_generate_password() . wp_generate_password();
-		$salt2 = wp_generate_password() . wp_generate_password();
-		$msg = sprintf( __( 'Warning! You must define SECRET_KEY and SECRET_SALT in <strong>%swp-config.php</strong><br />Please add the following code before the line, <code>/* That\'s all, stop editing! Happy blogging. */</code>' ), ABSPATH );
-		$msg .= "<blockquote>define('SECRET_KEY', '$salt1');<br />define('SECRET_SALT', '$salt2');</blockquote>";
+	$secret_keys = array( 'SECRET_KEY', 'SECRET_SALT', 'LOGGED_IN_KEY', 'LOGGED_IN_SALT' );
+	$out = '';
+	foreach( $secret_keys as $key ) {
+		if( !defined( $key ) )
+			$out .= "define( '$key', '" . wp_generate_password() . wp_generate_password() . "' );<br />";
+	}
+	if( $out != '' ) {
+		$msg = sprintf( __( 'Warning! WordPress encrypts user cookies, but you must add the following lines to <strong>%swp-config.php</strong> for it to work properly.<br />Please add the code before the line, <code>/* That\'s all, stop editing! Happy blogging. */</code>' ), ABSPATH );
+		$msg .= "<blockquote>$out</blockquote>";
 
 		echo "<div id='update-nag'>$msg</div>";
 	}

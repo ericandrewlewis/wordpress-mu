@@ -339,6 +339,7 @@ function step2() {
 				break;
 			case "define('SECRET_K":
 			case "define('SECRET_S":
+			case "define('LOGGED_I":
 				fwrite($handle, str_replace('put your unique phrase here', md5( mt_rand() ) . md5( mt_rand() ), $line));
 				break;
 			default:

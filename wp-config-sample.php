@@ -13,8 +13,10 @@ $base = 'BASE';
 // Change SECRET_KEY to a unique phrase.  You won't have to remember it later,
 // so make it long and complicated.  You can visit http://api.wordpress.org/secret-key/1.0/
 // to get a secret key generated for you, or just make something up.
-define('SECRET_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
-define('SECRET_SALT', 'put your unique phrase here'); // Change this to a unique phrase.
+define('SECRET_KEY', 'put your unique phrase here'); // Change these to unique phrases.
+define('SECRET_SALT', 'put your unique phrase here');
+define('LOGGED_IN_KEY', 'put your unique phrase here');
+define('LOGGED_IN_SALT', 'put your unique phrase here');
 
 // double check $base
 if( $base == 'BASE' )
