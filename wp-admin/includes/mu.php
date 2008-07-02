@@ -41,25 +41,12 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 	update_blog_status( $blog_id, 'deleted', 1 );
 
 	if ( $drop ) {
-		$drop_tables = array( $wpdb->base_prefix . $blog_id . "_categories",
-		$wpdb->base_prefix . $blog_id . "_comments",
-		$wpdb->base_prefix . $blog_id . "_linkcategories",
-		$wpdb->base_prefix . $blog_id . "_links",
-		$wpdb->base_prefix . $blog_id . "_link2cat",
-		$wpdb->base_prefix . $blog_id . "_options",
-		$wpdb->base_prefix . $blog_id . "_post2cat",
-		$wpdb->base_prefix . $blog_id . "_postmeta",
-		$wpdb->base_prefix . $blog_id . "_posts",
-		$wpdb->base_prefix . $blog_id . "_terms",
-		$wpdb->base_prefix . $blog_id . "_term_taxonomy",
-		$wpdb->base_prefix . $blog_id . "_term_relationships" );
-
+		$drop_tables = $wpdb->get_results("show tables LIKE '". $wpdb->base_prefix . $blog_id . "_%'", ARRAY_A); 
 		$drop_tables = apply_filters( 'wpmu_drop_tables', $drop_tables ); 
-		reset( $drop_tables );
 
-		foreach ( (array) $drop_tables as $drop_table) {
-			$wpdb->query( "DROP TABLE IF EXISTS $drop_table" );
-		}
+		reset( $drop_tables );
+		foreach ( (array) $drop_tables as $drop_table => $name )
+			$wpdb->query( "DROP TABLE IF EXISTS ". current( $name ) ."" );
 
 		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
 		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/{$blog_id}/files/";
