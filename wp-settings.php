@@ -97,7 +97,7 @@ if ( empty($PHP_SELF) )
 	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
 if ( version_compare( '4.3', phpversion(), '>' ) ) {
-	die( /*WP_I18N_OLD_PHP*/'Your server is running PHP version ' . phpversion() . ' but WordPress requires at least 4.3.'/*/WP_I18N_OLD_PHP*/ );
+	die( sprintf( /*WP_I18N_OLD_PHP*/'Your server is running PHP version %s but WordPress requires at least 4.3.'/*/WP_I18N_OLD_PHP*/, php_version() ) );
 }
 
 if ( !defined('WP_CONTENT_DIR') )
@@ -399,6 +399,20 @@ if ( !defined('COOKIEPATH') )
  */
 if ( !defined('SITECOOKIEPATH') )
 	define('SITECOOKIEPATH', $current_site->path );
+
+/**
+ * It is possible to define this in wp-config.php
+ * @since 2.6
+ */
+if ( !defined('ADMIN_COOKIE_PATH') )
+	define( 'ADMIN_COOKIE_PATH', SITECOOKIEPATH . 'wp-admin' );
+
+/**
+ * It is possible to define this in wp-config.php
+ * @since 2.6
+ */
+if ( !defined('PLUGINS_COOKIE_PATH') )
+	define( 'PLUGINS_COOKIE_PATH', preg_replace('|https?://[^/]+|i', '', WP_PLUGIN_URL)  );
 
 /**
  * It is possible to define this in wp-config.php

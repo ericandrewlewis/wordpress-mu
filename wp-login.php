@@ -12,7 +12,7 @@
 require( dirname(__FILE__) . '/wp-load.php' );
 
 // Redirect to https login if forced to use SSL
-if ( (force_ssl_admin() || force_ssl_login()) && !is_ssl() ) {
+if ( force_ssl_admin() && !is_ssl() ) {
 	if ( 0 === strpos($_SERVER['REQUEST_URI'], 'http') ) {
 		wp_redirect(preg_replace('|^http://|', 'https://', $_SERVER['REQUEST_URI']));
 		exit();
@@ -185,16 +185,10 @@ function reset_password($key) {
 	wp_set_password($new_pass, $user->ID);
 	$message  = sprintf(__('Username: %s'), $user->user_login) . "\r\n";
 	$message .= sprintf(__('Password: %s'), $new_pass) . "\r\n";
-	$message .= get_option('siteurl') . "/wp-login.php\r\n";
+	$message .= site_url('wp-login.php', 'login') . "\r\n";
 
 	if (  !wp_mail($user->user_email, sprintf(__('[%s] Your new password'), $current_site->site_name), $message) )
 		die('<p>' . __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function...') . '</p>');
-
-	// send a copy of password change notification to the admin
-	// but check to see if it's the admin whose password we're changing, and skip this
-	if ( $user->user_email != get_option('admin_email') ) {
-		$message = sprintf(__('Password Lost and Changed for user: %s'), $user->user_login) . "\r\n";
-	}
 
 	return true;
 }
@@ -411,9 +405,9 @@ default:
 	if ( isset( $_REQUEST['redirect_to'] ) )
 		$redirect_to = $_REQUEST['redirect_to'];
 	else
-		$redirect_to = 'wp-admin/';
+		$redirect_to = admin_url();
 
-	if ( is_ssl() && force_ssl_login() && !force_ssl_admin() && ( 0 !== strpos($redirect_to, 'https') ) )
+	if ( is_ssl() && force_ssl_login() && !force_ssl_admin() && ( 0 !== strpos($redirect_to, 'https') ) && ( 0 === strpos($redirect_to, 'http') ) )
 		$secure_cookie = false;
 	else
 		$secure_cookie = '';
