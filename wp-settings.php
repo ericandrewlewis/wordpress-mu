@@ -404,8 +404,13 @@ if ( !defined('SITECOOKIEPATH') )
  * It is possible to define this in wp-config.php
  * @since 2.6
  */
-if ( !defined('ADMIN_COOKIE_PATH') )
-	define( 'ADMIN_COOKIE_PATH', SITECOOKIEPATH . 'wp-admin' );
+if ( !defined('ADMIN_COOKIE_PATH') ) {
+	if( constant( 'VHOST' ) == 'no' ) {
+		define( 'ADMIN_COOKIE_PATH', SITECOOKIEPATH );
+	} else {
+		define( 'ADMIN_COOKIE_PATH', SITECOOKIEPATH . 'wp-admin' );
+	}
+}
 
 /**
  * It is possible to define this in wp-config.php
