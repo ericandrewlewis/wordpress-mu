@@ -62,6 +62,25 @@ function get_image_send_to_editor($id, $alt, $title, $align, $url='', $rel = fal
 	return $html;
 }
 
+function image_add_caption( $html, $id, $alt, $title, $align, $url, $size ) {
+
+	if ( empty($alt) ) return $html;
+	$id = ( 0 < (int) $id ) ? 'attachment_' . $id : '';
+
+	preg_match( '/width="([0-9]+)/', $html, $matches );
+	if ( ! isset($matches[1]) ) return $html;
+	$width = $matches[1];
+
+	$html = preg_replace( '/align[^\s\'"]+\s?/', '', $html );
+	if ( empty($align) ) $align = 'none';
+
+	$shcode = '[wp_caption id="' . $id . '" align="align' . $align
+	. '" width="' . $width . '" caption="' . $alt . '"]' . $html . '[/wp_caption]';
+
+	return apply_filters( 'image_add_caption_shortcode', $shcode, $html );
+}
+add_filter( 'image_send_to_editor', 'image_add_caption', 20, 7 );
+
 function media_send_to_editor($html) {
 	?>
 <script type="text/javascript">
@@ -212,10 +231,10 @@ function media_buttons() {
 	$audio_title = __('Add Audio');
 	$out = <<<EOF
 
-	<a href="{$image_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$image_title'><img src='images/media-button-image.gif' alt='$image_title' /></a>
-	<a href="{$video_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$video_title'><img src='images/media-button-video.gif' alt='$video_title' /></a>
-	<a href="{$audio_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$audio_title'><img src='images/media-button-music.gif' alt='$audio_title' /></a>
-	<a href="{$media_upload_iframe_src}&amp;TB_iframe=true" class="thickbox" title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>
+	<a href="{$image_upload_iframe_src}&amp;TB_iframe=true" id="add_image" class="thickbox" title='$image_title'><img src='images/media-button-image.gif' alt='$image_title' /></a>
+	<a href="{$video_upload_iframe_src}&amp;TB_iframe=true" id="add_video" class="thickbox" title='$video_title'><img src='images/media-button-video.gif' alt='$video_title' /></a>
+	<a href="{$audio_upload_iframe_src}&amp;TB_iframe=true" id="add_audio" class="thickbox" title='$audio_title'><img src='images/media-button-music.gif' alt='$audio_title' /></a>
+	<a href="{$media_upload_iframe_src}&amp;TB_iframe=true" id="add_media" class="thickbox" title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>
 
 EOF;
 	printf($context, $out);
@@ -321,10 +340,8 @@ function media_sideload_image($file, $post_id, $desc = null) {
 		$id = media_handle_sideload($file_array, $post_id, $desc);
 		$src = $id;
 
-		unset($file_array);
-
 		if ( is_wp_error($id) ) {
-			$errors['upload_error'] = $id;
+			@unlink($file_array['tmp_name']);
 			return $id;
 		}
 	}

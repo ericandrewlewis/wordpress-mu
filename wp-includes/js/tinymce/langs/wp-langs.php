@@ -395,11 +395,16 @@ wp_more_desc:"' . mce_escape( __('Insert More tag') ) . ' (Alt+Shift+T)",
 wp_page_desc:"' . mce_escape( __('Insert Page break') ) . ' (Alt+Shift+P)",
 wp_help_desc:"' . mce_escape( __('Help') ) . ' (Alt+Shift+H)",
 wp_more_alt:"' . mce_escape( __('More...') ) . '",
-wp_page_alt:"' . mce_escape( __('Next page...') ) . '"
+wp_page_alt:"' . mce_escape( __('Next page...') ) . '",
+add_media:"' . mce_escape( __('Add Media') ) . '",
+add_image:"' . mce_escape( __('Add an Image') ) . '",
+add_video:"' . mce_escape( __('Add Video') ) . '",
+add_audio:"' . mce_escape( __('Add Audio') ) . '"
 });
 
 tinyMCE.addI18n("' . $language . '.wpeditimage",{
 edit_img:"' . mce_escape( __('Edit Image') )  . '",
+del_img:"' . mce_escape( __('Delete Image') )  . '",
 adv_settings:"' . mce_escape( __('Advanced Settings') )  . '",
 none:"' . mce_escape( __('None') )  . '",
 size:"' . mce_escape( __('Size') ) . '",
