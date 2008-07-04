@@ -10,12 +10,14 @@ define('DB_COLLATE', '');
 define('VHOST', 'VHOSTSETTING'); 
 $base = 'BASE';
 
-// Change SECRET_KEY to a unique phrase.  You won't have to remember it later,
-// so make it long and complicated.  You can visit http://api.wordpress.org/secret-key/1.0/
-// to get a secret key generated for you, or just make something up.
+// Change each KEY to a different unique phrase.  You won't have to remember the phrases later,
+// so make them long and complicated.  You can visit http://api.wordpress.org/secret-key/1.1/
+// to get keys generated for you, or just make something up.  Each key should have a different phrase.
+define('AUTH_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
+define('SECURE_AUTH_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
+define('LOGGED_IN_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
 define('SECRET_KEY', 'put your unique phrase here'); // Change these to unique phrases.
 define('SECRET_SALT', 'put your unique phrase here');
-define('LOGGED_IN_KEY', 'put your unique phrase here');
 define('LOGGED_IN_SALT', 'put your unique phrase here');
 
 // double check $base
