@@ -343,6 +343,8 @@ if( $current_blog->spam == '1' )
  * @since 2.5
  */
 $wp_default_secret_key = 'put your unique phrase here';
+if( defined( 'SECRET_KEY' ) )
+	$wp_default_secret_key = SECRET_KEY;
 
 /**
  * It is possible to define this in wp-config.php
