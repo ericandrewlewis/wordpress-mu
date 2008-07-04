@@ -53,9 +53,13 @@ function update_right_now_message() {
 
 	echo "<span id='wp-version-message'>$msg</span>";
 }
+*/
 
 function wp_update_plugins() {
 	global $wp_version;
+
+	if( !is_site_admin() )
+		return;
 
 	if ( !function_exists('fsockopen') )
 		return false;
@@ -120,6 +124,9 @@ function wp_update_plugins() {
 add_action( 'load-plugins.php', 'wp_update_plugins' );
 
 function wp_plugin_update_row( $file, $plugin_data ) {
+	if( !is_site_admin() )
+		return;
+
 	$current = get_option( 'update_plugins' );
 	if ( !isset( $current->response[ $file ] ) )
 		return false;
@@ -140,6 +147,8 @@ add_action( 'after_plugin_row', 'wp_plugin_update_row', 10, 2 );
 
 function wp_update_plugin($plugin, $feedback = '') {
 	global $wp_filesystem;
+	if( !is_site_admin() )
+		return;
 
 	if ( !empty($feedback) )
 		add_filter('update_feedback', $feedback);
@@ -252,5 +261,4 @@ function wp_update_plugin($plugin, $feedback = '') {
 	return  $folder . '/' . $pluginfiles[0];
 }
 
-*/
 ?>
