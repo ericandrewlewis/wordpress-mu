@@ -631,7 +631,7 @@ remove_action( 'media_buttons', 'media_buttons' );
 function secret_salt_warning() {
 	if( !is_site_admin() )
 		return;
-	$secret_keys = array( 'SECRET_KEY', 'SECRET_SALT', 'LOGGED_IN_KEY', 'LOGGED_IN_SALT' );
+	$secret_keys = array( 'SECRET_KEY', 'SECRET_SALT', 'LOGGED_IN_KEY', 'LOGGED_IN_SALT', 'AUTH_KEY', 'SECURE_AUTH_KEY' );
 	$out = '';
 	foreach( $secret_keys as $key ) {
 		if( !defined( $key ) )
