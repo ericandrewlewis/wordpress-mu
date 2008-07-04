@@ -1922,4 +1922,19 @@ function mu_locale( $locale ) {
 }
 add_filter( 'locale', 'mu_locale' );
 
+function signup_nonce_fields() {
+	$id = mt_rand();
+	echo "<input type='hidden' name='signup_form_id' value='{$id}' />";
+	wp_nonce_field('signup_form_' . $id, '_signup_form', false);
+}
+add_action( 'signup_hidden_fields', 'signup_nonce_fields' );
+
+function signup_nonce_check( $result ) {
+	if ( wp_create_nonce('signup_form_' . $_POST[ 'signup_form_id' ]) != $_POST['_signup_form'] )
+		wp_die( 'Please try again!' );
+
+	return $result;
+}
+add_filter( 'wpmu_validate_blog_signup', 'signup_nonce_check' );
+add_filter( 'wpmu_validate_user_signup', 'signup_nonce_check' );
 ?>
