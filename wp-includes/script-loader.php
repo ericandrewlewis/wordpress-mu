@@ -34,10 +34,10 @@ function wp_default_scripts( &$scripts ) {
 	$visual_editor = apply_filters('visual_editor', array('tiny_mce'));
 	$scripts->add( 'editor', false, $visual_editor, '20080321' );
 
-	$scripts->add( 'editor_functions', '/wp-admin/js/editor.js', false, '20080702' );
+	$scripts->add( 'editor_functions', '/wp-admin/js/editor.js', false, '20080706' );
 
 	// Modify this version when tinyMCE plugins are changed.
-	$mce_version = apply_filters('tiny_mce_version', '20080703');
+	$mce_version = apply_filters('tiny_mce_version', '20080706');
 	$scripts->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('editor_functions'), $mce_version );
 
 	$scripts->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.6');
@@ -158,7 +158,7 @@ function wp_default_scripts( &$scripts ) {
 			'cancel' => __('Cancel'),
 			'edit' => __('Edit'),
 		) );
-		$scripts->add( 'admin-gallery', '/wp-admin/js/gallery.js', array( 'jquery-ui-sortable' ), '20080520' );
+		$scripts->add( 'admin-gallery', '/wp-admin/js/gallery.js', array( 'jquery-ui-sortable' ), '20080705' );
 		$scripts->add( 'media-upload', '/wp-admin/js/media-upload.js', array( 'thickbox' ), '20080702' );
 		$scripts->localize( 'upload', 'uploadL10n', array(
 			'browseTitle' => attribute_escape(__('Browse your files')),
@@ -229,7 +229,7 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'dashboard', '/wp-admin/css/dashboard.css' );
 	$styles->add( 'install', '/wp-admin/css/install.css' );
 	$styles->add( 'theme-editor', '/wp-admin/css/theme-editor.css' );
-	$styles->add( 'press-this', '/wp-admin/css/press-this.css' );
+	$styles->add( 'press-this', '/wp-admin/css/press-this.css', array(), '20080704' );
 	$styles->add( 'thickbox', '/wp-includes/js/thickbox/thickbox.css', array(), '20080613' );
 	$styles->add( 'login', '/wp-admin/css/login.css' );
 
