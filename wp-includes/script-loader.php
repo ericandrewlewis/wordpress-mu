@@ -37,7 +37,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->add( 'editor_functions', '/wp-admin/js/editor.js', false, '20080706' );
 
 	// Modify this version when tinyMCE plugins are changed.
-	$mce_version = apply_filters('tiny_mce_version', '20080706');
+	$mce_version = apply_filters('tiny_mce_version', '20080708');
 	$scripts->add( 'tiny_mce', '/wp-includes/js/tinymce/tiny_mce_config.php', array('editor_functions'), $mce_version );
 
 	$scripts->add( 'prototype', '/wp-includes/js/prototype.js', false, '1.6');
@@ -227,7 +227,7 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'media', '/wp-admin/css/media.css', array(), '20080523' );
 	$styles->add( 'widgets', '/wp-admin/css/widgets.css' );
 	$styles->add( 'dashboard', '/wp-admin/css/dashboard.css' );
-	$styles->add( 'install', '/wp-admin/css/install.css' );
+	$styles->add( 'install', '/wp-admin/css/install.css', array(), '20080708' );
 	$styles->add( 'theme-editor', '/wp-admin/css/theme-editor.css' );
 	$styles->add( 'press-this', '/wp-admin/css/press-this.css', array(), '20080704' );
 	$styles->add( 'thickbox', '/wp-includes/js/thickbox/thickbox.css', array(), '20080613' );

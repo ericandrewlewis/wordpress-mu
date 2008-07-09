@@ -17,5 +17,5 @@ $wp_version = '2.6-beta3';
  */
 $wp_db_version = 8201;
 
-$wpmu_version = '2.6.beta1';
+$wpmu_version = '2.6-beta1';
 ?>
