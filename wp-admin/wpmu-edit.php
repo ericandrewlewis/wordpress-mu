@@ -401,13 +401,26 @@ switch( $_GET['action'] ) {
 
 	case "allusers":
 		check_admin_referer('allusers');
+		if ( isset($_POST['alluser_delete']) ) {
+			require_once('admin-header.php');
+			echo '<div class="wrap" style="position:relative;">';
+			confirm_delete_users( $_POST['allusers'] );
+			echo '</div>';
+		} elseif( isset( $_POST[ 'alluser_transfer_delete' ] ) ) {
+			if( is_array( $_POST[ 'blog' ] ) && !empty( $_POST[ 'blog' ] ) ) {
+				foreach( $_POST[ 'blog' ] as $id => $users ) {
+					foreach( $users as $blogid => $user_id ) {
+						$wpdb->query( "UPDATE {$wpdb->base_prefix}{$blogid}_posts SET post_author = '{$user_id}' WHERE post_author = '{$id}'" );
+					}
+					wpmu_delete_user( $id );
+				}
+			}
+			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'all_delete'), 'wpmu-users.php' ) );
+		} else {
 		foreach ( (array) $_POST['allusers'] as $key => $val ) {
 			if( $val != '' && $val != '0' && $val != '1' ) {
 				$user_details = get_userdata( $val );
-				if ( isset($_POST['alluser_delete']) ) {
-					wpmu_delete_user($val);
-					$userfunction = 'all_delete';
-				} elseif ( isset($_POST['alluser_spam']) ) {
+				if ( isset($_POST['alluser_spam']) ) {
 					$userfunction = 'all_spam';
 					$blogs = get_blogs_of_user( $val, true );
 					foreach ( (array) $blogs as $key => $details ) {
@@ -427,6 +440,7 @@ switch( $_GET['action'] ) {
 			}
 		}
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => $userfunction), $_SERVER['HTTP_REFERER'] ) );
+		}
 		exit();
 	break;
 

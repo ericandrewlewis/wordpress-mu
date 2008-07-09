@@ -127,6 +127,38 @@ function wpmu_delete_user($id) {
 	return true;
 }
 
+function confirm_delete_users( $users ) {
+	if( !is_array( $users ) )
+		return;
+	echo '<p>Transfer posts before deleting users:</p>';
+	echo '<form action="wpmu-edit.php?action=allusers" method="post">';
+	echo '<input type="hidden" name="alluser_transfer_delete" />';
+	wp_nonce_field( 'allusers' );
+	foreach ( (array) $_POST['allusers'] as $key => $val ) {
+		if( $val != '' && $val != '0' && $val != '1' ) {
+			$blogs = get_blogs_of_user( $val, true );
+			foreach ( (array) $blogs as $key => $details ) {
+				$blog_users = get_users_of_blog( $details->userblog_id );
+				if( is_array( $blog_users ) && !empty( $blog_users ) ) {
+					echo "<p><a href='http://{$details->domain}{$details->path}'>{$details->blogname}</a> ";
+					echo "<select name='blog[$val][{$key}]'>";
+					$out = '';
+					foreach( $blog_users as $user ) {
+						if( $user->user_id != $val )
+							$out .= "<option value='{$user->user_id}'> {$user->user_login}";
+					}
+					if( $out == '' )
+						$out = "<option value='1'> admin";
+					echo $out;
+					echo "</select>\n";
+				}
+			}
+		}
+	}
+	echo "<br /><input type='submit' value='Delete user and transfer posts' />";
+	echo "</form>";
+}
+
 function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 	$themes = get_themes();
 	if( $blog_id == 0 )
