@@ -93,7 +93,7 @@ if (strpos($_SERVER['SCRIPT_NAME'], 'php.cgi') !== false)
 
 // Fix empty PHP_SELF
 $PHP_SELF = $_SERVER['PHP_SELF'];
-if ( empty($PHP_SELF) )
+if ( empty($PHP_SELF) || constant( 'VHOST' ) == 'no' )
 	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
 if ( version_compare( '4.3', phpversion(), '>' ) ) {
