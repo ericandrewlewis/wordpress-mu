@@ -34,7 +34,7 @@ function wpmu_signup_stylesheet() {
 		.mu_register #submit,
 			.mu_register #blog_title,
 			.mu_register #user_email, 
-			.mu_register #blog_id,
+			.mu_register #blogname,
 			.mu_register #user_name { width:100%; font-size: 24px; margin:5px 0; }	
 		.mu_register .prefix_address,
 			.mu_register .suffix_address {font-size: 18px;display:inline; }			
@@ -51,22 +51,22 @@ get_header();
 <div id="content" class="widecolumn">
 <div class="mu_register">
 <?php
-function show_blog_form($blog_id = '', $blog_title = '', $errors = '') {
+function show_blog_form($blogname = '', $blog_title = '', $errors = '') {
 	global $current_site;
 	// Blog name
 	if( constant( "VHOST" ) == 'no' )
-		echo '<label for="blog_id">' . __('Blog Name:') . '</label>';
+		echo '<label for="blogname">' . __('Blog Name:') . '</label>';
 	else
-		echo '<label for="blog_id">' . __('Blog Domain:') . '</label>';
+		echo '<label for="blogname">' . __('Blog Domain:') . '</label>';
 
-	if ( $errmsg = $errors->get_error_message('blog_id') ) { ?>
+	if ( $errmsg = $errors->get_error_message('blogname') ) { ?>
 		<p class="error"><?php echo $errmsg ?></p>
 	<?php }
 
 	if( constant( "VHOST" ) == 'no' ) {
-		echo '<span class="prefix_address">' . $current_site->domain . $current_site->path . '</span><input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" /><br />';
+		echo '<span class="prefix_address">' . $current_site->domain . $current_site->path . '</span><input name="blogname" type="text" id="blogname" value="'.$blogname.'" maxlength="50" /><br />';
 	} else {
-		echo '<input name="blog_id" type="text" id="blog_id" value="'.$blog_id.'" maxlength="50" /><span class="suffix_address">.' . $current_site->domain . $current_site->path . '</span><br />';
+		echo '<input name="blogname" type="text" id="blogname" value="'.$blogname.'" maxlength="50" /><span class="suffix_address">.' . $current_site->domain . $current_site->path . '</span><br />';
 	}
 	if ( !is_user_logged_in() ) {
 		print '(<strong>' . __( 'Your address will be ' );
@@ -110,7 +110,7 @@ function validate_blog_form() {
 	if ( is_user_logged_in() )
 		$user = wp_get_current_user();
 
-	return wpmu_validate_blog_signup($_POST['blog_id'], $_POST['blog_title'], $user);
+	return wpmu_validate_blog_signup($_POST['blogname'], $_POST['blog_title'], $user);
 }
 
 function show_user_form($user_name = '', $user_email = '', $errors = '') {
@@ -139,7 +139,7 @@ function validate_user_form() {
 	return wpmu_validate_user_signup($_POST['user_name'], $_POST['user_email']);
 }
 
-function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
+function signup_another_blog($blogname = '', $blog_title = '', $errors = '') {
 	global $current_user, $current_site;
 	
 	if ( ! is_wp_error($errors) ) {
@@ -147,8 +147,8 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	}
 
 	// allow definition of default variables
-	$filtered_results = apply_filters('signup_another_blog_init', array('blog_id' => $blog_id, 'blog_title' => $blog_title, 'errors' => $errors ));
-	$blog_id = $filtered_results['blog_id'];
+	$filtered_results = apply_filters('signup_another_blog_init', array('blogname' => $blogname, 'blog_title' => $blog_title, 'errors' => $errors ));
+	$blogname = $filtered_results['blogname'];
 	$blog_title = $filtered_results['blog_title'];
 	$errors = $filtered_results['errors'];
 
@@ -177,7 +177,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 	<form id="setupform" method="post" action="wp-signup.php">
 		<input type="hidden" name="stage" value="gimmeanotherblog" />
 		<?php do_action( "signup_hidden_fields" ); ?>
-		<?php show_blog_form($blog_id, $blog_title, $errors); ?>
+		<?php show_blog_form($blogname, $blog_title, $errors); ?>
 		<p>
 			<input id="submit" type="submit" name="submit" class="submit" value="<?php _e('Create Blog &raquo;') ?>" /></p>
 	</form>
@@ -185,7 +185,7 @@ function signup_another_blog($blog_id = '', $blog_title = '', $errors = '') {
 }
 
 function validate_another_blog_signup() {
-	global $wpdb, $current_user, $blog_id, $blog_title, $errors, $domain, $path;
+	global $wpdb, $current_user, $blogname, $blog_title, $errors, $domain, $path;
 	$current_user = wp_get_current_user();
 	if( !is_user_logged_in() )
 		die();
@@ -194,7 +194,7 @@ function validate_another_blog_signup() {
 	extract($result);
 
 	if ( $errors->get_error_code() ) {
-		signup_another_blog($blog_id, $blog_title, $errors);
+		signup_another_blog($blogname, $blog_title, $errors);
 		return false;
 	}
 
@@ -290,27 +290,27 @@ function confirm_user_signup($user_name, $user_email) {
 	do_action('signup_finished');
 }
 
-function signup_blog($user_name = '', $user_email = '', $blog_id = '', $blog_title = '', $errors = '') {
+function signup_blog($user_name = '', $user_email = '', $blogname = '', $blog_title = '', $errors = '') {
 	if ( !is_wp_error($errors) )
 		$errors = new WP_Error();
 
 	// allow definition of default variables
-	$filtered_results = apply_filters('signup_blog_init', array('user_name' => $user_name, 'user_email' => $user_email, 'blog_id' => $blog_id, 'blog_title' => $blog_title, 'errors' => $errors ));
+	$filtered_results = apply_filters('signup_blog_init', array('user_name' => $user_name, 'user_email' => $user_email, 'blogname' => $blogname, 'blog_title' => $blog_title, 'errors' => $errors ));
 	$user_name = $filtered_results['user_name'];
 	$user_email = $filtered_results['user_email'];
-	$blog_id = $filtered_results['blog_id'];
+	$blogname = $filtered_results['blogname'];
 	$blog_title = $filtered_results['blog_title'];
 	$errors = $filtered_results['errors'];
 
-	if ( empty($blog_id) )
-		$blog_id = $user_name;
+	if ( empty($blogname) )
+		$blogname = $user_name;
 	?>
 	<form id="setupform" method="post" action="wp-signup.php">
 		<input type="hidden" name="stage" value="validate-blog-signup" />
 		<input type="hidden" name="user_name" value="<?php echo $user_name ?>" />
 		<input type="hidden" name="user_email" value="<?php echo $user_email ?>" />
 		<?php do_action( "signup_hidden_fields" ); ?>
-		<?php show_blog_form($blog_id, $blog_title, $errors); ?>
+		<?php show_blog_form($blogname, $blog_title, $errors); ?>
 		<p>
 			<input id="submit" type="submit" name="submit" class="submit" value="<?php _e('Signup &raquo;') ?>" /></p>
 	</form>
@@ -327,11 +327,11 @@ function validate_blog_signup() {
 		return false;
 	}
 
-	$result = wpmu_validate_blog_signup($_POST['blog_id'], $_POST['blog_title']);
+	$result = wpmu_validate_blog_signup($_POST['blogname'], $_POST['blog_title']);
 	extract($result);
 
 	if ( $errors->get_error_code() ) {
-		signup_blog($user_name, $user_email, $blog_id, $blog_title, $errors);
+		signup_blog($user_name, $user_email, $blogname, $blog_title, $errors);
 		return false;
 	}
 
@@ -351,7 +351,7 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name = '', $user
 	<p><?php _e('But, before you can start using your blog, <strong>you must activate it</strong>.') ?></p>
 	<p><?php printf(__('Check your inbox at <strong>%s</strong> and click the link given. It should arrive within 30 minutes.'),  $user_email) ?></p>
 	<p><?php _e('If you do not activate your blog within two days, you will have to sign up again.'); ?></p>
-	<h2><?php _e('Still waiting for your email?') ?></h2>
+	<h2><?php _e('Still waiting for your email?'); ?></h2>
 	<p>
 		<?php _e("If you haven't received your email yet, there are a number of things you can do:") ?>
 		<ul>

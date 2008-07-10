@@ -327,13 +327,13 @@ function switch_to_blog( $new_blog ) {
 	if ( empty($new_blog) )
 		return;
 
-	if ( $blog_id == $new_blog )
-		return;
-
 	if ( empty($switched_stack) )
 		$switched_stack = array();
 
 	$switched_stack[] = $blog_id;
+
+	if ( $blog_id == $new_blog )
+		return;
 
 	$wpdb->set_blog_id($new_blog);
 	$table_prefix = $wpdb->prefix;
@@ -893,10 +893,10 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	return apply_filters('wpmu_validate_user_signup', $result);
 }
 
-function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
+function wpmu_validate_blog_signup($blogname, $blog_title, $user = '') {
 	global $wpdb, $domain, $base;
 
-	$blog_id = sanitize_user( $blog_id );
+	$blogname = sanitize_user( $blogname );
 	$blog_title = strip_tags( $blog_title );
 	$blog_title = substr( $blog_title, 0, 50 );
 
@@ -907,31 +907,31 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 	    add_site_option( "illegal_names", $illegal_names );
 	}
 
-	if ( empty( $blog_id ) )
-	    $errors->add('blog_id', __("Please enter a blog name"));
+	if ( empty( $blogname ) )
+	    $errors->add('blogname', __("Please enter a blog name"));
 
 	$maybe = array();
-	preg_match( "/[a-z0-9]+/", $blog_id, $maybe );
-	if( $blog_id != $maybe[0] ) {
-	    $errors->add('blog_id', __("Only lowercase letters and numbers allowed"));
+	preg_match( "/[a-z0-9]+/", $blogname, $maybe );
+	if( $blogname != $maybe[0] ) {
+	    $errors->add('blogname', __("Only lowercase letters and numbers allowed"));
 	}
-	if( in_array( $blog_id, $illegal_names ) == true ) {
-	    $errors->add('blog_id',  __("That name is not allowed"));
+	if( in_array( $blogname, $illegal_names ) == true ) {
+	    $errors->add('blogname',  __("That name is not allowed"));
 	}
-	if( strlen( $blog_id ) < 4 && !is_site_admin() ) {
-	    $errors->add('blog_id',  __("Blog name must be at least 4 characters"));
+	if( strlen( $blogname ) < 4 && !is_site_admin() ) {
+	    $errors->add('blogname',  __("Blog name must be at least 4 characters"));
 	}
 
-	if ( strpos( " " . $blog_id, "_" ) != false )
-		$errors->add('blog_id', __("Sorry, blog names may not contain the character '_'!"));
+	if ( strpos( " " . $blogname, "_" ) != false )
+		$errors->add('blogname', __("Sorry, blog names may not contain the character '_'!"));
 
 	// all numeric?
 	$match = array();
-	preg_match( '/[0-9]*/', $blog_id, $match );
-	if ( $match[0] == $blog_id )
-		$errors->add('blog_id', __("Sorry, blog names must have letters too!"));
+	preg_match( '/[0-9]*/', $blogname, $match );
+	if ( $match[0] == $blogname )
+		$errors->add('blogname', __("Sorry, blog names must have letters too!"));
 
-	$blog_id = apply_filters( "newblog_id", $blog_id );
+	$blogname = apply_filters( "newblogname", $blogname );
 
 	$blog_title = stripslashes(  $blog_title );
 
@@ -940,18 +940,18 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 
 	// Check if the domain/path has been used already.
 	if( constant( "VHOST" ) == 'yes' ) {
-		$mydomain = "$blog_id.$domain";
+		$mydomain = "$blogname.$domain";
 		$path = $base;
 	} else {
 		$mydomain = "$domain";
-		$path = $base.$blog_id.'/';
+		$path = $base.$blogname.'/';
 	}
 	if ( domain_exists($mydomain, $path) )
-		$errors->add('blog_id', __("Sorry, that blog already exists!"));
+		$errors->add('blogname', __("Sorry, that blog already exists!"));
 
-	if ( username_exists($blog_id) ) {
-		if  ( !is_object($user) && ( $user->user_login != $blog_id ) )
-			$errors->add('blog_id', __("Sorry, that blog is reserved!"));
+	if ( username_exists($blogname) ) {
+		if  ( !is_object($user) && ( $user->user_login != $blogname ) )
+			$errors->add('blogname', __("Sorry, that blog is reserved!"));
 	}
 
 	// Has someone already signed up for this domain?
@@ -965,11 +965,11 @@ function wpmu_validate_blog_signup($blog_id, $blog_title, $user = '') {
 		if ( $diff > 172800 ) {
 			$wpdb->query("DELETE FROM $wpdb->signups WHERE domain = '$mydomain' AND path = '$path'");
 		} else {
-			$errors->add('blog_id', __("That blog is currently reserved but may be available in a couple days."));
+			$errors->add('blogname', __("That blog is currently reserved but may be available in a couple days."));
 		}
 	}
 
-	$result = array('domain' => $mydomain, 'path' => $path, 'blog_id' => $blog_id, 'blog_title' => $blog_title,
+	$result = array('domain' => $mydomain, 'path' => $path, 'blogname' => $blogname, 'blog_title' => $blog_title,
 				'errors' => $errors);
 
 	return apply_filters('wpmu_validate_blog_signup', $result);
@@ -1165,14 +1165,16 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 	add_user_to_blog($blog_id, $user_id, 'administrator');
 
 	if ( is_array($meta) ) foreach ($meta as $key => $value) {
-		update_blog_status( $blog_id, $key, $value );
-		update_option( $blog_id, $key, $value );
+		if( $key == 'public' || $key == 'archived' || $key == 'mature' || $key == 'spam' || $key == 'deleted' || $key == 'lang_id' ) {
+			update_blog_status( $blog_id, $key, $value );
+		} else {
+			update_option( $blog_id, $key, $value );
+		}
 	}
 
-	add_option( $blog_id, 'WPLANG', get_site_option( 'WPLANG' ) );
+	add_option( 'WPLANG', get_site_option( 'WPLANG' ) );
 
-	update_option( $blog_id, 'blog_public', $meta['public'] );
-	delete_blog_option( $blog_id, 'public' );
+	update_option( 'blog_public', $meta['public'] );
 
 	if(get_usermeta( $user_id, 'primary_blog' ) == 1 )
 		update_usermeta( $user_id, 'primary_blog', $blog_id );
