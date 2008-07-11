@@ -1168,7 +1168,7 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 		if( $key == 'public' || $key == 'archived' || $key == 'mature' || $key == 'spam' || $key == 'deleted' || $key == 'lang_id' ) {
 			update_blog_status( $blog_id, $key, $value );
 		} else {
-			update_option( $blog_id, $key, $value );
+			update_option( $key, $value );
 		}
 	}
 
