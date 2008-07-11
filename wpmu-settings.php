@@ -134,10 +134,11 @@ function is_blogname_page( $blogname ) {
 
 $blog_id = $current_blog->blog_id;
 $public  = $current_blog->public;
+
+if( $current_blog->site_id == 0 || $current_blog->site_id == '' )
+	$current_blog->site_id = 1;
 $site_id = $current_blog->site_id;
 
-if( $site_id == 0 )
-	$site_id = 1;
 
 $current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = '$site_id' AND meta_key = 'site_name'" );
 if( $current_site->site_name == null )
