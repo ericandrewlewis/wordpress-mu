@@ -1123,6 +1123,7 @@ function generate_random_password( $len = 8 ) {
 }
 
 function wpmu_create_user( $user_name, $password, $email) {
+	$user_name = ereg_replace("[^A-Za-z0-9]", "", $user_name);
 	if ( username_exists($user_name) )
 		return false;
 
