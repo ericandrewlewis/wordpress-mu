@@ -178,6 +178,11 @@ function is_site_admin( $user_login = false ) {
 function get_site_option( $key, $default = false, $use_cache = true ) {
 	global $wpdb;
 
+	// Allow plugins to short-circuit site options. 
+ 	$pre = apply_filters( 'pre_site_option_' . $key, false ); 
+ 	if ( false !== $pre ) 
+ 		return $pre; 
+
 	$safe_key = $wpdb->escape( $key );
 
 	if( $use_cache == true ) {
@@ -199,12 +204,10 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 		}
 	}
 
-	$value = stripslashes( $value );
-	@ $kellogs = unserialize($value);
-	if ( $kellogs !== FALSE )
-		return $kellogs;
-	else
-		return $value;
+	if (! unserialize($value) ) 
+		$value = stripslashes( $value ); 
+
+	return apply_filters( 'site_option_' . $key, maybe_unserialize( $value ) );
 }
 
 // expects $key, $value not to be SQL escaped
