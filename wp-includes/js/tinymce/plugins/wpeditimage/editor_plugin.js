@@ -15,7 +15,7 @@
 				if ( ed.dom.getAttrib(el, 'class').indexOf('mceItem') != -1 || el.nodeName != 'IMG' )
 					return;
 
-				tb_show('', url + '/editimage.html?ver=311b&TB_iframe=true');
+				tb_show('', url + '/editimage.html?ver=311c&TB_iframe=true');
 				tinymce.DOM.setStyle( ['TB_overlay','TB_window','TB_load'], 'z-index', '999999' );
 			});
 
@@ -34,9 +34,23 @@
 			});
 
 			ed.onMouseUp.add(function(ed, e) {
-				if ( ! tinymce.isOpera ) return;
-				if ( e.target.nodeName == 'IMG' )
-					ed.plugins.wpeditimage.showButtons(e.target);
+				if ( tinymce.isOpera ) {
+					if ( e.target.nodeName == 'IMG' )
+						ed.plugins.wpeditimage.showButtons(e.target);
+				} else if ( ! tinymce.isWebKit ) {
+					var n = ed.selection.getNode(), DL;
+					
+					if ( n.nodeName == 'IMG' && (DL = ed.dom.getParent(n, 'DL')) ) {					
+						window.setTimeout(function(){
+							var ed = tinyMCE.activeEditor, n = ed.selection.getNode(), DL = ed.dom.getParent(n, 'DL');
+						
+							if ( n.width != (parseInt(ed.dom.getStyle(DL, 'width')) - 10) ) {
+								ed.dom.setStyle(DL, 'width', parseInt(n.width)+10);
+								ed.execCommand('mceRepaint');
+							}
+						}, 100);
+					}
+				}
 			});
 
 			ed.onMouseDown.add(function(ed, e) {
@@ -73,7 +87,7 @@
 		},
 
 		_do_shcode : function(co) {
-			return co.replace(/\[wp_caption([^\]]+)\]([\s\S]+?)\[\/wp_caption\][\s\u00a0]*/g, function(a,b,c){
+			return co.replace(/\[(?:wp_)?caption([^\]]+)\]([\s\S]+?)\[\/(?:wp_)?caption\][\s\u00a0]*/g, function(a,b,c){
 				b = b.replace(/\\'|\\&#39;|\\&#039;/g, '&#39;').replace(/\\"|\\&quot;/g, '&quot;');
 				c = c.replace(/\\&#39;|\\&#039;/g, '&#39;').replace(/\\&quot;/g, '&quot;');
 				var id = b.match(/id=['"]([^'"]+)/i), cls = b.match(/align=['"]([^'"]+)/i);
@@ -87,8 +101,8 @@
 				
 				var div_cls = (cls == 'aligncenter') ? 'mceTemp mceIEcenter' : 'mceTemp';
 
-				return '<div class="'+div_cls+'"><dl id="'+id+'" class="wp_caption '+cls+'" style="width: '+(10+parseInt(w))+
-				'px"><dt class="wp_caption_dt">'+c+'</dt><dd class="wp_caption_dd">'+cap+'</dd></dl></div>';
+				return '<div class="'+div_cls+'"><dl id="'+id+'" class="wp-caption '+cls+'" style="width: '+(10+parseInt(w))+
+				'px"><dt class="wp-caption-dt">'+c+'</dt><dd class="wp-caption-dd">'+cap+'</dd></dl></div>';
 			});
 		},
 
@@ -105,7 +119,7 @@
 				cls = cls.match(/align[^ '"]+/) || 'alignnone';
 				cap = cap.replace(/<\S[^<>]*>/gi, '').replace(/'/g, '&#39;').replace(/"/g, '&quot;');
 
-				return '[wp_caption id="'+id+'" align="'+cls+'" width="'+w+'" caption="'+cap+'"]'+c+'[/wp_caption]';
+				return '[caption id="'+id+'" align="'+cls+'" width="'+w+'" caption="'+cap+'"]'+c+'[/caption]';
 			});
 		},
 

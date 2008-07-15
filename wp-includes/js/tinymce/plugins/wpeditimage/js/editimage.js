@@ -245,8 +245,12 @@ var wpImage = {
 	},
 
 	setup : function() {
-		var t = this, h, c, el, id, link, fname, f = document.forms[0], ed = tinyMCEPopup.editor, d = t.I('img_demo'), dom = tinyMCEPopup.dom, DL, caption;
+		var t = this, h, c, el, id, link, fname, f = document.forms[0], ed = tinyMCEPopup.editor, d = t.I('img_demo'), dom = tinyMCEPopup.dom, DL, caption = null;
 		document.dir = tinyMCEPopup.editor.getParam('directionality','');
+
+		if ( ! tinyMCEPopup.editor.getParam('wpeditimage_do_captions', true) )
+			t.I('cap_field').style.display = 'none';
+
 		tinyMCEPopup.restoreSelection();
 		el = ed.selection.getNode();
 		if (el.nodeName != 'IMG') return;
@@ -255,24 +259,26 @@ var wpImage = {
 		ed.dom.setStyle(el, 'float', '');
 		t.getImageData();
 		c = ed.dom.getAttrib(el, 'class');
-		caption = t.img_alt = ed.dom.getAttrib(el, 'alt');
 
 		if ( DL = dom.getParent(el, 'dl') ) {
 			var dlc = ed.dom.getAttrib(DL, 'class');
 			dlc = dlc.match(/align[^ "']+/i);
-			if ( dlc && ! dom.hasClass(el, dlc) )
+			if ( dlc && ! dom.hasClass(el, dlc) ) {
 				c += ' '+dlc;
+				tinymce.trim(c);
+			}
 
 			tinymce.each(DL.childNodes, function(e) {
-				if ( e.nodeName == 'DD' && dom.hasClass(e, 'wp_caption_dd') ) {
+				if ( e.nodeName == 'DD' && dom.hasClass(e, 'wp-caption-dd') ) {
 					caption = e.innerHTML;
 					return;
 				}
 			});
 		}
 
+		f.img_cap.value = caption;
 		f.img_title.value = ed.dom.getAttrib(el, 'title');
-		f.img_alt.value = caption;
+		f.img_alt.value = ed.dom.getAttrib(el, 'alt');
 		f.border.value = ed.dom.getAttrib(el, 'border');
 		f.vspace.value = ed.dom.getAttrib(el, 'vspace');
 		f.hspace.value = ed.dom.getAttrib(el, 'hspace');
@@ -355,7 +361,7 @@ var wpImage = {
 			return;
 		}
 
-		if ( f.img_alt.value != '' && f.width.value != '' ) {
+		if ( f.img_cap.value != '' && f.width.value != '' ) {
 			do_caption = 1;
 			img_class = img_class.replace( /align[^ "']+\s?/gi, '' );
 		}
@@ -370,7 +376,7 @@ var wpImage = {
 		ed.dom.setAttribs(el, {
 			src : f.img_src.value,
 			title : f.img_title.value,
-			alt : t.img_alt,
+			alt : f.img_alt.value,
 			width : f.width.value,
 			height : f.height.value,
 			style : f.img_style.value,
@@ -421,15 +427,15 @@ var wpImage = {
 
 			if ( DL ) {
 				ed.dom.setAttribs(DL, {
-					'class' : 'wp_caption '+t.align,
+					'class' : 'wp-caption '+t.align,
 					style : 'width: '+cap_width+'px;'
 				});
 
 				if ( DIV )
 					ed.dom.setAttrib(DIV, 'class', div_cls);
 
-				if ( (DT = ed.dom.getParent(el, 'dt')) && (DD = DT.nextSibling) && ed.dom.hasClass(DD, 'wp_caption_dd') )
-					ed.dom.setHTML(DD, f.img_alt.value);
+				if ( (DT = ed.dom.getParent(el, 'dt')) && (DD = DT.nextSibling) && ed.dom.hasClass(DD, 'wp-caption-dd') )
+					ed.dom.setHTML(DD, f.img_cap.value);
 
 			} else {
 				var lnk = '', pa;
@@ -446,8 +452,8 @@ var wpImage = {
 					}
 				} else html = ed.dom.getOuterHTML(el);
 
-				html = '<dl id="'+cap_id+'" class="wp_caption '+t.align+'" style="width: '+cap_width+
-				'px"><dt class="wp_caption_dt">'+html+'</dt><dd class="wp_caption_dd">'+f.img_alt.value+'</dd></dl>';
+				html = '<dl id="'+cap_id+'" class="wp-caption '+t.align+'" style="width: '+cap_width+
+				'px"><dt class="wp-caption-dt">'+html+'</dt><dd class="wp-caption-dd">'+f.img_cap.value+'</dd></dl>';
 
 				cap = ed.dom.create('div', {'class': div_cls}, html);
 
