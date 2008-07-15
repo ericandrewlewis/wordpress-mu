@@ -100,9 +100,24 @@ function get_user_details( $username ) {
 	return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login = '$username'" );
 }
 
+function get_id_from_blogname( $name ) {
+	global $wpdb, $current_site;
+	if( constant( 'VHOST' ) ) {
+		$domain = $name . '.' . $current_site->domain;
+		$path = $current_site->path;
+	} else {
+		$domain = $current_site->domain;
+		$path = $current_site->path . $name;
+	}
+	return $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain = '$domain' AND path = '$path'" );
+}
+
 function get_blog_details( $id, $getall = true ) {
 	global $wpdb;
 
+	if( !is_numeric( $id ) ) {
+		$id = get_id_from_blogname( $id );
+	}
 	$all = $getall == true ? '' : 'short';
 	$details = wp_cache_get( $id . $all, 'blog-details' );
 
