@@ -103,12 +103,7 @@ if( constant( 'VHOST' ) == 'yes' ) {
 
 if( defined( "WP_INSTALLING" ) == false ) {
 	if( $current_site && $current_blog == null ) {
-		if( defined( 'NOBLOGREDIRECT' ) && constant( 'NOBLOGREDIRECT' ) != '' ) {
-			header( "Location: " . constant( 'NOBLOGREDIRECT' ) . "?new=" . urlencode( $blogname ) );
-		} else {
-			header( "Location: http://{$current_site->domain}{$current_site->path}wp-signup.php?new=" . urlencode( $blogname ) );
-		}
-		die();
+		$current_blog = $wpdb->get_row("SELECT * FROM {$wpdb->blogs} WHERE domain = '{$current_site->domain}' AND path = '{$current_site->path}'");
 	}
 	if( $current_blog == false || $current_site == false )
 		is_installed();

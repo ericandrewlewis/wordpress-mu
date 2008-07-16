@@ -35,8 +35,8 @@ define ('WPLANG', '');
 // uncomment this to enable wp-content/sunrise.php support
 //define( 'SUNRISE', 'on' );
 
-// Uncomment and set this to a URL to redirect if a blog does not exist. (Useful if signup is disabled)
-// Browser will redirect to constant( 'NOBLOGREDICT' ) . "?new=blogname" where blogname is the unknown blog
+// Uncomment and set this to a URL to redirect if a blog does not exist or is a 404 on the main blog. (Useful if signup is disabled)
+// For example, browser will redirect to http://examples.com/ for the following: define( 'NOBLOGREDIRECT', 'http://example.com/' );
 // define( 'NOBLOGREDIRECT', '' );
 
 define( "WP_USE_MULTIPLE_DB", false );

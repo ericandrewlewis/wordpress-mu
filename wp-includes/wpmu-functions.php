@@ -100,6 +100,13 @@ function get_user_details( $username ) {
 	return $wpdb->get_row( "SELECT * FROM $wpdb->users WHERE user_login = '$username'" );
 }
 
+function is_main_blog() {
+	global $current_blog, $current_site;
+	if( $current_blog->domain == $current_site->domain && $current_blog->path == $current_site->path )
+		return true;
+	return false;
+}
+
 function get_id_from_blogname( $name ) {
 	global $wpdb, $current_site;
 	if( constant( 'VHOST' ) ) {
@@ -1961,4 +1968,13 @@ function signup_nonce_check( $result ) {
 }
 add_filter( 'wpmu_validate_blog_signup', 'signup_nonce_check' );
 add_filter( 'wpmu_validate_user_signup', 'signup_nonce_check' );
+
+function maybe_redirect_404() {
+	global $wpdb;
+	if( is_main_blog() && is_404() && defined( 'NOBLOGREDIRECT' ) && constant( 'NOBLOGREDIRECT' ) != '' ) {
+		header( "Location: " . constant( 'NOBLOGREDIRECT' ) );
+		die();
+	}
+}
+add_action( 'template_redirect', 'maybe_redirect_404' );
 ?>
