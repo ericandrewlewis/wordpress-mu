@@ -95,9 +95,9 @@ switch( $_GET['action'] ) {
 		check_admin_referer('add-blog');
 
 		$blog = $_POST['blog'];
-		$domain = ereg_replace("[^A-Za-z0-9]", "", strtolower( wp_specialchars( $blog['domain'] ) ) );
-		$email = wp_specialchars( $blog['email'] );
-		$title = stripslashes( wp_specialchars( $blog['title'] ) );
+		$domain = sanitize_user( str_replace( '/', '', $blog[ 'domain' ] ) );
+		$email = sanitize_email( $blog[ 'email' ] );
+		$title = sanitize_title( $blog[ 'title' ] );
 
 		if ( empty($domain) || empty($email))
 			wp_die( __('Missing blog address or email address.') );
