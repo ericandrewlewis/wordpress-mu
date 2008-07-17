@@ -241,6 +241,7 @@ switch( $_GET['action'] ) {
 					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpdb->base_prefix . $id . "_capabilities', 'a:1:{s:" . strlen( $_POST['new_role'] ) . ":\"" . $_POST['new_role'] . "\";b:1;}')" );
 			}
 		}
+		do_action( 'wpmu_update_blog_options' );
 		wpmu_admin_do_redirect( "wpmu-blogs.php?action=editblog&updated=true&id=".$id );
 	break;
 
