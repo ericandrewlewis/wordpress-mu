@@ -921,7 +921,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 function wpmu_validate_blog_signup($blogname, $blog_title, $user = '') {
 	global $wpdb, $domain, $base;
 
-	$blogname = sanitize_user( $blogname );
+	$blogname = sanitize_user( $blogname, true );
 	$blog_title = strip_tags( $blog_title );
 	$blog_title = substr( $blog_title, 0, 50 );
 
@@ -1145,7 +1145,7 @@ function generate_random_password( $len = 8 ) {
 }
 
 function wpmu_create_user( $user_name, $password, $email) {
-	$user_name = ereg_replace("[^A-Za-z0-9]", "", $user_name);
+	$user_name = sanitize_user( $user_name, true );
 	if ( username_exists($user_name) )
 		return false;
 
@@ -1165,7 +1165,9 @@ function wpmu_create_user( $user_name, $password, $email) {
 }
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
-	$domain = sanitize_user( $domain );
+	$domain = sanitize_user( $domain, true );
+	if( constant( 'VHOST' ) == 'yes' )
+		$domain = str_replace( '@', '', $domain );
 	$title = strip_tags( $title );
 	$user_id = (int) $user_id;
 
