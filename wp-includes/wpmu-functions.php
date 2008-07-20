@@ -109,7 +109,7 @@ function is_main_blog() {
 
 function get_id_from_blogname( $name ) {
 	global $wpdb, $current_site;
-	if( constant( 'VHOST' ) ) {
+	if( constant( 'VHOST' ) == 'yes' ) {
 		$domain = $name . '.' . $current_site->domain;
 		$path = $current_site->path;
 	} else {
