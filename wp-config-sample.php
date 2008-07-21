@@ -15,6 +15,7 @@ $base = 'BASE';
 // to get keys generated for you, or just make something up.  Each key should have a different phrase.
 define('AUTH_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
 define('SECURE_AUTH_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
+define('SECURE_AUTH_SALT', 'put your unique phrase here'); // Change this to a unique phrase.
 define('LOGGED_IN_KEY', 'put your unique phrase here'); // Change this to a unique phrase.
 define('SECRET_KEY', 'put your unique phrase here'); // Change these to unique phrases.
 define('SECRET_SALT', 'put your unique phrase here');
