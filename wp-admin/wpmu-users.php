@@ -68,10 +68,9 @@ if ( $_GET['updated'] == 'true' ) {
 	$query .= ( $_GET['order'] == 'DESC' ) ? 'DESC' : 'ASC';
 
 	if( !empty( $s )) {
-		$user_list = $wpdb->get_results( $query, ARRAY_A );
-		$total = count($user_list);
+		$total = $wpdb->get_var( str_replace('SELECT *', 'SELECT COUNT(ID)', $query) );
 	} else {
-		$total = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->users}");
+		$total = $wpdb->get_var( "SELECT COUNT(ID) FROM {$wpdb->users}");
 	}
 
 	$query .= " LIMIT " . intval( ( $apage - 1 ) * $num) . ", " . intval( $num );
