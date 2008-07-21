@@ -360,6 +360,9 @@ function switch_to_blog( $new_blog ) {
 	if ( $blog_id == $new_blog )
 		return;
 
+	$wp_object_cache->switched_cache[ $blog_id ] = $wp_object_cache->cache;
+	unset( $wp_object_cache->cache );
+
 	$wpdb->set_blog_id($new_blog);
 	$table_prefix = $wpdb->prefix;
 	$prev_blog_id = $blog_id;
@@ -387,6 +390,9 @@ function restore_current_blog() {
 	$blog = array_pop($switched_stack);
 	if ( $blog_id == $blog )
 		return;
+
+	$wp_object_cache->cache = $wp_object_cache->switched_cache[ $blog ];
+	unset( $wp_object_cache->switched_cache[ $blog ] );
 
 	$wpdb->set_blog_id($blog);
 	$prev_blog_id = $blog_id;
