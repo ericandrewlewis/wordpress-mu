@@ -1950,4 +1950,20 @@ function remove_tinymce_media_button( $buttons ) {
 	return $buttons;
 }
 add_filter( 'mce_buttons_2', 'remove_tinymce_media_button' );
+
+function add_existing_user_to_blog() {
+	if( false !== strpos( $_SERVER[ 'REQUEST_URI' ], '/newbloguser/' ) ) {
+		$parts = explode( '/', $_SERVER[ 'REQUEST_URI' ] );
+		$key = array_pop( $parts );
+		if( $key == '' )
+			$key = array_pop( $parts );
+		$details = get_option( "new_user_" . $key );
+		if( is_array( $details ) ) {
+			add_user_to_blog( '', $details[ 'user_id' ], $details[ 'role' ] );
+			do_action( "added_existing_user", $details[ 'user_id' ] );
+			wp_die( 'You have been added to this blog. Please visit the <a href="' . site_url() . '">homepage</a> or <a href="' . site_url( '/wp-admin/' ) . '">login</a> using your username and password.' );
+		}
+	}
+}
+add_action( 'init', 'add_existing_user_to_blog' );
 ?>
