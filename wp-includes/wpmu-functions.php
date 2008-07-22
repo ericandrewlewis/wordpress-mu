@@ -1944,4 +1944,10 @@ function maybe_redirect_404() {
 	}
 }
 add_action( 'template_redirect', 'maybe_redirect_404' );
+
+function remove_tinymce_media_button( $buttons ) {
+	unset( $buttons[ array_search( 'media', $buttons ) ] );
+	return $buttons;
+}
+add_filter( 'mce_buttons_2', 'remove_tinymce_media_button' );
 ?>
