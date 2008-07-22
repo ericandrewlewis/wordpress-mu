@@ -97,7 +97,7 @@ switch( $_GET['action'] ) {
 		$blog = $_POST['blog'];
 		$domain = sanitize_user( str_replace( '/', '', $blog[ 'domain' ] ) );
 		$email = sanitize_email( $blog[ 'email' ] );
-		$title = sanitize_title( $blog[ 'title' ] );
+		$title = $blog[ 'title' ];
 
 		if ( empty($domain) || empty($email))
 			wp_die( __('Missing blog address or email address.') );
