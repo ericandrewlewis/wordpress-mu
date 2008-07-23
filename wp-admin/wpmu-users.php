@@ -86,7 +86,7 @@ if ( $_GET['updated'] == 'true' ) {
 	));
 	?>
 	<h2><?php _e("Users"); ?></h2>
-	<form action="wpmu-users.php" method="get" style="position:absolute;right:0;top:0;"> 
+	<form action="wpmu-users.php" method="get" id="wpmu-search"> 
 		<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes( $s ); ?>" size="17" />
 		<input type="submit" id="post-query-submit" value="<?php _e('Search Users') ?>" class="button" />
 	</form>
