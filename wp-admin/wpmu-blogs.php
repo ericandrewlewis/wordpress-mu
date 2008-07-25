@@ -387,7 +387,7 @@ switch( $_GET['action'] ) {
 			'users'        => __('Users'),
 			'plugins'      => __('Actions')
 		);
-		$posts_columns = apply_filters('manage_posts_columns', $posts_columns);
+		$posts_columns = apply_filters('wpmu_blogs_columns', $posts_columns);
 
 		// you can not edit these at the moment
 		$posts_columns['control_edit']      = '';

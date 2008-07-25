@@ -121,7 +121,7 @@ if ( $_GET['updated'] == 'true' ) {
 			'registered' => __('Registered'),
 			'blogs'      => ''
 		);
-		$posts_columns = apply_filters('manage_posts_columns', $posts_columns);
+		$posts_columns = apply_filters('wpmu_users_columns', $posts_columns);
 		?>
 		<table class="widefat" cellpadding="3" cellspacing="3">
 			<thead>
