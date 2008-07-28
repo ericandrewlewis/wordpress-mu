@@ -830,7 +830,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 
 	$errors = new WP_Error();
 
-	$user_name = sanitize_user($user_name);
+	$user_name = preg_replace( "/\s+/", '', sanitize_user( $user_name, true ) );
 	$user_email = sanitize_email( $user_email );
 
 	if ( empty( $user_name ) )
@@ -927,7 +927,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 function wpmu_validate_blog_signup($blogname, $blog_title, $user = '') {
 	global $wpdb, $domain, $base;
 
-	$blogname = sanitize_user( $blogname, true );
+	$blogname = preg_replace( "/\s+/", '', sanitize_user( $blogname, true ) );
 	$blog_title = strip_tags( $blog_title );
 	$blog_title = substr( $blog_title, 0, 50 );
 
@@ -1026,7 +1026,7 @@ function wpmu_signup_blog($domain, $path, $title, $user, $user_email, $meta = ''
 function wpmu_signup_user($user, $user_email, $meta = '') {
 	global $wpdb;
 
-	$user = sanitize_user( $user );
+	$user = preg_replace( "/\s+/", '', sanitize_user( $user, true ) );
 	$user_email = sanitize_email( $user_email );
 
 	$key = substr( md5( time() . rand() . $user_email ), 0, 16 );
@@ -1151,7 +1151,7 @@ function generate_random_password( $len = 8 ) {
 }
 
 function wpmu_create_user( $user_name, $password, $email) {
-	$user_name = sanitize_user( $user_name, true );
+	$user_name = preg_replace( "/\s+/", '', sanitize_user( $user_name, true ) );
 	if ( username_exists($user_name) )
 		return false;
 
@@ -1171,7 +1171,7 @@ function wpmu_create_user( $user_name, $password, $email) {
 }
 
 function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id = 1) {
-	$domain = sanitize_user( $domain, true );
+	$domain = preg_replace( "/\s+/", '', sanitize_user( $domain, true ) );
 	if( constant( 'VHOST' ) == 'yes' )
 		$domain = str_replace( '@', '', $domain );
 	$title = strip_tags( $title );
