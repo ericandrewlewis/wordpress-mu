@@ -43,6 +43,11 @@ define ('WPLANG', '');
 // For example, browser will redirect to http://examples.com/ for the following: define( 'NOBLOGREDIRECT', 'http://example.com/' );
 // define( 'NOBLOGREDIRECT', '' );
 
+// Location of mu-plugins
+// define( 'WPMU_PLUGIN_DIR', '' );
+// define( 'WPMU_PLUGIN_URL', '' );
+// define( 'MUPLUGINDIR', 'wp-content/mu-plugins' );
+
 define( "WP_USE_MULTIPLE_DB", false );
 
 /* That's all, stop editing! Happy blogging. */
