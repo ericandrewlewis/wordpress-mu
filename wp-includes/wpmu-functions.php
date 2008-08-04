@@ -8,9 +8,9 @@ function load_muplugin_textdomain($domain, $path = false) {
 		$locale = 'en_US';
 
 	if ( false === $path )
-		$path = MUPLUGINDIR;
+		$path = WPMU_PLUGIN_DIR;
 
-	$mofile = ABSPATH . "$path/$domain-$locale.mo";
+	$mofile = WPMU_PLUGIN_DIR . "/$domain-$locale.mo";
 	load_textdomain($domain, $mofile);
 }
 

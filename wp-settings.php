@@ -325,11 +325,11 @@ if ( !defined('WPMU_PLUGIN_URL') )
 if( defined( 'MUPLUGINDIR' ) == false ) 
 	define( 'MUPLUGINDIR', 'wp-content/mu-plugins' ); // Relative to ABSPATH.  For back compat.
 
-if( is_dir( ABSPATH . MUPLUGINDIR ) ) {
-	if( $dh = opendir( ABSPATH . MUPLUGINDIR ) ) {
+if( is_dir( WPMU_PLUGIN_DIR ) ) {
+	if( $dh = opendir( WPMU_PLUGIN_DIR ) ) {
 		while( ( $plugin = readdir( $dh ) ) !== false ) {
 			if( substr( $plugin, -4 ) == '.php' ) {
-				include_once( ABSPATH . MUPLUGINDIR . '/' . $plugin );
+				include_once( WPMU_PLUGIN_DIR . '/' . $plugin );
 			}
 		}
 	}
