@@ -36,6 +36,9 @@ define ('WPLANG', '');
 // uncomment this to enable wp-content/sunrise.php support
 //define( 'SUNRISE', 'on' );
 
+// uncomment to move wp-content/blogs.dir elsewhere, else WP_CONTENT_DIR/blogs.dir is used.
+// define( "UPLOADBLOGSDIR", "/nfs/fileserver1" );
+
 // Uncomment and set this to a URL to redirect if a blog does not exist or is a 404 on the main blog. (Useful if signup is disabled)
 // For example, browser will redirect to http://examples.com/ for the following: define( 'NOBLOGREDIRECT', 'http://example.com/' );
 // define( 'NOBLOGREDIRECT', '' );

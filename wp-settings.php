@@ -236,8 +236,13 @@ $table_prefix = $table_prefix . $blog_id . '_';
 
 wp_cache_init(); // need to init cache again after blog_id is set
 
-if( !defined( "UPLOADS" ) )
-	define( "UPLOADS", "wp-content/blogs.dir/{$wpdb->blogid}/files/" );
+if( !defined( "UPLOADS" ) ) {
+	if( defined( "UPLOADBLOGSDIR" ) ) {
+		define( "UPLOADS", UPLOADBLOGSDIR . "/{$wpdb->blogid}/files/" );
+	} else {
+		define( "UPLOADS", WP_CONTENT_DIR . "/blogs.dir/{$wpdb->blogid}/files/" );
+	}
+}
 
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
@@ -314,7 +319,7 @@ define('COOKIEHASH', '' );
 
 $wpdb->hide_errors();
 if( defined( 'MUPLUGINDIR' ) == false ) 
-	define( 'MUPLUGINDIR', 'wp-content/mu-plugins' );
+	define( 'MUPLUGINDIR', WP_CONTENT_DIR . '/mu-plugins' );
 
 if( is_dir( ABSPATH . MUPLUGINDIR ) ) {
 	if( $dh = opendir( ABSPATH . MUPLUGINDIR ) ) {
