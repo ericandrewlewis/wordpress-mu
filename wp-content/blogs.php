@@ -1,6 +1,6 @@
 <?php
 define( 'SHORTINIT', true ); // this prevents most of WP from being loaded
-require_once( dirname( dirname( __FILE__) ) . '/wp-config.php' ); // absolute includes are faster
+require_once( dirname( dirname( __FILE__) ) . '/wp-load.php' ); // absolute includes are faster
 
 if ( $current_blog->archived == '1' || $current_blog->spam == '1' || $current_blog->deleted == '1' ) {
 	status_header( 404 );
