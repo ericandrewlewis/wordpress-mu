@@ -318,8 +318,12 @@ $cookiehash = '';
 define('COOKIEHASH', '' );
 
 $wpdb->hide_errors();
+if ( !defined('WPMU_PLUGIN_DIR') )
+	define( 'WPMU_PLUGIN_DIR', WP_CONTENT_DIR . '/mu-plugins' ); // full path, no trailing slash
+if ( !defined('WPMU_PLUGIN_URL') )
+	define( 'WPMU_PLUGIN_URL', WP_CONTENT_URL . '/mu-plugins' ); // full url, no trailing slash
 if( defined( 'MUPLUGINDIR' ) == false ) 
-	define( 'MUPLUGINDIR', WP_CONTENT_DIR . '/mu-plugins' );
+	define( 'MUPLUGINDIR', 'wp-content/mu-plugins' ); // Relative to ABSPATH.  For back compat.
 
 if( is_dir( ABSPATH . MUPLUGINDIR ) ) {
 	if( $dh = opendir( ABSPATH . MUPLUGINDIR ) ) {
