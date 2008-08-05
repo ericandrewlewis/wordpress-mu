@@ -1564,7 +1564,7 @@ function upload_is_user_over_quota( $echo = true ) {
 	$spaceAllowed = get_space_allowed();
 	if(empty($spaceAllowed) || !is_numeric($spaceAllowed)) $spaceAllowed = 10;
 	
-	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
+	$dirName = BLOGUPLOADDIR;
 	$size = get_dirsize($dirName) / 1024 / 1024;
 	
 	if( ($spaceAllowed-$size) < 0 ) { 
@@ -1611,7 +1611,7 @@ function fix_import_form_size( $size ) {
 	if( upload_is_user_over_quota( false ) == true )
 		return 0;
 	$spaceAllowed = 1024 * 1024 * get_space_allowed();
-	$dirName = constant( "ABSPATH" ) . constant( "UPLOADS" );
+	$dirName = BLOGUPLOADDIR;
 	$dirsize = get_dirsize($dirName) ;
 	if( $size > $spaceAllowed - $dirsize ) {
 		return $spaceAllowed - $dirsize; // remaining space

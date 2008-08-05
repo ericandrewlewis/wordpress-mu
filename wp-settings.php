@@ -236,13 +236,14 @@ $table_prefix = $table_prefix . $blog_id . '_';
 
 wp_cache_init(); // need to init cache again after blog_id is set
 
-if( !defined( "UPLOADS" ) ) {
-	if( defined( "UPLOADBLOGSDIR" ) ) {
-		define( "UPLOADS", UPLOADBLOGSDIR . "/{$wpdb->blogid}/files/" );
-	} else {
-		define( "UPLOADS", WP_CONTENT_DIR . "/blogs.dir/{$wpdb->blogid}/files/" );
-	}
-}
+if( !defined( "UPLOADBLOGSDIR" ) )
+	define( "UPLOADBLOGSDIR", 'wp-content/blogs.dir' );
+
+if( !defined( "UPLOADS" ) )
+	define( "UPLOADS", UPLOADBLOGSDIR . "/{$wpdb->blogid}/files/" );
+
+if( !defined( "BLOGUPLOADDIR" ) )
+	define( "BLOGUPLOADDIR", WP_CONTENT_DIR . "/blogs.dir/{$wpdb->blogid}/" );
 
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');

@@ -65,7 +65,7 @@ function wp_check_filetype($filename, $mimes = null) {
 endif;
 
 
-$file = constant( 'ABSPATH' ) . constant( 'UPLOADS' ) . str_replace( '..', '', $_GET[ 'file' ] );
+$file = BLOGUPLOADDIR . str_replace( '..', '', $_GET[ 'file' ] );
 if ( !is_file( $file ) ) {
 	status_header( 404 );
 	die('404 &#8212; File not found.');

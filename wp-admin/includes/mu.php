@@ -4,7 +4,7 @@ function check_upload_size( $file ) {
 		return $file;
 
 	$space_allowed = 1048576 * get_space_allowed();
-	$space_used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
+	$space_used = get_dirsize( BLOGUPLOADDIR );
 	$space_left = $space_allowed - $space_used;
 	$file_size = filesize( $file['tmp_name'] );
 	if( $space_left < $file_size )
@@ -248,7 +248,7 @@ function get_space_allowed() {
 
 function display_space_usage() {
 	$space = get_space_allowed();
-	$used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024;
+	$used = get_dirsize( BLOGUPLOADDIR )/1024/1024;
 
 	if ($used > $space) $percentused = '100';
 	else $percentused = ( $used / $space ) * 100;
@@ -267,7 +267,7 @@ function display_space_usage() {
 // Display File upload quota on dashboard
 function dashboard_quota() {	
 	$quota = get_space_allowed();
-	$used = get_dirsize( constant( "ABSPATH" ) . constant( "UPLOADS" ) )/1024/1024;
+	$used = get_dirsize( BLOGUPLOADDIR )/1024/1024;
 
 	if ($used > $quota) $percentused = '100';
 	else $percentused = ( $used / $quota ) * 100;
@@ -335,7 +335,7 @@ function refresh_user_details($id) {
 function wpmu_checkAvailableSpace() {
 	$spaceAllowed = get_space_allowed(); 
 
-	$dirName = trailingslashit( constant( "ABSPATH" ) . constant( "UPLOADS" ) );
+	$dirName = trailingslashit( BLOGUPLOADDIR );
 	if (!(is_dir($dirName) && is_readable($dirName))) 
 		return; 
 
