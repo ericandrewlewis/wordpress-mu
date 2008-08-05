@@ -243,7 +243,7 @@ if( !defined( "UPLOADS" ) )
 	define( "UPLOADS", UPLOADBLOGSDIR . "/{$wpdb->blogid}/files/" );
 
 if( !defined( "BLOGUPLOADDIR" ) )
-	define( "BLOGUPLOADDIR", WP_CONTENT_DIR . "/blogs.dir/{$wpdb->blogid}/" );
+	define( "BLOGUPLOADDIR", WP_CONTENT_DIR . "/blogs.dir/{$wpdb->blogid}/files/" );
 
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
