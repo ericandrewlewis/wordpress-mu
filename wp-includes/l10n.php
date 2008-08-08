@@ -264,7 +264,7 @@ function load_textdomain($domain, $mofile) {
 function load_default_textdomain() {
 	$locale = get_locale();
 
-	$mofile = ABSPATH . LANGDIR . "/$locale.mo";
+	$mofile = WP_LANG_DIR . "/$locale.mo";
 
 	load_textdomain('default', $mofile);
 }
