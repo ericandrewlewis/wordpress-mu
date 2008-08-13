@@ -92,8 +92,13 @@ function wpmu_current_site() {
 $current_site = wpmu_current_site();
 
 if( constant( 'VHOST' ) == 'yes' ) {
-	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");
-	if( $current_blog != null ) {
+	$current_blog = wp_cache_get( 'current_blog_' . $domain, 'site-options' );
+	if( !$current_blog ) {
+		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");
+		if( $current_blog )
+			wp_cache_set( 'current_blog_' . $domain, $current_blog, 'site-options' );
+	}
+	if( $current_blog != null && $current_blog->site_id != $current_site->id ) {
 		$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='{$current_blog->site_id}'");
 	} else {
 		$blogname = substr( $domain, 0, strpos( $domain, '.' ) );
