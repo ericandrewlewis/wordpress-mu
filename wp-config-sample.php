@@ -9,6 +9,8 @@ define('DB_CHARSET', 'utf8');
 define('DB_COLLATE', '');
 define('VHOST', 'VHOSTSETTING'); 
 $base = 'BASE';
+define('DOMAIN_CURRENT_SITE', 'current_site_domain' );
+define('PATH_CURRENT_SITE', 'current_site_path' );
 
 // Change each KEY to a different unique phrase.  You won't have to remember the phrases later,
 // so make them long and complicated.  You can visit http://api.wordpress.org/secret-key/1.1/

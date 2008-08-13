@@ -26,6 +26,25 @@ $path = preg_replace( '|(/[a-z0-9-]+?/).*|', '$1', $path );
 
 function wpmu_current_site() {
 	global $wpdb, $current_site, $domain, $path, $sites;
+	if( defined( 'DOMAIN_CURRENT_SITE' ) && defined( 'PATH_CURRENT_SITE' ) ) {
+		$current_site->id = 1;
+		$current_site->domain = DOMAIN_CURRENT_SITE;
+		$current_site->path   = PATH_CURRENT_SITE;
+		return $current_site;
+	}
+
+	$current_site = wp_cache_get( "current_site", "site-options" );
+	if( $current_site )
+		return $current_site;
+		
+	$wpdb->suppress_errors();
+	$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" ); // usually only one site
+	if( count( $sites ) == 1 ) {
+		$current_site = $sites[0];
+		$path = $current_site->path;
+		wp_cache_set( "current_site", $current_site, "site-options" );
+		return $current_site;
+	}
 	$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
 	if( constant( 'VHOST' ) == 'yes' ) {
 		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
@@ -70,15 +89,7 @@ function wpmu_current_site() {
 	return $current_site;
 }
 
-$wpdb->suppress_errors();
-$sites = $wpdb->get_results( "SELECT * FROM $wpdb->site" ); // usually only one site
-if( count( $sites ) == 1 ) {
-	$current_site = $sites[0];
-	$path = $current_site->path;
-} else {
-	$current_site = wpmu_current_site();
-}
-
+$current_site = wpmu_current_site();
 
 if( constant( 'VHOST' ) == 'yes' ) {
 	$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");

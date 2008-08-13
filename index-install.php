@@ -337,6 +337,13 @@ function step2() {
 			case '$base = \'BASE\';':
 				fwrite($handle, str_replace('BASE', $base, $line));
 				break;
+			case "define('DOMAIN_C":
+				$domain = get_clean_basedomain();
+				fwrite($handle, str_replace("current_site_domain", $domain, $line));
+				break;
+			case "define('PATH_CUR":
+				fwrite($handle, str_replace("current_site_path", str_replace( 'index.php', '', $_SERVER[ 'REQUEST_URI' ] ), $line));
+				break;
 			case "define('SECRET_K":
 			case "define('SECRET_S":
 			case "define('LOGGED_I":
@@ -354,18 +361,24 @@ function step2() {
 	define( 'VHOST', $vhost );
 }
 
-function step3() {
-	global $wpdb, $current_site, $dirs, $wpmu_version;
-	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
-	if( $base != "/") {
-		$base .= "/";
-	} 
+function get_clean_basedomain() {
+	global $wpdb;
 	$domain =   $wpdb->escape( $_POST[ 'basedomain' ] );
 	$domain = str_replace( 'http://', '', $domain );
 	if( substr( $domain, 0, 4 ) == 'www.' )
 		$domain = substr( $domain, 4 );
 	if( strpos( $domain, '/' ) )
 		$domain = substr( $domain, 0, strpos( $domain, '/' ) );
+	return $domain;
+}
+
+function step3() {
+	global $wpdb, $current_site, $dirs, $wpmu_version;
+	$base = stripslashes( dirname( $_SERVER["SCRIPT_NAME"] ) );
+	if( $base != "/") {
+		$base .= "/";
+	} 
+	$domain = get_clean_basedomain();
 	$email = $wpdb->escape( $_POST[ 'email' ] );
 	if( $email == '' )
 		die( 'You must enter an email address!' );
