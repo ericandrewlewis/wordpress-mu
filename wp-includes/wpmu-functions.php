@@ -1960,6 +1960,7 @@ function add_existing_user_to_blog() {
 		$details = get_option( "new_user_" . $key );
 		if( is_array( $details ) ) {
 			add_user_to_blog( '', $details[ 'user_id' ], $details[ 'role' ] );
+			delete_option( 'new_user_' . $key );
 			do_action( "added_existing_user", $details[ 'user_id' ] );
 			wp_die( 'You have been added to this blog. Please visit the <a href="' . site_url() . '">homepage</a> or <a href="' . site_url( '/wp-admin/' ) . '">login</a> using your username and password.' );
 		}

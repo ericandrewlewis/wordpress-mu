@@ -514,7 +514,7 @@ foreach ( $wp_user_search->get_results() as $userid ) {
 <form action="" method="post" name="adduser" id="adduser">
 <?php wp_nonce_field('add-user') ?>
 <input type='hidden' name='action' value='addexistinguser'>
-<p><?php _e('Type the e-mail address of another user to add them to your blog.')?></p>
+<p><?php _e('Type the e-mail address of another user to add them to your blog. They will be sent a confirmation email with a link to click before they are added.')?></p>
 
 <table class="form-table">
 	<tr class="form-field form-required">
