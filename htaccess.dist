@@ -8,7 +8,7 @@ RewriteRule ^(.*/)?files/(.*) wp-content/blogs.php?file=$2 [L]
 
 # add a trailing slash to /wp-admin
 RewriteCond %{REQUEST_URI} ^.*/wp-admin$
-RewriteRule ^(.+)$ /$1/ [R=301,L]
+RewriteRule ^(.+)$ $1/ [R=301,L]
 
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
