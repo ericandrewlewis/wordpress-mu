@@ -41,7 +41,7 @@ foreach ( $authors as $id ) {
 <input type="hidden" name="download" value="true" />
 </p>
 </form>
-<p><?php _e('If you are considering moving your blog to another host we recommend a number of <a href="http://wordpress.org/hosting/">hosting services</a>.'); ?></p>
+<p><?php _e( apply_filters( 'hosting_message', 'If you are considering moving your blog to another host we recommend a number of <a href="http://wordpress.org/hosting/">hosting services</a>.' ) ); ?></p>
 </div>
 </div>
 
