@@ -168,6 +168,7 @@ switch( $_GET['action'] ) {
 
 		if( get_blog_option( $id, 'home' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
 			update_blog_option( $id, 'home', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+		$wp_rewrite->flush_rules();
 
 		// update blogs table
 		$result = $wpdb->query("UPDATE {$wpdb->blogs} SET
