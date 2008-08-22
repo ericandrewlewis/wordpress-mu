@@ -130,7 +130,7 @@ function wpmu_delete_user($id) {
 function confirm_delete_users( $users ) {
 	if( !is_array( $users ) )
 		return;
-	echo '<p>Transfer posts before deleting users:</p>';
+	echo '<p>' . __( 'Transfer posts before deleting users:' ) . '</p>';
 	echo '<form action="wpmu-edit.php?action=allusers" method="post">';
 	echo '<input type="hidden" name="alluser_transfer_delete" />';
 	wp_nonce_field( 'allusers' );
@@ -155,7 +155,7 @@ function confirm_delete_users( $users ) {
 			}
 		}
 	}
-	echo "<br /><input type='submit' value='Delete user and transfer posts' />";
+	echo "<br /><input type='submit' value='" . __( 'Delete user and transfer posts' ) . "' />";
 	echo "</form>";
 }
 
