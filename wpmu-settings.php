@@ -12,6 +12,9 @@ if( strpos( $domain, ':' ) ) {
 	if( substr( $domain, -3 ) == ':80' ) {
 		$domain = substr( $domain, 0, -3 );
 		$_SERVER['HTTP_HOST'] = substr( $_SERVER['HTTP_HOST'], 0, -3 );
+	} elseif( substr( $domain, -4 ) == ':443' ) {
+		$domain = substr( $domain, 0, -4 );
+		$_SERVER['HTTP_HOST'] = substr( $_SERVER['HTTP_HOST'], 0, -4 );
 	} else {
 		die( 'WPMU only works without the port number in the URL.' );
 	}
