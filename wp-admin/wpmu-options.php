@@ -182,10 +182,9 @@ if (isset($_GET['updated'])) {
 			</tr>
 			<?php
 			$menu_perms = get_site_option( "menu_items" );
-			$menu_items = array('plugins');
+			$menu_items = apply_filters( 'mu_menu_items', array('plugins' => __('Plugins')) );			
 			foreach ( (array) $menu_items as $key => $val ) {
-				$checked = ( $menu_perms[$val] == '1' ) ? ' checked="checked"' : '';
-				echo "<tr><th scope='row'>" . ucfirst( $val ) . "</th><td><input type='checkbox' name='menu_items[" . $val . "]' value='1'" . $checked . " /></td></tr>"; 
+				echo "<tr><th scope='row'>" . wp_specialchars($val) . "</th><td><input type='checkbox' name='menu_items[" . $key . "]' value='1'" . (( $menu_perms[$key] == '1' ) ? ' checked="checked"' : '') . " /></td></tr>"; 
 			}
 			?>
 		</table>
