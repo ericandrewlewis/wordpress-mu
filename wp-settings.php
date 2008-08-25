@@ -249,7 +249,7 @@ require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
 
 if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
-	return;
+	return false;
 
 include_once(ABSPATH . WPINC . '/streams.php');
 include_once(ABSPATH . WPINC . '/gettext.php');
@@ -341,7 +341,7 @@ if ( '1' == $current_blog->deleted )
 	graceful_fail(__('This user has elected to delete their account and the content is no longer available.'));
 
 if ( '2' == $current_blog->deleted )
-		graceful_fail( sprintf( __( 'This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:%1$s">%1$s</a>.' ), str_replace( '@', ' AT ', get_site_option( 'admin_email', "support@{$current_site->domain}" ) ) ) );
+	graceful_fail( sprintf( __( 'This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:%1$s">%1$s</a>.' ), str_replace( '@', ' AT ', get_site_option( 'admin_email', "support@{$current_site->domain}" ) ) ) );
 
 if( $current_blog->archived == '1' )
     graceful_fail(__('This blog has been archived or suspended.'));
