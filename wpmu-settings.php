@@ -50,19 +50,20 @@ function wpmu_current_site() {
 	}
 	$path = substr( $_SERVER[ 'REQUEST_URI' ], 0, 1 + strpos( $_SERVER[ 'REQUEST_URI' ], '/', 1 ) );
 	if( constant( 'VHOST' ) == 'yes' ) {
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE domain = %s AND path = %s", $domain, $path) );
 		if( $current_site != null )
 			return $current_site;
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='/'" );
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE domain = %s AND path='/'", $domain) );
 		if( $current_site != null ) {
 			$path = '/';
 			return $current_site;
 		}
+
 		$sitedomain = substr( $domain, 1 + strpos( $domain, '.' ) );
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='$path'" );
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE domain = %s AND path = %s", $sitedomain, $path) );
 		if( $current_site != null )
 			return $current_site;
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$sitedomain' AND path='/'" );
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE domain = %s AND path='/'", $sitedomain) );
 		if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
 			if( count( $sites ) == 1 ) {
 				$current_site = $sites[0];
@@ -74,10 +75,10 @@ function wpmu_current_site() {
 			$path = '/';
 		}
 	} else {
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='$path'" );
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE domain = %s AND path = %s", $domain, $path) );
 		if( $current_site != null )
 			return $current_site;
-		$current_site = $wpdb->get_row( "SELECT * FROM $wpdb->site WHERE domain = '$domain' AND path='/'" );
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE domain = %s AND path='/'", $domain) );
 		if( $current_site == null && defined( "WP_INSTALLING" ) == false ) {
 			if( count( $sites ) == 1 ) {
 				$current_site = $sites[0];
@@ -97,12 +98,12 @@ $current_site = wpmu_current_site();
 if( constant( 'VHOST' ) == 'yes' ) {
 	$current_blog = wp_cache_get( 'current_blog_' . $domain, 'site-options' );
 	if( !$current_blog ) {
-		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain'");
+		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s", $domain) );
 		if( $current_blog )
 			wp_cache_set( 'current_blog_' . $domain, $current_blog, 'site-options' );
 	}
 	if( $current_blog != null && $current_blog->site_id != $current_site->id ) {
-		$current_site = $wpdb->get_row("SELECT * FROM $wpdb->site WHERE id='{$current_blog->site_id}'");
+		$current_site = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->site WHERE id = %d", $current_blog->site_id) );
 	} else {
 		$blogname = substr( $domain, 0, strpos( $domain, '.' ) );
 	}
@@ -114,15 +115,15 @@ if( constant( 'VHOST' ) == 'yes' ) {
 		$blogname = substr( $blogname, 0, strpos( $blogname, '?' ) );
 	$blognames = array( 'page', 'comments', 'blog', 'wp-admin', 'wp-includes', 'wp-content', 'files', 'feed' );
 	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) || is_blogname_page( $blogname ) ) {
-		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
+		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path) );
 	} else {
-		$current_blog = $wpdb->get_row("SELECT * FROM $wpdb->blogs WHERE domain = '$domain' AND path = '{$path}{$blogname}/'");
+		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path.$blogname.'/') );
 	}
 }
 
 if( defined( "WP_INSTALLING" ) == false ) {
 	if( $current_site && $current_blog == null ) {
-		$current_blog = $wpdb->get_row("SELECT * FROM {$wpdb->blogs} WHERE domain = '{$current_site->domain}' AND path = '{$current_site->path}'");
+		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $current_site->domain, $current_site->path) );
 	}
 	if( $current_blog == false || $current_site == false )
 		is_installed();
@@ -131,7 +132,7 @@ if( defined( "WP_INSTALLING" ) == false ) {
 function is_blogname_page( $blogname ) {
 	global $wpdb, $table_prefix, $domain, $path;
 
-	$blog_id = $wpdb->get_var("SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' AND path = '$path'");
+	$blog_id = $wpdb->get_var( $wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path) );
 
 	// is the request for a page of the main blog? We need to cache this information somewhere to save a request
 	$pages = $wpdb->get_col( "SELECT LOWER(post_name) FROM {$table_prefix}{$blog_id}_posts WHERE post_type='page'" ); 
@@ -154,15 +155,14 @@ if( $current_blog->site_id == 0 || $current_blog->site_id == '' )
 $site_id = $current_blog->site_id;
 
 
-$current_site->site_name = $wpdb->get_var( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = '$site_id' AND meta_key = 'site_name'" );
+$current_site->site_name = $wpdb->get_var( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = %d AND meta_key = 'site_name'", $site_id) );
 if( $current_site->site_name == null )
 	$current_site->site_name = ucfirst( $current_site->domain );
 
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
     if ( defined('WP_INSTALLING') ) {
-	$query = "SELECT blog_id FROM ".$wpdb->blogs." limit 0,1";
-	$blog_id = $wpdb->get_var( $query );
+	$blog_id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->blogs LIMIT 0,1" );
 	if( $blog_id == false ) {
 	    // table doesn't exist. This is the first blog
 	    $blog_id = 1;
