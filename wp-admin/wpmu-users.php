@@ -130,7 +130,7 @@ if ( $_GET['updated'] == 'true' ) {
 					if( $column_id == 'blogs' ) {
 						echo '<th scope="col">'.__('Blogs').'</th>';
 					} elseif( $column_id == 'checkbox') {
-						echo '<th scope="col" class="check-column"><input type="checkbox" onclick="checkAll(document.getElementById(\'form-user-list\'));" /></th>';
+						echo '<th scope="col" class="check-column"></th>';
 					} else { ?>
 						<th scope="col"><a href="wpmu-users.php?sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a></th>
 					<?php } ?>

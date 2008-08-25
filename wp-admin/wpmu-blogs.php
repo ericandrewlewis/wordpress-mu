@@ -408,7 +408,7 @@ switch( $_GET['action'] ) {
 		<table width="100%" cellpadding="3" cellspacing="3" class="widefat">
 			<thead>
 				<tr>
-				<th scope="col" class="check-column"><input type="checkbox" onclick="checkAll(document.getElementById('form-blog-list'));" /></th>
+				<th scope="col" class="check-column"></th>
 				<?php foreach($posts_columns as $column_id => $column_display_name) {
 					$column_link = "<a href='wpmu-blogs.php?{$sortby_url}&amp;sortby={$column_id}&amp;";
 					if( $_GET['sortby'] == $column_id ) { 
