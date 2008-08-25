@@ -6,9 +6,9 @@ if( is_site_admin() == false ) {
 
 do_action('wpmuadminedit', '');
 
-if( $_GET[ 'id' ] ) { 
+if( isset($_GET[ 'id' ]) ) { 
 	$id = intval( $_GET[ 'id' ] ); 
-} elseif( $_POST[ 'id' ] ) { 
+} elseif( isset($_POST[ 'id' ]) ) { 
 	$id = intval( $_POST[ 'id' ] ); 
 }
 
@@ -358,7 +358,8 @@ switch( $_GET['action'] ) {
 
 	// Common
 	case "confirm":
-		global $wp_locale;
+		$referrer = ( isset($_GET['ref']) ) ? stripslashes($_GET['ref']) : $_SERVER['HTTP_REFERER'];
+		$referrer = clean_url($referrer);
 		if( !headers_sent() ){
 			nocache_headers();
 			header( 'Content-Type: text/html; charset=utf-8' );
@@ -370,21 +371,17 @@ switch( $_GET['action'] ) {
 				<title><?php _e("WordPress MU &rsaquo; Confirm your action"); ?></title>
 
 				<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-				<link rel="stylesheet" href="css/install.css" type="text/css" />
-				<?php if ( ( $wp_locale ) && ('rtl' == $wp_locale->text_direction) ) : ?>
-					<link rel="stylesheet" href="css/install-rtl.css" type="text/css" />
-				<?php endif; ?>
+				<?php wp_admin_css( 'install', true ); ?>
 			</head>
 			<body id="error-page">
 				<h1 id="logo"><img alt="WordPress" src="images/wordpress-logo.png" /></h1>
 				<form action='wpmu-edit.php?action=<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>' method='post'>
 					<input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET['action2'] ) ?>' />
 					<input type='hidden' name='id' value='<?php echo wp_specialchars( $id ); ?>' />
-					<input type='hidden' name='ref' value='<?php if( isset( $_GET['ref'] ) ) {echo wp_specialchars( $_GET['ref'] ); } else { echo $_SERVER['HTTP_REFERER']; } ?>' />
+					<input type='hidden' name='ref' value='<?php echo $referrer; ?>' />
 					<?php wp_nonce_field( $_GET['action2'] ) ?>
-					<p>		
-						<?php echo wp_specialchars( $_GET['msg'] ) ?><br />
-						<input class="button" type='submit' value='<?php _e("Confirm"); ?>' /></p>	
+					<p><?php echo wp_specialchars( stripslashes($_GET['msg']) ); ?></p>
+					<p class="submit"><input class="button" type='submit' value='<?php _e("Confirm"); ?>' /></p>						
 				</form>
 			</body>
 		</html>
