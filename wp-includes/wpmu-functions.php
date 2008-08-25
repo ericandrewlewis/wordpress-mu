@@ -1121,7 +1121,7 @@ function wpmu_activate_signup($key) {
 	}
 
 	wpmu_validate_blog_signup($signup->domain, $signup->title);
-	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta);
+	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta, $wpdb->siteid);
 
 	// TODO: What to do if we create a user but cannot create a blog?
 	if ( is_wp_error($blog_id) ) {
