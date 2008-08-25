@@ -41,7 +41,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 	update_blog_status( $blog_id, 'deleted', 1 );
 
 	if ( $drop ) {
-		$drop_tables = $wpdb->get_results("show tables LIKE '". $wpdb->base_prefix . $blog_id . "_%'", ARRAY_A); 
+		$drop_tables = $wpdb->get_results("show tables LIKE '". $wpdb->base_prefix . $blog_id . "\_%'", ARRAY_A); 
 		$drop_tables = apply_filters( 'wpmu_drop_tables', $drop_tables ); 
 
 		reset( $drop_tables );
