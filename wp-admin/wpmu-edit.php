@@ -203,11 +203,8 @@ switch( $_GET['action'] ) {
 		// remove user
 		if( is_array( $_POST['blogusers'] ) ) {
 			reset( $_POST['blogusers'] );
-			foreach ( (array) $_POST['blogusers'] as $key => $val ) {
-				delete_usermeta( $key, $wpdb->base_prefix.$id.'_capabilities' );
-				delete_usermeta( $key, $wpdb->base_prefix.$id.'_user_level' );
-				delete_usermeta( $key, 'primary_blog', $id ); // Delete primary blog if need.
-			}
+			foreach ( (array) $_POST['blogusers'] as $key => $val )
+				remove_user_from_blog( $key, $id );
 		}
 
 		// change password
@@ -235,12 +232,9 @@ switch( $_GET['action'] ) {
 		// add user?
 		if( $_POST['newuser'] != '' ) {
 			$newuser = $_POST['newuser'];
-			$userid = $wpdb->get_var( "SELECT ID FROM " . $wpdb->users . " WHERE user_login = '$newuser'" );
-			if( $userid ) {
-				$user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );
-				if( $user == false )
-					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpdb->base_prefix . $id . "_capabilities', 'a:1:{s:" . strlen( $_POST['new_role'] ) . ":\"" . $_POST['new_role'] . "\";b:1;}')" );
-			}
+			$userid = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM " . $wpdb->users . " WHERE user_login = %s", $newuser ) );
+			if( $userid )
+				add_user_to_blog( $id, $userid, $_POST['new_role'] );
 		}
 		do_action( 'wpmu_update_blog_options' );
 		wpmu_admin_do_redirect( "wpmu-blogs.php?action=editblog&updated=true&id=".$id );
