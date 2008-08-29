@@ -337,17 +337,18 @@ if( is_dir( WPMU_PLUGIN_DIR ) ) {
 }
 $wpdb->show_errors();
 
-if ( '1' == $current_blog->deleted )
+if ( '1' == $current_blog->deleted ) {
+	header('HTTP/1.1 410 Gone');
 	graceful_fail(__('This user has elected to delete their account and the content is no longer available.'));
+}
 
 if ( '2' == $current_blog->deleted )
 	graceful_fail( sprintf( __( 'This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:%1$s">%1$s</a>.' ), str_replace( '@', ' AT ', get_site_option( 'admin_email', "support@{$current_site->domain}" ) ) ) );
 
-if( $current_blog->archived == '1' )
-    graceful_fail(__('This blog has been archived or suspended.'));
-
-if( $current_blog->spam == '1' )
-    graceful_fail(__('This blog has been archived or suspended.'));
+if( $current_blog->archived == '1' || $current_blog->spam == '1' ) {
+	header('HTTP/1.1 410 Gone');
+	graceful_fail(__('This blog has been archived or suspended.'));
+}
 
 /**
  * Should be exactly the same as the default value of SECRET_KEY in wp-config-sample.php
