@@ -136,21 +136,24 @@ function confirm_delete_users( $users ) {
 	wp_nonce_field( 'allusers' );
 	foreach ( (array) $_POST['allusers'] as $key => $val ) {
 		if( $val != '' && $val != '0' && $val != '1' ) {
+			echo "<input type='hidden' name='user[]' value='{$val}'/>\n";
 			$blogs = get_blogs_of_user( $val, true );
-			foreach ( (array) $blogs as $key => $details ) {
-				$blog_users = get_users_of_blog( $details->userblog_id );
-				if( is_array( $blog_users ) && !empty( $blog_users ) ) {
-					echo "<p><a href='http://{$details->domain}{$details->path}'>{$details->blogname}</a> ";
-					echo "<select name='blog[$val][{$key}]'>";
-					$out = '';
-					foreach( $blog_users as $user ) {
-						if( $user->user_id != $val )
-							$out .= "<option value='{$user->user_id}'> {$user->user_login}";
+			if( !empty( $blogs ) ) {
+				foreach ( (array) $blogs as $key => $details ) {
+					$blog_users = get_users_of_blog( $details->userblog_id );
+					if( is_array( $blog_users ) && !empty( $blog_users ) ) {
+						echo "<p><a href='http://{$details->domain}{$details->path}'>{$details->blogname}</a> ";
+						echo "<select name='blog[$val][{$key}]'>";
+						$out = '';
+						foreach( $blog_users as $user ) {
+							if( $user->user_id != $val )
+								$out .= "<option value='{$user->user_id}'> {$user->user_login}";
+						}
+						if( $out == '' )
+							$out = "<option value='1'> admin";
+						echo $out;
+						echo "</select>\n";
 					}
-					if( $out == '' )
-						$out = "<option value='1'> admin";
-					echo $out;
-					echo "</select>\n";
 				}
 			}
 		}

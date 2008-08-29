@@ -405,9 +405,12 @@ switch( $_GET['action'] ) {
 					foreach( $users as $blogid => $user_id ) {
 						$wpdb->query( "UPDATE {$wpdb->base_prefix}{$blogid}_posts SET post_author = '{$user_id}' WHERE post_author = '{$id}'" );
 					}
-					wpmu_delete_user( $id );
 				}
 			}
+			if( is_array( $_POST[ 'user' ] ) && !empty( $_POST[ 'user' ] ) )
+				foreach( $_POST[ 'user' ] as $id )
+					wpmu_delete_user( $id );
+
 			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'all_delete'), 'wpmu-users.php' ) );
 		} else {
 		foreach ( (array) $_POST['allusers'] as $key => $val ) {
