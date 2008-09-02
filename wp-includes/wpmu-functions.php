@@ -1662,7 +1662,9 @@ class delete_blog {
 	}
 
 	function admin_footer() {
-		global $wpdb;
+		global $wpdb, $current_blog, $current_site;
+		if( $current_blog->domain . $current_blog->path == $current_site->domain . $current_site->path )
+			return false;
 
 		if( $this->reallydeleteblog == true ) {
 			wpmu_delete_blog( $wpdb->blogid ); 
@@ -1670,7 +1672,9 @@ class delete_blog {
 	}
 
 	function admin_menu() {
-		add_submenu_page('options-general.php', __('Delete Blog'), __('Delete Blog'), 'manage_options', 'delete-blog', array(&$this, 'plugin_content'));
+		global $current_blog, $current_site;
+		if( $current_blog->domain . $current_blog->path != $current_site->domain . $current_site->path )
+			add_submenu_page('options-general.php', __('Delete Blog'), __('Delete Blog'), 'manage_options', 'delete-blog', array(&$this, 'plugin_content'));
 	}
 
 	function plugin_content() {
