@@ -235,6 +235,10 @@ $wpdb->set_prefix($table_prefix); // set up blog tables
 $table_prefix = $table_prefix . $blog_id . '_';
 
 wp_cache_init(); // need to init cache again after blog_id is set
+if ( function_exists('wp_cache_add_global_groups') ) { // need to add these again. Yes, it's an ugly hack
+	wp_cache_add_global_groups(array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss'));
+	wp_cache_add_non_persistent_groups(array( 'comment', 'counts', 'plugins' ));
+}
 
 if( !defined( "UPLOADBLOGSDIR" ) )
 	define( "UPLOADBLOGSDIR", 'wp-content/blogs.dir' );
