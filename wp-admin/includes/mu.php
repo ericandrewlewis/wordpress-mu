@@ -421,15 +421,15 @@ function wpmu_menu() {
 		$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
 	}
 	unset( $submenu['themes.php'][10] );
-	unset( $submenu['plugins.php'][5] );
-	unset( $submenu['plugins.php'][10] );
-	unset( $menu['35'] ); // Plugins
 
 	$menu_perms = get_site_option( "menu_items" );
 	if( is_array( $menu_perms ) == false )
 		$menu_perms = array();
-	if( $menu_perms[ 'plugins' ] == 1 )
-		$menu[35] = array(__('Plugins'), 'activate_plugins', 'plugins.php');
+	if( $menu_perms[ 'plugins' ] != 1 ) {
+		unset( $submenu['plugins.php'][5] );
+		unset( $menu['35'] ); // Plugins
+	}
+	unset( $submenu['plugins.php'][10] ); // always remove the plugin editor
 }
 add_action( '_admin_menu', 'wpmu_menu' );
 
