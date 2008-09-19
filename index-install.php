@@ -22,57 +22,158 @@ function printheader() {
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 
 		<style media="screen" type="text/css">
-		html {
-			background: #eee;
-		}
+		html { background: #f1f1f1; }
+
 		body {
 			background: #fff;
-			color: #000;
-			font-family: Georgia, "Times New Roman", Times, serif;
-			margin-left: 20%;
-			margin-right: 20%;
-			padding: .2em 2em;
+			color: #333;
+			font-family: "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana, sans-serif;
+			margin: 2em auto 0 auto;
+			width: 700px;
+			padding: 1em 2em;
+			-moz-border-radius: 12px;
+			-khtml-border-radius: 12px;
+			-webkit-border-radius: 12px;
+			border-radius: 12px;
 		}
 
-		h1, h2 {
-			color: #006;
-	   		font-size: 18px;
-	   		font-weight: lighter;
+		a { color: #2583ad; text-decoration: none; }
+
+		a:hover { color: #d54e21; }
+
+
+		h1 {
+			font-size: 18px;
+			margin-bottom: 0;
 		}
 
-		p, li, dt {
-			line-height: 140%;
+		h2 { font-size: 16px; }
+
+		p, li {
 			padding-bottom: 2px;
+			font-size: 13px;
+			line-height: 18px;
 		}
 
-		ul, ol {
-			padding: 5px 5px 5px 20px;
+		code {
+			font-size: 13px;
 		}
-		#logo {
-			margin-bottom: 2em;
+
+		ul, ol { padding: 5px 5px 5px 22px; }
+
+		#logo { margin: 6px 0 14px 0px; border-bottom: none;}
+
+		.step {
+			margin: 20px 0 15px;
 		}
-		.step a, .step input {
-			font-size: 2em;
+
+		.step input {
+			font-size: 18px;
 		}
-		.step, th {
-			text-align: right;
+
+		a.button {
+			font-size: 18px;
 		}
-		#footer {
-			text-align: center; border-top: 1px solid #ccc; padding-top: 1em; font-style: italic;
+
+		.step, th { text-align: left; padding: 0; }
+
+		.submit input, .button, .button-secondary {
+			font-family: "Lucida Grande", "Lucida Sans Unicode", Tahoma, Verdana, sans-serif;
+			padding: 5px 7px 7px;
+			border: 1px solid #a3a3a3;
+			margin-left: 0;
+			-moz-border-radius: 3px;
+			-khtml-border-radius: 3px;
+			-webkit-border-radius: 3px;
+			border-radius: 3px;
+			color: #246;
+			background: #e5e5e5;
 		}
-		.fakelink {
-			color: #00a;
-       			text-decoration: underline;
+
+		.button-secondary {
+			background: #cee1ef;
+		}
+
+		.submit input:hover, .button:hover, .button-secondary:hover {
+			color: #d54e21;
+			border-color: #535353;
+		}
+
+		.form-table {
+			border-collapse: collapse;
+			margin-top: 1em;
+			width: 100%;
+		}
+
+		.form-table td {
+			margin-bottom: 9px;
+			padding: 10px;
+			border-bottom: 8px solid #fff;
+			font-size: 12px;
+		}
+
+		.form-table th {
+			font-size: 13px;
+			text-align: left;
+			padding: 16px 10px 10px 10px;
+			border-bottom: 8px solid #fff;
+			width: 110px;
+			vertical-align: top;
+		}
+
+		.form-table tr {
+			background: #eaf3fa;
+		}
+
+		.form-table code {
+			line-height: 18px;
+			font-size: 18px;
+		}
+
+		.form-table p {
+			margin: 4px 0 0 0;
+			font-size: 11px;
+		}
+
+		.form-table input {
+			line-height: 20px;
+			font-size: 15px;
+			padding: 2px;
+			margin-bottom:3px;
+		}
+
+		h1 {
+			border-bottom: 1px solid #dadada;
+			clear: both;
+			color: #666666;
+			font: 24px Georgia, "Times New Roman", Times, serif;
+			margin: 5px 0 0 -4px;
+			padding: 0;
+			padding-bottom: 7px;
+		}
+
+		#error-page {
+			margin-top: 50px;
+		}
+
+		#error-page p {
+			font-size: 14px;
+			line-height: 16px;
+			margin: 25px 0 20px;
+		}
+
+		#error-page code {
+			font-size: 15px;
 		}
 		</style>
 	</head>
 	<body>
-		<h1><img src="wp-includes/images/wordpress-mu.png" alt="WordPress &micro;" /></h1>
+		<h1 id="logo"><img src="wp-includes/images/wordpress-mu.png" alt="WordPress &micro;" /></h1>
 		<?php
 }
 
 function filestats( $err ) {
-	print "<h1>Server Summary</h1>";
+	print "<h2>Server Summary</h2>";
 	print "<p>If you post a message to the &micro; support forum at <a target='_blank' href='http://mu.wordpress.org/forums/'>http://mu.wordpress.org/forums/</a> then copy and paste the following information into your message:</p>";
 
 	print "<blockquote style='background: #eee; border: 1px solid #333; padding: 5px;'>";
@@ -140,7 +241,7 @@ function do_htaccess( $oldfilename, $newfilename, $base, $url ) {
 	}
 
 	if( $err != '' ) {
-		print "<h1>Warning!</h1>";
+		print "<h2>Warning!</h2>";
 		print "<p><strong>There was a problem creating the .htaccess file.</strong> </p>";
 		print "<p style='color: #900'>Error: ";
 		if( $err == "could not open $newfilename for writing" ) {
@@ -219,7 +320,7 @@ function step1() {
 	<p><strong>Welcome to WordPress &micro;.</strong> I will help you install this software by asking you a few questions and asking that you change the permissions on a few directories so I can create configuration files and make a directory to store all your uploaded files.</p>
 	<p>If you have installed the single-blog version of WordPress before, please note that the WordPress &micro; installer is different and trying to create the configuration file wp-config.php youself may result in a broken site. It's much easier to use this installer to get the job done.</p>
 	
-	<h3>What do I need?</h3>
+	<h2>What do I need?</h2>
 	<ul>
 		<li>Access to your server to change directory permissions. This can be done through ssh or ftp for example.</li>
 		<li>A valid email where your password and administrative emails will be sent.</li>
@@ -276,7 +377,7 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
 		<h2>Database</h2>
 
 		<p>Below you should enter your database connection details. If you're not sure about these, contact your host.</p>
-		<table cellpadding='5'> 
+		<table class="form-table"> 
 			<tr> 
 				<th scope='row' width='33%'>Database Name</th> 
 				<td><input name='dbname' type='text' size='45' value='<?php echo $dbname ?>' /></td>  
@@ -296,24 +397,34 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
 		</table> 
 
 		<h2>Server Address</h2>
-		<p><label>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.<br />
-			<label><strong>Server Address:</strong> <input type='text' name='basedomain' value='<?php echo $hostname ?>'></label>
-		</p>
+		<table class="form-table">  
+			<tr> 
+				<th scope='row'>Server Address</th> 
+				<td>
+					<input type='text' name='basedomain' value='<?php echo $hostname ?>' />
+					<br />What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.
+				</td> 
+			</tr>
+		</table>
 
 		<h2>Site Details</h2>
-		<table width='100%'> 
+		<table class="form-table">  
 			<tr> 
 				<th scope='row'>Site&nbsp;Title</th> 
-				<td><input name='weblog_title' type='text' size='45' value='<?php echo $weblog_title ?>' /></td> 
-				<td>What would you like to call your site? </td> 
+				<td>
+					<input name='weblog_title' type='text' size='45' value='<?php echo $weblog_title ?>' />
+					<br />What would you like to call your site?
+				</td> 
 			</tr> 
 			<tr> 
 				<th scope='row'>Email</th> 
-				<td><input name='email' type='text' size='45' value='<?php echo $email ?>' /></td> 
-				<td>Your email address.</td> 
+				<td>
+					<input name='email' type='text' size='45' value='<?php echo $email ?>' /> 
+					<br />Your email address.
+				</td> 
 			</tr> 
 		</table> 
-		<p class='submit'><input name='submit' type='submit' value='Submit' /></p>
+		<p class='submit'><input class="button" name='submit' type='submit' value='Submit' /></p>
 	</form> 
 	<?php
 }
@@ -469,10 +580,12 @@ Thanks!
 	
 	$msg = "Your new WordPress MU site has been created at\nhttp://{$domain}{$base}\n\nLogin details:\nUsername: admin\nPassword: $pass\nLogin: http://{$domain}{$base}wp-login.php\n";
 	wp_mail( $email, "Your new WordPress MU site is ready!", $msg, "From: wordpress@" . $_SERVER[ 'HTTP_HOST' ]  );
-	?><h2>Installation Finished!</h2>
+	?>
+	<h2>Installation Finished!</h2>
 	<p>Congratulations! <br />Your <a href='http://<?php echo $domain . $base; ?>'>WordPress &micro; site</a> has been configured.</p>
-	<p>You can <a href='wp-login.php'>log in</a> using the username "admin" and password <?php echo $pass; ?></p>
-	<h3>Directory Permissions</h3>
+	<p>You can <a class="button" href='wp-login.php'>log in</a> using the username "admin" and password <?php echo $pass; ?></p>
+	
+	<h2>Directory Permissions</h2>
 	<p>Please remember to reset the permissions on the following directories:
 		<ul>
 		<?php
@@ -484,16 +597,18 @@ Thanks!
 		</ul>
 	</p>
 	<p>You can probably use the following command to fix the permissions but check with your host if it doubt:
-		<br /><code>chmod&nbsp;755&nbsp;
+		<br />
+		<code>chmod&nbsp;755&nbsp;
 			<?php
 			reset( $dirs );
 			foreach( (array) $dirs as $dir ) {
 				echo "$dir&nbsp;";
 			}
-			?></code>
+			?>
+		</code>
 	</p>
 	
-	<h3>Further reading</h3>
+	<h2>Further reading</h2>
 	<p>
 		<ul>
 			<li>If you run into problems, please search the <a href='http://mu.wordpress.org/forums/'>WordPress &micro; Forums</a> where you will most likely find a solution. Please don't post there before searching. It's not polite.</li>
@@ -507,7 +622,7 @@ Thanks!
 function nowww() {
 	$nowww = str_replace( 'www.', '', $_POST[ 'basedomain' ] );
 	?>
-	<h1>No-www</h1>
+	<h2>No-www</h2>
 	<p>WordPress &micro; strips the string "www" from the URLs of sites using this software. It is still possible to visit your site using the "www" prefix with an address like <em><?php echo $_POST[ 'basedomain' ] ?></em> but any links will not have the "www" prefix. They will instead point at <?php echo $nowww ?>.</p>
 	<p>The preferred method of hosting blogs is without the "www" prefix as it's more compact and simple.</p>
 	<p>You can still use "<?php echo $_POST[ 'basedomain' ] ?>" and URLs like "www.blog1.<?php echo $nowww; ?>" to address your site and blogs after installation but internal links will use the <?php echo $nowww ?> format.</p>
@@ -524,7 +639,7 @@ function nowww() {
 			<input type='hidden' name='email' value='<?php echo $_POST[ 'email' ]; ?>' />
 			<input type='hidden' name='action' value='step2' />
 			<input type='hidden' name='basedomain' value='<?echo $nowww ?>' />
-			<input type='submit' value='Continue' />
+			<input class="button" type='submit' value='Continue' />
 		</form>
 	</p>
 	<?php
