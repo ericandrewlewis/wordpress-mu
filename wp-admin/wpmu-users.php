@@ -107,7 +107,7 @@ if ( $_GET['updated'] == 'true' ) {
 		<br class="clear" />
 
 		<?php if( isset($_GET['s']) && $_GET['s'] != '' ) : ?>
-			<p><a href="wpmu-blogs.php?action=blogs&amp;s=<?php echo urlencode( stripslashes( $s ) ); ?>"><?php _e('Search Blogs:') ?> <strong><?php echo stripslashes( $s ) ?></strong></a></p>
+			<p><a href="wpmu-blogs.php?action=blogs&amp;s=<?php echo urlencode( stripslashes( $s ) ); ?>&blog_name=Search+blogs+by+name"><?php _e('Search Blogs:') ?> <strong><?php echo stripslashes( $s ) ?></strong></a></p>
 		<?php endif; ?>
 
 		<?php
