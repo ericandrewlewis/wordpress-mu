@@ -1,13 +1,14 @@
 <?php
-/*
 
 // The admin side of our 1.1 update system
 
 function core_update_footer( $msg = '' ) {
+	if( !is_site_admin() )
+		return false;
 	if ( !current_user_can('manage_options') )
 		return sprintf( '| '.__( 'Version %s' ), $GLOBALS['wp_version'] );
 
-	$cur = get_option( 'update_core' );
+	$cur = get_site_option( 'update_core' );
 
 	switch ( $cur->response ) {
 	case 'development' :
@@ -29,7 +30,9 @@ function core_update_footer( $msg = '' ) {
 add_filter( 'update_footer', 'core_update_footer' );
 
 function update_nag() {
-	$cur = get_option( 'update_core' );
+	if( !is_site_admin() )
+		return false;
+	$cur = get_site_option( 'update_core' );
 
 	if ( ! isset( $cur->response ) || $cur->response != 'upgrade' )
 		return false;
@@ -45,7 +48,9 @@ add_action( 'admin_notices', 'update_nag', 3 );
 
 // Called directly from dashboard
 function update_right_now_message() {
-	$cur = get_option( 'update_core' );
+	if( !is_site_admin() )
+		return false;
+	$cur = get_site_option( 'update_core' );
 
 	$msg = sprintf( __('This is WordPress version %s.'), $GLOBALS['wp_version'] );
 	if ( isset( $cur->response ) && $cur->response == 'upgrade' && current_user_can('manage_options') )
@@ -53,7 +58,6 @@ function update_right_now_message() {
 
 	echo "<span id='wp-version-message'>$msg</span>";
 }
-*/
 
 function wp_plugin_update_row( $file, $plugin_data ) {
 	if( !is_site_admin() )

@@ -8,7 +8,7 @@ function check_upload_size( $file ) {
 	$space_left = $space_allowed - $space_used;
 	$file_size = filesize( $file['tmp_name'] );
 	if( $space_left < $file_size )
-		$file['error'] = sprintf( __( 'Not enough space to upload. %1$sKb needed.' ), number_format( ($file_size - $space_left) /1024 ) );
+		$file['error'] = sprintf( __( 'Not enough space to upload. %1$s Kb needed.' ), number_format( ($file_size - $space_left) /1024 ) );
 	if( $file_size > ( 1024 * get_site_option( 'fileupload_maxk', 1500 ) ) )
 		$file['error'] = sprintf(__('This file is too big. Files must be less than %1$s Kb in size.'), get_site_option( 'fileupload_maxk', 1500 ) );
 	if( upload_is_user_over_quota( false ) ) {
@@ -45,10 +45,11 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		$drop_tables = apply_filters( 'wpmu_drop_tables', $drop_tables ); 
 
 		reset( $drop_tables );
-		foreach ( (array) $drop_tables as $drop_table => $name )
+		foreach ( (array) $drop_tables as $name ) {
 			$wpdb->query( "DROP TABLE IF EXISTS ". current( $name ) ."" );
+		}
 
-		$wpdb->query( "DELETE FROM $wpdb->blogs WHERE blog_id = '$blog_id'" );
+		$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->blogs WHERE blog_id = %d", $blog_id) );
 		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/{$blog_id}/files/";
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
 		$top_dir = $dir;
@@ -80,13 +81,13 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 			@rmdir($dir);
 		}
 	}
-	$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key='wp_{$blog_id}_autosave_draft_ids'");
+	$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->usermeta} WHERE meta_key = %s", 'wp_' . $blog_id . '_autosave_draft_ids') );
 
 	if ( $switch === true )
 		restore_current_blog();
 }
 
-function update_blog_public($old_value, $value) {
+function update_blog_public( $old_value, $value ) {
 	global $wpdb;
 	do_action('update_blog_public');
 	update_blog_status( $wpdb->blogid, 'public', (int) $value );
@@ -103,23 +104,25 @@ function wpmu_delete_user($id) {
 
 	$blogs = get_blogs_of_user($id);
 
-	if ( ! empty($blogs) )
+	if ( ! empty($blogs) ) {
 		foreach ($blogs as $blog) {
 			switch_to_blog($blog->userblog_id);
 			remove_user_from_blog($id, $blog->userblog_id);
 
-			$post_ids = $wpdb->get_col("SELECT ID FROM $wpdb->posts WHERE post_author = $id");
-			foreach ( (array) $post_ids as $post_id )
+			$post_ids = $wpdb->get_col( $wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_author = %d", $id ) );
+			foreach ( (array) $post_ids as $post_id ) {
 				wp_delete_post($post_id);
+			}
 
 			// Clean links
-			$wpdb->query("DELETE FROM $wpdb->links WHERE link_owner = $id");
+			$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->links WHERE link_owner = %d", $id) );
 
 			restore_current_blog();
 		}
+	}
 
-	$wpdb->query("DELETE FROM $wpdb->users WHERE ID = $id");
-	$wpdb->query("DELETE FROM $wpdb->usermeta WHERE user_id = '$id'");
+	$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->users WHERE ID = %d", $id) );
+	$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE user_id = %d", $id) );
 
 	wp_cache_delete($id, 'users');
 	wp_cache_delete($user->user_login, 'userlogins');
@@ -129,8 +132,10 @@ function wpmu_delete_user($id) {
 
 function confirm_delete_users( $users ) {
 	if( !is_array( $users ) )
-		return;
+		return false;
+
 	echo '<p>' . __( 'Transfer posts before deleting users:' ) . '</p>';
+
 	echo '<form action="wpmu-edit.php?action=allusers" method="post">';
 	echo '<input type="hidden" name="alluser_transfer_delete" />';
 	wp_nonce_field( 'allusers' );
@@ -147,10 +152,10 @@ function confirm_delete_users( $users ) {
 						$out = '';
 						foreach( $blog_users as $user ) {
 							if( $user->user_id != $val )
-								$out .= "<option value='{$user->user_id}'> {$user->user_login}";
+								$out .= "<option value='{$user->user_id}'>{$user->user_login}</option>";
 						}
 						if( $out == '' )
-							$out = "<option value='1'> admin";
+							$out = "<option value='1'>admin</option>";
 						echo $out;
 						echo "</select>\n";
 					}
@@ -160,6 +165,7 @@ function confirm_delete_users( $users ) {
 	}
 	echo "<br /><input type='submit' value='" . __( 'Delete user and transfer posts' ) . "' />";
 	echo "</form>";
+	return true;
 }
 
 function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
@@ -212,7 +218,7 @@ This email has been sent to ###EMAIL###\n\n
 Regards,\n
 The Webmaster");
 	
-	$content = str_replace('###ADMIN_URL###', get_option( "siteurl" ).'/wp-admin/options.php?adminhash='.$hash, $content);
+	$content = str_replace('###ADMIN_URL###', clean_url(get_option( "siteurl" ).'/wp-admin/options.php?adminhash='.$hash), $content);
 	$content = str_replace('###EMAIL###', $value, $content);
 	
 	wp_mail( $value, sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
@@ -306,7 +312,7 @@ add_action('wpmueditblogaction', 'upload_space_setting');
 function update_user_status( $id, $pref, $value, $refresh = 1 ) {
 	global $wpdb;
 
-	$wpdb->query( "UPDATE {$wpdb->users} SET {$pref} = '{$value}' WHERE ID = '$id'" );
+	$wpdb->update( $wpdb->users, array( $pref => $value ), array( 'ID' => $id ) );
 
 	if( $refresh == 1 )
 		refresh_user_details($id);
@@ -384,7 +390,7 @@ function redirect_user_to_blog() {
 	if( !$primary_blog )
 		$primary_blog = 1;
 
-	$newblog = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$primary_blog}'" );
+	$newblog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->blogs} WHERE blog_id = %d", $primary_blog ) );
 	if( $newblog != null ) {
 		$blogs = get_blogs_of_user( $current_user->ID );
 		if ( empty($blogs) || $blogs == false ) { // If user has no blog
@@ -434,10 +440,12 @@ function wpmu_menu() {
 add_action( '_admin_menu', 'wpmu_menu' );
 
 function mu_options( $options ) {
-	$removed = array( 'general' => array( 'siteurl', 'home', 'admin_email', 'default_role' ),
-	'reading' => array( 'gzipcompression' ),
-	'writing' => array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' ),
-	'misc' => array( 'hack_file', 'use_linksupdate', 'uploads_use_yearmonth_folders', 'upload_path' ) );
+	$removed = array( 
+		'general' => array( 'siteurl', 'home', 'admin_email', 'default_role' ),
+		'reading' => array( 'gzipcompression' ),
+		'writing' => array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' ),
+		'misc' => array( 'hack_file', 'use_linksupdate', 'uploads_use_yearmonth_folders', 'upload_path' )
+	);
 
 	$added = array( 'general' => array( 'new_admin_email', 'WPLANG', 'language' ) );
 
@@ -685,10 +693,6 @@ function mu_dashboard() {
 	unregister_sidebar_widget( 'dashboard_plugins' );
 }
 add_action( 'wp_dashboard_setup', 'mu_dashboard' );
-
-/* Unused update message called from Dashboard */
-function update_right_now_message() {
-}
 
 function profile_update_primary_blog() {
 	global $current_user;
