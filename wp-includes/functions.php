@@ -319,7 +319,7 @@ function is_serialized_string( $data ) {
  * @param string $setting Name of option to retrieve. Should already be SQL-escaped
  * @return mixed Value set for the option.
  */
-function get_option( $setting ) {
+function get_option( $setting, $default = false ) {
 	global $wpdb, $switched, $current_blog;
 
 	$wpdb->hide_errors();
@@ -330,7 +330,7 @@ function get_option( $setting ) {
 
 	$value = _get_option_cache( $setting );
 	if ( false === $value )
-			return false;
+			return $default;
 
 	// If home is not set use siteurl.
 	if ( 'home' == $setting && '' == $value )
@@ -392,13 +392,13 @@ function form_option( $option ) {
  * @return array List of all options.
  */
 function get_alloptions() {
-	global $wpdb, $wp_queries;
+	global $wpdb;
 	$show = $wpdb->hide_errors();
 	if ( !$options = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" ) )
 		$options = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options" );
 	$wpdb->show_errors($show);
 
-	foreach ( $options as $option ) {
+	foreach ( (array) $options as $option ) {
 		// "When trying to design a foolproof system,
 		//  never underestimate the ingenuity of the fools :)" -- Dougal
 		if ( in_array( $option->option_name, array( 'siteurl', 'home', 'category_base', 'tag_base' ) ) )
@@ -441,8 +441,8 @@ function wp_load_alloptions() {
 	}
 
 	$suppress = $wpdb->suppress_errors();
-	if ( !$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" ) )
-		$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options" );
+	// order by option_id asc in case there are duplicate values - this makes the most recent value overwrite the others in the array
+	$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options FORCE INDEX(PRIMARY) ORDER BY option_id ASC" );
 	$wpdb->suppress_errors($suppress);
 	foreach ( (array) $alloptions_db as $o )
 		$_wp_alloptions[$blog_id][$o->option_name] = $o->option_value;
