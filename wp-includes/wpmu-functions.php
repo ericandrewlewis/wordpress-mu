@@ -1860,9 +1860,9 @@ XMLRPC getUsersBlogs() for a multiblog environment
 http://trac.mu.wordpress.org/attachment/ticket/551/xmlrpc-mu.php
 */
 function wpmu_blogger_getUsersBlogs($args) {
-	$site_details = get_blog_details( 1, true );
-	$domain = $site_details->domain;
-	$path = $site_details->path . 'xmlrpc.php';
+	global $current_blog;
+	$domain = $current_blog->domain;
+	$path = $current_blog->path . 'xmlrpc.php';
 
 	$rpc = new IXR_Client("http://{$domain}{$path}");
 	$rpc->query('wp.getUsersBlogs', $args[1], $args[2]);
