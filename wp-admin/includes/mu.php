@@ -662,9 +662,24 @@ function mu_media_buttons() {
 	$context = apply_filters('media_buttons_context', __('Add media: %s'));
 	$media_upload_iframe_src = "media-upload.php?post_id=$uploading_iframe_ID";
 	$media_title = __('Add Media');
-	$out = <<<EOF
-	<a href="{$media_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640" class="thickbox" title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>
-EOF;
+	$mu_media_buttons = get_site_option( 'mu_media_buttons' );
+	$out = '';
+	if( $mu_media_buttons[ 'image' ] ) {
+		$image_upload_iframe_src = apply_filters('image_upload_iframe_src', "$media_upload_iframe_src&amp;type=image");
+		$image_title = __('Add an Image');
+		$out .= "<a href='{$image_upload_iframe_src}&amp;TB_iframe=true' id='add_image' class='thickbox' title='$image_title'><img src='images/media-button-image.gif' alt='$image_title' /></a>";
+	}
+	if( $mu_media_buttons[ 'video' ] ) {
+		$video_upload_iframe_src = apply_filters('video_upload_iframe_src', "$media_upload_iframe_src&amp;type=video");
+		$video_title = __('Add Video');
+		$out .= "<a href='{$video_upload_iframe_src}&amp;TB_iframe=true' id='add_video' class='thickbox' title='$video_title'><img src='images/media-button-video.gif' alt='$video_title' /></a>";
+	}
+	if( $mu_media_buttons[ 'audio' ] ) {
+		$audio_upload_iframe_src = apply_filters('audio_upload_iframe_src', "$media_upload_iframe_src&amp;type=audio");
+		$audio_title = __('Add Audio');
+		$out .= "<a href='{$audio_upload_iframe_src}&amp;TB_iframe=true' id='add_audio' class='thickbox' title='$audio_title'><img src='images/media-button-music.gif' alt='$audio_title' /></a>";
+	}
+	$out .= "<a href='{$media_upload_iframe_src}&amp;TB_iframe=true&amp;height=500&amp;width=640' class='thickbox' title='$media_title'><img src='images/media-button-other.gif' alt='$media_title' /></a>";
 	printf($context, $out);
 }
 add_action( 'media_buttons', 'mu_media_buttons' );
