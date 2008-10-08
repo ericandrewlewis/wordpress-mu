@@ -113,6 +113,7 @@ switch( $_GET['action'] ) {
 			$path = $base.$domain.'/';
 		}
 
+		$password = 'N/A';
 		$user_id = email_exists($email);
 		if( !$user_id ) {
 			$password = generate_random_password();
@@ -132,6 +133,7 @@ switch( $_GET['action'] ) {
 				update_user_option( $user_id, 'primary_blog', $id, true );
 			$content_mail = sprintf( __( "New blog created by %1s\n\nAddress: http://%2s\nName: %3s"), $current_user->user_login , $newdomain.$path, stripslashes( $title ) );
 			wp_mail( get_site_option('admin_email'),  sprintf(__('[%s] New Blog Created'), $current_site->site_name), $content_mail, 'From: "Site Admin" <' . get_site_option( 'admin_email' ) . '>' );
+			wpmu_welcome_notification( $id, $user_id, $password, $title, array( "public" => 1 ) );
 			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add-blog'), $_SERVER['HTTP_REFERER'] ) );
 			exit();
 		} else {

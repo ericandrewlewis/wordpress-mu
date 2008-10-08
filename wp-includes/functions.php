@@ -620,12 +620,12 @@ function delete_option( $name ) {
  * @return mixed A scalar data
  */
 function maybe_serialize( $data ) {
-	if ( is_string( $data ) )
-		return $data;
-	elseif ( is_array( $data ) || is_object( $data ) )
+	if ( is_array( $data ) || is_object( $data ) )
 		return serialize( $data );
+
 	if ( is_serialized( $data ) )
 		return serialize( $data );
+
 	return $data;
 }
 
@@ -1473,15 +1473,21 @@ function path_join( $base, $path ) {
 function wp_upload_dir( $time = NULL ) {
 	$siteurl = get_option( 'siteurl' );
 	$upload_path = get_option( 'upload_path' );
-	if ( trim($upload_path) === '' )
-		$upload_path = WP_CONTENT_DIR . '/uploads';
-	$dir = $upload_path;
+	$upload_path = trim($upload_path);
+	if ( empty($upload_path) )
+		$dir = WP_CONTENT_DIR . '/uploads';
+	else 
+		$dir = $upload_path;
 
 	// $dir is absolute, $path is (maybe) relative to ABSPATH
-	$dir = path_join( ABSPATH, $upload_path );
+	$dir = path_join( ABSPATH, $dir );
 
-	if ( !$url = get_option( 'upload_url_path' ) )
-		$url = WP_CONTENT_URL . '/uploads';
+	if ( !$url = get_option( 'upload_url_path' ) ) {
+		if ( empty($upload_path) or ( $upload_path == $dir ) )
+			$url = WP_CONTENT_URL . '/uploads';
+		else
+			$url = trailingslashit( $siteurl ) . $upload_path;
+	}
 
 	if ( defined('UPLOADS') ) {
 		$dir = ABSPATH . UPLOADS;
@@ -1514,6 +1520,7 @@ function wp_upload_dir( $time = NULL ) {
 	}
 
 	$uploads = array( 'path' => $dir, 'url' => $url, 'subdir' => $subdir, 'basedir' => $bdir, 'baseurl' => $burl, 'error' => false );
+
 	return apply_filters( 'upload_dir', $uploads );
 }
 

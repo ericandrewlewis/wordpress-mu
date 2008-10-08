@@ -68,6 +68,10 @@ if ( empty( $_SERVER['REQUEST_URI'] ) ) {
 	}
 	else
 	{
+		// Use ORIG_PATH_INFO if there is no PATH_INFO
+		if ( !isset($_SERVER['PATH_INFO']) && isset($_SERVER['ORIG_PATH_INFO']) )
+			$_SERVER['PATH_INFO'] = $_SERVER['ORIG_PATH_INFO'];
+
 		// Some IIS + PHP configurations puts the script-name in the path-info (No need to append it twice)
 		if ( isset($_SERVER['PATH_INFO']) ) {
 			if ( $_SERVER['PATH_INFO'] == $_SERVER['SCRIPT_NAME'] )
@@ -91,13 +95,9 @@ if ( isset($_SERVER['SCRIPT_FILENAME']) && ( strpos($_SERVER['SCRIPT_FILENAME'],
 if (strpos($_SERVER['SCRIPT_NAME'], 'php.cgi') !== false)
 	unset($_SERVER['PATH_INFO']);
 
-// Fix empty PHP_SELF
-$PHP_SELF = $_SERVER['PHP_SELF'];
-if ( empty($PHP_SELF) || constant( 'VHOST' ) == 'no' )
-	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
 
 if ( version_compare( '4.3', phpversion(), '>' ) ) {
-	die( sprintf( /*WP_I18N_OLD_PHP*/'Your server is running PHP version %s but WordPress requires at least 4.3.'/*/WP_I18N_OLD_PHP*/, php_version() ) );
+	die( sprintf( /*WP_I18N_OLD_PHP*/'Your server is running PHP version %s but WordPress requires at least 4.3.'/*/WP_I18N_OLD_PHP*/, phpversion() ) );
 }
 
 if ( !defined('WP_CONTENT_DIR') )
@@ -234,6 +234,11 @@ $wpdb->siteid           = $current_blog->site_id;
 $wpdb->set_prefix($table_prefix); // set up blog tables
 $table_prefix = $table_prefix . $blog_id . '_';
 
+// Fix empty PHP_SELF
+$PHP_SELF = $_SERVER['PHP_SELF'];
+if ( empty($PHP_SELF) || ( constant( 'VHOST' ) == 'no' && $current_blog->path != '/' ) )
+	$_SERVER['PHP_SELF'] = $PHP_SELF = preg_replace("/(\?.*)?$/",'',$_SERVER["REQUEST_URI"]);
+
 wp_cache_init(); // need to init cache again after blog_id is set
 if ( function_exists('wp_cache_add_global_groups') ) { // need to add these again. Yes, it's an ugly hack
 	wp_cache_add_global_groups(array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss'));
@@ -296,6 +301,7 @@ if ( !defined('WP_CONTENT_URL') )
 	define( 'WP_CONTENT_URL', get_option('siteurl') . '/wp-content'); // full url - WP_CONTENT_DIR is defined further up
 
 require_once( ABSPATH . WPINC . '/wpmu-functions.php' );
+require (ABSPATH . WPINC . '/wpmu-default-filters.php'); // WPmu Filters 
 
 /**
  * Allows for the plugins directory to be moved from the default location.
@@ -475,7 +481,7 @@ if ( get_option('active_plugins') ) {
 	$current_plugins = get_option('active_plugins');
 	if ( is_array($current_plugins) ) {
 		foreach ($current_plugins as $plugin) {
-			if ('' != $plugin && file_exists(WP_PLUGIN_DIR . '/' . $plugin))
+			if ( '' != $plugin && 0 == validate_file($plugin) && file_exists(WP_PLUGIN_DIR . '/' . $plugin) )
 				include_once(WP_PLUGIN_DIR . '/' . $plugin);
 		}
 	}

@@ -15,7 +15,7 @@ $wp_version = '2.7';
  *
  * @global int $wp_db_version
  */
-$wp_db_version = 8201;
+$wp_db_version = 8204;
 
 $wpmu_version = '2.7-bleeding-edge';
 ?>

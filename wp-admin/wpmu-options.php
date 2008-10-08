@@ -119,10 +119,10 @@ if (isset($_GET['updated'])) {
 			<tr valign="top"> 
 				<th scope="row"><?php _e('Upload media button') ?></th> 
 				<?php $mu_media_buttons = get_site_option( 'mu_media_buttons', array() ); ?>
-				<td><label><input type='checkbox' id="mu_media_buttons_image" name="mu_media_buttons[image]" value='1' <?php if( $mu_media_buttons[ 'image' ] ) { echo 'checked=checked '; } ?>/> Images</label><br />
-				<label><input type='checkbox' id="mu_media_buttons_video" name="mu_media_buttons[video]" value='1' <?php if( $mu_media_buttons[ 'video' ] ) { echo 'checked=checked '; } ?>/> Videos</label><br />
-				<label><input type='checkbox' id="mu_media_buttons_audio" name="mu_media_buttons[audio]" value='1' <?php if( $mu_media_buttons[ 'audio' ] ) { echo 'checked=checked '; } ?>/> Music</label><br />
-				The media upload buttons to display on the "Write Post" page. Make sure you update the "Upload File Types" below as well.</td>
+				<td><label><input type='checkbox' id="mu_media_buttons_image" name="mu_media_buttons[image]" value='1' <?php if( $mu_media_buttons[ 'image' ] ) { echo 'checked=checked '; } ?>/> <?php _e( 'Images' ); ?></label><br />
+				<label><input type='checkbox' id="mu_media_buttons_video" name="mu_media_buttons[video]" value='1' <?php if( $mu_media_buttons[ 'video' ] ) { echo 'checked=checked '; } ?>/> <?php _e( 'Videos' ); ?></label><br />
+				<label><input type='checkbox' id="mu_media_buttons_audio" name="mu_media_buttons[audio]" value='1' <?php if( $mu_media_buttons[ 'audio' ] ) { echo 'checked=checked '; } ?>/> <?php _e( 'Music' ); ?></label><br />
+				<?php _e( 'The media upload buttons to display on the "Write Post" page. Make sure you update the "Upload File Types" below as well.' ); ?></td>
 			</tr>
 			<tr valign="top"> 
 				<th scope="row"><?php _e('Blog upload space') ?></th> 
