@@ -259,11 +259,15 @@ if ( !function_exists( 'wp_mail' ) ) :
  * @param string $subject Email subject
  * @param string $message Message contents
  * @param string|array $headers Optional. Additional headers.
+ * @param string|array $attachments Optional. Files to attach.
  * @return bool Whether the email contents were sent successfully.
  */
-function wp_mail( $to, $subject, $message, $headers = '' ) {
+function wp_mail( $to, $subject, $message, $headers = '', $attachments = array() ) {
 	// Compact the input, apply the filters, and extract them back out
-	extract( apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers' ) ) );
+	extract( apply_filters( 'wp_mail', compact( 'to', 'subject', 'message', 'headers', 'attachments' ) ) );
+
+	if ( !is_array($attachments) )
+		$attachments = explode( "\n", $attachments );
 
 	global $phpmailer;
 
@@ -286,7 +290,7 @@ function wp_mail( $to, $subject, $message, $headers = '' ) {
 		// If it's actually got contents
 		if ( !empty( $tempheaders ) ) {
 			// Iterate through the raw headers
-			foreach ( $tempheaders as $header ) {
+			foreach ( (array) $tempheaders as $header ) {
 				if ( strpos($header, ':') === false )
 					continue;
 				// Explode them out
@@ -369,12 +373,12 @@ function wp_mail( $to, $subject, $message, $headers = '' ) {
 
 	// Add any CC and BCC recipients
 	if ( !empty($cc) ) {
-		foreach ($cc as $recipient) {
+		foreach ( (array) $cc as $recipient ) {
 			$phpmailer->AddCc( trim($recipient) );
 		}
 	}
 	if ( !empty($bcc) ) {
-		foreach ($bcc as $recipient) {
+		foreach ( (array) $bcc as $recipient) {
 			$phpmailer->AddBcc( trim($recipient) );
 		}
 	}
@@ -407,8 +411,14 @@ function wp_mail( $to, $subject, $message, $headers = '' ) {
 
 	// Set custom headers
 	if ( !empty( $headers ) ) {
-		foreach ( $headers as $name => $content ) {
+		foreach( (array) $headers as $name => $content ) {
 			$phpmailer->AddCustomHeader( sprintf( '%1$s: %2$s', $name, $content ) );
+		}
+	}
+
+	if ( !empty( $attachments ) ) {
+		foreach ( $attachments as $attachment ) {
+			$phpmailer->AddAttachment($attachment);
 		}
 	}
 
@@ -421,16 +431,16 @@ function wp_mail( $to, $subject, $message, $headers = '' ) {
 }
 endif;
 
+if ( !function_exists('wp_authenticate') ) :
 /**
  * Checks a user's login information and logs them in if it checks out.
  *
- * @since 2.5
+ * @since 2.5.0
  *
  * @param string $username User's username
  * @param string $password User's password
  * @return WP_Error|WP_User WP_User object if login successful, otherwise WP_Error object.
  */
-if ( !function_exists('wp_authenticate') ) :
 function wp_authenticate($username, $password) {
 	$username = sanitize_user($username);
 
@@ -462,12 +472,12 @@ function wp_authenticate($username, $password) {
 }
 endif;
 
+if ( !function_exists('wp_logout') ) :
 /**
  * Log the current user out.
  *
- * @since 2.5
+ * @since 2.5.0
  */
-if ( !function_exists('wp_logout') ) :
 function wp_logout() {
 	wp_clear_auth_cookie();
 	do_action('wp_logout');
@@ -490,26 +500,13 @@ if ( !function_exists('wp_validate_auth_cookie') ) :
  * @param string $scheme Optional. The cookie scheme to use: auth, secure_auth, or logged_in
  * @return bool|int False if invalid cookie, User ID if valid.
  */
-function wp_validate_auth_cookie($cookie = '', $scheme = 'auth') {
-	if ( empty($cookie) ) {
-		if ( is_ssl() ) {
-			$cookie_name = SECURE_AUTH_COOKIE;
-			$scheme = 'secure_auth';
-		} else {
-			$cookie_name = AUTH_COOKIE;
-			$scheme = 'auth';
-		}
-
-		if ( empty($_COOKIE[$cookie_name]) )
-			return false;
-		$cookie = $_COOKIE[$cookie_name];
+function wp_validate_auth_cookie($cookie = '', $scheme = '') {
+	if ( ! $cookie_elements = wp_parse_auth_cookie($cookie, $scheme) ) {
+		do_action('auth_cookie_malformed', $cookie, $scheme);
+		return false;
 	}
 
-	$cookie_elements = explode('|', $cookie);
-	if ( count($cookie_elements) != 3 )
-		return false;
-
-	list($username, $expiration, $hmac) = $cookie_elements;
+	extract($cookie_elements, EXTR_OVERWRITE);
 
 	$expired = $expiration;
 
@@ -518,18 +515,26 @@ function wp_validate_auth_cookie($cookie = '', $scheme = 'auth') {
 		$expired += 3600;
 
 	// Quick check to see if an honest cookie has expired
-	if ( $expired < time() )
+	if ( $expired < time() ) {
+		do_action('auth_cookie_expired', $cookie_elements);
 		return false;
+	}
 
 	$key = wp_hash($username . '|' . $expiration, $scheme);
 	$hash = hash_hmac('md5', $username . '|' . $expiration, $key);
 
-	if ( $hmac != $hash )
+	if ( $hmac != $hash ) {
+		do_action('auth_cookie_bad_hash', $cookie_elements);
 		return false;
+	}
 
 	$user = get_userdatabylogin($username);
-	if ( ! $user )
+	if ( ! $user ) {
+		do_action('auth_cookie_bad_username', $cookie_elements);
 		return false;
+	}
+
+	do_action('auth_cookie_valid', $cookie_elements, $user);
 
 	return $user->ID;
 }
@@ -557,6 +562,53 @@ function wp_generate_auth_cookie($user_id, $expiration, $scheme = 'auth') {
 	$cookie = $user->user_login . '|' . $expiration . '|' . $hash;
 
 	return apply_filters('auth_cookie', $cookie, $user_id, $expiration, $scheme);
+}
+endif;
+
+if ( !function_exists('wp_parse_auth_cookie') ) :
+/**
+ * Parse a cookie into its components
+ *
+ * @since 2.7
+ *
+ * @param string $cookie
+ * @param string $scheme Optional. The cookie scheme to use: auth, secure_auth, or logged_in
+ * @return array Authentication cookie components
+ */
+function wp_parse_auth_cookie($cookie = '', $scheme = '') {
+	if ( empty($cookie) ) {
+		switch ($scheme){
+			case 'auth':
+				$cookie_name = AUTH_COOKIE;
+				break;
+			case 'secure_auth':
+				$cookie_name = SECURE_AUTH_COOKIE;
+				break;
+			case "logged_in":
+				$cookie_name = LOGGED_IN_COOKIE;
+				break;
+			default:
+				if ( is_ssl() ) {
+					$cookie_name = SECURE_AUTH_COOKIE;
+					$scheme = 'secure_auth';
+				} else {
+					$cookie_name = AUTH_COOKIE;
+					$scheme = 'auth';
+				}
+	    }
+
+		if ( empty($_COOKIE[$cookie_name]) )
+			return false;
+		$cookie = $_COOKIE[$cookie_name];
+	}
+
+	$cookie_elements = explode('|', $cookie);
+	if ( count($cookie_elements) != 3 )
+		return false;
+
+	list($username, $expiration, $hmac) = $cookie_elements;
+
+	return compact('username', 'expiration', 'hmac', 'scheme');
 }
 endif;
 
@@ -598,11 +650,23 @@ function wp_set_auth_cookie($user_id, $remember = false, $secure = '') {
 	do_action('set_auth_cookie', $auth_cookie, $expire, $expiration, $user_id, $scheme);
 	do_action('set_logged_in_cookie', $logged_in_cookie, $expire, $expiration, $user_id, 'logged_in');
 
-	setcookie($auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN, $secure);
-	setcookie($auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, $secure);
-	setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, COOKIE_DOMAIN);
-	if ( COOKIEPATH != SITECOOKIEPATH )
-		setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, SITECOOKIEPATH, COOKIE_DOMAIN);
+	// Set httponly if the php version is >= 5.2.0
+	if ( version_compare(phpversion(), '5.2.0', 'ge') ) {
+		setcookie($auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN, $secure, true);
+		setcookie($auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, COOKIE_DOMAIN, $secure, true);
+		setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, COOKIE_DOMAIN, false, true);
+		if ( COOKIEPATH != SITECOOKIEPATH )
+			setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, SITECOOKIEPATH, COOKIE_DOMAIN, false, true);
+	} else {
+		$cookie_domain = COOKIE_DOMAIN;
+		if ( !empty($cookie_domain) )
+			$cookie_domain .= '; HttpOnly';
+		setcookie($auth_cookie_name, $auth_cookie, $expire, PLUGINS_COOKIE_PATH, $cookie_domain, $secure);
+		setcookie($auth_cookie_name, $auth_cookie, $expire, ADMIN_COOKIE_PATH, $cookie_domain, $secure);
+		setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, COOKIEPATH, $cookie_domain);
+		if ( COOKIEPATH != SITECOOKIEPATH )
+			setcookie(LOGGED_IN_COOKIE, $logged_in_cookie, $expire, SITECOOKIEPATH, $cookie_domain);	
+	}
 }
 endif;
 
@@ -613,6 +677,8 @@ if ( !function_exists('wp_clear_auth_cookie') ) :
  * @since 2.5
  */
 function wp_clear_auth_cookie() {
+	do_action('clear_auth_cookie');
+
 	setcookie(AUTH_COOKIE, ' ', time() - 31536000, ADMIN_COOKIE_PATH, COOKIE_DOMAIN);
 	setcookie(SECURE_AUTH_COOKIE, ' ', time() - 31536000, ADMIN_COOKIE_PATH, COOKIE_DOMAIN);
 	setcookie(AUTH_COOKIE, ' ', time() - 31536000, PLUGINS_COOKIE_PATH, COOKIE_DOMAIN);
@@ -667,18 +733,30 @@ function auth_redirect() {
 		$secure = false;
 
 	// If https is required and request is http, redirect
-	if ( $secure && !is_ssl() ) {
+	if ( $secure && !is_ssl() && false !== strpos($_SERVER['REQUEST_URI'], 'wp-admin') ) {
 		if ( 0 === strpos($_SERVER['REQUEST_URI'], 'http') ) {
 			wp_redirect(preg_replace('|^http://|', 'https://', $_SERVER['REQUEST_URI']));
 			exit();
 		} else {
 			wp_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-			exit();			
+			exit();
 		}
 	}
 
-	if ( wp_validate_auth_cookie() )
+	if ( $user_id = wp_validate_auth_cookie() ) {
+		// If the user wants ssl but the session is not ssl, redirect.
+		if ( !$secure && get_user_option('use_ssl', $user_id) && false !== strpos($_SERVER['REQUEST_URI'], 'wp-admin') ) {
+			if ( 0 === strpos($_SERVER['REQUEST_URI'], 'http') ) {
+				wp_redirect(preg_replace('|^http://|', 'https://', $_SERVER['REQUEST_URI']));
+				exit();
+			} else {
+				wp_redirect('https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+				exit();
+			}
+		}
+
 		return;  // The cookie is good so we're done
+	}
 
 	// The cookie is no good so force login
 	nocache_headers();
@@ -710,7 +788,7 @@ if ( !function_exists('check_admin_referer') ) :
 function check_admin_referer($action = -1, $query_arg = '_wpnonce') {
 	$adminurl = strtolower(admin_url());
 	$referer = strtolower(wp_get_referer());
-	$result = wp_verify_nonce($_REQUEST[$query_arg], $action);
+	$result = isset($_REQUEST[$query_arg]) ? wp_verify_nonce($_REQUEST[$query_arg], $action) : false;
 	if ( !$result && !(-1 == $action && strpos($referer, $adminurl) !== false) ) {
 		wp_nonce_ays($action);
 		die();
@@ -762,7 +840,7 @@ function wp_redirect($location, $status = 302) {
 
 	$location = apply_filters('wp_redirect', $location, $status);
 	$status = apply_filters('wp_redirect_status', $status, $location);
-	
+
 	if ( !$location ) // allows the wp_redirect filter to cancel a redirect
 		return false;
 
@@ -795,7 +873,7 @@ function wp_sanitize_redirect($location) {
 	$found = true;
 	while($found) {
 		$found = false;
-		foreach($strip as $val) {
+		foreach( (array) $strip as $val ) {
 			while(strpos($location, $val) !== false) {
 				$found = true;
 				$location = str_replace($val, '', $location);
@@ -835,7 +913,7 @@ function wp_safe_redirect($location, $status = 302) {
 
 	// In php 5 parse_url may fail if the URL query part contains http://, bug #38143
 	$test = ( $cut = strpos($location, '?') ) ? substr( $location, 0, $cut ) : $location;
-	
+
 	$lp  = parse_url($test);
 	$wpp = parse_url(get_option('home'));
 
@@ -980,7 +1058,7 @@ function wp_notify_moderator($comment_id) {
 	$notify_message .= sprintf( __('Delete it: %s'), admin_url("comment.php?action=cdc&c=$comment_id") ) . "\r\n";
 	$notify_message .= sprintf( __('Spam it: %s'), admin_url("comment.php?action=cdc&dt=spam&c=$comment_id") ) . "\r\n";
 
-	$notify_message .= sprintf( __ngettext('Currently %s comment is waiting for approval. Please visit the moderation panel:', 
+	$notify_message .= sprintf( __ngettext('Currently %s comment is waiting for approval. Please visit the moderation panel:',
  		'Currently %s comments are waiting for approval. Please visit the moderation panel:', $comments_waiting), number_format_i18n($comments_waiting) ) . "\r\n";
 	$notify_message .= admin_url("edit-comments.php?comment_status=moderated") . "\r\n";
 
@@ -993,6 +1071,24 @@ function wp_notify_moderator($comment_id) {
 	@wp_mail($admin_email, $subject, $notify_message);
 
 	return true;
+}
+endif;
+
+if ( !function_exists('wp_password_change_notification') ) :
+/**
+ * Notify the blog admin of a user changing password, normally via email.
+ *
+ * @since 2.7
+ *
+ * @param object $user User Object
+ */
+function wp_password_change_notification(&$user) {
+	// send a copy of password change notification to the admin
+	// but check to see if it's the admin whose password we're changing, and skip this
+	if ( $user->user_email != get_option('admin_email') ) {
+		$message = sprintf(__('Password Lost and Changed for user: %s'), $user->user_login) . "\r\n";
+		wp_mail(get_option('admin_email'), sprintf(__('[%s] Password Lost/Changed'), get_option('blogname')), $message);
+	}
 }
 endif;
 
@@ -1374,11 +1470,17 @@ if ( !function_exists( 'get_avatar' ) ) :
  * @param int|string|object $id_or_email A user ID,  email address, or comment object
  * @param int $size Size of the avatar image
  * @param string $default URL to a default image to use if no avatar is available
+ * @param string $alt Alternate text to use in image tag. Defaults to blank
  * @return string <img> tag for the user's avatar
 */
-function get_avatar( $id_or_email, $size = '96', $default = '' ) {
+function get_avatar( $id_or_email, $size = '96', $default = '', $alt = false ) {
 	if ( ! get_option('show_avatars') )
 		return false;
+
+	if ( false === $alt)
+		$safe_alt = '';
+	else
+		$safe_alt = attribute_escape( $alt );
 
 	if ( !is_numeric($size) )
 		$size = '96';
@@ -1390,6 +1492,9 @@ function get_avatar( $id_or_email, $size = '96', $default = '' ) {
 		if ( $user )
 			$email = $user->user_email;
 	} elseif ( is_object($id_or_email) ) {
+		if ( isset($id_or_email->comment_type) && '' != $id_or_email->comment_type && 'comment' != $id_or_email->comment_type )
+			return false; // No avatar for pingbacks or trackbacks
+
 		if ( !empty($id_or_email->user_id) ) {
 			$id = (int) $id_or_email->user_id;
 			$user = get_userdata($id);
@@ -1433,12 +1538,12 @@ function get_avatar( $id_or_email, $size = '96', $default = '' ) {
 		if ( !empty( $rating ) )
 			$out .= "&amp;r={$rating}";
 
-		$avatar = "<img alt='' src='{$out}' class='avatar avatar-{$size}' height='{$size}' width='{$size}' />";
+		$avatar = "<img alt='{$safe_alt}' src='{$out}' class='avatar avatar-{$size}' height='{$size}' width='{$size}' />";
 	} else {
-		$avatar = "<img alt='' src='{$default}' class='avatar avatar-{$size} avatar-default' height='{$size}' width='{$size}' />";
+		$avatar = "<img alt='{$safe_alt}' src='{$default}' class='avatar avatar-{$size} avatar-default' height='{$size}' width='{$size}' />";
 	}
 
-	return apply_filters('get_avatar', $avatar, $id_or_email, $size, $default);
+	return apply_filters('get_avatar', $avatar, $id_or_email, $size, $default, $alt);
 }
 endif;
 
@@ -1563,14 +1668,9 @@ function wp_text_diff( $left_string, $right_string, $args = null ) {
 	if ( !class_exists( 'WP_Text_Diff_Renderer_Table' ) )
 		require( ABSPATH . WPINC . '/wp-diff.php' );
 
-	// Normalize whitespace
-	$left_string  = trim($left_string);
-	$right_string = trim($right_string);
-	$left_string  = str_replace("\r", "\n", $left_string);
-	$right_string = str_replace("\r", "\n", $right_string);
-	$left_string  = preg_replace( array( '/\n+/', '/[ \t]+/' ), array( "\n", ' ' ), $left_string );
-	$right_string = preg_replace( array( '/\n+/', '/[ \t]+/' ), array( "\n", ' ' ), $right_string );
-	
+	$left_string  = normalize_whitespace($left_string);
+	$right_string = normalize_whitespace($right_string);
+
 	$left_lines  = split("\n", $left_string);
 	$right_lines = split("\n", $right_string);
 

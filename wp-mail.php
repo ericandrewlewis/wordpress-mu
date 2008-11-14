@@ -12,9 +12,6 @@ require(dirname(__FILE__) . '/wp-load.php');
 /** Get the POP3 class for which to access the mailbox. */
 require_once(ABSPATH.WPINC.'/class-pop3.php');
 
-// WTF is this? Use constants instead.
-error_reporting(2037);
-
 $time_difference = get_option('gmt_offset') * 3600;
 
 $phone_delim = '::';
@@ -31,7 +28,7 @@ $count = $pop3->pass(get_option('mailserver_pass'));
 if (false === $count)
 	wp_die(wp_specialchars($pop3->ERROR));
 if (0 == $count)
-	echo "<p>There doesn't seem to be any new mail.</p>\n"; // will fall-through to end of for loop
+	echo '<p>' . __("There doesn't seem to be any new mail.") . "</p>\n"; // will fall-through to end of for loop
 
 for ($i=1; $i <= $count; $i++) :
 
@@ -63,7 +60,7 @@ for ($i=1; $i <= $count; $i++) :
 				$content_transfer_encoding = explode(';', $content_transfer_encoding);
 				$content_transfer_encoding = $content_transfer_encoding[0];
 			}
-			if (($content_type == 'multipart/alternative') && (preg_match('/boundary="/', $line)) && ($boundary == '')) {
+			if (($content_type == 'multipart/alternative') && (false !== strpos($line, 'boundary="')) && ($boundary == '')) {
 				$boundary = trim($line);
 				$boundary = explode('"', $boundary);
 				$boundary = $boundary[1];
@@ -188,15 +185,15 @@ for ($i=1; $i <= $count; $i++) :
 
 	do_action('publish_phone', $post_ID);
 
-	echo "\n<p><b>Author:</b> " . wp_specialchars($post_author) . "</p>";
-	echo "\n<p><b>Posted title:</b> " . wp_specialchars($post_title) . "<br />";
+	echo "\n<p>" . sprintf(__('<strong>Author:</strong> %s'), wp_specialchars($post_author)) . '</p>';
+	echo "\n<p>" . sprintf(__('<strong>Posted title:</strong> %s'), wp_specialchars($post_title)) . '</p>';
 
 	if(!$pop3->delete($i)) {
-		echo '<p>Oops '.wp_specialchars($pop3->ERROR).'</p></div>';
+		echo '<p>' . sprintf(__('Oops: %s'), wp_specialchars($pop3->ERROR)) . '</p>';
 		$pop3->reset();
 		exit;
 	} else {
-		echo "<p>Mission complete, message <strong>$i</strong> deleted.</p>";
+		echo '<p>' . sprintf(__('Mission complete.  Message <strong>%s</strong> deleted.'), $i) . '</p>';
 	}
 
 endfor;

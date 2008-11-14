@@ -1,64 +1,57 @@
 body {
-	font-family: Tahoma;
+	font-family: Tahoma, arial;
 }
-.ui-tabs-nav {
-	padding-left:0;
-	padding-right:8px;
-}
-.ui-tabs-nav li {
-	float: right;
-}
-.button {
-	font-family: Tahoma;
-	margin-left:0;
+.button,
+#poststuff #edButtonPreview,
+#poststuff #edButtonHTML {
+	font-family: Tahoma, arial;
+	margin-left: 0;
 	margin-right: 5px;
 }
-#wphead #viewsite {
-	margin-left:0;
-	margin-right: 10px;
+/* Editor/Main Column */
+div#poststuff {
+	padding-left: 0;
+	padding-right: 10px;
 }
-#viewsite {
-	right:auto;
-	left: 8px;
+.posting {
+	margin-right: 0;
+	margin-left: 228px;
 }
-#wphead #viewsite a {
-	font-family: Tahoma;
+#side-info-column {
+	float: left;
+	margin-right: 0;
+	margin-left: 10px;
 }
-h1 {
-	right:auto;
-	left:0;
+#side-info-column .sleeve {
+	padding-left: 0;
+	padding-right: 10px;
 }
-div#posting {
-	padding-left:0;
-	padding-right: 16px;
+#actions {
+	right: auto;
+	left: 4px;
 }
-#photo_directions span {
-	right:auto;
-	left:3px;
+#actions li {
+	float: right;
 }
+/* Photo Styles */
 #img_container a {
 	float:right;
 }
-#img_container a, #img_container a:link, #img_container a:visited {
-	margin:0 0 4px 4px;
+#category-add input, #category-add select  {
+	font-family: Tahoma, arial;
 }
-div#categories {
-	right:auto;
-	left:16px;
+/* Categories */
+#categorydiv ul.categorychecklist ul {
+	margin-left: 0;
+	margin-right: 18px;
 }
-div#categories h2 {
-	margin: .5em 1em .5em 0;
-}
+/* Tags */
 #tagsdiv #newtag {
-	margin-right:0;	
-	margin-left: 5px;	
-}
-#jaxtag {
-	padding-left:0;
-	padding-right: 1em;
+	margin-right: 0;
+	margin-left: 5px;
 }
 #tagchecklist {
-	padding-left:0;
+	padding-left: 0;
 	padding-right: 1em;
 }
 #tagchecklist span {
@@ -67,32 +60,22 @@ div#categories h2 {
 	float: right;
 }
 #tagchecklist span a {
-	margin: 6px -9px 0pt 0;
+	margin: 6px -9px 0 0;
 	float: right;
 }
-.submitbox {
-	float: left;
-}
-.submitbox .submit input {
-	text-align:right;
-}
-.video_split #extra_fields {
-	float:right;
-}
-.video_split .editor_area {
-	float: left;
-}
-.ac_results li {
+/* Submit */
+.submitbox .submit, .ac_results li  {
 	text-align:right;
 }
 #TB_ajaxContent #options {
-	right:auto;
-	left:25px;
+	right: auto;
+	left: 25px;
 }
 #post_status {
-	margin-left:0;
+	margin-left: 0;
 	margin-right: 10px;
 }
+/* Footer */
 #footer {
 	padding: 10px 60px 0 0;
 }

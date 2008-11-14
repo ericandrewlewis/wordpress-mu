@@ -1,4 +1,12 @@
 <?php
+/**
+ * Privacy Options Settings Administration Panel.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/** Load WordPress Administration Bootstrap */
 require_once('./admin.php');
 
 $title = __('Privacy Settings');
@@ -11,10 +19,13 @@ if( trim( get_option('blog_public') ) == '' )
 ?>
 
 <div class="wrap">
-<h2><?php _e('Privacy Settings') ?></h2>
+<h2><?php echo wp_specialchars( $title ); ?></h2> 
+
 <form method="post" action="options.php">
 <?php wp_nonce_field('privacy-options') ?>
 <input type='hidden' name='option_page' value='privacy' />
+<input type="hidden" name="action" value="update" />
+
 <table class="form-table">
 <tr valign="top">
 <th scope="row"><?php _e('Blog Visibility') ?> </th>
@@ -26,10 +37,13 @@ if( trim( get_option('blog_public') ) == '' )
 <?php do_action('blog_privacy_selector'); ?>
 </fieldset></td>
 </tr>
+<?php do_settings_fields('privacy', 'default'); ?>
 </table>
 
-<p class="submit"><input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-<input type="hidden" name="action" value="update" />
+<?php do_settings_sections('privacy'); ?>
+
+<p class="submit">
+	<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
 </p>
 </form>
 

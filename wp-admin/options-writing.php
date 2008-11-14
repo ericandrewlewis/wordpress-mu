@@ -1,4 +1,12 @@
 <?php
+/**
+ * Writing settings administration panel.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/** WordPress Administration Bootstrap */
 require_once('admin.php');
 
 $title = __('Writing Settings');
@@ -8,14 +16,17 @@ include('admin-header.php');
 ?>
 
 <div class="wrap">
-<h2><?php _e('Writing Settings') ?></h2>
+<h2><?php echo wp_specialchars( $title ); ?></h2> 
+
 <form method="post" action="options.php">
 <?php wp_nonce_field('writing-options') ?>
 <input type='hidden' name='option_page' value='writing' />
+<input type="hidden" name="action" value="update" />
+
 <table class="form-table">
 <tr valign="top">
 <th scope="row"><label for="default_post_edit_rows"> <?php _e('Size of the post box') ?></label></th>
-<td><input name="default_post_edit_rows" type="text" id="default_post_edit_rows" value="<?php form_option('default_post_edit_rows'); ?>" size="2" style="width: 1.5em;" />
+<td><input name="default_post_edit_rows" type="text" id="default_post_edit_rows" value="<?php form_option('default_post_edit_rows'); ?>" class="small-text" />
 <?php _e('lines') ?></td>
 </tr>
 <tr valign="top">
@@ -29,32 +40,21 @@ include('admin-header.php');
 </tr>
 <tr valign="top">
 <th scope="row"><label for="default_category"><?php _e('Default Post Category') ?></label></th>
-<td><select name="default_category" id="default_category">
+<td>
 <?php
-$categories = get_categories('get=all');
-foreach ($categories as $category) :
-$category = sanitize_category($category);
-if ($category->term_id == get_option('default_category')) $selected = " selected='selected'";
-else $selected = '';
-echo "\n\t<option value='$category->term_id' $selected>$category->name</option>";
-endforeach;
+wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'default_category', 'orderby' => 'name', 'selected' => get_option('default_category'), 'hierarchical' => true));
 ?>
-</select></td>
+</td>
 </tr>
 <tr valign="top">
 <th scope="row"><label for="default_link_category"><?php _e('Default Link Category') ?></label></th>
-<td><select name="default_link_category" id="default_link_category">
+<td>
 <?php
-$link_categories = get_terms('link_category', 'get=all');
-foreach ($link_categories as $category) :
-$category = sanitize_term($category, 'link_category');
-if ($category->term_id == get_option('default_link_category')) $selected = " selected='selected'";
-else $selected = '';
-echo "\n\t<option value='$category->term_id' $selected>$category->name</option>";
-endforeach;
+wp_dropdown_categories(array('hide_empty' => 0, 'name' => 'default_link_category', 'orderby' => 'name', 'selected' => get_option('default_link_category'), 'hierarchical' => true, 'type' => 'link'));
 ?>
-</select></td>
+</td>
 </tr>
+<?php do_settings_fields('writing', 'default'); ?>
 </table>
 
 <h3><?php _e('Remote Publishing') ?></h3>
@@ -75,12 +75,17 @@ endforeach;
 <input name="enable_xmlrpc" type="checkbox" id="enable_xmlrpc" value="1" <?php checked('1', get_option('enable_xmlrpc')); ?> />
 <?php _e('Enable the WordPress, Movable Type, MetaWeblog and Blogger XML-RPC publishing protocols.') ?></label><br />
 </fieldset></td>
-</tr></table>
+</tr>
+<?php do_settings_fields('writing', 'remote_publishing'); ?>
+</table>
 
+<h3><?php _e('Press This') ?></h3>
+<p><?php _e('Drag-and-drop the following link to your bookmarks bar or right click it and add it to your favorites for a posting shortcut.') ?>  <a href="<?php echo htmlspecialchars( get_shortcut_link() ); ?>" title="<?php echo attribute_escape(__('Press This')) ?>"><?php _e('Press This') ?></a></p>
+
+<?php do_settings_sections('writing'); ?>
 
 <p class="submit">
-<input type="hidden" name="action" value="update" />
-<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+	<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
 </p>
 </form>
 </div>

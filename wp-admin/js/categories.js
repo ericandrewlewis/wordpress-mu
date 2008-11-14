@@ -20,4 +20,10 @@ jQuery(function($) {
 		$('#the-list').wpList( { addAfter: addAfter, delAfter: delAfter } );
 	else
 		$('#the-list').wpList();
+
+	if ( jQuery('#link-category-search').size() ) {
+		columns.init('link-category');
+	} else {
+		columns.init('category');
+	}
 });

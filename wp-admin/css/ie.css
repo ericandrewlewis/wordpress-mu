@@ -1,14 +1,52 @@
 /* Fixes for IE bugs */
 
-#poststuff .postbox h3 {
-	padding-left: 23px;
+* html #wpbody-content {
+	float: right;
 }
 
-#submenu li a.current {
-	background:none;
-	border:none;
+* html #wpbody {
+	width: 100%;
 }
 
+* html body {
+	background-color: #464646;
+}
+
+* html #wpwrap {
+	background-color: #fff;
+}
+
+#footer {
+	overflow: hidden;
+}
+
+* html #footer {
+	width: 100%;
+}
+
+input.button,
+input.button-secondary,
+input.button-highlighted {
+	padding: 0;
+}
+
+#wphead-info {
+	float: right;
+}
+
+* html #wpbody-content #screen-options-link-wrap {
+	display: inline-block;
+	width: 150px;
+	text-align: center;
+}
+
+* html #wpbody-content #contextual-help-link-wrap {
+	display: inline-block;
+	width: 100px;
+	text-align: center;
+}
+
+/*
 * html body.minwidth {
 	_width: expression(document.documentElement.clientWidth < 810 ? "808px" : "99.9%");
 }
@@ -16,34 +54,157 @@
 * html #wpbody {
 	_width: expression(document.documentElement.clientWidth > 982 ? "980px" : "99.9%");
 }
+*/
 
-* html #poststuff .postarea, * html #poststuff #titlediv {
-	width: 95%;
-	margin-left: 3%;
+* html #adminmenu {
+	z-index: 1;
+	width: 145px;
+	margin: 12px;
+	padding: 0;
+}
+
+#wpcontent #adminmenu.folded li.menu-top {
+	display: block;
+}
+
+* html #wpcontent #adminmenu li.menu-top {
+	display: inline;
+	padding: 0;
+	margin: 0;
+}
+
+#adminmenu li.menu-top a.menu-top {
+	min-width: auto;
+	width: auto;
+}
+
+#wpcontent #adminmenu li.wp-has-current-submenu a.wp-has-submenu {
+	font-style: normal;
+}
+
+* html #wpcontent #adminmenu .wp-menu-open .wp-menu-toggle {
+	background: none;
+}
+
+* html #wpcontent #adminmenu .wp-has-submenu .wp-menu-toggle {
+	background: url(../images/menu-bits.gif) no-repeat scroll left -108px;
+}
+
+* html #wpcontent #adminmenu li.wp-has-current-submenu .wp-menu-toggle {
+	background: url(../images/menu-bits.gif) no-repeat scroll left -206px;
+}
+
+* html #adminmenu div.wp-menu-image {
+	height: 31px;
+}
+
+#wpcontent #adminmenu .wp-submenu li {
+	padding: 0;
+}
+
+#adminmenu,
+.wp-submenu,
+.wp-submenu li,
+.wp-menu-toggle {
+	zoom: 100%;
+}
+
+#wpcontent #adminmenu.folded li.wp-menu-separator {
+	width: 28px;
+}
+
+#wpcontent #adminmenu .wp-submenu li.wp-submenu-head {
+	padding: 3px 4px 4px 10px;
+	zoom: 100%;
+}
+
+#wpcontent #adminmenu.folded .menu-top {
+	height: 30px;
+}
+
+#adminmenu.folded .wp-submenu {
+	margin: -1px 0 0 0;
+}
+
+#template,
+#template div,
+#editcat,
+#addcat {
+	zoom: 100%;
 }
 
 .submitbox {
 	margin-top: 10px;
 }
 
-* html div.widget-liquid-left-holder, * html div.widget-liquid-right {
+* html div.widget-liquid-left-holder,
+* html div.widget-liquid-right {
 	display: block;
 	position: relative;
 }
 
-#wpwrap, #wpcontent, #post, #wrap, #postdivrich, #postdiv, #poststuff, #titlediv, #post-body, #editorcontainer, .tablenav, .widget-control-list, li.widget-list-control-item, #dragHelper, li.widget-list-control-item h4, .widget-sortable, .widget-control-actions {
+#screen-options-wrap {
+	overflow: hidden;
+}
+
+#favorite-actions {
+	z-index: 12;
+}
+
+#wpwrap,
+#wpcontent,
+#post,
+#wrap,
+#postdivrich,
+#postdiv,
+#poststuff,
+.metabox-holder,
+#titlediv,
+#post-body,
+#editorcontainer,
+.tablenav,
+.widget-control-list,
+li.widget-list-control-item,
+#dragHelper,
+li.widget-list-control-item h4,
+.widget-sortable,
+.widget-control-actions,
+#tagchecklist,
+#col-container,
+#col-left,
+#col-right {
 	display: block;
 	zoom: 100%;
+}
+
+#favorite-inside,
+#favorite-inside a,
+.favorite-action {
+	z-index: 11;
+	zoom: 100%;
+}
+
+#wphead-info {
+	width: 350px;
+	max-width: 350px;
+}
+
+p.search-box {
+	position: static;
+	float: right;
+	margin: -3px 0 4px;
+}
+
+#wpbody .wrap {
+	position: static;
 }
 
 * html #editorcontainer {
 	padding: 0;
 }
 
-* html #editorcontainer #content {
-	position: relative;
+#editorcontainer #content {
 	overflow: auto;
-	padding: 6px;
 	margin: auto;
 	width: 98%;
 }
@@ -66,17 +227,13 @@ form#template div {
 }
 
 #bh {
-	padding-right: 15px;
+	margin: 3px 0 0 6px;
+	float: right;
 }
 
 /* without this dashboard widgets appear in one column for some screen widths */
 div#dashboard-widgets {
 	padding-right: 1px;
-}
-
-#tagchecklist {
-	display: block;
-	zoom: 100%;
 }
 
 #tagchecklist span, #tagchecklist span a {
@@ -86,10 +243,6 @@ div#dashboard-widgets {
 
 #tagchecklist span a {
 	margin: 4px 0 0 -9px;
-}
-
-#poststuff .togbox {
-	margin-left: -19px;
 }
 
 .tablenav .button-secondary, .nav .button-secondary {
@@ -115,10 +268,6 @@ div#dashboard-widgets {
 
 table.ie-fixed {
 	table-layout: fixed;
-}
-
-#post-search .button, #widget-search .button {
-	padding: 1px;
 }
 
 .widefat tr, .widefat th {

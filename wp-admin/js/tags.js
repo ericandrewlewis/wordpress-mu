@@ -18,4 +18,6 @@ jQuery(function($) {
 		$('#the-list').wpList( { addAfter: addAfter, delAfter: delAfter } );
 	else
 		$('#the-list').wpList();
+
+	columns.init('tag');
 });

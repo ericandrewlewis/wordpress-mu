@@ -7,10 +7,13 @@ function send_to_editor(h) {
 
 		if ( h.indexOf('[caption') != -1 )
 			h = ed.plugins.wpeditimage._do_shcode(h);
-		
+
 		ed.execCommand('mceInsertContent', false, h);
-	} else
+	} else if ( jQuery.isFunction( 'edInsertContent' ) ) {
 		edInsertContent(edCanvas, h);
+	} else {
+		jQuery( edCanvas ).val( jQuery( edCanvas ).val() + h );
+	}
 
 	tb_remove();
 }
@@ -40,7 +43,7 @@ jQuery(function($) {
 			$(this).attr( 'href', href + '&width=' + ( W - 80 ) + '&height=' + ( H - 85 ) );
 		});
 	};
-	
+
 	jQuery('a.thickbox').click(function(){
 		if ( typeof tinyMCE != 'undefined' &&  tinyMCE.activeEditor ) {
 			tinyMCE.get('content').focus();

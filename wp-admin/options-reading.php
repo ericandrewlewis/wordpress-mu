@@ -1,4 +1,12 @@
 <?php
+/**
+ * Reading settings administration panel.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/** WordPress Administration Bootstrap */
 require_once('admin.php');
 
 $title = __('Reading Settings');
@@ -8,10 +16,13 @@ include('admin-header.php');
 ?>
 
 <div class="wrap">
-<h2><?php _e('Reading Settings') ?></h2>
+<h2><?php echo wp_specialchars( $title ); ?></h2> 
+
 <form name="form1" method="post" action="options.php">
 <?php wp_nonce_field('reading-options') ?>
 <input type='hidden' name='option_page' value='reading' />
+<input type="hidden" name="action" value="update" />
+
 <table class="form-table">
 <?php if ( get_pages() ): ?>
 <tr valign="top">
@@ -44,12 +55,12 @@ include('admin-header.php');
 <tr valign="top">
 <th scope="row"><label for="posts_per_page"><?php _e('Blog pages show at most') ?></label></th>
 <td>
-<input name="posts_per_page" type="text" id="posts_per_page" value="<?php form_option('posts_per_page'); ?>" size="3" /> <?php _e('posts') ?>
+<input name="posts_per_page" type="text" id="posts_per_page" value="<?php form_option('posts_per_page'); ?>" class="small-text" /> <?php _e('posts') ?>
 </td>
 </tr>
 <tr valign="top">
 <th scope="row"><label for="posts_per_rss"><?php _e('Syndication feeds show the most recent') ?></label></th>
-<td><input name="posts_per_rss" type="text" id="posts_per_rss" value="<?php form_option('posts_per_rss'); ?>" size="3" /> <?php _e('posts') ?></td>
+<td><input name="posts_per_rss" type="text" id="posts_per_rss" value="<?php form_option('posts_per_rss'); ?>" class="small-text" /> <?php _e('posts') ?></td>
 </tr>
 <tr valign="top">
 <th scope="row"><?php _e('For each article in a feed, show') ?> </th>
@@ -61,13 +72,13 @@ include('admin-header.php');
 
 <tr valign="top">
 <th scope="row"><label for="blog_charset"><?php _e('Encoding for pages and feeds') ?></label></th>
-<td><input name="blog_charset" type="text" id="blog_charset" value="<?php form_option('blog_charset'); ?>" size="20" class="code" /><br />
-<?php _e('The character encoding you write your blog in (UTF-8 is <a href="http://developer.apple.com/documentation/macos8/TextIntlSvcs/TextEncodingConversionManager/TEC1.5/TEC.b0.html">recommended</a>)') ?></td>
+<td><input name="blog_charset" type="text" id="blog_charset" value="<?php form_option('blog_charset'); ?>" class="regular-text code" />
+<span class="setting-description"><?php _e('The character encoding you write your blog in (UTF-8 is <a href="http://developer.apple.com/documentation/macos8/TextIntlSvcs/TextEncodingConversionManager/TEC1.5/TEC.b0.html">recommended</a>)') ?></span></td>
 </tr>
+<?php do_settings_fields('reading', 'default'); ?>
 </table>
 <p class="submit">
-<input type="hidden" name="action" value="update" />
-<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+	<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
 </p>
 </form>
 </div>

@@ -1,9 +1,30 @@
 <?php
+/**
+ * WordPress Bookmark Administration API
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @return unknown
+ */
 function add_link() {
 	return edit_link();
 }
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $link_id
+ * @return unknown
+ */
 function edit_link( $link_id = '' ) {
 	if (!current_user_can( 'manage_links' ))
 		wp_die( __( 'Cheatin&#8217; uh?' ));
@@ -24,6 +45,13 @@ function edit_link( $link_id = '' ) {
 	}
 }
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @return unknown
+ */
 function get_default_link_to_edit() {
 	if ( isset( $_GET['linkurl'] ) )
 		$link->link_url = clean_url( $_GET['linkurl']);
@@ -40,6 +68,14 @@ function get_default_link_to_edit() {
 	return $link;
 }
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $link_id
+ * @return unknown
+ */
 function wp_delete_link($link_id) {
 	global $wpdb;
 
@@ -51,9 +87,19 @@ function wp_delete_link($link_id) {
 
 	do_action('deleted_link', $link_id);
 
+	clean_bookmark_cache($link_id);
+
 	return true;
 }
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $link_id
+ * @return unknown
+ */
 function wp_get_link_cats($link_id = 0) {
 
 	$cats = wp_get_object_terms($link_id, 'link_category', 'fields=ids');
@@ -61,11 +107,27 @@ function wp_get_link_cats($link_id = 0) {
 	return array_unique($cats);
 }
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $link_id
+ * @return unknown
+ */
 function get_link_to_edit( $link_id ) {
 	return get_bookmark( $link_id, OBJECT, 'edit' );
 }
 
-function wp_insert_link($linkdata) {
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $linkdata
+ * @return unknown
+ */
+function wp_insert_link($linkdata, $wp_error = false) {
 	global $wpdb, $current_user;
 
 	$defaults = array('link_id' => 0, 'link_name' => '', 'link_url' => '', 'link_rating' => 0 );
@@ -119,14 +181,24 @@ function wp_insert_link($linkdata) {
 	}
 
 	if ( $update ) {
-		$wpdb->query( $wpdb->prepare("UPDATE $wpdb->links SET link_url = %s,
-			link_name = %s, link_image = %s, link_target = %s, 
-			link_visible = %s, link_description = %s, link_rating = %s, 
+		if ( false === $wpdb->query( $wpdb->prepare("UPDATE $wpdb->links SET link_url = %s,
+			link_name = %s, link_image = %s, link_target = %s,
+			link_visible = %s, link_description = %s, link_rating = %s,
 			link_rel = %s, link_notes = %s, link_rss = %s
-			WHERE link_id = %s", $link_url, $link_name, $link_image, $link_target, $link_visible, $link_description, $link_rating, $link_rel, $link_notes, $link_rss, $link_id) );
+			WHERE link_id = %s", $link_url, $link_name, $link_image, $link_target, $link_visible, $link_description, $link_rating, $link_rel, $link_notes, $link_rss, $link_id) ) ) {
+			if ( $wp_error )
+				return new WP_Error('db_update_error', __('Could not update link in the database'), $wpdb->last_error);
+			else
+				return 0;
+		}
 	} else {
-		$wpdb->query( $wpdb->prepare("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_description, link_visible, link_owner, link_rating, link_rel, link_notes, link_rss) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)", 
-		$link_url,$link_name, $link_image, $link_target, $link_description, $link_visible, $link_owner, $link_rating, $link_rel, $link_notes, $link_rss) );
+		if ( false === $wpdb->query( $wpdb->prepare("INSERT INTO $wpdb->links (link_url, link_name, link_image, link_target, link_description, link_visible, link_owner, link_rating, link_rel, link_notes, link_rss) VALUES(%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+		$link_url,$link_name, $link_image, $link_target, $link_description, $link_visible, $link_owner, $link_rating, $link_rel, $link_notes, $link_rss) ) ) {
+			if ( $wp_error )
+				return new WP_Error('db_insert_error', __('Could not insert link into the database'), $wpdb->last_error);
+			else
+				return 0;
+		}
 		$link_id = (int) $wpdb->insert_id;
 	}
 
@@ -137,9 +209,19 @@ function wp_insert_link($linkdata) {
 	else
 		do_action('add_link', $link_id);
 
+	clean_bookmark_cache($link_id);
+
 	return $link_id;
 }
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $link_id
+ * @param unknown_type $link_categories
+ */
 function wp_set_link_cats($link_id = 0, $link_categories = array()) {
 	// If $link_categories isn't already an array, make it one:
 	if (!is_array($link_categories) || 0 == count($link_categories))
@@ -149,8 +231,18 @@ function wp_set_link_cats($link_id = 0, $link_categories = array()) {
 	$link_categories = array_unique($link_categories);
 
 	wp_set_object_terms($link_id, $link_categories, 'link_category');
+
+	clean_bookmark_cache($link_id);
 }	// wp_set_link_cats()
 
+/**
+ * {@internal Missing Short Description}}
+ *
+ * @since unknown
+ *
+ * @param unknown_type $linkdata
+ * @return unknown
+ */
 function wp_update_link($linkdata) {
 	$link_id = (int) $linkdata['link_id'];
 

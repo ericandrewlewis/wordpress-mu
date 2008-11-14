@@ -1,7 +1,15 @@
 <?php
+/**
+ * New Post Administration Panel.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/** Load WordPress Administration Bootstrap */
 require_once('admin.php');
-$title = __('Create New Post');
-$parent_file = 'post-new.php';
+$title = __('Add New Post');
+$parent_file = 'edit.php';
 $editing = true;
 wp_enqueue_script('autosave');
 wp_enqueue_script('post');
@@ -26,7 +34,7 @@ When you&#8217;re promoted, just reload this page and you&#8217;ll be able to bl
 }
 
 if ( isset($_GET['posted']) && $_GET['posted'] ) : $_GET['posted'] = (int) $_GET['posted']; ?>
-<div id="message" class="updated fade"><p><strong><?php _e('Your post has been saved.'); ?></strong> <a href="<?php echo get_permalink( $_GET['posted'] ); ?>"><?php _e('View post'); ?></a> | <a href="post.php?action=edit&amp;post=<?php echo $_GET['posted']; ?>"><?php _e('Edit post'); ?></a></p></div>
+<div id="message" class="updated fade"><p><strong><?php _e('Your post has been saved.'); ?></strong> <a href="<?php echo get_permalink( $_GET['posted'] ); ?>"><?php _e('View post'); ?></a> | <a href="<?php echo get_edit_post_link( $_GET['posted'] ); ?>"><?php _e('Edit post'); ?></a></p></div>
 <?php
 endif;
 ?>

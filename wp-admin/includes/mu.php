@@ -462,64 +462,6 @@ function import_no_new_users( $permission ) {
 add_filter( 'import_allow_create_users', 'import_no_new_users' );
 // See "import_allow_fetch_attachments" and "import_attachment_size_limit" filters too.
 
-function add_option_update_handler($option_group, $option_name, $sanitize_callback = '') {
-	global $new_whitelist_options;
-	$new_whitelist_options[ $option_group ][] = $option_name;
-	if( $sanitize_callback != '' )
-		add_filter( "sanitize_option_{$option_name}", $sanitize_callback );
-}
-
-function remove_option_update_handler($option_group, $option_name, $sanitize_callback = '') {
-	global $new_whitelist_options;
-	$pos = array_search( $option_name, $new_whitelist_options );
-	if( $pos !== false )
-		unset( $new_whitelist_options[ $option_group ][ $pos ] );
-	if( $sanitize_callback != '' )
-		remove_filter( "sanitize_option_{$option_name}", $sanitize_callback );
-}
-
-function option_update_filter( $options ) {
-	global $new_whitelist_options;
-
-	if( is_array( $new_whitelist_options ) )
-		$options = add_option_whitelist( $new_whitelist_options, $options );
-
-	return $options;
-}
-add_filter( 'whitelist_options', 'option_update_filter' );
-
-function add_option_whitelist( $new_options, $options = '' ) {
-	if( $options == '' ) {
-		global $whitelist_options;
-	} else {
-		$whitelist_options = $options;
-	}
-	foreach( $new_options as $page => $keys ) {
-		foreach( $keys as $key ) {
-			$pos = array_search( $key, $whitelist_options[ $page ] );
-			if( $pos === false )
-				$whitelist_options[ $page ][] = $key;
-		}
-	}
-	return $whitelist_options;
-}
-
-function remove_option_whitelist( $del_options, $options = '' ) {
-	if( $options == '' ) {
-		global $whitelist_options;
-	} else {
-		$whitelist_options = $options;
-	}
-	foreach( $del_options as $page => $keys ) {
-		foreach( $keys as $key ) {
-			$pos = array_search( $key, $whitelist_options[ $page ] );
-			if( $pos !== false )
-				unset( $whitelist_options[ $page ][ $pos ] );
-		}
-	}
-	return $whitelist_options;
-}
-
 /* Blogswitcher */
 function blogswitch_init() {
 	global $current_user;

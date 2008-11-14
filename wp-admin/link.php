@@ -1,4 +1,15 @@
 <?php
+/**
+ * Manage link administration actions.
+ *
+ * This page is accessed by the link management pages and handles the forms and
+ * AJAX processes for link actions.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/** Load WordPress Administration Bootstrap */
 require_once ('admin.php');
 
 wp_reset_vars(array('action', 'cat_id', 'linkurl', 'name', 'image', 'description', 'visible', 'target', 'category', 'link_id', 'submit', 'order_by', 'links_show_cat_id', 'rating', 'rel', 'notes', 'linkcheck[]'));
@@ -6,12 +17,12 @@ wp_reset_vars(array('action', 'cat_id', 'linkurl', 'name', 'image', 'description
 if ( ! current_user_can('manage_links') )
 	wp_die( __('You do not have sufficient permissions to edit the links for this blog.') );
 
-if ('' != $_POST['deletebookmarks'])
+if ( !empty($_POST['deletebookmarks']) )
 	$action = 'deletebookmarks';
-if ('' != $_POST['move'])
+if ( !empty($_POST['move']) )
 	$action = 'move';
-if ('' != $_POST['linkcheck'])
-	$linkcheck = $_POST[linkcheck];
+if ( !empty($_POST['linkcheck']) )
+	$linkcheck = $_POST['linkcheck'];
 
 $this_file = 'link-manager.php';
 

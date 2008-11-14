@@ -1,43 +1,74 @@
 <?php
+/**
+ * General settings administration panel.
+ *
+ * @package WordPress
+ * @subpackage Administration
+ */
+
+/** WordPress Administration Bootstrap */
 require_once('./admin.php');
 
 $title = __('General Settings');
 $parent_file = 'options-general.php';
 
+/**
+ * Display JavaScript on the page.
+ *
+ * @package WordPress
+ * @subpackage General_Settings_Panel
+ */
+function add_js() {
+?>
+<script type="text/javascript">
+//<![CDATA[
+	jQuery(document).ready(function($){
+		$("input[name='date_format']").click(function(){
+			if ( "date_format_custom_radio" != $(this).attr("id") )
+				$("input[name='date_format_custom']").val( $(this).val() );
+		});
+		$("input[name='date_format_custom']").focus(function(){
+			$("#date_format_custom_radio").attr("checked", "checked");
+		});
+
+		$("input[name='time_format']").click(function(){
+			if ( "time_format_custom_radio" != $(this).attr("id") )
+				$("input[name='time_format_custom']").val( $(this).val() );
+		});
+		$("input[name='time_format_custom']").focus(function(){
+			$("#time_format_custom_radio").attr("checked", "checked");
+		});
+	});
+//]]>
+</script>
+<?php
+}
+add_filter('admin_head', 'add_js');
+
 include('./admin-header.php');
 ?>
 
 <div class="wrap">
-<h2><?php _e('General Settings') ?></h2>
+<h2><?php echo wp_specialchars( $title ); ?></h2> 
+
 <form method="post" action="options.php">
-<?php wp_nonce_field('general-options') ?>
-<input type='hidden' name='option_page' value='general' />
+<?php settings_fields('general'); ?>
+
 <table class="form-table">
 <tr valign="top">
 <th scope="row"><label for="blogname"><?php _e('Blog Title') ?></label></th>
-<td><input name="blogname" type="text" id="blogname" value="<?php form_option('blogname'); ?>" size="40" /></td>
+<td><input name="blogname" type="text" id="blogname" value="<?php form_option('blogname'); ?>" class="regular-text" /></td>
 </tr>
 <tr valign="top">
 <th scope="row"><label for="blogdescription"><?php _e('Tagline') ?></label></th>
-<td><input name="blogdescription" type="text" id="blogdescription" style="width: 95%" value="<?php form_option('blogdescription'); ?>" size="45" />
-<br />
-<?php _e('In a few words, explain what this blog is about.') ?></td>
+<td><input name="blogdescription" type="text" id="blogdescription"  value="<?php form_option('blogdescription'); ?>" class="regular-text" />
+<span class="setting-description"><?php _e('In a few words, explain what this blog is about.') ?></span></td>
 </tr>
 <tr valign="top">
 <tr valign="top">
 <th scope="row"><label for="admin_email"><?php _e('E-mail address') ?> </label></th>
-<td><input name="admin_email" type="text" id="admin_email" value="<?php form_option('admin_email'); ?>" size="40" class="code" />
-<br />
-<?php _e('This address is used for admin purposes.') ?> <?php _e('If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong>') ?></td>
-</tr>
-<tr valign="top">
-<th scope="row"><?php _e('Membership') ?></th>
-<td>
-<label for="comment_registration">
-<input name="comment_registration" type="checkbox" id="comment_registration" value="1" <?php checked('1', get_option('comment_registration')); ?> />
-<?php _e('Users must be registered and logged in to comment') ?>
-</label>
-</td>
+<td><input name="admin_email" type="text" id="admin_email" value="<?php form_option('admin_email'); ?>" class="regular-text code" />
+<span class="setting-description"><?php _e('This address is used for admin purposes.') ?> <?php _e('If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong>') ?></span></td>
 </tr>
 <tr>
 <th scope="row"><label for="gmt_offset"><?php _e('Timezone') ?> </label></th>
@@ -66,22 +97,77 @@ foreach ( $offset_range as $offset ) {
 }
 ?>
 </select>
-<?php _e('hours') ?><br />
-<?php printf(__('<abbr title="Coordinated Universal Time">UTC</abbr> time is <code>%s</code>'), gmdate(__('Y-m-d G:i:s'))); ?><br />
-<?php if ($current_offset) printf(__('UTC %1$s is <code>%2$s</code>'), $current_offset_name, gmdate(__('Y-m-d G:i:s'), current_time('timestamp'))); ?><br />
-<?php _e('Unfortunately, you have to manually update this for Daylight Savings Time.'); ?>
+<?php _e('hours') ?>
+<span id="utc-time"><?php printf(__('<abbr title="Coordinated Universal Time">UTC</abbr> time is <code>%s</code>'), gmdate(__('Y-m-d G:i:s'))); ?></span>
+<?php if ($current_offset) : ?>
+	<span id="local-time"><?php printf(__('UTC %1$s is <code>%2$s</code>'), $current_offset_name, gmdate(__('Y-m-d G:i:s'), current_time('timestamp'))); ?></span>
+<?php endif; ?>
+<br/>
+<span class="setting-description"><?php _e('Unfortunately, you have to manually update this for Daylight Savings Time. Lame, we know, but will be fixed in the future.'); ?></span>
 </td>
 </tr>
 <tr>
-<th scope="row"><label for="date_format"><?php _e('Date Format') ?></label></th>
-<td><input name="date_format" type="text" id="date_format" size="30" value="<?php form_option('date_format'); ?>" /><br />
-<?php _e('Output:') ?> <strong><?php echo mysql2date(get_option('date_format'), current_time('mysql')); ?></strong></td>
+<th scope="row"><?php _e('Date Format') ?></th>
+<td>
+	<fieldset><legend class="hidden"><?php _e('Date Format') ?></legend>
+<?php
+
+	$date_formats = apply_filters( 'date_formats', array(
+		__('F j, Y'),
+		'Y/m/d',
+		'm/d/Y',
+		'd/m/Y',
+	) );
+
+	$custom = TRUE;
+
+	foreach ( $date_formats as $format ) {
+		echo "\t<label title='" . attribute_escape($format) . "'><input type='radio' name='date_format' value='" . attribute_escape($format) . "'";
+		if ( get_option('date_format') === $format ) { // checked() uses "==" rather than "==="
+			echo " checked='checked'";
+			$custom = FALSE;
+		}
+		echo ' /> ' . gmdate( $format, current_time('timestamp') ) . "</label><br />\n";
+	}
+
+	echo '	<label><input type="radio" name="date_format" id="date_format_custom_radio" value="\c\u\s\t\o\m"';
+	checked( $custom, TRUE );
+	echo '/> ' . __('Custom') . ': </label><input type="text" name="date_format_custom" value="' . attribute_escape( get_option('date_format') ) . '" class="small-text" /> ' . gmdate( get_option('date_format'), current_time('timestamp') ) . "\n";
+
+	echo "\t<p>" . __('<a href="http://codex.wordpress.org/Formatting_Date_and_Time">Documentation on date formatting</a>. Click "Save Changes" to update sample output.') . "</p>\n";
+?>
+	</fieldset>
+</td>
 </tr>
 <tr>
-<th scope="row"><label for="time_format"><?php _e('Time Format') ?></label></th>
-<td><input name="time_format" type="text" id="time_format" size="30" value="<?php form_option('time_format'); ?>" /><br />
-<?php _e('Output:') ?> <strong><?php echo gmdate(get_option('time_format'), current_time('timestamp')); ?></strong><br />
-<?php _e('<a href="http://codex.wordpress.org/Formatting_Date_and_Time">Documentation on date formatting</a>. Click "Save Changes" to update sample output.') ?></td>
+<th scope="row"><?php _e('Time Format') ?></th>
+<td>
+	<fieldset><legend class="hidden"><?php _e('Time Format') ?></legend>
+<?php
+
+	$time_formats = apply_filters( 'time_formats', array(
+		__('g:i a'),
+		'g:i A',
+		'H:i',
+	) );
+
+	$custom = TRUE;
+
+	foreach ( $time_formats as $format ) {
+		echo "\t<label title='" . attribute_escape($format) . "'><input type='radio' name='time_format' value='" . attribute_escape($format) . "'";
+		if ( get_option('time_format') === $format ) { // checked() uses "==" rather than "==="
+			echo " checked='checked'";
+			$custom = FALSE;
+		}
+		echo ' /> ' . gmdate( $format, current_time('timestamp') ) . "</label><br />\n";
+	}
+
+	echo '	<label><input type="radio" name="time_format" id="time_format_custom_radio" value="\c\u\s\t\o\m"';
+	checked( $custom, TRUE );
+	echo '/> ' . __('Custom') . ': </label><input type="text" name="time_format_custom" value="' . attribute_escape( get_option('time_format') ) . '" class="small-text" /> ' . gmdate( get_option('time_format'), current_time('timestamp') ) . "\n";
+?>
+	</fieldset>
+</td>
 </tr>
 <tr>
 <th scope="row"><label for="start_of_week"><?php _e('Week Starts On') ?></label></th>
@@ -94,6 +180,7 @@ endfor;
 ?>
 </select></td>
 </tr>
+<?php do_settings_fields('general', 'default'); ?>
 <?php
 if( is_dir( ABSPATH . LANGDIR ) && $dh = opendir( ABSPATH . LANGDIR ) )
 	while( ( $lang_file = readdir( $dh ) ) !== false )
@@ -116,8 +203,10 @@ if( is_array($lang_files) && !empty($lang_files) ) {
 ?>
 </table>
 
-<p class="submit"><input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
-<input type="hidden" name="action" value="update" />
+<?php do_settings_sections('general'); ?>
+
+<p class="submit">
+<input type="submit" name="Submit" class="button-primary" value="<?php _e('Save Changes') ?>" />
 </p>
 </form>
 

@@ -35,6 +35,7 @@ function prepareMediaItem(fileObj, serverData) {
 	jQuery('#media-item-' + fileObj.id + ' .bar').remove();
 	jQuery('#media-item-' + fileObj.id + ' .progress').hide();
 
+	var f = ( typeof shortform == 'undefined' ) ? 1 : 2;
 	// Old style: Append the HTML returned by the server -- thumbnail and form inputs
 	if ( isNaN(serverData) || !serverData ) {
 		jQuery('#media-item-' + fileObj.id).append(serverData);
@@ -42,7 +43,7 @@ function prepareMediaItem(fileObj, serverData) {
 	}
 	// New style: server data is just the attachment ID, fetch the thumbnail and form html from the server
 	else {
-		jQuery('#media-item-' + fileObj.id).load('async-upload.php', {attachment_id:serverData, fetch:1}, function(){prepareMediaItemInit(fileObj);updateMediaForm()});
+		jQuery('#media-item-' + fileObj.id).load('async-upload.php', {attachment_id:serverData, fetch:f}, function(){prepareMediaItemInit(fileObj);updateMediaForm()});
 	}
 }
 		
@@ -202,6 +203,19 @@ function fileDialogComplete(num_files_queued) {
 	} catch (ex) {
 		this.debug(ex);
 	}
+}
+
+function swfuploadPreLoad() {
+	var swfupload_element = jQuery('#'+swfu.customSettings.swfupload_element_id).get(0);
+	jQuery('#' + swfu.customSettings.degraded_element_id).hide();
+	// Doing this directly because jQuery().show() seems to have timing problems
+	if ( swfupload_element && ! swfupload_element.style.display )
+			swfupload_element.style.display = 'block';
+}
+
+function swfuploadLoadFailed() {
+	jQuery('#' + swfu.customSettings.swfupload_element_id).hide();
+	jQuery('#' + swfu.customSettings.degraded_element_id).show();
 }
 
 function uploadError(fileObj, error_code, message) {

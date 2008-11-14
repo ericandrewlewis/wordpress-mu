@@ -1,3 +1,9 @@
+<?php
+/**
+ * @package WordPress
+ * @subpackage Default_Theme
+ */
+?>
 
 <?php $current_site = get_current_site(); ?>
 <hr />

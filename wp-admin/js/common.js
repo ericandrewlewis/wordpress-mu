@@ -2,30 +2,53 @@ jQuery(document).ready( function() {
 	// pulse
 	jQuery('.fade').animate( { backgroundColor: '#ffffe0' }, 300).animate( { backgroundColor: '#fffbcc' }, 300).animate( { backgroundColor: '#ffffe0' }, 300).animate( { backgroundColor: '#fffbcc' }, 300);
 
-	// Reveal
-	jQuery('.wp-no-js-hidden').removeClass( 'wp-no-js-hidden' );
+	// show things that should be visible, hide what should be hidden
+	jQuery('.hide-if-no-js').removeClass('hide-if-no-js');
+	jQuery('.hide-if-js').hide();
 
 	// Basic form validation
 	if ( ( 'undefined' != typeof wpAjax ) && jQuery.isFunction( wpAjax.validateForm ) ) {
 		jQuery('form.validate').submit( function() { return wpAjax.validateForm( jQuery(this) ); } );
 	}
+
+	// Move .updated and .error alert boxes 
+	jQuery('div.wrap h2 ~ div.updated, div.wrap h2 ~ div.error').addClass('below-h2');
+	jQuery('div.updated, div.error').not('.below-h2').insertAfter('div.wrap h2:first');
+
 });
 
-(function(JQ) {
-	JQ.fn.tTips = function() {
+// stub for doing better warnings
+(function($){
+	showNotice = {
+		warn : function(text) {
+			if ( confirm(text) )
+				return true;
 
-		JQ('body').append('<div id="tTips"><p id="tTips_inside"></p></div>');
-		var TT = JQ('#tTips');
+			return false;
+		},
+		
+		note : function(text) {
+			alert(text);
+		}
+	}
+})(jQuery);
+
+/*
+(function($) {
+	$.fn.tTips = function() {
+
+		$('body').append('<div id="tTips"><p id="tTips_inside"></p></div>');
+		var TT = $('#tTips');
 
 		this.each(function() {
-			var el = JQ(this), txt;
-			
+			var el = $(this), txt;
+
 			if ( txt = el.attr('title') ) el.attr('tip', txt).removeAttr('title');
 			else return;
 			el.find('img').removeAttr('alt');
 
 			el.mouseover(function(e) {
-				txt = el.attr('tip'), o = el.offset();;
+				txt = el.attr('tip'), o = el.offset();
 
 				clearTimeout(TT.sD);
 				TT.find('p').html(txt);
@@ -41,5 +64,6 @@ jQuery(document).ready( function() {
 		});
 	}
 }(jQuery));
+*/
 
-jQuery(function(){jQuery('#media-buttons a').tTips();});
+//jQuery(function(){jQuery('#media-buttons a').tTips();});
