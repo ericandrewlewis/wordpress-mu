@@ -70,7 +70,7 @@ function dismissed_updates() {
 	<?php
 		echo '<p class="hide-if-no-js"><a id="show-dismissed" href="#">'.__('Show hidden updates').'</a></p>';
 		echo '<ul id="dismissed-updates" class="core-updates dismissed">';
-		foreach($dismissed as $update) {
+		foreach( (array) $dismissed as $update) {
 			echo '<li>';
 			list_core_update( $update );
 			echo '</li>';
@@ -96,8 +96,6 @@ function core_upgrade_preamble() {
 		echo '<h3>';
 		_e('You have the latest version of WordPress. You do not need to upgrade');
 		echo '</h3>';
-		dismissed_updates();
-		echo '</div>';
 	} else {
 		echo '<div class="updated fade"><p>';
 		_e('<strong>Important:</strong> before upgrading, please <a href="http://codex.wordpress.org/WordPress_Backups">backup your database and files</a>.');  
@@ -110,7 +108,7 @@ function core_upgrade_preamble() {
 
 	echo '<ul class="core-updates">';
 	$alternate = true;
-	foreach( $updates as $update ) {
+	foreach( (array) $updates as $update ) {
 		$class = $alternate? ' class="alternate"' : '';
 		$alternate = !$alternate;
 		echo "<li $class>";

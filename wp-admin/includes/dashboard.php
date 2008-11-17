@@ -28,7 +28,10 @@ function wp_dashboard_setup() {
 	wp_add_dashboard_widget( 'dashboard_right_now', __( 'Right Now' ), 'wp_dashboard_right_now' );
 
 	// Recent Comments Widget
-	wp_add_dashboard_widget( 'dashboard_recent_comments', sprintf( __( 'Recent Comments <a href="%s">View all</a>' ), 'edit-comments.php' ), 'wp_dashboard_recent_comments' );
+	$recent_comments_title = __( 'Recent Comments' );
+	if ( current_user_can('edit_posts') ) 
+		$recent_comments_title .= ' <a href="edit-comments.php" class="edit-box open-box">' . __('View all') . '</a>';
+	wp_add_dashboard_widget( 'dashboard_recent_comments', $recent_comments_title, 'wp_dashboard_recent_comments' );
 
 	// Incoming Links Widget
 	if ( !isset( $widget_options['dashboard_incoming_links'] ) || !isset( $widget_options['dashboard_incoming_links']['home'] ) || $widget_options['dashboard_incoming_links']['home'] != get_option('home') ) {
@@ -37,8 +40,8 @@ function wp_dashboard_setup() {
 			'home' => get_option('home'),
 			'link' => apply_filters( 'dashboard_incoming_links_link', 'http://blogsearch.google.com/blogsearch?hl=en&scoring=d&partner=wordpress&q=link:' . trailingslashit( get_option('home') ) ),
 			'url' => apply_filters( 'dashboard_incoming_links_feed', 'http://blogsearch.google.com/blogsearch_feeds?hl=en&scoring=d&ie=utf-8&num=10&output=rss&partner=wordpress&q=link:' . trailingslashit( get_option('home') ) ),
-			'items' => $widget_options['dashboard_incoming_links']['items'],
-			'show_date' => $widget_options['dashboard_incoming_links']['show_date']
+			'items' => isset($widget_options['dashboard_incoming_links']['items']) ? $widget_options['dashboard_incoming_links']['items'] : 10,
+			'show_date' => isset($widget_options['dashboard_incoming_links']['show_date']) ? $widget_options['dashboard_incoming_links']['show_date'] : false
 		);
 	}
 	wp_add_dashboard_widget( 'dashboard_incoming_links', __( 'Incoming Links' ), 'wp_dashboard_incoming_links', 'wp_dashboard_incoming_links_control' );
@@ -48,11 +51,12 @@ function wp_dashboard_setup() {
 		wp_add_dashboard_widget( 'dashboard_plugins', __( 'Plugins' ), 'wp_dashboard_plugins' );
 
 	// QuickPress Widget
-	wp_add_dashboard_widget( 'dashboard_quick_press', __( 'QuickPress' ), 'wp_dashboard_quick_press' );
+	if ( current_user_can('edit_posts') )
+		wp_add_dashboard_widget( 'dashboard_quick_press', __( 'QuickPress' ), 'wp_dashboard_quick_press' );
 
 	// Recent Drafts
-	wp_add_dashboard_widget( 'dashboard_recent_drafts', sprintf( __( 'Recent Drafts <a href="%s">View all</a>' ), 'edit.php?post_status=draft' ), 'wp_dashboard_recent_drafts' );
-
+	if ( current_user_can('edit_posts') )
+		wp_add_dashboard_widget( 'dashboard_recent_drafts', __( 'Recent Drafts') . ' <a href="edit.php?post_status=draft" class="edit-box open-box">' . __('View all') . '</a>', 'wp_dashboard_recent_drafts' );
 
 	// Primary feed (Dev Blog) Widget
 	if ( !isset( $widget_options['dashboard_primary'] ) ) {
@@ -100,6 +104,9 @@ function wp_dashboard_setup() {
 
 	foreach ( $dashboard_widgets as $widget_id )
 		wp_add_dashboard_widget( $widget_id, $wp_registered_widgets[$widget_id]['name'], $wp_registered_widgets[$widget_id]['callback'], $wp_registered_widget_controls[$widget_id]['callback'] );
+
+	do_action('do_meta_boxes', 'dashboard', 'normal', '');
+	do_action('do_meta_boxes', 'dashboard', 'side', '');
 }
 
 function wp_add_dashboard_widget( $widget_id, $widget_name, $callback, $control_callback = null ) {
@@ -173,11 +180,13 @@ function wp_dashboard_right_now() {
 	echo "\n\t".'<tr class="first">';
 
 	// Posts
-	$num = number_format_i18n( $num_posts->publish );
+	$num = isset($num_posts->publish) ? number_format_i18n( $num_posts->publish ) : 0;
 	if ( current_user_can( 'edit_posts' ) )
-		$num = "<a href='edit.php'>$num</a>";
-	echo '<td class="first b b-posts">'.$num.'</td>';
-	echo '<td class="t posts">' . __ngettext( 'Post', 'Posts', $num_posts->publish ) . '</td>';
+		$text = "<a href='edit.php'>$num</a>";
+	else
+		$text = $num;
+	echo '<td class="first b b-posts">' . $text . '</td>';
+	echo '<td class="t posts">' . __ngettext( 'Post', 'Posts', $num ) . '</td>';
 	/* TODO: Show status breakdown on hover
 	if ( $can_edit_pages && !empty($num_pages->publish) ) { // how many pages is not exposed in feeds.  Don't show if !current_user_can
 		$post_type_texts[] = '<a href="edit-pages.php">'.sprintf( __ngettext( '%s page', '%s pages', $num_pages->publish ), number_format_i18n( $num_pages->publish ) ).'</a>';
@@ -230,7 +239,7 @@ function wp_dashboard_right_now() {
 	// Spam Comments
 	$num = number_format_i18n($num_comm['spam']);
 	if ( current_user_can( 'moderate_comments' ) )
-		$num = "<a href='edit-comments.php?comment_status=spam'>$num</a>";
+		$num = "<a href='edit-comments.php?comment_status=spam'><span class='spam-count'>$num</span></a>";
 	echo '<td class="b b-spam">'.$num.'</td>';
 	echo '<td class="last t spam">' . __ngettext( 'Spam', 'Spam', $num_comm['spam'] ) . '</td>';
 
@@ -246,15 +255,15 @@ function wp_dashboard_right_now() {
 	// Pending Comments
 	$num = number_format_i18n($num_comm['awaiting_moderation']);
 	if ( current_user_can( 'moderate_comments' ) )
-		$num = "<a href='edit-comments.php?comment_status=moderated'>$num</a>";
+		$num = "<a href='edit-comments.php?comment_status=moderated'><span class='pending-count'>$num</span></a>";
 	echo '<td class="b b-waiting">'.$num.'</td>';
-	echo '<td class="last t waiting">' . __ngettext( 'Awaiting Moderation', 'Awaiting Moderation', $num_comm['awaiting_moderation'] ) . '</td>';
+	echo '<td class="last t waiting">' . __ngettext( 'Pending', 'Pending', $num_comm['awaiting_moderation'] ) . '</td>';
 
 	echo "</tr>";
 	do_action('right_now_table_end');
 	echo "\n\t</table>\n\t</div>";
-  
-  echo "\n\t".'<div class="versions">';
+
+	echo "\n\t".'<div class="versions">';
 	$ct = current_theme_info();
 	$sidebars_widgets = wp_get_sidebars_widgets();
 	$num_widgets = array_reduce( $sidebars_widgets, create_function( '$prev, $curr', 'return $prev+count($curr);' ), 0 );
@@ -272,7 +281,7 @@ function wp_dashboard_right_now() {
 
 	update_right_now_message();
 
-  echo "\n\t".'</div>';
+	echo "\n\t".'</div>';
 	do_action( 'rightnow_end' );
 	do_action( 'activity_box_end' );
 }
@@ -283,9 +292,9 @@ function wp_dashboard_quick_press() {
 		$view = get_permalink( $_POST['post_ID'] );
 		$edit = clean_url( get_edit_post_link( $_POST['post_ID'] ) );
 		if ( 'post-quickpress-publish' == $_POST['action'] ) {
-			printf( __( 'Post Published. <a href="%s">View post</a> | <a href="%s">Edit post</a>' ), clean_url( $view ), $edit );
+			printf( '<div class="message"><p>' . __( 'Post Published. <a href="%s">View post</a> | <a href="%s">Edit post</a>' ) . '</p></div>', clean_url( $view ), $edit );
 		} else {
-			printf( __( 'Draft Saved. <a href="%s">Preview post</a> | <a href="%s">Edit post</a>' ), clean_url( add_query_arg( 'preview', 1, $view ) ), $edit );
+			printf( '<div class="message"><p>' . __( 'Draft Saved. <a href="%s">Preview post</a> | <a href="%s">Edit post</a>' ) . '</p></div>', clean_url( add_query_arg( 'preview', 1, $view ) ), $edit );
 			$drafts_query = new WP_Query( array(
 				'post_type' => 'post',
 				'what_to_show' => 'posts',
@@ -308,7 +317,7 @@ function wp_dashboard_quick_press() {
 	<form name="post" action="<?php echo clean_url( admin_url( 'post.php' ) ); ?>" method="post" id="quick-press">
 		<h4 id="quick-post-title"><label for="title"><?php _e('Title') ?></label></h4>
 		<div class="input-text-wrap">
-			<input type="text" name="post_title" id="title" autocomplete="off" value="<?php echo attribute_escape( $post->post_title ); ?>" />
+			<input type="text" name="post_title" id="title" tabindex="1" autocomplete="off" value="<?php echo attribute_escape( $post->post_title ); ?>" />
 		</div>
 
 		<div id="media-buttons" class="hide-if-no-js">
@@ -317,21 +326,25 @@ function wp_dashboard_quick_press() {
 
 		<h4 id="content-label"><label for="content"><?php _e('Content') ?></label></h4>
 		<div class="textarea-wrap">
-			<textarea name="content" id="content" class="mceEditor" rows="3" cols="15"><?php echo $post->post_content; ?></textarea>
+			<textarea name="content" id="content" class="mceEditor" rows="3" cols="15" tabindex="2"><?php echo $post->post_content; ?></textarea>
 		</div>
 
 		<h4><label for="tags-input"><?php _e('Tags') ?></label></h4>
 		<div class="input-text-wrap">
-			<input type="text" name="tags_input" id="tags-input" value="<?php echo get_tags_to_edit( $post->ID ); ?>" />
+			<input type="text" name="tags_input" id="tags-input" tabindex="3" value="<?php echo get_tags_to_edit( $post->ID ); ?>" />
 		</div>
 
 		<p class="submit">
 			<input type="hidden" name="action" id="quickpost-action" value="post-quickpress-save" />
 			<input type="hidden" name="quickpress_post_ID" value="<?php echo (int) $post->ID; ?>" />
 			<?php wp_nonce_field('add-post'); ?>
-			<input type="submit" name="save" id="save-post" class="button" value="<?php _e('Save Draft'); ?>" />
+			<input type="submit" name="save" id="save-post" class="button" tabindex="4" value="<?php _e('Save Draft'); ?>" />
 			<input type="reset" value="<?php _e( 'Cancel' ); ?>" class="cancel" />
-			<input type="submit" name="publish" id="publish" accesskey="p" class="button button-primary" value="<?php _e('Publish'); ?>" />
+			<?php if ( current_user_can('publish_posts') ) { ?>
+			<input type="submit" name="publish" id="publish" accesskey="p" tabindex="5" class="button button-primary" value="<?php _e('Publish'); ?>" />
+			<?php } else { ?>
+			<input type="submit" name="publish" id="publish" accesskey="p" tabindex="5" class="button button-primary" value="<?php _e('Submit for Review'); ?>" />
+			<?php } ?>
 			<br class="clear" />
 		</p>
 
@@ -343,7 +356,6 @@ function wp_dashboard_quick_press() {
 }
 
 function wp_dashboard_recent_drafts( $drafts = false ) {
-	global $post;
 	if ( !$drafts ) {
 		$drafts_query = new WP_Query( array(
 			'post_type' => 'post',
@@ -384,7 +396,9 @@ function wp_dashboard_recent_drafts( $drafts = false ) {
  * @since unknown
  */
 function wp_dashboard_recent_comments() {
-	list($comments, $total) = _wp_get_comment_list( '', false, 0, 5 );
+	$status = ( current_user_can('edit_posts') ) ? '' : 'approved';
+
+	list($comments, $total) = _wp_get_comment_list( $status, false, 0, 5 );
 
 	if ( $comments ) :
 ?>
@@ -428,9 +442,9 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 		$actions['approve'] = "<a href='$approve_url' class='dim:the-comment-list:comment-$comment->comment_ID:unapproved:e7e7d3:e7e7d3:new=approved vim-a' title='" . __( 'Approve this comment' ) . "'>" . __( 'Approve' ) . '</a>';
 		$actions['unapprove'] = "<a href='$unapprove_url' class='dim:the-comment-list:comment-$comment->comment_ID:unapproved:e7e7d3:e7e7d3:new=unapproved vim-u' title='" . __( 'Unapprove this comment' ) . "'>" . __( 'Unapprove' ) . '</a>';
 		$actions['edit'] = "<a href='comment.php?action=editcomment&amp;c={$comment->comment_ID}' title='" . __('Edit comment') . "'>". __('Edit') . '</a>';
-		$actions['quickedit'] = '<a onclick="commentReply.open(\''.$comment->comment_ID.'\',\''.$comment->comment_post_ID.'\',\'edit\');return false;" class="vim-q" title="'.__('Quick Edit').'" href="#">' . __('Quick&nbsp;Edit') . '</a>';
+		//$actions['quickedit'] = '<a onclick="commentReply.open(\''.$comment->comment_ID.'\',\''.$comment->comment_post_ID.'\',\'edit\');return false;" class="vim-q" title="'.__('Quick Edit').'" href="#">' . __('Quick&nbsp;Edit') . '</a>';
 		$actions['reply'] = '<a onclick="commentReply.open(\''.$comment->comment_ID.'\',\''.$comment->comment_post_ID.'\');return false;" class="vim-r hide-if-no-js" title="'.__('Reply to this comment').'" href="#">' . __('Reply') . '</a>';
-		$actions['spam'] = "<a href='$spam_url' class='delete:the-comment-list:comment-$comment->comment_ID::spam=1 vim-s vim-destructive' title='" . __( 'Mark this comment as spam' ) . "'>" . __( 'Spam' ) . '</a>';
+		$actions['spam'] = "<a href='$spam_url' class='delete:the-comment-list:comment-$comment->comment_ID::spam=1 vim-s vim-destructive' title='" . __( 'Mark this comment as spam' ) . "'>" . _c( 'Spam|verb' ) . '</a>';
 		$actions['delete'] = "<a href='$delete_url' class='delete:the-comment-list:comment-$comment->comment_ID delete vim-d vim-destructive'>" . __('Delete') . '</a>';
 
 		$actions = apply_filters( 'comment_row_actions', $actions, $comment );
@@ -455,7 +469,7 @@ function _wp_dashboard_recent_comments_row( &$comment, $show_date = true ) {
 			<?php if ( !$comment->comment_type || 'comment' == $comment->comment_type ) : ?>
 
 			<?php echo get_avatar( $comment, 50 ); ?>
-			<h4 class="comment-meta"><?php printf( __( 'From %1$s on %2$s%3$s' ), '<cite class="comment-author">' . get_comment_author_link() . '</cite>', $comment_post_link, ' <span class="approve">' . __( '[Awaiting Moderation]' ) . '</span>' ); ?></h4>
+			<h4 class="comment-meta"><?php printf( __( 'From %1$s on %2$s%3$s' ), '<cite class="comment-author">' . get_comment_author_link() . '</cite>', $comment_post_link, ' <span class="approve">' . __( '[Pending]' ) . '</span>' ); ?></h4>
 
 			<?php
 			else :

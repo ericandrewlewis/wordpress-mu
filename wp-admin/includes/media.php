@@ -173,7 +173,14 @@ win.send_to_editor('<?php echo addslashes($html); ?>');
  */
 function media_handle_upload($file_id, $post_id, $post_data = array()) {
 	$overrides = array('test_form'=>false);
-	$file = wp_handle_upload($_FILES[$file_id], $overrides);
+
+	$time = current_time('mysql');
+	if ( $post = get_post($post_id) ) {
+		if ( substr( $post->post_date, 0, 4 ) > 0 )
+			$time = $post->post_date;
+	}
+
+	$file = wp_handle_upload($_FILES[$file_id], $overrides, $time);
 
 	if ( isset($file['error']) )
 		return new WP_Error( 'upload_error', $file['error'] );
@@ -202,7 +209,7 @@ function media_handle_upload($file_id, $post_id, $post_data = array()) {
 	), $post_data );
 
 	// Save the data
-	$id = wp_insert_attachment($attachment, $file, $post_parent);
+	$id = wp_insert_attachment($attachment, $file, $post_id);
 	if ( !is_wp_error($id) ) {
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
 	}
@@ -255,7 +262,7 @@ function media_handle_sideload($file_array, $post_id, $desc = null, $post_data =
 	), $post_data );
 
 	// Save the data
-	$id = wp_insert_attachment($attachment, $file, $post_parent);
+	$id = wp_insert_attachment($attachment, $file, $post_id);
 	if ( !is_wp_error($id) ) {
 		wp_update_attachment_metadata( $id, wp_generate_attachment_metadata( $id, $file ) );
 		return $url;
@@ -773,13 +780,11 @@ function image_link_input_fields($post, $url_type='') {
 	elseif ( $url_type == 'post' )
 		$url = $link;
 	
-	return "<input type='text' name='attachments[$post->ID][url]' value='" . attribute_escape($url) . "' /><br />
-				<button type='button' class='button url-$post->ID' title=''>" . __('None') . "</button>
-				<button type='button' class='button url-$post->ID' title='" . attribute_escape($file) . "'>" . __('File URL') . "</button>
-				<button type='button' class='button url-$post->ID' title='" . attribute_escape($link) . "'>" . __('Post URL') . "</button>
-				<script type='text/javascript'>
-				jQuery('button.url-$post->ID').bind('click', function(){jQuery(this).siblings('input').val(jQuery(this).attr('title'));});
-				</script>\n";
+	return "<input type='text' class='urlfield' name='attachments[$post->ID][url]' value='" . attribute_escape($url) . "' /><br />
+				<button type='button' class='button urlnone' title=''>" . __('None') . "</button>
+				<button type='button' class='button urlfile' title='" . attribute_escape($file) . "'>" . __('File URL') . "</button>
+				<button type='button' class='button urlpost' title='" . attribute_escape($link) . "'>" . __('Post URL') . "</button>
+";
 }
 
 /**
@@ -900,8 +905,6 @@ function get_attachment_fields_to_edit($post, $errors = null) {
 		$post = (object) $post;
 
 	$edit_post = sanitize_post($post, 'edit');
-	$file = wp_get_attachment_url($post->ID);
-	$link = get_attachment_link($post->ID);
 
 	$form_fields = array(
 		'post_title'   => array(
@@ -984,10 +987,8 @@ function get_media_items( $post_id, $errors ) {
 				$attachments[$attachment->ID] = $attachment;
 	}
 
-	if ( empty($attachments) )
-		return '';
-
-	foreach ( $attachments as $id => $attachment )
+	$output = '';
+	foreach ( (array) $attachments as $id => $attachment )
 		if ( $item = get_media_item( $id, array( 'errors' => isset($errors[$id]) ? $errors[$id] : null) ) )
 			$output .= "\n<div id='media-item-$id' class='media-item child-of-$attachment->post_parent preloaded'><div class='progress'><div class='bar'></div></div><div id='media-upload-error-$id'></div><div class='filename'></div>$item\n</div>";
 
@@ -1016,10 +1017,6 @@ function get_media_item( $attachment_id, $args = null ) {
 	else
 		return false;
 
-	$title_label = __('Title');
-	$description_label = __('Description');
-	$tags_label = __('Tags');
-
 	$toggle_on = __('Show');
 	$toggle_off = __('Hide');
 
@@ -1027,13 +1024,14 @@ function get_media_item( $attachment_id, $args = null ) {
 
 	$filename = basename($post->guid);
 	$title = attribute_escape($post->post_title);
-	$description = attribute_escape($post->post_content);
+
 	if ( $_tags = get_the_tags($attachment_id) ) {
 		foreach ( $_tags as $tag )
 			$tags[] = $tag->name;
 		$tags = attribute_escape(join(', ', $tags));
 	}
 
+	$type = '';
 	if ( isset($post_mime_types) ) {
 		$keys = array_keys(wp_match_mime_types(array_keys($post_mime_types), $post->post_mime_type));
 		$type = array_shift($keys);
@@ -1679,13 +1677,13 @@ function type_form_image() {
 		<tr class="align">
 			<th valign="top" scope="row" class="label"><p><label for="align">' . __('Alignment') . '</label></p></th>
 			<td class="field">
-				<input name="align" id="align-none" value="alignnone" onclick="addExtImage.align=this.value" type="radio"' . ($default_align == 'none' ? ' checked="checked"' : '').' />
+				<input name="align" id="align-none" value="none" onclick="addExtImage.align=\'align\'+this.value" type="radio"' . ($default_align == 'none' ? ' checked="checked"' : '').' />
 				<label for="align-none" class="align image-align-none-label">' . __('None') . '</label>
-				<input name="align" id="align-left" value="alignleft" onclick="addExtImage.align=this.value" type="radio"' . ($default_align == 'left' ? ' checked="checked"' : '').' />
+				<input name="align" id="align-left" value="left" onclick="addExtImage.align=\'align\'+this.value" type="radio"' . ($default_align == 'left' ? ' checked="checked"' : '').' />
 				<label for="align-left" class="align image-align-left-label">' . __('Left') . '</label>
-				<input name="align" id="align-center" value="aligncenter" onclick="addExtImage.align=this.value" type="radio"' . ($default_align == 'center' ? ' checked="checked"' : '').' />
+				<input name="align" id="align-center" value="center" onclick="addExtImage.align=\'align\'+this.value" type="radio"' . ($default_align == 'center' ? ' checked="checked"' : '').' />
 				<label for="align-center" class="align image-align-center-label">' . __('Center') . '</label>
-				<input name="align" id="align-right" value="alignright" onclick="addExtImage.align=this.value" type="radio"' . ($default_align == 'right' ? ' checked="checked"' : '').' />
+				<input name="align" id="align-right" value="right" onclick="addExtImage.align=\'align\'+this.value" type="radio"' . ($default_align == 'right' ? ' checked="checked"' : '').' />
 				<label for="align-right" class="align image-align-right-label">' . __('Right') . '</label>
 			</td>
 		</tr>

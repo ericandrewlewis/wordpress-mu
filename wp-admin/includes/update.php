@@ -94,6 +94,9 @@ function core_update_footer( $msg = '' ) {
 	if ( ! isset( $cur->url ) )
 		$cur->url = '';
 
+	if ( ! isset( $cur->response ) )
+		$cur->response = '';
+
 	switch ( $cur->response ) {
 	case 'development' :
 		return sprintf( __( 'You are using a development version (%1$s). Cool! Please <a href="%2$s">stay updated</a>.' ), $GLOBALS['wp_version'], 'update-core.php');
@@ -116,6 +119,11 @@ add_filter( 'update_footer', 'core_update_footer' );
 function update_nag() {
 	if( !is_site_admin() )
 		return false;
+	global $pagenow;
+
+	if ( 'update-core.php' == $pagenow )
+		return;
+
 	$cur = get_preferred_from_update_core();
 
 	if ( ! isset( $cur->response ) || $cur->response != 'upgrade' )
@@ -128,7 +136,7 @@ function update_nag() {
 
 	echo "<div id='update-nag'>$msg</div>";
 }
-//add_action( 'admin_notices', 'update_nag', 3 ); // crazyhorse
+add_action( 'admin_notices', 'update_nag', 3 );
 
 // Called directly from dashboard
 function update_right_now_message() {
@@ -256,23 +264,15 @@ function wp_update_plugin($plugin, $feedback = '') {
 	}
 
 	apply_filters('update_feedback', __('Installing the latest version'));
-
-	$filelist = array_keys( $wp_filesystem->dirlist($working_dir) );
-
-	//find base plugin directory
-	$res = update_pluginfiles_base_dir($working_dir . '/' . $filelist[0], $plugins_dir . $filelist[0]);
-
-	//Create folder if not exists.
-	if( ! $wp_filesystem->exists( $res['to'] ) )
-		if ( ! $wp_filesystem->mkdir( $res['to'], 0755 ) )
-			return new WP_Error('mkdir_failed', __('Could not create directory'), $res['to']);	
-
 	// Copy new version of plugin into place.
-	$result = copy_dir($res['from'], $res['to']);
+	$result = copy_dir($working_dir, $plugins_dir);
 	if ( is_wp_error($result) ) {
 		$wp_filesystem->delete($working_dir, true);
 		return $result;
 	}
+
+	//Get a list of the directories in the working directory before we delete it, We need to know the new folder for the plugin
+	$filelist = array_keys( $wp_filesystem->dirlist($working_dir) );
 
 	// Remove working directory
 	$wp_filesystem->delete($working_dir, true);
@@ -280,12 +280,14 @@ function wp_update_plugin($plugin, $feedback = '') {
 	// Force refresh of plugin update information
 	delete_option('update_plugins');
 
-	$folder = trailingslashit(str_replace($plugins_dir, '', $res['to']));
+	if( empty($filelist) )
+		return false; //We couldnt find any files in the working dir, therefor no plugin installed? Failsafe backup.
+
+	$folder = $filelist[0];
 	$plugin = get_plugins('/' . $folder); //Ensure to pass with leading slash
 	$pluginfiles = array_keys($plugin); //Assume the requested plugin is the first in the list
 
-	//Return the plugin files name.
-	return $folder . $pluginfiles[0];
+	return  $folder . '/' . $pluginfiles[0];
 }
 
 function wp_update_theme($theme, $feedback = '') {

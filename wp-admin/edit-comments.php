@@ -10,8 +10,7 @@
 require_once('admin.php');
 
 $title = __('Edit Comments');
-wp_enqueue_script( 'admin-comments' );
-wp_enqueue_script( 'admin-forms' );
+wp_enqueue_script('admin-comments');
 enqueue_comment_hotkeys_js();
 
 if ( ( isset( $_REQUEST['delete_all_spam'] ) || isset( $_REQUEST['delete_all_spam2'] ) ) && !empty( $_REQUEST['pagegen_timestamp'] ) ) {
@@ -81,8 +80,6 @@ $post_id = isset($_GET['p']) ? (int) $_GET['p'] : 0;
 $search_dirty = ( isset($_GET['s']) ) ? $_GET['s'] : '';
 $search = attribute_escape( $search_dirty ); ?>
 
-<?php screen_meta('edit-comments') ?>
-
 <div class="wrap">
 <h2><?php echo wp_specialchars( $title ); ?></h2>
 
@@ -123,9 +120,9 @@ $num_comments = wp_count_comments();
 //, number_format_i18n($num_comments->moderated) ), "<span class='comment-count'>" . number_format_i18n($num_comments->moderated) . "</span>"),
 //, number_format_i18n($num_comments->spam) ), "<span class='spam-comment-count'>" . number_format_i18n($num_comments->spam) . "</span>")
 $stati = array(
-		'moderated' => __ngettext_noop('Awaiting Moderation <span class="count">(%s)</span>', 'Awaiting Moderation <span class="count">(%s)</span>'),
+		'moderated' => __ngettext_noop('Pending (<span class="pending-count">%s</span>)', 'Pending (<span class="pending-count">%s</span>)'),
 		'approved' => __ngettext_noop('Approved', 'Approved'), // singular not used
-		'spam' => __ngettext_noop('Spam <span class="count">(%s)</span>', 'Spam <span class="count">(%s)</span>')
+		'spam' => __ngettext_noop('Spam (<span class="spam-count">%s</span>)', 'Spam (<span class="spam-count">%s</span>)')
 	);
 $class = ( '' === $comment_status ) ? ' class="current"' : '';
 $status_links[] = "<li><a href='edit-comments.php'$class>" . __( 'All' ) . '</a>';
@@ -190,7 +187,7 @@ $page_links = paginate_links( array(
 <div class="tablenav">
 
 <?php if ( $page_links ) : ?>
-<div class="tablenav-pages"><?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>' . __( '%s' ),
+<div class="tablenav-pages"><?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>%s',
 	number_format_i18n( $start + 1 ),
 	number_format_i18n( min( $page * $comments_per_page, $total ) ),
 	number_format_i18n( $total ),
@@ -344,8 +341,7 @@ if ( $page_links )
 	$(document).ready(function(){
 		$('#doaction, #doaction2').click(function(){
 			if ( $('select[name^="action"]').val() == 'delete' ) {
-				var n = $('#the-comment-list input[type="checkbox"]:checked').length;
-				var m = n > 1 ? '<?php echo js_escape(__("You are about to delete the selected comments.\n  'Cancel' to stop, 'OK' to delete.")); ?>' : '<?php echo js_escape(__("You are about to delete the selected comment.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
+				var m = '<?php echo js_escape(__("You are about to delete the selected comments.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
 				return showNotice.warn(m);
 			}
 		});

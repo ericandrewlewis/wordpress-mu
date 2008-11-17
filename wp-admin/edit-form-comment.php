@@ -48,8 +48,8 @@ $url = attribute_escape( $comment->comment_author_url );
 
 <div class="misc-pub-section" id="comment-status-radio">
 <label class="approved"><input type="radio"<?php checked( $comment->comment_approved, '1' ); ?> name="comment_status" value="1" /><?php _e('Approved') ?></label><br />
-<label class="waiting"><input type="radio"<?php checked( $comment->comment_approved, '0' ); ?> name="comment_status" value="0" /><?php _e('Awaiting Moderation') ?></label><br />
-<label class="spam"><input type="radio"<?php checked( $comment->comment_approved, 'spam' ); ?> name="comment_status" value="spam" /><?php _e('Spam') ?></label>
+<label class="waiting"><input type="radio"<?php checked( $comment->comment_approved, '0' ); ?> name="comment_status" value="0" /><?php _e('Pending') ?></label><br />
+<label class="spam"><input type="radio"<?php checked( $comment->comment_approved, 'spam' ); ?> name="comment_status" value="spam" /><?php echo _c('Spam|verb'); ?></label>
 </div>
 
 <div class="misc-pub-section curtime misc-pub-section-last">
@@ -129,7 +129,7 @@ $date = date_i18n( $datef, strtotime( $comment->comment_date ) );
 
 <input type="hidden" name="c" value="<?php echo $comment->comment_ID ?>" />
 <input type="hidden" name="p" value="<?php echo $comment->comment_post_ID ?>" />
-<input name="referredby" type="hidden" id="referredby" value="<?php echo wp_get_referer(); ?>" />
+<input name="referredby" type="hidden" id="referredby" value="<?php echo clean_url(stripslashes(wp_get_referer())); ?>" />
 <?php wp_original_referer_field(true, 'previous'); ?>
 <input type="hidden" name="noredir" value="1" />
 

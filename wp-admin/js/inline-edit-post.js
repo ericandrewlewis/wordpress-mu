@@ -11,11 +11,8 @@ inlineEditPost = {
 		// get all editable rows
 		t.rows = $('tr.iedit');
 
-		// prepare the edit row
-//		.dblclick(function() { inlineEditPost.toggle(this); })
+		// prepare the edit rows
 		qeRow.keyup(function(e) { if(e.which == 27) return inlineEditPost.revert(); });
-
-//		.dblclick(function() { inlineEditPost.revert(); })
 		bulkRow.keyup(function(e) { if (e.which == 27) return inlineEditPost.revert(); });
 
 		$('a.cancel', qeRow).click(function() { return inlineEditPost.revert(); });
@@ -23,15 +20,16 @@ inlineEditPost = {
 		$('input, select', qeRow).keydown(function(e) { if(e.which == 13) return inlineEditPost.save(this); });
 
 		$('a.cancel', bulkRow).click(function() { return inlineEditPost.revert(); });
-		$('a.save', bulkRow).click(function() { return inlineEditPost.saveBulk(); });
 
 		// add events
-//		t.rows.dblclick(function() { inlineEditPost.toggle(this); });
 		t.addEvents(t.rows);
 
-		$('#bulk-title-div').after(
-			$('#inline-edit div.categories').clone(),
-			$('#inline-edit div.tags').clone()
+		$('#bulk-title-div').parents('fieldset').after(
+			$('#inline-edit fieldset.inline-edit-categories').clone()
+		).siblings( 'fieldset:last' ).prepend(
+//		).siblings( 'fieldset:last' ).after( '<fieldset class="inline-edit-col-bottom"><div class="inline-edit-col"></div></fieldset>' );
+//		$('fieldset.inline-edit-col-bottom').prepend(
+			$('#inline-edit label.inline-edit-tags').clone()
 		);
 
 		// categories expandable?
@@ -49,17 +47,9 @@ inlineEditPost = {
 
 		$('select[name="_status"] option[value="future"]', bulkRow).remove();
 
-		$('#doaction').click(function(e){
-			if ( $('select[name="action"]').val() == 'edit' ) {
-				e.preventDefault();
-				t.setBulk();
-			} else if ( $('form#posts-filter tr.inline-editor').length > 0 ) {
-				t.revert();
-			}
-		});
-
-		$('#doaction2').click(function(e){
-			if ( $('select[name="action2"]').val() == 'edit' ) {
+		$('#doaction, #doaction2').click(function(e){
+			var n = $(this).attr('id').substr(2);
+			if ( $('select[name="'+n+'"]').val() == 'edit' ) {
 				e.preventDefault();
 				t.setBulk();
 			} else if ( $('form#posts-filter tr.inline-editor').length > 0 ) {
@@ -97,8 +87,7 @@ inlineEditPost = {
 		$('tbody th.check-column input[type="checkbox"]').each(function(i){
 			if ( $(this).attr('checked') ) {
 				var id = $(this).val();
-				c = c == '' ? ' class="alternate"' : '';
-				te += '<div'+c+' id="ttle'+id+'"><a id="_'+id+'" class="ntdelbutton">X</a>'+$('#inline_'+id+' .post_title').text()+'</div>';
+				te += '<div id="ttle'+id+'"><a id="_'+id+'" class="ntdelbutton">X</a>'+$('#inline_'+id+' .post_title').text()+'</div>';
 			}
 		});
 
@@ -122,7 +111,7 @@ inlineEditPost = {
 		if ( typeof(id) == 'object' )
 			id = t.getId(id);
 
-		var fields = ['post_title', 'post_name', 'post_author', '_status', 'jj', 'mm', 'aa', 'hh', 'mn', 'post_password'];
+		var fields = ['post_title', 'post_name', 'post_author', '_status', 'jj', 'mm', 'aa', 'hh', 'mn', 'ss', 'post_password'];
 		if ( t.type == 'page' ) fields.push('post_parent', 'menu_order', 'page_template');
 		if ( t.type == 'post' ) fields.push('tags_input');
 
@@ -188,7 +177,7 @@ inlineEditPost = {
 		if( typeof(id) == 'object' )
 			id = this.getId(id);
 
-		$('table.widefat .quick-edit-save .waiting').show();
+		$('table.widefat .inline-edit-save .waiting').show();
 
 		var params = {
 			action: 'inline-save',
@@ -204,36 +193,35 @@ inlineEditPost = {
 		$.post('admin-ajax.php', params,
 			function(r) {
 				var row = $(inlineEditPost.what+id);
+				$('table.widefat .inline-edit-save .waiting').hide();
 
 				if (r) {
-					r = r.replace(/hide-if-no-js/, '');
-					
-	
-					$('#edit-'+id).remove();
-					row.html($(r).html());
-					if ( 'draft' == $('input[name="post_status"]').val() )
-						row.find('td.column-comments').hide();
-					row.show()
-						.animate( { backgroundColor: '#CCEEBB' }, 500)
-						.animate( { backgroundColor: '#eefee7' }, 500);
-					inlineEditPost.addEvents(row);
+					if ( -1 != r.indexOf('<tr') ) {
+						r = r.replace(/hide-if-no-js/, '');
+
+						$('#edit-'+id).remove();
+						row.html($(r).html());
+						if ( 'draft' == $('input[name="post_status"]').val() )
+							row.find('td.column-comments').hide();
+						inlineEditPost.addEvents(row);
+						row.fadeIn();
+					} else {
+						r = r.replace( /<.[^<>]*?>/g, '' );
+						$('#edit-'+id+' .inline-edit-save').append('<span class="error">'+r+'</span>');
+					}
 				} else {
-					$('#edit-'+id+' .quick-edit-save').append('<span class="error">'+inlineEditL10n.error+'</span>');
+					$('#edit-'+id+' .inline-edit-save').append('<span class="error">'+inlineEditL10n.error+'</span>');
 				}
 			}
 		);
 		return false;
 	},
 
-	saveBulk : function() {
-		$('form#posts-filter').submit();
-	},
-
 	revert : function() {
 		var id;
 
 		if ( id = $('table.widefat tr.inline-editor').attr('id') ) {
-			$('table.widefat .quick-edit-save .waiting').hide();
+			$('table.widefat .inline-edit-save .waiting').hide();
 
 			if ( 'bulk-edit' == id ) {
 				$('table.widefat #bulk-edit').removeClass('inline-editor').hide();

@@ -51,8 +51,8 @@ case 'ajax-tag-search' :
 	}
 	$s = trim( $s );
 	if ( strlen( $s ) < 2 )
-	 die; // require 2 chars for matching
-	$results = $wpdb->get_col( "SELECT name FROM $wpdb->terms WHERE name LIKE ('%". $s . "%')" );
+		die; // require 2 chars for matching
+	$results = $wpdb->get_col( "SELECT t.name FROM $wpdb->term_taxonomy AS tt INNER JOIN $wpdb->terms AS t ON tt.term_id = t.term_id WHERE tt.taxonomy = 'post_tag' AND t.name LIKE ('%". $s . "%')" );
 	echo join( $results, "\n" );
 	die;
 	break;
@@ -880,10 +880,12 @@ case 'inline-save':
 
 	// rename
 	$data['user_ID'] = $GLOBALS['user_ID'];
-	$data['parent_id'] = $data['post_parent'];
+
+	if ( isset($data['post_parent']) )
+		$data['parent_id'] = $data['post_parent'];
 
 	// status
-	if ( 'private' == $data['keep_private'] )
+	if ( isset($data['keep_private']) && 'private' == $data['keep_private'] )
 		$data['post_status'] = 'private';
 	else
 		$data['post_status'] = $data['_status'];

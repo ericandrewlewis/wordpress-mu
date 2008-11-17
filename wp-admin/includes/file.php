@@ -213,7 +213,7 @@ function validate_file_to_edit( $file, $allowed_files = '' ) {
  * @param array $overrides Optional. An associative array of names=>values to override default variables with extract( $overrides, EXTR_OVERWRITE ).
  * @return array On success, returns an associative array of file attributes. On failure, returns $overrides['upload_error_handler'](&$file, $message ) or array( 'error'=>$message ).
  */
-function wp_handle_upload( &$file, $overrides = false ) {
+function wp_handle_upload( &$file, $overrides = false, $time = null ) {
 	// The default error handler.
 	if (! function_exists( 'wp_handle_upload_error' ) ) {
 		function wp_handle_upload_error( &$file, $message ) {
@@ -225,6 +225,9 @@ function wp_handle_upload( &$file, $overrides = false ) {
 
 	// You may define your own function and pass the name in $overrides['upload_error_handler']
 	$upload_error_handler = 'wp_handle_upload_error';
+
+	// You may define your own function and pass the name in $overrides['unique_filename_callback']
+	$unique_filename_callback = null;
 
 	// $_POST['action'] must be set and its value must equal $overrides['action'] or this:
 	$action = 'wp_handle_upload';
@@ -283,7 +286,7 @@ function wp_handle_upload( &$file, $overrides = false ) {
 	}
 
 	// A writable uploads dir will pass this test. Again, there's no point overriding this one.
-	if ( ! ( ( $uploads = wp_upload_dir() ) && false === $uploads['error'] ) )
+	if ( ! ( ( $uploads = wp_upload_dir($time) ) && false === $uploads['error'] ) )
 		return $upload_error_handler( $file, $uploads['error'] );
 
 	$filename = wp_unique_filename( $uploads['path'], $file['name'], $unique_filename_callback );
@@ -328,6 +331,9 @@ function wp_handle_sideload( &$file, $overrides = false ) {
 
 	// You may define your own function and pass the name in $overrides['upload_error_handler']
 	$upload_error_handler = 'wp_handle_upload_error';
+
+	// You may define your own function and pass the name in $overrides['unique_filename_callback']
+	$unique_filename_callback = null;
 
 	// $_POST['action'] must be set and its value must equal $overrides['action'] or this:
 	$action = 'wp_handle_sideload';
@@ -471,6 +477,9 @@ function unzip_file($file, $to) {
 	if ( ! $wp_filesystem || !is_object($wp_filesystem) )
 		return new WP_Error('fs_unavailable', __('Could not access filesystem.'));
 
+	// Unzip uses a lot of memory
+	@ini_set('memory_limit', '256M');
+
 	$fs =& $wp_filesystem;
 
 	require_once(ABSPATH . 'wp-admin/includes/class-pclzip.php');
@@ -483,14 +492,6 @@ function unzip_file($file, $to) {
 
 	if ( 0 == count($archive_files) )
 		return new WP_Error('empty_archive', __('Empty archive'));
-
-	//Prepend another directory level if there are files in the root directory of the zip
-	foreach ( $archive_files as $archive_file ) {
-		if ( false === strpos($archive_file['filename'], '/') ) {
-			$to = trailingslashit($to) . basename($file, '.zip');
-			break;
-		}
-	}
 
 	$path = explode('/', untrailingslashit($to));
 	for ( $i = count($path); $i > 0; $i-- ) { //>0 = first element is empty allways for paths starting with '/'
@@ -569,54 +570,6 @@ function copy_dir($from, $to) {
 				return $result;
 		}
 	}
-}
-
-/**
- * Locates the lowest safe directory in a Plugin folder to copy to the plugins directory.
- *
- * Note: Desination directory will allways be unique.
- *
- * @since 2.7.0
- *
- * @param string $from the Working directory of the plugin files
- * @param string $to the proposed destination for the for the plugin files
- * @return array an array of the keys 'from' and 'to' for the actual copy.
- */
-function update_pluginfiles_base_dir($from, $to) {
-	$files = list_files($from);
-
-	//Remove non-php files
-	foreach ( (array)$files as $key => $file ) 
-		if ( ! preg_match('!.php$!i', $file) )
-			unset($files[$key]);
-
-	//remove non-plugin files
-	foreach ( (array)$files as $key => $file ) {
-		$details = get_plugin_data($file, false, false);
-		if ( empty($details['Name']) )
-			unset($files[$key]);
-	}
-
-	if ( empty($files) )
-		return false;
-
-	//Left with paths to files which ARE plugins.
-	$min_num = 100; //assume no zips with deeper paths will come along
-	$min_file = '';
-	foreach ( (array)$files as $key => $file ) {
-		$this_num = substr_count($file, '/');
-		if ( $this_num < $min_num ) {
-			$min_file = $file;
-			$min_num = $this_num;
-		}
-	}
-	unset($min_num);
-
-	$from = dirname($min_file);
-	//Ensure its a unique install folder, Upgrades delete the folder prior to this.
-	$to = dirname($to) . '/' . wp_unique_filename(dirname($to), basename($to));
-
-	return compact('from', 'to');
 }
 
 /**

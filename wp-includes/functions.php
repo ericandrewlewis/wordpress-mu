@@ -112,12 +112,12 @@ function current_time( $type, $gmt = 0 ) {
  * @param int $unixtimestamp Unix timestamp
  * @return string The date, translated if locale specifies it.
  */
-function date_i18n( $dateformatstring, $unixtimestamp ) {
+function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 	global $wp_locale;
 	$i = $unixtimestamp;
 	// Sanity check for PHP 5.1.0-
-	if ( -1 == $i )
-		$i = false;
+	if ( false === $i || intval($i) < 0 )
+		$i = time();
 
 	if ( ( !empty( $wp_locale->month ) ) && ( !empty( $wp_locale->weekday ) ) ) {
 		$datemonth = $wp_locale->get_month( date( 'm', $i ) );
@@ -136,7 +136,7 @@ function date_i18n( $dateformatstring, $unixtimestamp ) {
 
 		$dateformatstring = substr( $dateformatstring, 1, strlen( $dateformatstring ) -1 );
 	}
-	$j = @date( $dateformatstring, $i );
+	$j = $gmt? @gmdate( $dateformatstring, $i ) : @date( $dateformatstring, $i );
 	return $j;
 }
 
@@ -1997,9 +1997,9 @@ function wp_ext2type( $ext ) {
 	$ext2type = apply_filters('ext2type', array(
 		'audio' => array('aac','ac3','aif','aiff','mp1','mp2','mp3','m3a','m4a','m4b','ogg','ram','wav','wma'),
 		'video' => array('asf','avi','divx','dv','mov','mpg','mpeg','mp4','mpv','ogm','qt','rm','vob','wmv'),
-		'document' => array('doc','pages','odt','rtf','pdf'),
-		'spreadsheet' => array('xls','numbers','ods'),
-		'interactive' => array('ppt','key','odp','swf'),
+		'document' => array('doc','docx','pages','odt','rtf','pdf'),
+		'spreadsheet' => array('xls','xlsx','numbers','ods'),
+		'interactive' => array('ppt','pptx','key','odp','swf'),
 		'text' => array('txt'),
 		'archive' => array('tar','bz2','gz','cab','dmg','rar','sea','sit','sqx','zip'),
 		'code' => array('css','html','php','js'),
@@ -2046,10 +2046,10 @@ function wp_check_filetype( $filename, $mimes = null ) {
 		'rtf' => 'application/rtf',
 		'js' => 'application/javascript',
 		'pdf' => 'application/pdf',
-		'doc' => 'application/msword',
-		'pot|pps|ppt' => 'application/vnd.ms-powerpoint',
+		'doc|docx' => 'application/msword',
+		'pot|pps|ppt|pptx' => 'application/vnd.ms-powerpoint',
 		'wri' => 'application/vnd.ms-write',
-		'xla|xls|xlt|xlw' => 'application/vnd.ms-excel',
+		'xla|xls|xlsx|xlt|xlw' => 'application/vnd.ms-excel',
 		'mdb' => 'application/vnd.ms-access',
 		'mpp' => 'application/vnd.ms-project',
 		'swf' => 'application/x-shockwave-flash',

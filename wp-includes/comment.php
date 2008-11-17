@@ -227,7 +227,7 @@ function get_comments( $args = '' ) {
 	}
 
 	if ( ! empty($post_id) )
-		$post_where = "comment_post_ID = $post_id AND";
+		$post_where = $wpdb->prepare( 'comment_post_ID = %d AND', $post_id );
 	else
 		$post_where = '';
 
@@ -253,7 +253,7 @@ function get_comment_statuses( ) {
 	$status = array(
 		'hold'		=> __('Unapproved'),
 		'approve'	=> __('Approved'),
-		'spam'		=> __('Spam'),
+		'spam'		=> _c('Spam|adjective'),
 	);
 
 	return $status;
@@ -1392,11 +1392,12 @@ function pingback($content, $post_ID) {
 	foreach ( (array) $post_links_temp[0] as $link_test ) :
 		if ( !in_array($link_test, $pung) && (url_to_postid($link_test) != $post_ID) // If we haven't pung it already and it isn't a link to itself
 				&& !is_local_attachment($link_test) ) : // Also, let's never ping local attachments.
-			$test = parse_url($link_test);
-			if ( isset($test['query']) )
-				$post_links[] = $link_test;
-			elseif ( ($test['path'] != '/') && ($test['path'] != '') )
-				$post_links[] = $link_test;
+			if ( $test = @parse_url($link_test) ) {
+				if ( isset($test['query']) )
+					$post_links[] = $link_test;
+				elseif ( ($test['path'] != '/') && ($test['path'] != '') )
+					$post_links[] = $link_test;
+			}
 		endif;
 	endforeach;
 
@@ -1569,7 +1570,7 @@ function _close_comments_for_old_posts( $posts ) {
 }
 
 /**
- * Close comments on an old post.  Hooked to comments_open.
+ * Close comments on an old post.  Hooked to comments_open and pings_open.
  *
  * @access private
  * @since 2.7.0

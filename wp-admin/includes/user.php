@@ -220,13 +220,13 @@ function get_editable_authors( $user_id ) {
  * @param bool $exclude_zeros Optional, default is true. Whether to exclude zeros.
  * @return unknown
  */
-function get_editable_user_ids( $user_id, $exclude_zeros = true ) {
+function get_editable_user_ids( $user_id, $exclude_zeros = true, $post_type = 'post' ) {
 	global $wpdb;
 
 	$user = new WP_User( $user_id );
 
-	if ( ! $user->has_cap('edit_others_posts') ) {
-		if ( $user->has_cap('edit_posts') || $exclude_zeros == false )
+	if ( ! $user->has_cap("edit_others_{$post_type}s") ) {
+		if ( $user->has_cap("edit_{$post_type}s") || $exclude_zeros == false )
 			return array($user->id);
 		else
 			return false;
@@ -665,7 +665,7 @@ class WP_User_Search {
 				'add_args' => $args
 			) );
 			if ( $this->paging_text ) {
-				$this->paging_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>' . __( '%s' ),
+				$this->paging_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>%s',
 					number_format_i18n( ( $this->page - 1 ) * $this->users_per_page + 1 ),
 					number_format_i18n( min( $this->page * $this->users_per_page, $this->total_users_for_query ) ),
 					number_format_i18n( $this->total_users_for_query ),

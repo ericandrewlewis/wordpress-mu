@@ -303,7 +303,6 @@ default:
 	}
 
 	wp_enqueue_script('admin-users');
-	wp_enqueue_script('admin-forms');
 
 	include('admin-header.php');
 
@@ -364,8 +363,6 @@ default:
 			break;
 		}
 	endif; ?>
-
-<?php screen_meta('edit-users') ?>
 
 <?php if ( isset($errors) && is_wp_error( $errors ) ) : ?>
 	<div class="error">

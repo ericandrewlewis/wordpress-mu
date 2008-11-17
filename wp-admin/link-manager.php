@@ -34,9 +34,6 @@ if ( isset($_GET['action']) && isset($_GET['linkcheck']) ) {
 	 exit;
 }
 
-wp_enqueue_script('admin-forms');
-wp_enqueue_script('links');
-
 wp_reset_vars(array('action', 'cat_id', 'linkurl', 'name', 'image', 'description', 'visible', 'target', 'category', 'link_id', 'submit', 'order_by', 'links_show_cat_id', 'rating', 'rel', 'notes', 'linkcheck[]'));
 
 if ( empty($cat_id) )
@@ -73,8 +70,6 @@ switch ($order_by) {
 		$sqlorderby = 'name';
 		break;
 } ?>
-
-<?php screen_meta('edit-links') ?>
 
 <div class="wrap nosubsub">
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
@@ -277,13 +272,13 @@ if ( $links ) {
 	$(document).ready(function(){
 		$('#doaction, #doaction2').click(function(){
 			if ( $('select[name^="action"]').val() == 'delete' ) {
-				var n = $('table.widefat input[type="checkbox"]:checked').length;
-				var m = n > 1 ? '<?php echo js_escape(__("You are about to delete the selected links.\n  'Cancel' to stop, 'OK' to delete.")); ?>' : '<?php echo js_escape(__("You are about to delete the selected link.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
+				var m = '<?php echo js_escape(__("You are about to delete the selected links.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
 				return showNotice.warn(m);
 			}
 		});
 	});
 })(jQuery);
+columns.init('link');
 /* ]]> */
 </script>
 

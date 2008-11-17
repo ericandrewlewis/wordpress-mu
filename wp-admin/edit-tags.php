@@ -115,8 +115,7 @@ if ( isset($_GET['_wp_http_referer']) && ! empty($_GET['_wp_http_referer']) ) {
 
 $can_manage = current_user_can('manage_categories');
 
-wp_enqueue_script( 'admin-tags' );
-wp_enqueue_script('admin-forms');
+wp_enqueue_script('admin-tags');
 if ( $can_manage )
 	wp_enqueue_script('inline-edit-tax');
 
@@ -128,8 +127,6 @@ $messages[3] = __('Tag updated.');
 $messages[4] = __('Tag not added.');
 $messages[5] = __('Tag not updated.');
 $messages[6] = __('Tags deleted.'); ?>
-
-<?php screen_meta('edit-tags') ?>
 
 <div class="wrap nosubsub">
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
@@ -247,30 +244,29 @@ else
 </div>
 
 <?php if ( $can_manage ) {
-	do_action('add_tag_form_pre', $tag); ?>
+	do_action('add_tag_form_pre'); ?>
 
 <div class="form-wrap">
 <h3><?php _e('Add a New Tag'); ?></h3>
 <div id="ajax-response"></div>
 <form name="addtag" id="addtag" method="post" action="edit-tags.php" class="add:the-list: validate">
 <input type="hidden" name="action" value="addtag" />
-<input type="hidden" name="tag_ID" value="<?php echo $tag->term_id ?>" />
 <?php wp_original_referer_field(true, 'previous'); wp_nonce_field('add-tag'); ?>
 
 <div class="form-field form-required">
 	<label for="name"><?php _e('Tag name') ?></label>
-	<input name="name" id="name" type="text" value="<?php if ( isset( $tag->name ) ) echo attribute_escape($tag->name); ?>" size="40" aria-required="true" />
+	<input name="name" id="name" type="text" value="" size="40" aria-required="true" />
     <p><?php _e('The name is how the tag appears on your site.'); ?></p>
 </div>
 
 <div class="form-field">
 	<label for="slug"><?php _e('Tag slug') ?></label>
-	<input name="slug" id="slug" type="text" value="<?php if ( isset( $tag->slug ) ) echo attribute_escape(apply_filters('editable_slug', $tag->slug)); ?>" size="40" />
+	<input name="slug" id="slug" type="text" value="" size="40" />
     <p><?php _e('The &#8220;slug&#8221; is the URL-friendly version of the name. It is usually all lowercase and contains only letters, numbers, and hyphens.'); ?></p>
 </div>
 
 <p class="submit"><input type="submit" class="button" name="submit" value="<?php _e('Add Tag'); ?>" /></p>
-<?php do_action('edit_tag_form', $tag); ?>
+<?php do_action('add_tag_form'); ?>
 </form></div>
 <?php } ?>
 
@@ -286,8 +282,7 @@ else
 	$(document).ready(function(){
 		$('#doaction, #doaction2').click(function(){
 			if ( $('select[name^="action"]').val() == 'delete' ) {
-				var n = $('#the-list input[type="checkbox"]:checked').length;
-				var m = n > 1 ? '<?php echo js_escape(__("You are about to delete the selected tags.\n  'Cancel' to stop, 'OK' to delete.")); ?>' : '<?php echo js_escape(__("You are about to delete the selected tag.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
+				var m = '<?php echo js_escape(__("You are about to delete the selected tags.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
 				return showNotice.warn(m);
 			}
 		});

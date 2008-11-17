@@ -182,14 +182,14 @@ $structures = array(
 		</th>
 		<td>
 			<?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $permalink_structure = str_replace( "/blog", "", $permalink_structure ); }?>
-			<input name="permalink_structure" id="permalink_structure" type="text" class="code" style="width: 60%;" value="<?php echo attribute_escape($permalink_structure); ?>" size="50" />
+			<input name="permalink_structure" id="permalink_structure" type="text" value="<?php echo attribute_escape($permalink_structure); ?>" class="regular-text code" />
 		</td>
 	</tr>
 </table>
 
 <h3><?php _e('Optional'); ?></h3>
 <?php if ($is_apache) : ?>
-	<p><?php _e('If you like, you may enter custom structures for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <code>topics</code> as your category base would make your category links like <code>http://example.org/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
+	<p><?php _e('If you like, you may enter custom structures for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <kbd>topics</kbd> as your category base would make your category links like <code>http://example.org/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
 <?php else : ?>
 	<p><?php _e('If you like, you may enter custom structures for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <code>topics</code> as your category base would make your category links like <code>http://example.org/index.php/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
 <?php endif; ?>
@@ -197,11 +197,11 @@ $structures = array(
 <table class="form-table">
 	<tr>
 		<th><label for="category_base"><?php _e('Category base'); ?></label></th>
-		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?> <input name="category_base" id='category_base' type="text" class="code"  value="<?php echo attribute_escape( $category_base ); ?>" size="30" /></td>
+		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?> <input name="category_base" id="category_base" type="text" value="<?php echo attribute_escape( $category_base ); ?>" class="regular-text code" /></td>
 	</tr>
 	<tr>
 		<th><label for="tag_base"><?php _e('Tag base'); ?></label></th>
-		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" class="code"  value="<?php echo attribute_escape($tag_base); ?>" size="30" /></td>
+		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" value="<?php echo attribute_escape($tag_base); ?>" class="regular-text code" /></td>
 	</tr>
 	<?php do_settings_fields('permalink', 'optional'); ?>
 </table>

@@ -27,7 +27,6 @@
  * @return mixed
  */
 function plugins_api($action, $args = null) {
-	global $wp_version;
 
 	if( is_array($args) )
 		$args = (object)$args;
@@ -140,7 +139,7 @@ function install_dashboard() {
 	</form>
 	
 	<h4><?php _e('Popular tags') ?></h4>
-	<p><?php _e('You may also browse based on the most popular tags on wordpress.org') ?></p>
+	<p><?php _e('You may also browse based on the most popular tags in the Plugin Directory:') ?></p>
 	<?php
 
 	$api_tags = install_popular_tags();
@@ -247,8 +246,6 @@ function install_updated($page = 1) {
  * @param int $totalpages Number of pages.
  */
 function display_plugins_table($plugins, $page = 1, $totalpages = 1){
-	global $tab;
-
 	$type = isset($_REQUEST['type']) ? stripslashes( $_REQUEST['type'] ) : '';
 	$term = isset($_REQUEST['s']) ? stripslashes( $_REQUEST['s'] ) : '';
 
@@ -338,7 +335,7 @@ function display_plugins_table($plugins, $page = 1, $totalpages = 1){
 				<td class="name"><?php echo $title; ?></td>
 				<td class="vers"><?php echo $version; ?></td>
 				<td class="vers">
-					<div class="star-holder" title="<?php printf(__ngettext('(based on %d rating)', '(based on %d ratings)', $plugin['num_ratings']), number_format_i18n($plugin['num_ratings'])) ?>">
+					<div class="star-holder" title="<?php printf(__ngettext('(based on %s rating)', '(based on %s ratings)', $plugin['num_ratings']), number_format_i18n($plugin['num_ratings'])) ?>">
 						<div class="star star-rating" style="width: <?php echo attribute_escape($plugin['rating']) ?>px"></div>
 						<div class="star star5"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('5 stars') ?>" /></div>
 						<div class="star star4"><img src="<?php echo admin_url('images/star.gif'); ?>" alt="<?php _e('4 stars') ?>" /></div>
@@ -383,7 +380,9 @@ function install_plugin_information() {
 	$plugins_allowedtags = array('a' => array('href' => array(), 'title' => array(), 'target' => array()),
 								'abbr' => array('title' => array()), 'acronym' => array('title' => array()),
 								'code' => array(), 'pre' => array(), 'em' => array(), 'strong' => array(),
-								'div' => array(), 'p' => array(), 'ul' => array(), 'ol' => array(), 'li' => array());
+								'div' => array(), 'p' => array(), 'ul' => array(), 'ol' => array(), 'li' => array(),
+								'h1' => array(), 'h2' => array(), 'h3' => array(), 'h4' => array(), 'h5' => array(), 'h6' => array(),
+								'img' => array('src' => array(), 'class' => array(), 'alt' => array()));
 	//Sanitize HTML
 	foreach ( (array)$api->sections as $section_name => $content )
 		$api->sections[$section_name] = wp_kses($content, $plugins_allowedtags);
@@ -463,7 +462,7 @@ function install_plugin_information() {
 <?php endif; if ( ! empty($api->tested) ) : ?>
 			<li><strong><?php _e('Compatible up to:') ?></strong> <?php echo $api->tested ?></li>
 <?php endif; if ( ! empty($api->downloaded) ) : ?>
-			<li><strong><?php _e('Downloaded:') ?></strong> <?php printf('%s times', number_format_i18n($api->downloaded)) ?></li>
+			<li><strong><?php _e('Downloaded:') ?></strong> <?php printf(__ngettext('%s time', '%s times', $api->downloaded), number_format_i18n($api->downloaded)) ?></li>
 <?php endif; if ( ! empty($api->slug) ) : ?>
 			<li><a target="_blank" href="http://wordpress.org/extend/plugins/<?php echo $api->slug ?>/"><?php _e('WordPress.org Plugin Page &#187;') ?></a></li>
 <?php endif; if ( ! empty($api->homepage) ) : ?>
@@ -486,7 +485,7 @@ function install_plugin_information() {
 		if ( version_compare($GLOBALS['wp_version'], $api->tested, '>') ) 
 			echo '<div class="updated"><p>' . __('<strong>Warning:</strong> This plugin has <strong>not been tested</strong> with your current version of WordPress.') . '</p></div>';
 		else if ( version_compare($GLOBALS['wp_version'], $api->requires, '<') ) 
-			echo '<div class="updated"><p>' . __('<strong>Warning:</strong> This plugin has not been marked as being <strong>not compatible</strong> with your version of WordPress.') . '</p></div>';
+			echo '<div class="updated"><p>' . __('<strong>Warning:</strong> This plugin has not been marked as <strong>compatible</strong> with your version of WordPress.') . '</p></div>';
 		foreach ( (array)$api->sections as $section_name => $content ) {
 			$title = $section_name;
 			$title[0] = strtoupper($title[0]);
@@ -672,7 +671,7 @@ function do_plugin_install_local_package($package, $filename = '') {
 		$install_actions = apply_filters('install_plugin_complete_actions', array(
 							'activate_plugin' => '<a href="' . wp_nonce_url('plugins.php?action=activate&amp;plugin=' . $plugin_file, 'activate-plugin_' . $plugin_file) . '" title="' . __('Activate this plugin') . '" target="_parent">' . __('Activate Plugin') . '</a>',
 							'plugins_page' => '<a href="' . admin_url('plugins.php') . '" title="' . __('Goto plugins page') . '" target="_parent">' . __('Return to Plugins page') . '</a>'
-							), $plugin_information, $plugin_file);
+							), array(), $plugin_file);
 		if ( ! empty($install_actions) )
 			show_message('<strong>' . __('Actions:') . '</strong> ' . implode(' | ', (array)$install_actions));
 	}
@@ -744,34 +743,37 @@ function wp_install_plugin($package, $feedback = '') {
 		return $result;
 	}
 
-	apply_filters('install_feedback', __('Installing the plugin'));
-	
+	//Get a list of the directories in the working directory before we delete it, We need to know the new folder for the plugin
 	$filelist = array_keys( $wp_filesystem->dirlist($working_dir) );
 
-	//find base plugin directory
-	$res = update_pluginfiles_base_dir($working_dir . '/' . $filelist[0], $plugins_dir . $filelist[0]);
+	if( $wp_filesystem->exists( $plugins_dir . $filelist[0] ) ) {
+		$wp_filesystem->delete($working_dir, true);
+		return new WP_Error('install_folder_exists', __('Folder allready exists.'), $filelist[0] );
+	}
 
-	//Create folder if not exists.
-	if( ! $wp_filesystem->exists( $res['to'] ) )
-		if ( ! $wp_filesystem->mkdir( $res['to'], 0755 ) )
-			return new WP_Error('mkdir_failed', __('Could not create directory'), $res['to']);	
-
+	apply_filters('install_feedback', __('Installing the plugin'));
 	// Copy new version of plugin into place.
-	$result = copy_dir($res['from'], $res['to']);
+	$result = copy_dir($working_dir, $plugins_dir);
 	if ( is_wp_error($result) ) {
 		$wp_filesystem->delete($working_dir, true);
 		return $result;
 	}
 
+	//Get a list of the directories in the working directory before we delete it, We need to know the new folder for the plugin
+	$filelist = array_keys( $wp_filesystem->dirlist($working_dir) );
+
 	// Remove working directory
 	$wp_filesystem->delete($working_dir, true);
 
-	$folder = trailingslashit(str_replace($plugins_dir, '', $res['to']));
+	if( empty($filelist) )
+		return false; //We couldnt find any files in the working dir, therefor no plugin installed? Failsafe backup.
+
+	$folder = $filelist[0];
 	$plugin = get_plugins('/' . $folder); //Ensure to pass with leading slash
 	$pluginfiles = array_keys($plugin); //Assume the requested plugin is the first in the list
 
 	//Return the plugin files name.
-	return $folder . $pluginfiles[0];
+	return  $folder . '/' . $pluginfiles[0];
 }
 
 /**
@@ -836,35 +838,37 @@ function wp_install_plugin_local_package($package, $feedback = '') {
 		return $result;
 	}
 
-	apply_filters('install_feedback', __('Installing the plugin'));
-	
+	//Get a list of the directories in the working directory before we delete it, We need to know the new folder for the plugin
 	$filelist = array_keys( $wp_filesystem->dirlist($working_dir) );
 
-	//find base plugin directory
-	$res = update_pluginfiles_base_dir($working_dir . '/' . $filelist[0], $plugins_dir . $filelist[0]);
-
-	//Create folder if not exists.
-	if( ! $wp_filesystem->exists( $res['to'] ) ) {
-		if ( ! $wp_filesystem->mkdir( $res['to'], 0755 ) )
-			return new WP_Error('mkdir_failed', __('Could not create directory'), $res['to']);
+	if( $wp_filesystem->exists( $plugins_dir . $filelist[0] ) ) {
+		$wp_filesystem->delete($working_dir, true);
+		return new WP_Error('install_folder_exists', __('Folder allready exists.'), $filelist[0] );
 	}
-	
+
+	apply_filters('install_feedback', __('Installing the plugin'));
 	// Copy new version of plugin into place.
-	$result = copy_dir($res['from'], $res['to']);
+	$result = copy_dir($working_dir, $plugins_dir);
 	if ( is_wp_error($result) ) {
 		$wp_filesystem->delete($working_dir, true);
 		return $result;
 	}
 
+	//Get a list of the directories in the working directory before we delete it, We need to know the new folder for the plugin
+	$filelist = array_keys( $wp_filesystem->dirlist($working_dir) );
+
 	// Remove working directory
 	$wp_filesystem->delete($working_dir, true);
 
-	$folder = trailingslashit(str_replace($plugins_dir, '', $res['to']));
+	if( empty($filelist) )
+		return false; //We couldnt find any files in the working dir, therefor no plugin installed? Failsafe backup.
+
+	$folder = $filelist[0];
 	$plugin = get_plugins('/' . $folder); //Ensure to pass with leading slash
 	$pluginfiles = array_keys($plugin); //Assume the requested plugin is the first in the list
 
 	//Return the plugin files name.
-	return $folder . $pluginfiles[0];
+	return  $folder . '/' . $pluginfiles[0];
 }
 
 ?>

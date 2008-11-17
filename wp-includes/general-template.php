@@ -1484,6 +1484,9 @@ function the_editor($content, $id = 'content', $prev_id = 'title', $media_button
 	if (($rows < 3) || ($rows > 100))
 		$rows = 12;
 
+	if ( !current_user_can( 'upload_files' ) )
+		$media_buttons = false;
+
 	$richedit =  user_can_richedit();
 	$rows = "rows='$rows'";
 	

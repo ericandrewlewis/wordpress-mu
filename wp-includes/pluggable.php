@@ -1276,6 +1276,9 @@ function wp_salt($scheme = 'auth') {
 				update_option('logged_in_salt', $salt);
 			}
 		}
+	} else {
+		// ensure each auth scheme has its own unique salt
+		$salt = hash_hmac('md5', $scheme, $secret_key);
 	}
 
 	return apply_filters('salt', $secret_key . $salt, $scheme);
@@ -1515,9 +1518,7 @@ function get_avatar( $id_or_email, $size = '96', $default = '', $alt = false ) {
 			$default = $avatar_default;
 	}
 
-	if ( 'custom' == $default )
-		$default = add_query_arg( 's', $size, $defaults[$avatar_default][1] );
-	elseif ( 'mystery' == $default )
+	if ( 'mystery' == $default )
 		$default = "http://www.gravatar.com/avatar/ad516503a11cd5ca435acc9bb6523536?s={$size}"; // ad516503a11cd5ca435acc9bb6523536 == md5('unknown@gravatar.com')
 	elseif ( 'blank' == $default )
 		$default = includes_url('images/blank.gif');
@@ -1527,6 +1528,8 @@ function get_avatar( $id_or_email, $size = '96', $default = '', $alt = false ) {
 		$default = "http://www.gravatar.com/avatar/s={$size}";
 	elseif ( empty($email) )
 		$default = "http://www.gravatar.com/avatar/?d=$default&amp;s={$size}";
+	elseif ( strpos($default, 'http://') === 0 )
+		$default = add_query_arg( 's', $size, $default );
 
 	if ( !empty($email) ) {
 		$out = 'http://www.gravatar.com/avatar/';

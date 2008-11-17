@@ -15,7 +15,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 
 	switch ( $doaction ) {
 		case 'delete':
-			if ( isset($_GET['post']) &&  (isset($_GET['doaction']) || isset($_GET['doaction2'])) ) {
+			if ( isset($_GET['post']) && ! isset($_GET['bulk_edit']) && (isset($_GET['doaction']) || isset($_GET['doaction2'])) ) {
 				check_admin_referer('bulk-posts');
 				foreach( (array) $_GET['post'] as $post_id_del ) {
 					$post_del = & get_post($post_id_del);
@@ -34,7 +34,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 			}
 			break;
 		case 'edit':
-			if ( isset($_GET['post']) ) {
+			if ( isset($_GET['post']) && isset($_GET['bulk_edit']) ) {
 				check_admin_referer('bulk-posts');
 
 				if ( -1 == $_GET['_status'] ) {
@@ -69,9 +69,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 if ( empty($title) )
 	$title = __('Edit Posts');
 $parent_file = 'edit.php';
-wp_enqueue_script('admin-forms');
 wp_enqueue_script('inline-edit-post');
-wp_enqueue_script('posts');
 
 list($post_stati, $avail_post_stati) = wp_edit_posts_query();
 
@@ -90,8 +88,6 @@ if ( empty($_GET['mode']) )
 else
 	$mode = attribute_escape($_GET['mode']); ?>
 
-<?php screen_meta('edit-posts') ?>
-
 <div class="wrap">
 <h2><?php echo wp_specialchars( $title ); ?></h2>
 
@@ -104,7 +100,7 @@ endif; ?>
 <?php if ( isset($_GET['locked']) || isset($_GET['skipped']) || isset($_GET['updated']) ) { ?>
 <div id="message" class="updated fade"><p>
 <?php if ( (int) $_GET['updated'] ) {
-	printf( __ngettext( '%d post updated.', '%d posts updated.', $_GET['updated'] ), number_format_i18n( $_GET['updated'] ) );
+	printf( __ngettext( '%s post updated.', '%s posts updated.', $_GET['updated'] ), number_format_i18n( $_GET['updated'] ) );
 	unset($_GET['updated']);
 }
 
@@ -112,9 +108,11 @@ if ( (int) $_GET['skipped'] )
 	unset($_GET['skipped']);
 
 if ( (int) $_GET['locked'] ) {
-	printf( __ngettext( ' %d post not updated, somebody is editing it.', ' %d posts not updated, somebody is editing them.', $_GET['locked'] ), number_format_i18n( $_GET['locked'] ) );
+	printf( __ngettext( '%s post not updated, somebody is editing it.', '%s posts not updated, somebody is editing them.', $_GET['locked'] ), number_format_i18n( $_GET['locked'] ) );
 	unset($_GET['locked']);
-} ?>
+} 
+$_SERVER['REQUEST_URI'] = remove_query_arg( array('locked', 'skipped', 'updated'), $_SERVER['REQUEST_URI'] );
+?>
 </p></div>
 <?php } ?>
 
@@ -225,7 +223,7 @@ do_action('restrict_manage_posts');
 </div>
 
 <?php if ( $page_links ) { ?>
-<div class="tablenav-pages"><?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>' . __( '%s' ),
+<div class="tablenav-pages"><?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>%s',
 	number_format_i18n( ( $_GET['paged'] - 1 ) * $wp_query->query_vars['posts_per_page'] + 1 ),
 	number_format_i18n( min( $_GET['paged'] * $wp_query->query_vars['posts_per_page'], $wp_query->found_posts ) ),
 	number_format_i18n( $wp_query->found_posts ),
@@ -326,13 +324,13 @@ endif; // posts;
 	$(document).ready(function(){
 		$('#doaction, #doaction2').click(function(){
 			if ( $('select[name^="action"]').val() == 'delete' ) {
-				var n = $('table.post input[type="checkbox"]:checked').length;
-				var m = n > 1 ? '<?php echo js_escape(__("You are about to delete the selected posts.\n  'Cancel' to stop, 'OK' to delete.")); ?>' : '<?php echo js_escape(__("You are about to delete the selected post.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
+				var m = '<?php echo js_escape(__("You are about to delete the selected posts.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
 				return showNotice.warn(m);
 			}
 		});
 	});
 })(jQuery);
+columns.init('post');
 /* ]]> */
 </script>
 

@@ -71,26 +71,21 @@ function page_submit_meta_box($post) {
 </div>
 
 <div id="minor-publishing-actions">
-<div id="preview-action">
-<noscript>
-<?php if ( 'publish' == $post->post_status ) { ?>
-<a class="preview button" href="<?php echo clean_url(get_permalink($post->ID)); ?>" target="_blank" tabindex="4"><?php _e('View Post'); ?></a>
-<?php } else { ?>
-<a class="preview button" href="<?php echo clean_url(apply_filters('preview_post_link', add_query_arg('preview', 'true', get_permalink($post->ID)))); ?>" target="_blank" tabindex="4"><?php _e('Preview'); ?></a>
-<?php } ?>
-</noscript>
-
-<a class="preview button hide-if-no-js" href="#" id="post-preview" tabindex="4"><?php _e('Preview'); ?></a>
-<input type="hidden" name="wp-preview" id="wp-preview" value="" />
-</div>
-
 <div id="save-action">
-<?php if ( 'publish' != $post->post_status && 'private' != $post->post_status && 'future' != $post->post_status && 'pending' != $post->post_status )  { ?>
-<input type="submit" name="save" id="save-post" value="<?php echo attribute_escape( __('Save Draft') ); ?>" tabindex="4" class="button button-highlighted" />
+<?php if ( 'publish' != $post->post_status && 'future' != $post->post_status && 'pending' != $post->post_status )  { ?>
+<input <?php if ( 'private' == $post->post_status ) { ?>style="display:none"<?php } ?> type="submit" name="save" id="save-post" value="<?php echo attribute_escape( __('Save Draft') ); ?>" tabindex="4" class="button button-highlighted" />
 <?php } elseif ( 'pending' == $post->post_status && $can_publish ) { ?>
 <input type="submit" name="save" id="save-post" value="<?php echo attribute_escape( __('Save as Pending') ); ?>" tabindex="4" class="button button-highlighted" />
 <?php } ?>
 </div>
+
+<div id="preview-action">
+<?php $preview_link = 'publish' == $post->post_status ? clean_url(get_permalink($post->ID)) : clean_url(apply_filters('preview_post_link', add_query_arg('preview', 'true', get_permalink($post->ID)))); ?>
+
+<a class="preview button" href="<?php echo $preview_link; ?>" target="wp-preview" id="post-preview" tabindex="4"><?php _e('Preview'); ?></a>
+<input type="hidden" name="wp-preview" id="wp-preview" value="" />
+</div>
+
 <div class="clear"></div>
 </div><?php // /minor-publishing-actions ?>
 
@@ -106,8 +101,10 @@ function page_submit_meta_box($post) {
 <b><span id="post-status-display">
 <?php
 switch ( $post->post_status ) {
-	case 'publish':
 	case 'private':
+		_e('Privately Published');
+		break;
+	case 'publish':
 		_e('Published');
 		break;
 	case 'future':
@@ -123,13 +120,15 @@ switch ( $post->post_status ) {
 ?>
 </span></b>
 <?php if ( 'publish' == $post->post_status || 'private' == $post->post_status || $can_publish ) { ?>
-<a href="#post_status" class="edit-post-status hide-if-no-js" tabindex='4'><?php _e('Edit') ?></a>
+<a href="#post_status" <?php if ( 'private' == $post->post_status ) { ?>style="display:none;" <?php } ?>class="edit-post-status hide-if-no-js" tabindex='4'><?php _e('Edit') ?></a>
 
 <div id="post-status-select" class="hide-if-js">
 <input type="hidden" name="hidden_post_status" id="hidden_post_status" value="<?php echo $post->post_status; ?>" />
 <select name='post_status' id='post_status' tabindex='4'>
-<?php if ( $post->post_status == 'publish' ) : ?>
-<option<?php selected( $post->post_status, 'publish' ); selected( $post->post_status, 'private' );?> value='publish'><?php _e('Published') ?></option>
+<?php if ( 'publish' == $post->post_status ) : ?>
+<option<?php selected( $post->post_status, 'publish' ); ?> value='publish'><?php _e('Published') ?></option>
+<?php elseif ( 'private' == $post->post_status ) : ?>
+<option<?php selected( $post->post_status, 'private' ); ?> value='publish'><?php _e('Privately Published') ?></option>
 <?php elseif ( 'future' == $post->post_status ) : ?>
 <option<?php selected( $post->post_status, 'future' ); ?> value='future'><?php _e('Scheduled') ?></option>
 <?php endif; ?>
@@ -144,12 +143,47 @@ switch ( $post->post_status ) {
 <?php } ?>
 </div><?php // /misc-pub-section ?>
 
+<div class="misc-pub-section " id="visibility">
+<?php _e('Visibility:'); ?> <b><span id="post-visibility-display"><?php
+
+if ( !empty( $post->post_password ) ) {
+	$visibility = 'password';
+	$visibility_trans = __('Password protected');
+} elseif ( 'private' == $post->post_status ) {
+	$visibility = 'private';
+	$visibility_trans = __('Private');
+} else {
+	$visibility = 'public';
+	$visibility_trans = __('Public');
+}
+
+?><?php echo wp_specialchars( $visibility_trans ); ?></span></b> <?php if ( $can_publish ) { ?> <a href="#visibility" class="edit-visibility hide-if-no-js"><?php _e('Edit'); ?></a>
+
+<div id="post-visibility-select" class="hide-if-js">
+<input type="hidden" name="hidden_post_password" id="hidden-post-password" value="<?php echo attribute_escape($post->post_password); ?>" />
+<input type="hidden" name="hidden_post_visibility" id="hidden-post-visibility" value="<?php echo attribute_escape( $visibility ); ?>" />
+
+
+<input type="radio" name="visibility" id="visibility-radio-public" value="public" <?php checked( $visibility, 'public' ); ?> /> <label for="visibility-radio-public" class="selectit"><?php _e('Public'); ?></label><br />
+<input type="radio" name="visibility" id="visibility-radio-password" value="password" <?php checked( $visibility, 'password' ); ?> /> <label for="visibility-radio-password" class="selectit"><?php _e('Password protected'); ?></label><br />
+<span id="password-span"><label for="post_password"><?php _e('Password:'); ?></label> <input type="text" name="post_password" id="post_password" value="<?php echo attribute_escape($post->post_password); ?>" /><br /></span>
+<input type="radio" name="visibility" id="visibility-radio-private" value="private" <?php checked( $visibility, 'private' ); ?> /> <label for="visibility-radio-private" class="selectit"><?php _e('Private'); ?></label><br />
+
+<p>
+ <a href="#visibility" class="save-post-visibility hide-if-no-js button"><?php _e('OK'); ?></a>
+ <a href="#visibility" class="cancel-post-visibility hide-if-no-js"><?php _e('Cancel'); ?></a>
+</p>
+</div>
+<?php } ?>
+
+</div><?php // /misc-pub-section ?>
+
 <?php
 $datef = _c( 'M j, Y @ G:i|Publish box date format');
 if ( 0 != $post->ID ) {
 	if ( 'future' == $post->post_status ) { // scheduled for publishing at a future date
 		$stamp = __('Scheduled for: <b>%1$s</b>');
-	} else if ( 'publish' == $post->post_status ) { // already published
+	} else if ( 'publish' == $post->post_status || 'private' == $post->post_status ) { // already published
 		$stamp = __('Published on: <b>%1$s</b>');
 	} else if ( '0000-00-00 00:00:00' == $post->post_date_gmt ) { // draft, 1 or more saves, no date specified
 		$stamp = __('Publish <b>immediately</b>');
@@ -188,17 +222,21 @@ if ( ( 'edit' == $action ) && current_user_can('delete_page', $post->ID) ) { ?>
 
 <div id="publishing-action">
 <?php
-if ( !in_array( $post->post_status, array('publish', 'future') ) || 0 == $post->ID ) { ?>
-<?php if ( current_user_can('publish_posts') ) : ?>
+if ( !in_array( $post->post_status, array('publish', 'future', 'private') ) || 0 == $post->ID ) { ?>
+<?php if ( $can_publish ) : ?>
 	<?php if ( !empty($post->post_date_gmt) && time() < strtotime( $post->post_date_gmt . ' +0000' ) ) : ?>
+		<input name="original_publish" type="hidden" id="original_publish" value="<?php _e('Schedule') ?>" />
 		<input name="publish" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php _e('Schedule') ?>" />
 	<?php else : ?>
+		<input name="original_publish" type="hidden" id="original_publish" value="<?php _e('Publish') ?>" />
 		<input name="publish" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php _e('Publish') ?>" />
 	<?php endif; ?>
 <?php else : ?>
+	<input name="original_publish" type="hidden" id="original_publish" value="<?php _e('Submit for Review') ?>" />
 	<input name="publish" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php _e('Submit for Review') ?>" />
 <?php endif; ?>
 <?php } else { ?>
+	<input name="original_publish" type="hidden" id="original_publish" value="<?php _e('Update Page') ?>" />
 	<input name="save" type="submit" class="button-primary" id="publish" tabindex="5" accesskey="p" value="<?php _e('Update Page') ?>" />
 <?php } ?>
 </div>
@@ -224,34 +262,25 @@ function page_password_meta_box($post){
 <p><?php _e('Setting a password will require people who visit your blog to enter the above password to view this page and its comments.'); ?></p>
 <?php
 }
-add_meta_box('pagepassworddiv', __('Privacy Options'), 'page_password_meta_box', 'page', 'side', 'core');
+// add_meta_box('pagepassworddiv', __('Privacy Options'), 'page_password_meta_box', 'page', 'side', 'core');
 
 /**
- * Display page parent form fields.
+ * Display page attributes form fields.
  *
- * @since 2.6.0
+ * @since 2.7.0
  *
  * @param object $post
  */
-function page_parent_meta_box($post){
+function page_attributes_meta_box($post){
 ?>
+<h5><?php _e('Parent') ?></h5>
 <label class="hidden" for="parent_id"><?php _e('Page Parent') ?></label>
 <?php wp_dropdown_pages(array('selected' => $post->post_parent, 'name' => 'parent_id', 'show_option_none' => __('Main Page (no parent)'))); ?>
 <p><?php _e('You can arrange your pages in hierarchies, for example you could have an &#8220;About&#8221; page that has &#8220;Life Story&#8221; and &#8220;My Dog&#8221; pages under it. There are no limits to how deeply nested you can make pages.'); ?></p>
 <?php
-}
-add_meta_box('pageparentdiv', __('Page Parent'), 'page_parent_meta_box', 'page', 'side', 'core');
-
-if ( 0 != count( get_page_templates() ) ) {
-	/**
-	 * Display page template form fields.
-	 *
-	 * @since 2.6.0
-	 *
-	 * @param object $post
-	 */
-	function page_template_meta_box($post){
+	if ( 0 != count( get_page_templates() ) ) {
 ?>
+<h5><?php _e('Template') ?></h5>
 <label class="hidden" for="page_template"><?php _e('Page Template') ?></label><select name="page_template" id="page_template">
 <option value='default'><?php _e('Default Template'); ?></option>
 <?php page_template_dropdown($post->page_template); ?>
@@ -259,23 +288,13 @@ if ( 0 != count( get_page_templates() ) ) {
 <p><?php _e('Some themes have custom templates you can use for certain pages that might have additional features or custom layouts. If so, you&#8217;ll see them above.'); ?></p>
 <?php
 	}
-	add_meta_box('pagetemplatediv', __('Page Template'), 'page_template_meta_box', 'page', 'side', 'core');
-}
-
-/**
- * Display page order form fields.
- *
- * @since 2.6.0
- *
- * @param object $post
- */
-function page_order_meta_box($post){
 ?>
+<h5><?php _e('Order') ?></h5>
 <p><label class="hidden" for="menu_order"><?php _e('Page Order') ?></label><input name="menu_order" type="text" size="4" id="menu_order" value="<?php echo $post->menu_order ?>" /></p>
 <p><?php _e('Pages are usually ordered alphabetically, but you can put a number above to change the order pages appear in. (We know this is a little janky, it&#8217;ll be better in future releases.)'); ?></p>
 <?php
 }
-add_meta_box('pageorderdiv', __('Page Order'), 'page_order_meta_box', 'page', 'side', 'core');
+add_meta_box('pageparentdiv', __('Attributes'), 'page_attributes_meta_box', 'page', 'side', 'core');
 
 /**
  * Display custom field for page form fields.
@@ -316,7 +335,7 @@ function page_comments_status_meta_box($post){
 <p><?php _e('These settings apply to this page only. &#8220;Pings&#8221; are <a href="http://codex.wordpress.org/Introduction_to_Blogging#Managing_Comments" target="_blank">trackbacks and pingbacks</a>.'); ?></p>
 <?php
 }
-add_meta_box('pagecommentstatusdiv', __('Comments &amp; Pings'), 'page_comments_status_meta_box', 'page', 'normal', 'core');
+add_meta_box('pagecommentstatusdiv', __('Discussion'), 'page_comments_status_meta_box', 'page', 'normal', 'core');
 
 /**
  * Display page slug form fields.
@@ -332,7 +351,7 @@ function page_slug_meta_box($post){
 }
 add_meta_box('pageslugdiv', __('Page Slug'), 'page_slug_meta_box', 'page', 'normal', 'core');
 
-$authors = get_editable_user_ids( $current_user->id ); // TODO: ROLE SYSTEM
+$authors = get_editable_user_ids( $current_user->id, true, 'page' ); // TODO: ROLE SYSTEM
 if ( $post->post_author && !in_array($post->post_author, $authors) )
 	$authors[] = $post->post_author;
 if ( $authors && count( $authors ) > 1 ) {
@@ -345,7 +364,7 @@ if ( $authors && count( $authors ) > 1 ) {
 	 */
 	function page_author_meta_box($post){
 		global $current_user, $user_ID;
-		$authors = get_editable_user_ids( $current_user->id ); // TODO: ROLE SYSTEM
+		$authors = get_editable_user_ids( $current_user->id, true, 'page' ); // TODO: ROLE SYSTEM
 		if ( $post->post_author && !in_array($post->post_author, $authors) )
 			$authors[] = $post->post_author;
 ?>
@@ -369,12 +388,16 @@ function page_revisions_meta_box($post) {
 }
 add_meta_box('revisionsdiv', __('Page Revisions'), 'page_revisions_meta_box', 'page', 'normal', 'core');
 endif;
+
+do_action('do_meta_boxes', 'page', 'normal', $post);
+do_action('do_meta_boxes', 'page', 'advanced', $post);
+do_action('do_meta_boxes', 'page', 'side', $post);
+
+require_once('admin-header.php');
 ?>
 
-<?php screen_meta('page'); ?>
-
 <div class="wrap">
-<h2><?php echo wp_specialchars( $title ); ?></h2> 
+<h2><?php echo wp_specialchars( $title ); ?></h2>
 
 <form name="post" action="page.php" method="post" id="post">
 <?php if ( $notice ) : ?>

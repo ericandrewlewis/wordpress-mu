@@ -46,8 +46,7 @@ if ( isset($_GET['action']) && isset($_GET['delete']) ) {
 
 $title = __('Link Categories');
 
-wp_enqueue_script( 'admin-categories' );
-wp_enqueue_script('admin-forms');
+wp_enqueue_script('admin-categories');
 if ( current_user_can('manage_categories') )
 	wp_enqueue_script('inline-edit-tax');
 
@@ -59,8 +58,6 @@ $messages[3] = __('Category updated.');
 $messages[4] = __('Category not added.');
 $messages[5] = __('Category not updated.');
 $messages[6] = __('Categories deleted.'); ?>
-
-<?php screen_meta('edit-link-categories') ?>
 
 <div class="wrap nosubsub">
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
@@ -223,8 +220,7 @@ if ( $page_links )
 	$(document).ready(function(){
 		$('#doaction, #doaction2').click(function(){
 			if ( $('select[name^="action"]').val() == 'delete' ) {
-				var n = $('#the-list input[type="checkbox"]:checked').length;
-				var m = n > 1 ? '<?php echo js_escape(__("You are about to delete the selected link categories.\n  'Cancel' to stop, 'OK' to delete.")); ?>' : '<?php echo js_escape(__("You are about to delete the selected link category.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
+				var m = '<?php echo js_escape(__("You are about to delete the selected link categories.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
 				return showNotice.warn(m);
 			}
 		});

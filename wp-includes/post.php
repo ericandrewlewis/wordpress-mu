@@ -1336,6 +1336,10 @@ function wp_insert_post($postarr = array(), $wp_error = false) {
 		$post_category = array(get_option('default_category'));
 	}
 
+	//Set the default tag list
+	if ( !isset($tags_input) )
+		$tags_input = array();
+
 	if ( empty($post_author) )
 		$post_author = $user_ID;
 
@@ -1673,6 +1677,7 @@ function wp_set_post_tags( $post_id = 0, $tags = '', $append = false ) {
 	if ( empty($tags) )
 		$tags = array();
 	$tags = (is_array($tags)) ? $tags : explode( ',', trim($tags, " \n\t\r\0\x0B,") );
+	$tags = array_map('trim', $tags); //Trim whitespace from around the tags.
 	wp_set_object_terms($post_id, $tags, 'post_tag', $append);
 }
 
@@ -1894,7 +1899,8 @@ function &get_page(&$page, $output = OBJECT, $filter = 'raw') {
 		}
 	}
 
-	return get_post($page, $output, $filter);
+	$page = get_post($page, $output, $filter);
+	return $page;
 }
 
 /**
@@ -2154,8 +2160,10 @@ function &get_pages($args = '') {
 
 	$pages = $wpdb->get_results($query);
 
-	if ( empty($pages) )
-		return apply_filters('get_pages', array(), $r);
+	if ( empty($pages) ) {
+		$pages = apply_filters('get_pages', array(), $r);
+		return $pages;
+	}
 
 	// Update cache.
 	update_page_cache($pages);
@@ -2257,7 +2265,7 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 	extract($object, EXTR_SKIP);
 
 	// Make sure we set a valid category
-	if (0 == count($post_category) || !is_array($post_category)) {
+	if ( !isset($post_category) || 0 == count($post_category) || !is_array($post_category)) {
 		$post_category = array(get_option('default_category'));
 	}
 
@@ -2268,10 +2276,12 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 	$post_status = 'inherit';
 
 	// Are we updating or creating?
-	$update = false;
 	if ( !empty($ID) ) {
 		$update = true;
 		$post_ID = (int) $ID;
+	} else {
+		$update = false;
+		$post_ID = 0;
 	}
 
 	// Create a valid post name.
@@ -3237,8 +3247,8 @@ function _wp_post_revision_fields( $post = null, $autosave = false ) {
 	$return['post_status']   = 'inherit';
 	$return['post_type']     = 'revision';
 	$return['post_name']     = $autosave ? "$post[ID]-autosave" : "$post[ID]-revision";
-	$return['post_date']     = $post['post_modified'];
-	$return['post_date_gmt'] = $post['post_modified_gmt'];
+	$return['post_date']     = isset($post['post_modified']) ? $post['post_modified'] : '';
+	$return['post_date_gmt'] = isset($post['post_modified_gmt']) ? $post['post_modified_gmt'] : '';
 
 	return $return;
 }
@@ -3312,7 +3322,7 @@ function wp_save_post_revision( $post_id ) {
  * @return object|bool The autosaved data or false on failure or when no autosave exists.
  */
 function wp_get_post_autosave( $post_id ) {
-	global $wpdb;
+
 	if ( !$post = get_post( $post_id ) )
 		return false;
 

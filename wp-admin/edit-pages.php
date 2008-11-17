@@ -15,7 +15,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 
 	switch ( $doaction ) {
 		case 'delete':
-			if ( isset($_GET['post']) && isset($_GET['doaction']) ) {
+			if ( isset($_GET['post']) && ! isset($_GET['bulk_edit']) && (isset($_GET['doaction']) || isset($_GET['doaction2'])) ) {
 				check_admin_referer('bulk-pages');
 				foreach( (array) $_GET['post'] as $post_id_del ) {
 					$post_del = & get_post($post_id_del);
@@ -34,7 +34,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 			}
 			break;
 		case 'edit':
-			if ( isset($_GET['post']) ) {
+			if ( isset($_GET['post']) && isset($_GET['bulk_edit']) ) {
 				check_admin_referer('bulk-pages');
 
 				if ( -1 == $_GET['_status'] ) {
@@ -48,6 +48,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 			}
 			break;
 	}
+
 	$sendback = wp_get_referer();
 	if (strpos($sendback, 'page.php') !== false) $sendback = admin_url('page-new.php');
 	elseif (strpos($sendback, 'attachments.php') !== false) $sendback = admin_url('attachments.php');
@@ -68,9 +69,7 @@ if ( isset($_GET['action']) && ( -1 != $_GET['action'] || -1 != $_GET['action2']
 if ( empty($title) )
 	$title = __('Edit Pages');
 $parent_file = 'edit.php';
-wp_enqueue_script('admin-forms');
 wp_enqueue_script('inline-edit-post');
-wp_enqueue_script('pages');
 
 $post_stati  = array(	//	array( adj, noun )
 		'publish' => array(__('Published'), __('Published pages'), __ngettext_noop('Published <span class="count">(%s)</span>', 'Published <span class="count">(%s)</span>')),
@@ -100,27 +99,27 @@ if ( is_singular() ) {
 
 require_once('admin-header.php'); ?>
 
-<?php screen_meta('edit-pages') ?>
-
 <div class="wrap">
 <h2><?php echo wp_specialchars( $title ); ?></h2>
 
 <?php if ( isset($_GET['locked']) || isset($_GET['skipped']) || isset($_GET['updated']) ) { ?>
 <div id="message" class="updated fade"><p>
 <?php if ( (int) $_GET['updated'] ) {
-	printf( __ngettext( '%d page updated.', '%d pages updated.', $_GET['updated'] ), number_format_i18n( $_GET['updated'] ) );
+	printf( __ngettext( '%s page updated.', '%s pages updated.', $_GET['updated'] ), number_format_i18n( $_GET['updated'] ) );
 	unset($_GET['updated']);
 }
 
 if ( (int) $_GET['skipped'] ) {
-	printf( __ngettext( ' %d page not updated, invalid parent page specified.', ' %d pages not updated, invalid parent page specified.', $_GET['skipped'] ), number_format_i18n( $_GET['skipped'] ) );
+	printf( __ngettext( '%s page not updated, invalid parent page specified.', '%s pages not updated, invalid parent page specified.', $_GET['skipped'] ), number_format_i18n( $_GET['skipped'] ) );
 	unset($_GET['skipped']);
 }
 
 if ( (int) $_GET['locked'] ) {
-	printf( __ngettext( ' %d page not updated, somebody is editing it.', ' %d pages not updated, somebody is editing them.', $_GET['locked'] ), number_format_i18n( $_GET['skipped'] ) );
+	printf( __ngettext( '%s page not updated, somebody is editing it.', '%s pages not updated, somebody is editing them.', $_GET['locked'] ), number_format_i18n( $_GET['skipped'] ) );
 	unset($_GET['locked']);
-} ?>
+}
+$_SERVER['REQUEST_URI'] = remove_query_arg( array('locked', 'skipped', 'updated'), $_SERVER['REQUEST_URI'] );
+?>
 </p></div>
 <?php } ?>
 
@@ -187,7 +186,7 @@ $page_links = paginate_links( array(
 ));
 
 if ( $page_links ) : ?>
-<div class="tablenav-pages"><?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>' . __( '%s' ),
+<div class="tablenav-pages"><?php $page_links_text = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>%s',
 	number_format_i18n( ( $pagenum - 1 ) * $per_page + 1 ),
 	number_format_i18n( min( $pagenum * $per_page, $wp_query->post_count ) ),
 	number_format_i18n( $wp_query->post_count ),
@@ -311,13 +310,13 @@ endif; // posts;
 	$(document).ready(function(){
 		$('#doaction, #doaction2').click(function(){
 			if ( $('select[name^="action"]').val() == 'delete' ) {
-				var n = $('table.post input[type="checkbox"]:checked').length;
-				var m = n > 1 ? '<?php echo js_escape(__("You are about to delete the selected pages.\n  'Cancel' to stop, 'OK' to delete.")); ?>' : '<?php echo js_escape(__("You are about to delete the selected page.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
+				var m = '<?php echo js_escape(__("You are about to delete the selected pages.\n  'Cancel' to stop, 'OK' to delete.")); ?>';
 				return showNotice.warn(m);
 			}
 		});
 	});
 })(jQuery);
+columns.init('page');
 /* ]]> */
 </script>
 
