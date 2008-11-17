@@ -705,19 +705,15 @@ class RSSCache {
 	Output:		true on sucess
 \*=======================================================================*/
 	function set ($url, $rss) {
-		global $wpdb, $wp_object_cache;
 		$cache_option = 'rss_' . $this->file_name( $url );
 		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 
-		if( $wp_object_cache->cache_enabled ) {
-			wp_cache_set( $cache_option, $rss, 'rss' );
-			wp_cache_set( $cache_timestamp, $cache_timestamp, 'rss' );
-		} else {
-			if( !get_site_option( $cache_option ) )
-				add_site_option( $cache_option, $rss );
-			if( !get_site_option( $cache_timestamp ) )
-				add_site_option( $cache_timestamp, $cache_timestamp );
-		}
+		add_site_option( $cache_option, $rss );
+		add_site_option( $cache_timestamp, time() );
+
+		if ( !wp_next_scheduled( 'wp_rss_gc' ) )
+			wp_schedule_event(time(), 'twicedaily', 'wp_rss_gc');
+
 
 		return $cache_option;
 	}
@@ -729,23 +725,14 @@ class RSSCache {
 	Output:		cached object on HIT, false on MISS
 \*=======================================================================*/
 	function get ($url) {
-		global $wp_object_cache;
 		$this->ERROR = "";
 		$cache_option = 'rss_' . $this->file_name( $url );
 
-		if( $wp_object_cache->cache_enabled ) {
-			if( ! wp_cache_get( $cache_option, 'rss' ) ) {
-				$this->debug( "Cache doesn't contain: $url (cache option: $cache_option)" );
-				return 0;
-			}
-			return wp_cache_get( $cache_option, 'rss' );
-		} else {
-			if ( ! get_site_option( $cache_option ) ) {
-				$this->debug( "Cache doesn't contain: $url (cache option: $cache_option)" );
-				return 0;
-			}
-			return get_site_option( $cache_option );
+		if ( ! get_site_option( $cache_option ) ) {
+			$this->debug( "Cache doesn't contain: $url (cache option: $cache_option)" );
+			return 0;
 		}
+		return get_site_option( $cache_option );
 	}
 
 /*=======================================================================*\
@@ -756,16 +743,11 @@ class RSSCache {
 	Output:		cached object on HIT, false on MISS
 \*=======================================================================*/
 	function check_cache ( $url ) {
-		global $wp_object_cache;
 		$this->ERROR = "";
 		$cache_option = $this->file_name( $url );
 		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 
-		if( $wp_object_cache->cache_enabled ) {
-			$mtime = wp_cache_get( $cache_timestamp, 'rss' );
-		} else {
-			$mtime = get_site_option($cache_timestamp);
-		}
+		$mtime = get_site_option($cache_timestamp);
 
 		if ( $mtime ) {
 			// find how long ago the file was added to the cache
@@ -946,5 +928,20 @@ function get_rss ($url, $num_items = 5) { // Like get posts, but for RSS
 	}
 }
 endif;
+
+if ( !function_exists('rss_gc') ) :
+function rss_gc() {
+	global $wpdb;
+	// Garbage Collection
+	$rows = $wpdb->get_results( "SELECT meta_key FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'rss\_%\_ts' AND meta_value < unix_timestamp( date_sub( NOW(), interval 7200 second ) )" );
+	if( is_array( $rows ) ) {
+		foreach( $rows as $row ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s", $row->meta_key ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s", str_replace( '_ts', '', $row->meta_key ) ) );
+		}
+	}
+}
+endif;
+add_action( 'wp_rss_gc', 'rss_gc' );
 
 ?>
