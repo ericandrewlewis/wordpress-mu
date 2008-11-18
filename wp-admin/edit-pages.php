@@ -179,8 +179,8 @@ $num_pages = ceil($wp_query->post_count / $per_page);
 $page_links = paginate_links( array(
 	'base' => add_query_arg( 'pagenum', '%#%' ),
 	'format' => '',
-	'prev_text' => __('&laquo;'),
-	'next_text' => __('&raquo;'),
+	'prev_text' => __('&larr;'),
+	'next_text' => __('&rarr;'),
 	'total' => $num_pages,
 	'current' => $pagenum
 ));
@@ -213,16 +213,16 @@ if ( $page_links ) : ?>
 
 if ($posts) {
 ?>
-<table class="widefat page">
+<table class="widefat page fixed" cellspacing="0">
   <thead>
   <tr>
-<?php print_column_headers('page'); ?>
+<?php print_column_headers('edit-pages'); ?>
   </tr>
   </thead>
 
   <tfoot>
   <tr>
-<?php print_column_headers('page', false); ?>
+<?php print_column_headers('edit-pages', false); ?>
   </tr>
   </tfoot>
 
@@ -279,18 +279,18 @@ if ( 1 == count($posts) && is_singular() ) :
 
 <br class="clear" />
 
-<table class="widefat" style="margin-top: .5em">
+<table class="widefat" cellspacing="0">
 <thead>
   <tr>
-    <th scope="col"><?php _e('Comment') ?></th>
-    <th scope="col"><?php _e('Date') ?></th>
-    <th scope="col"><?php _e('Actions') ?></th>
+    <th scope="col" class="column-comment"><?php _e('Comment') ?></th>
+    <th scope="col" class="column-author"><?php _e('Author') ?></th>
+    <th scope="col" class="column-date"><?php _e('Submitted') ?></th>
   </tr>
 </thead>
 <tbody id="the-comment-list" class="list:comment">
 <?php
 	foreach ($comments as $comment)
-		_wp_comment_row( $comment->comment_ID, 'detail', false, false );
+		_wp_comment_row( $comment->comment_ID, 'single', false, false );
 ?>
 </tbody>
 </table>
@@ -316,7 +316,7 @@ endif; // posts;
 		});
 	});
 })(jQuery);
-columns.init('page');
+columns.init('edit-pages');
 /* ]]> */
 </script>
 

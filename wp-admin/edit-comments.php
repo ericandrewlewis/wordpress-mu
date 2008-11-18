@@ -172,8 +172,8 @@ $extra_comments = array_slice($_comments, $comments_per_page);
 $page_links = paginate_links( array(
 	'base' => add_query_arg( 'apage', '%#%' ),
 	'format' => '',
-	'prev_text' => __('&laquo;'),
-	'next_text' => __('&raquo;'),
+	'prev_text' => __('&larr;'),
+	'next_text' => __('&rarr;'),
 	'total' => ceil($total / $comments_per_page),
 	'current' => $page
 ));
@@ -248,16 +248,16 @@ if ( 'spam' == $comment_status ) {
 <div class="clear"></div>
 
 <?php if ( $comments ) { ?>
-<table class="widefat">
+<table class="widefat comments fixed" cellspacing="0">
 <thead>
 	<tr>
-<?php print_column_headers('comment'); ?>
+<?php print_column_headers('edit-comments'); ?>
 	</tr>
 </thead>
 
 <tfoot>
 	<tr>
-<?php print_column_headers('comment', false); ?>
+<?php print_column_headers('edit-comments', false); ?>
 	</tr>
 </tfoot>
 

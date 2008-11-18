@@ -98,12 +98,6 @@ function post_submit_meta_box($post) {
 
 <div id="misc-publishing-actions">
 
-<?php if ( false ) { // Stub for 2.8 ?>
-<div class="misc-pub-section" id="visibility">
-<?php _e('Visibility:'); ?> <b><?php _e('Public'); // TODO: dropdown ?></b>
-</div>
-<?php } ?>
-
 <div class="misc-pub-section<?php if ( !$can_publish ) { echo '  misc-pub-section-last'; } ?>"><label for="post_status"><?php _e('Status:') ?></label>
 <b><span id="post-status-display">
 <?php
@@ -428,13 +422,13 @@ function post_comment_status_meta_box($post) {
 wp_nonce_field( 'get-comments', 'add_comment_nonce', false );
 ?>
 
-<table class="widefat comments-box" style="display:none;">
+<table class="widefat comments-box fixed" cellspacing="0" style="display:none;">
 <thead>
 	<tr>
-		<th scope="col"><?php _e('Comments') ?></th>
-		<th scope="col"><?php _e('Author') ?></th>
-		<th scope="col"><?php _e('Submitted') ?></th>
-	</tr>
+    <th scope="col" class="column-comment"><?php _e('Comment') ?></th>
+    <th scope="col" class="column-author"><?php _e('Author') ?></th>
+    <th scope="col" class="column-date"><?php _e('Submitted') ?></th>
+  </tr>
 </thead>
 <tbody id="the-comment-list" class="list:comment">
 </tbody>

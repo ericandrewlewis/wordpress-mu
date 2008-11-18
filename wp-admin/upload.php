@@ -225,8 +225,8 @@ if ( ! isset($page_links_total) )
 $page_links = paginate_links( array(
 	'base' => add_query_arg( 'paged', '%#%' ),
 	'format' => '',
-	'prev_text' => __('&laquo;'),
-	'next_text' => __('&raquo;'),
+	'prev_text' => __('&larr;'),
+	'next_text' => __('&rarr;'),
 	'total' => $page_links_total,
 	'current' => $_GET['paged']
 ));
@@ -297,7 +297,7 @@ foreach ($arc_result as $arc_row) {
 <div class="clear"></div>
 
 <?php if ( isset($orphans) ) { ?>
-<table class="widefat">
+<table class="widefat" cellspacing="0">
 <thead>
 <tr>
 	<th scope="col" class="check-column"><input type="checkbox" /></th>
@@ -423,18 +423,18 @@ if ( 1 == count($posts) && is_singular() ) :
 
 <br class="clear" />
 
-<table class="widefat" style="margin-top: .5em">
+<table class="widefat" cellspacing="0">
 <thead>
 	<tr>
-		<th scope="col"><?php _e('Comment') ?></th>
-		<th scope="col"><?php _e('Date') ?></th>
-		<th scope="col"><?php _e('Actions') ?></th>
-	</tr>
+    <th scope="col" class="column-comment"><?php _e('Comment') ?></th>
+    <th scope="col" class="column-author"><?php _e('Author') ?></th>
+    <th scope="col" class="column-date"><?php _e('Submitted') ?></th>
+  </tr>
 </thead>
 <tbody id="the-comment-list" class="list:comment">
 <?php
 		foreach ($comments as $comment)
-			_wp_comment_row( $comment->comment_ID, 'detail', false, false );
+			_wp_comment_row( $comment->comment_ID, 'single', false, false );
 ?>
 </tbody>
 </table>
@@ -463,7 +463,7 @@ endif; // posts;
 		});
 	});
 })(jQuery);
-columns.init('media');
+columns.init('upload');
 /* ]]> */
 </script>
 

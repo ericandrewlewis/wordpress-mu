@@ -162,8 +162,8 @@ endif;
 $page_links = paginate_links( array(
 	'base' => add_query_arg( 'paged', '%#%' ),
 	'format' => '',
-	'prev_text' => __('&laquo;'),
-	'next_text' => __('&raquo;'),
+	'prev_text' => __('&larr;'),
+	'next_text' => __('&rarr;'),
 	'total' => $wp_query->max_num_pages,
 	'current' => $_GET['paged']
 ));
@@ -284,20 +284,20 @@ if ( 1 == count($posts) && is_singular() ) :
 
 <br class="clear" />
 
-<table class="widefat" style="margin-top: .5em">
+<table class="widefat fixed" cellspacing="0">
 <thead>
   <tr>
-    <th scope="col"><?php _e('Comment') ?></th>
-    <th scope="col"><?php _e('Author') ?></th>
-    <th scope="col"><?php _e('Submitted') ?></th>
+    <th scope="col" class="column-comment"><?php _e('Comment') ?></th>
+    <th scope="col" class="column-author"><?php _e('Author') ?></th>
+    <th scope="col" class="column-date"><?php _e('Submitted') ?></th>
   </tr>
 </thead>
 
 <tfoot>
   <tr>
-    <th scope="col"><?php _e('Comment') ?></th>
-    <th scope="col"><?php _e('Author') ?></th>
-    <th scope="col"><?php _e('Submitted') ?></th>
+    <th scope="col" class="column-comment"><?php _e('Comment') ?></th>
+    <th scope="col" class="column-author"><?php _e('Author') ?></th>
+    <th scope="col" class="column-date"><?php _e('Submitted') ?></th>
   </tr>
 </tfoot>
 
@@ -330,7 +330,7 @@ endif; // posts;
 		});
 	});
 })(jQuery);
-columns.init('post');
+columns.init('edit');
 /* ]]> */
 </script>
 
