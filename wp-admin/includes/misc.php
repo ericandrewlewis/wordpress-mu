@@ -118,6 +118,7 @@ function insert_with_markers( $filename, $marker, $insertion ) {
  * @since unknown
  */
 function save_mod_rewrite_rules() {
+	return;
 	global $wp_rewrite;
 
 	$home_path = get_home_path();
