@@ -23,19 +23,17 @@ $user_text = sprintf( __ngettext( '%s user', '%s users', $c_users ), number_form
 $blog_text = sprintf( __ngettext( '%s blog', '%s blogs', $c_blogs ), number_format_i18n( $c_blogs ) );
 
 $sentence = sprintf( __( 'You have %1$s and %2$s.' ), $blog_text, $user_text );
+$title = __( 'WordPress MU : Admin' );
 ?>
 
 <div class="wrap">
-	<h2><?php _e('WordPress MU : Admin') ?></h2>
+	<h2><?php echo wp_specialchars( $title ); ?></h2> 
 
-	<div id="rightnow">
-	<h3 class="reallynow">
-		<span><?php _e('Right Now'); ?></span>
-
-		<a href="wpmu-blogs.php#form-add-blog" class="rbutton"><strong><?php _e('Create a New Blog'); ?></strong></a>
-		<a href="wpmu-users.php#form-add-user" class="rbutton"><?php _e('Create a New User'); ?></a>
-		<br class="clear" />
-	</h3>
+	<ul class="subsubsub">
+	<li><a href="wpmu-blogs.php#form-add-blog" class="rbutton"><strong><?php _e('Create a New Blog'); ?></strong></a> | </li>
+	<li><a href="wpmu-users.php#form-add-user" class="rbutton"><?php _e('Create a New User'); ?></a></li>
+	</ul>
+	<br clear='all' />
 
 	<p class="youhave"><?php echo $sentence; ?></p>
 	<?php do_action('wpmuadminresult', ''); ?>
