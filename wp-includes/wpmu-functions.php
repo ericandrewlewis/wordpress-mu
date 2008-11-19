@@ -649,7 +649,8 @@ function add_user_to_blog( $blog_id, $user_id, $role ) {
 	return true;
 }
 
-function remove_user_from_blog($user_id, $blog_id = '') {
+function remove_user_from_blog($user_id, $blog_id = '', $reassign = '') {
+	global $wpdb;
 	switch_to_blog($blog_id);
 	$user_id = (int) $user_id;
 	do_action('remove_user_from_blog', $user_id, $blog_id);
@@ -679,6 +680,12 @@ function remove_user_from_blog($user_id, $blog_id = '') {
 	if ( count($blogs) == 0 ) {
 		update_usermeta($user_id, 'primary_blog', '');
 		update_usermeta($user_id, 'source_domain', '');
+	}
+
+	if( $reassign != '' ) {
+		$reassign = (int) $reassign;
+		$wpdb->query( $wpdb->prepare("UPDATE $wpdb->posts SET post_author = %d WHERE post_author = %d", $reassign, $user_id) );
+		$wpdb->query( $wpdb->prepare("UPDATE $wpdb->links SET link_owner = %d WHERE link_owner = %d", $reassign, $user_id) );
 	}
 
 	restore_current_blog();
