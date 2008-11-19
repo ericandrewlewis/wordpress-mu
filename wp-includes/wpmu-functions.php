@@ -1505,6 +1505,7 @@ Your new account is setup.
 You can log in with the following information:
 Username: USERNAME
 Password: PASSWORD
+LOGINLINK
 
 Thanks!
 
@@ -1517,6 +1518,7 @@ SITE_NAME" );
 	$welcome_email = str_replace( "SITE_NAME", $current_site->site_name, $welcome_email );
 	$welcome_email = str_replace( "USERNAME", $user->user_login, $welcome_email );
 	$welcome_email = str_replace( "PASSWORD", $password, $welcome_email );
+	$welcome_email = str_replace( "LOGINLINK", site_url( 'wp-login.php' ), $welcome_email );
 
 	$admin_email = get_site_option( "admin_email" );
 	if( $admin_email == '' )
