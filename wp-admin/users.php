@@ -22,11 +22,9 @@ $update = $doaction = '';
 if ( isset($_REQUEST['action']) )
 	$doaction = $_REQUEST['action'] ? $_REQUEST['action'] : $_REQUEST['action2'];
 
-if ( empty($action) ) {
-	if ( isset($_GET['removeit']) )
-		$action = 'removeuser';
-	elseif ( isset($_GET['changeit']) && !empty($_GET['new_role']) )
-		$action = 'promote';
+if ( empty($doaction) ) {
+	if ( isset($_GET['changeit']) && !empty($_GET['new_role']) )
+		$doaction = 'promote';
 }
 
 if ( empty($_REQUEST) ) {
@@ -39,7 +37,7 @@ if ( empty($_REQUEST) ) {
 	$referer = '';
 }
 
-switch ($action) {
+switch ($doaction) {
 
 case 'promote':
 	check_admin_referer('bulk-users');
@@ -73,7 +71,7 @@ case 'promote':
 break;
 
 case 'dodelete':
-	wp_die(__('This function is disabled.'));
+
 	check_admin_referer('delete-users');
 
 	if ( empty($_REQUEST['users']) ) {
@@ -98,10 +96,10 @@ case 'dodelete':
 		}
 		switch($_REQUEST['delete_option']) {
 		case 'delete':
-			wp_delete_user($id);
+			remove_user_from_blog($id, $blog_id);
 			break;
 		case 'reassign':
-			wp_delete_user($id, $_REQUEST['reassign_user']);
+			remove_user_from_blog($id, $blog_id, $_REQUEST['reassign_user']);
 			break;
 		}
 		++$delete_count;
@@ -114,7 +112,7 @@ case 'dodelete':
 break;
 
 case 'delete':
-	wp_die(__('This function is disabled.'));
+
 	check_admin_referer('bulk-users');
 
 	if ( empty($_REQUEST['users']) && empty($_REQUEST['user']) ) {
@@ -178,123 +176,6 @@ case 'delete':
 
 break;
 
-case 'doremove':
-	check_admin_referer('remove-users');
-
-	if ( empty($_REQUEST['users']) ) {
-		wp_redirect('users.php');
-	}
-
-	if ( !current_user_can('edit_users') )
-		die(__('You can&#8217;t remove users.'));
-
-	$userids = $_REQUEST['users'];
-
-	$update = 'remove';
- 	foreach ($userids as $id) {
-		if ($id == $current_user->id) {
-			$update = 'err_admin_remove';
-			continue;
-		}
-		remove_user_from_blog($id, $blog_id);
-	}
-
-	wp_redirect('users.php?update=' . $update);
-
-break;
-
-case 'removeuser':
-
-	check_admin_referer('bulk-users');
-
-	if (empty($_REQUEST['users'])) {
-		wp_redirect('users.php');
-	}
-
-	if ( !current_user_can('edit_users') )
-		$error = new WP_Error('edit_users', __('You can&#8217;t remove users.'));
-
-	$userids = $_REQUEST['users'];
-
-	include ('admin-header.php');
-?>
-<form action="" method="post" name="updateusers" id="updateusers">
-<?php wp_nonce_field('remove-users') ?>
-<div class="wrap">
-<h2><?php _e('Remove Users from Blog'); ?></h2>
-<p><?php _e('You have specified these users for removal:'); ?></p>
-<ul>
-<?php
-	$go_remove = false;
- 	foreach ($userids as $id) {
- 		$user = new WP_User($id);
-		if ($id == $current_user->id) {
-			echo "<li>" . sprintf(__('ID #%1s: %2s <strong>The current user will not be removed.</strong>'), $id, $user->user_login) . "</li>\n";
-		} else {
-			echo "<li><input type=\"hidden\" name=\"users[]\" value=\"{$id}\" />" . sprintf(__('ID #%1s: %2s'), $id, $user->user_login) . "</li>\n";
-			$go_remove = true;
-		}
- 	}
- 	?>
-<?php if($go_remove) : ?>
-		<input type="hidden" name="action" value="doremove" />
-		<p class="submit"><input type="submit" name="submit" value="<?php _e('Confirm Removal'); ?>" /></p>
-<?php else : ?>
-	<p><?php _e('There are no valid users selected for removal.'); ?></p>
-<?php endif; ?>
-</div>
-</form>
-<?php
-
-break;
-
-case 'adduser':
-	wp_die(__('This function is disabled. Add a user from your community.'));
-	check_admin_referer('add-user');
-
-	if ( ! current_user_can('create_users') )
-		wp_die(__('You can&#8217;t create users.'));
-
-	$user_id = add_user();
-	$update = 'add';
-	if ( is_wp_error( $user_id ) )
-		$add_user_errors = $user_id;
-	else {
-		$new_user_login = apply_filters('pre_user_login', sanitize_user(stripslashes($_REQUEST['user_login']), true));
-		$redirect = add_query_arg( array('usersearch' => urlencode($new_user_login), 'update' => $update), $redirect );
-		wp_redirect( $redirect . '#user-' . $user_id );
-		die();
-	}
-
-case 'addexistinguser':
-	check_admin_referer('add-user');
-	if ( !current_user_can('edit_users') )
-		die(__('You can&#8217;t edit users.'));
-
-	$new_user_email = wp_specialchars(trim($_REQUEST['newuser']));
-	/* checking that username has been typed */
-	if ( !empty($new_user_email) ) {
-		if ( $user_id = email_exists( $new_user_email ) ) {
-			$username = $wpdb->get_var( "SELECT user_login FROM {$wpdb->users} WHERE ID='$user_id'" );
-			if( ($username != null && is_site_admin( $username ) == false ) && ( array_key_exists($blog_id, get_blogs_of_user($user_id)) ) ) {
-				$location = 'users.php?update=add_existing';
-			} else {
-				$newuser_key = substr( md5( $user_id ), 0, 5 );
-				add_option( 'new_user_' . $newuser_key, array( 'user_id' => $user_id, 'email' => $user->user_email, 'role' => $_REQUEST[ 'new_role' ] ) );
-				wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ), "Hi,\n\nYou have been invited to join '" . get_option( 'blogname' ) . "' at\n" . site_url() . "\nPlease click the following link to confirm the invite:\n" . site_url( "/newbloguser/$newuser_key/" ) );
-				$location = 'users.php?update=add';
-			}
-			wp_redirect("$location");
-			die();
-		} else {
-			wp_redirect('users.php?update=notfound' );
-			die();
-		}
-	}
-	wp_redirect('users.php');
-	die();
-break;
-
 default:
 
 	if ( !empty($_GET['_wp_http_referer']) ) {
@@ -321,11 +202,6 @@ default:
 			$delete_count = isset($_GET['delete_count']) ? (int) $_GET['delete_count'] : 0;
 			$messages[] = '<div id="message" class="updated fade"><p>' . sprintf(__ngettext('%s user deleted', '%s users deleted', $delete_count), $delete_count) . '</p></div>';
 			break;
-		case 'remove':
-		?>
-			<div id="message" class="updated fade"><p><?php _e('User removed from this blog.'); ?></p></div>
-		<?php
-			break;
 		case 'add':
 			$messages[] = '<div id="message" class="updated fade"><p>' . __('New user created.') . '</p></div>';
 			break;
@@ -339,12 +215,6 @@ default:
 		case 'err_admin_del':
 			$messages[] = '<div id="message" class="error"><p>' . __("You can't delete the current user.") . '</p></div>';
 			$messages[] = '<div id="message" class="updated fade"><p>' . __('Other users have been deleted.') . '</p></div>';
-			break;
-		case 'err_admin_remove':
-		?>
-			<div id="message" class="error"><p><?php _e("You can't remove the current user."); ?></p></div>
-			<div id="message" class="updated fade"><p><?php _e('Other users have been removed.'); ?></p></div>
-		<?php
 			break;
 		case 'notactive':
 		?>
@@ -532,56 +402,10 @@ foreach ( $wp_user_search->get_results() as $userid ) {
 ?>
 
 <br class="clear" />
-<?php if ( current_user_can('create_users') ) { ?>
-
-<?php if( apply_filters('show_adduser_fields', true) ) {?>
-<div class="wrap">
-<h2 id="add-new-user"><?php _e('Add user from community') ?></h2>
-
-<?php if ( isset($add_user_errors) && is_wp_error( $add_user_errors ) ) : ?>
-	<div class="error">
-		<?php
-			foreach ( $add_user_errors->get_error_messages() as $message )
-				echo "<p>$message</p>";
-		?>
-	</div>
-<?php endif; ?>
-<div id="ajax-response"></div>
-
-<form action="#add-new-user" method="post" name="adduser" id="adduser" class="add:users: validate">
-<?php wp_nonce_field('add-user') ?>
-<input type='hidden' name='action' value='addexistinguser'>
-<p><?php _e('Type the e-mail address of another user to add them to your blog. They will be sent a confirmation email with a link to click before they are added.')?></p>
-
-<table class="form-table">
-	<tr class="form-field form-required">
-		<th scope="row"><?php _e('User&nbsp;E-Mail')?></th>
-		<td><input type="text" name="newuser" id="newuser" /></td>
-	</tr>
-	<tr class="form-field">
-		<th scope="row"><?php _e('Role:') ?></th>
-			<td>
-			<select name="new_role" id="new_role">
-				<?php wp_dropdown_roles('subscriber'); ?>
-			</select>
-		</td>
-	</tr>
-</table>
-<p class="submit">
-	<?php echo $referer; ?>
-	<input name="adduser" type="submit" id="addusersub" class="button" value="<?php _e('Add User') ?>" />
-</p>
-</form>
-</div>
-<?php } ?>
-
-</div>
-
 <?php
-}
 break;
 
-} // end of the $action switch
+} // end of the $doaction switch
 
 include('admin-footer.php');
 ?>
