@@ -1082,9 +1082,9 @@ function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 		$admin_email = 'support@' . $_SERVER['SERVER_NAME'];
 	$from_name = get_site_option( "site_name" ) == '' ? 'WordPress' : wp_specialchars( get_site_option( "site_name" ) );
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-	$message = sprintf(__("To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n"), clean_url("http://{$current_site->domain}{$current_site->path}wp-activate.php?key=$key") );
+	$message = sprintf(__( apply_filters( 'wpmu_signup_user_notification_email', "To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n" ) ), clean_url("http://{$current_site->domain}{$current_site->path}wp-activate.php?key=$key") );
 	// TODO: Don't hard code activation link.
-	$subject = sprintf(__('Activate %s'), $user);
+	$subject = sprintf(__( apply_filters( 'wpmu_signup_user_notification_subject', 'Activate %s' )), $user);
 	wp_mail($user_email, $subject, $message, $message_headers);
 	return true;
 }
@@ -1994,4 +1994,13 @@ function add_existing_user_to_blog() {
 		}
 	}
 }
+
+function add_new_user_to_blog( $user_id, $email, $meta ) {
+	if( $meta[ 'add_to_blog' ] ) {
+		$blog_id = $meta[ 'add_to_blog' ];
+		$role = $meta[ 'new_role' ];
+		add_user_to_blog( $blog_id, $user_id, $role );
+	}
+}
+add_action( 'wpmu_activate_user', $user_id, $email, $meta );
 ?>
