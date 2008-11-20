@@ -186,6 +186,7 @@ switch( $_GET['action'] ) {
 			WHERE  blog_id = '$id'");
 
 		update_blog_status( $id, 'spam', $_POST['blog']['spam'] );
+		update_blog_option( $id, 'blog_public', $_POST['blog']['public'] );
 
 		// user roles
 		if( is_array( $_POST['role'] ) == true ) {
