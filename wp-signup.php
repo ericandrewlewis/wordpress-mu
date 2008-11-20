@@ -14,7 +14,10 @@ if( is_array( get_site_option( 'illegal_names' )) && $_GET[ 'new' ] != '' && in_
 	die();
 }
 
-do_action("signup_header");
+function do_signup_header() {
+	do_action("signup_header");
+}
+add_action( 'wp_head', 'do_signup_header' );
 
 function signuppageheaders() {
 	echo "<meta name='robots' content='noindex,nofollow' />\n";
