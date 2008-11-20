@@ -383,10 +383,15 @@ $newblogname = isset($_GET['new']) ? strtolower(preg_replace('/^-|-$|[^-a-zA-Z0-
 $current_user = wp_get_current_user();
 if( $active_signup == "none" ) {
 	_e( "Registration has been disabled." );
+} elseif( $active_signup == 'blog' && !is_user_logged_in() ){
+	if( is_ssl() ) {
+		$proto = 'https://';
+	} else {
+		$proto = 'http://';
+	}
+	$login_url = site_url( 'wp-login.php?redirect_to=' . urlencode($proto . $_SERVER['HTTP_HOST'] . '/wp-signup.php' ));
+	echo sprintf( __( "You must first <a href=\"%s\">login</a>, and then you can create a new blog."), $login_url );
 } else {
-	if( $active_signup == 'blog' && !is_user_logged_in() )
-		wp_die( 'You must be logged in to register a blog.' );
-
 	switch ($_POST['stage']) {
 		case 'validate-user-signup' :
 			if( $active_signup == 'all' || $_POST[ 'signup_for' ] == 'blog' && $active_signup == 'blog' || $_POST[ 'signup_for' ] == 'user' && $active_signup == 'user' )
