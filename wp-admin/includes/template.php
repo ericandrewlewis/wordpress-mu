@@ -95,8 +95,6 @@ function _cat_rows( $categories, &$count, $parent = 0, $level = 0, $page = 1, $p
 	$output = ob_get_contents();
 	ob_end_clean();
 
-	$output = apply_filters('cat_rows', $output);
-
 	echo $output;
 }
 
@@ -111,19 +109,16 @@ function _cat_rows( $categories, &$count, $parent = 0, $level = 0, $page = 1, $p
  * @return unknown
  */
 function _cat_row( $category, $level, $name_override = false ) {
-	static $row_class;
+	static $row_class = '';
 
-	$category = get_category( $category );
-	$catname = sanitize_term_field( 'name', $category->name, $category->term_id, 'category', 'display' );
-	$catdesc = sanitize_term_field( 'description', $category->description, $category->term_id, 'category', 'display' );
-	$qe_name = sanitize_term_field( 'name', $category->name, $category->term_id, 'category', 'edit' );
+	$category = get_category( $category, OBJECT, 'display' );
 
 	$default_cat_id = (int) get_option( 'default_category' );
 	$pad = str_repeat( '&#8212; ', $level );
-	$name = ( $name_override ? $name_override : $pad . ' ' . $catname );
+	$name = ( $name_override ? $name_override : $pad . ' ' . $category->name );
 	$edit_link = "categories.php?action=edit&amp;cat_ID=$category->term_id";
 	if ( current_user_can( 'manage_categories' ) ) {
-		$edit = "<a class='row-title' href='$edit_link' title='" . attribute_escape(sprintf(__('Edit "%s"'), $catname)) . "'>" . attribute_escape( $name ) . '</a><br />';
+		$edit = "<a class='row-title' href='$edit_link' title='" . attribute_escape(sprintf(__('Edit "%s"'), $category->name)) . "'>" . attribute_escape( $name ) . '</a><br />';
 		$actions = array();
 		$actions['edit'] = '<a href="' . $edit_link . '">' . __('Edit') . '</a>';
 		$actions['inline hide-if-no-js'] = '<a href="#" class="editinline">' . __('Quick&nbsp;Edit') . '</a>';
@@ -141,6 +136,8 @@ function _cat_row( $category, $level, $name_override = false ) {
 	}
 
 	$row_class = 'alternate' == $row_class ? '' : 'alternate';
+	$qe_data = get_category_to_edit($category->term_id);
+
 	$category->count = number_format_i18n( $category->count );
 	$posts_count = ( $category->count > 0 ) ? "<a href='edit.php?cat=$category->term_id'>$category->count</a>" : $category->count;
 	$output = "<tr id='cat-$category->term_id' class='iedit $row_class'>";
@@ -168,13 +165,13 @@ function _cat_row( $category, $level, $name_override = false ) {
 				break;
 			case 'name':
 				$output .= "<td $attributes>$edit";
-				$output .= '<div class="hidden" id="inline_' . $category->term_id . '">';
-				$output .= '<div class="name">' . $qe_name . '</div>';
-				$output .= '<div class="slug">' . $category->slug . '</div>';
-				$output .= '<div class="cat_parent">' . $category->parent . '</div></div></td>';
+				$output .= '<div class="hidden" id="inline_' . $qe_data->term_id . '">';
+				$output .= '<div class="name">' . $qe_data->name . '</div>';
+				$output .= '<div class="slug">' . $qe_data->slug . '</div>';
+				$output .= '<div class="cat_parent">' . $qe_data->parent . '</div></div></td>';
 				break;
 			case 'description':
-				$output .= "<td $attributes>$catdesc</td>";
+				$output .= "<td $attributes>$category->description</td>";
 				break;
 			case 'slug':
 				$output .= "<td $attributes>$category->slug</td>";
@@ -186,7 +183,7 @@ function _cat_row( $category, $level, $name_override = false ) {
 	}
 	$output .= '</tr>';
 
-	return apply_filters('cat_row', $output);
+	return $output;
 }
 
 /**
@@ -272,22 +269,18 @@ function inline_edit_term_row($type) {
  * @return unknown
  */
 function link_cat_row( $category, $name_override = false ) {
-	global $class;
+	static $row_class = '';
 
-	if ( !$category = get_term( $category, 'link_category' ) )
+	if ( !$category = get_term( $category, 'link_category', OBJECT, 'display' ) )
 		return false;
 	if ( is_wp_error( $category ) )
 		return $category;
 
-	$catname = sanitize_term_field( 'name', $category->name, $category->term_id, 'category', 'display' );
-	$catdesc = sanitize_term_field( 'description', $category->description, $category->term_id, 'category', 'display' );
-	$qe_name = sanitize_term_field( 'name', $category->name, $category->term_id, 'category', 'edit' );
-
 	$default_cat_id = (int) get_option( 'default_link_category' );
-	$name = ( $name_override ? $name_override : $catname );
+	$name = ( $name_override ? $name_override : $category->name );
 	$edit_link = "link-category.php?action=edit&amp;cat_ID=$category->term_id";
 	if ( current_user_can( 'manage_categories' ) ) {
-		$edit = "<a class='row-title' href='$edit_link' title='" . attribute_escape(sprintf(__('Edit "%s"'), $catname)) . "'>$name</a><br />";
+		$edit = "<a class='row-title' href='$edit_link' title='" . attribute_escape(sprintf(__('Edit "%s"'), $category->name)) . "'>$name</a><br />";
 		$actions = array();
 		$actions['edit'] = '<a href="' . $edit_link . '">' . __('Edit') . '</a>';
 		$actions['inline hide-if-no-js'] = '<a href="#" class="editinline">' . __('Quick&nbsp;Edit') . '</a>';
@@ -304,10 +297,12 @@ function link_cat_row( $category, $name_override = false ) {
 		$edit = $name;
 	}
 
-	$class = 'alternate' == $class ? '' : 'alternate';
+	$row_class = 'alternate' == $row_class ? '' : 'alternate';
+	$qe_data = get_term_to_edit($category->term_id, 'link_category');
+
 	$category->count = number_format_i18n( $category->count );
 	$count = ( $category->count > 0 ) ? "<a href='link-manager.php?cat_id=$category->term_id'>$category->count</a>" : $category->count;
-	$output = "<tr id='link-cat-$category->term_id' class='iedit $class'>";
+	$output = "<tr id='link-cat-$category->term_id' class='iedit $row_class'>";
 	$columns = get_column_headers('edit-link-categories');
 	$hidden = get_hidden_columns('edit-link-categories');
 	foreach ( $columns as $column_name => $column_display_name ) {
@@ -331,13 +326,13 @@ function link_cat_row( $category, $name_override = false ) {
 				break;
 			case 'name':
 				$output .= "<td $attributes>$edit";
-				$output .= '<div class="hidden" id="inline_' . $category->term_id . '">';
-				$output .= '<div class="name">' . $qe_name . '</div>';
-				$output .= '<div class="slug">' . $category->slug . '</div>';
-				$output .= '<div class="cat_parent">' . $category->parent . '</div></div></td>';
+				$output .= '<div class="hidden" id="inline_' . $qe_data->term_id . '">';
+				$output .= '<div class="name">' . $qe_data->name . '</div>';
+				$output .= '<div class="slug">' . $qe_data->slug . '</div>';
+				$output .= '<div class="cat_parent">' . $qe_data->parent . '</div></div></td>';
 				break;
 			case 'description':
-				$output .= "<td $attributes>$catdesc</td>";
+				$output .= "<td $attributes>$category->description</td>";
 				break;
 			case 'links':
 				$attributes = 'class="links column-links num"' . $style;
@@ -346,7 +341,7 @@ function link_cat_row( $category, $name_override = false ) {
 	}
 	$output .= '</tr>';
 
-	return apply_filters( 'link_cat_row', $output );
+	return $output;
 }
 
 /**
@@ -579,12 +574,11 @@ function wp_link_category_checklist( $link_id = 0 ) {
  * @return unknown
  */
 function _tag_row( $tag, $class = '' ) {
-
 		$count = number_format_i18n( $tag->count );
 		$count = ( $count > 0 ) ? "<a href='edit.php?tag=$tag->slug'>$count</a>" : $count;
-		$tagname = sanitize_term_field( 'name', $tag->name, $tag->term_id, 'tag', 'display' );
-		$qe_name = sanitize_term_field( 'name', $tag->name, $tag->term_id, 'tag', 'edit' );
 
+		$name = apply_filters( 'term_name', $tag->name );
+		$qe_data = get_term($tag->term_id, 'post_tag', object, 'edit');
 		$edit_link = "edit-tags.php?action=edit&amp;tag_ID=$tag->term_id";
 		$out = '';
 		$out .= '<tr id="tag-' . $tag->term_id . '"' . $class . '>';
@@ -604,7 +598,7 @@ function _tag_row( $tag, $class = '' ) {
 					$out .= '<th scope="row" class="check-column"> <input type="checkbox" name="delete_tags[]" value="' . $tag->term_id . '" /></th>';
 					break;
 				case 'name':
-					$out .= '<td ' . $attributes . '><strong><a class="row-title" href="' . $edit_link . '" title="' . attribute_escape(sprintf(__('Edit "%s"'), $tagname)) . '">' . $tagname . '</a></strong><br />';
+					$out .= '<td ' . $attributes . '><strong><a class="row-title" href="' . $edit_link . '" title="' . attribute_escape(sprintf(__('Edit "%s"'), $name)) . '">' . $name . '</a></strong><br />';
 					$actions = array();
 					$actions['edit'] = '<a href="' . $edit_link . '">' . __('Edit') . '</a>';
 					$actions['inline hide-if-no-js'] = '<a href="#" class="editinline">' . __('Quick&nbsp;Edit') . '</a>';
@@ -616,9 +610,9 @@ function _tag_row( $tag, $class = '' ) {
 						( $i == $action_count ) ? $sep = '' : $sep = ' | ';
 						$out .= "<span class='$action'>$link$sep</span>";
 					}
-					$out .= '<div class="hidden" id="inline_' . $tag->term_id . '">';
-					$out .= '<div class="name">' . $qe_name . '</div>';
-					$out .= '<div class="slug">' . $tag->slug . '</div></div></td>';
+					$out .= '<div class="hidden" id="inline_' . $qe_data->term_id . '">';
+					$out .= '<div class="name">' . $qe_data->name . '</div>';
+					$out .= '<div class="slug">' . $qe_data->slug . '</div></div></td>';
 					break;
 				case 'slug':
 					$out .= "<td $attributes>$tag->slug</td>";
@@ -668,7 +662,6 @@ function tag_rows( $page = 1, $pagesize = 20, $searchterms = '' ) {
 		$out .= _tag_row( $tag, ++$count % 2 ? ' class="iedit alternate"' : ' class="iedit"' );
 
 	// filter and send to screen
-	$out = apply_filters('tag_rows', $out);
 	echo $out;
 	return $count;
 }
@@ -752,21 +745,24 @@ function wp_manage_pages_columns() {
  * @return unknown
  */
 function get_column_headers($page) {
-	static $columns = array();
+	global $_wp_column_headers;
+
+	if ( !isset($_wp_column_headers) )
+		$_wp_column_headers = array();
 
 	// Store in static to avoid running filters on each call
-	if ( isset($columns[$page]) )
-		return $columns[$page];
+	if ( isset($_wp_column_headers[$page]) )
+		return $_wp_column_headers[$page];
 
 	switch ($page) {
 		case 'edit':
-			 $columns[$page] = wp_manage_posts_columns();
+			 $_wp_column_headers[$page] = wp_manage_posts_columns();
 			 break;
 		case 'edit-pages':
-			$columns[$page] = wp_manage_pages_columns();
+			$_wp_column_headers[$page] = wp_manage_pages_columns();
 			break;
 		case 'edit-comments':
-			$columns[$page] = array(
+			$_wp_column_headers[$page] = array(
 				'cb' => '<input type="checkbox" />',
 				'comment' => __('Comment'),
 				'author' => __('Author'),
@@ -776,7 +772,7 @@ function get_column_headers($page) {
 
 			break;
 		case 'link-manager':
-			$columns[$page] = array(
+			$_wp_column_headers[$page] = array(
 				'cb' => '<input type="checkbox" />',
 				'name' => __('Name'),
 				'url' => __('URL'),
@@ -787,10 +783,10 @@ function get_column_headers($page) {
 
 			break;
 		case 'upload':
-			$columns[$page] = wp_manage_media_columns();
+			$_wp_column_headers[$page] = wp_manage_media_columns();
 			break;
 		case 'categories':
-			$columns[$page] = array(
+			$_wp_column_headers[$page] = array(
 				'cb' => '<input type="checkbox" />',
 				'name' => __('Name'),
 				'description' => __('Description'),
@@ -800,7 +796,7 @@ function get_column_headers($page) {
 
 			break;
 		case 'edit-link-categories':
-			$columns[$page] = array(
+			$_wp_column_headers[$page] = array(
 				'cb' => '<input type="checkbox" />',
 				'name' => __('Name'),
 				'description' => __('Description'),
@@ -809,7 +805,7 @@ function get_column_headers($page) {
 
 			break;
 		case 'edit-tags':
-			$columns[$page] = array(
+			$_wp_column_headers[$page] = array(
 				'cb' => '<input type="checkbox" />',
 				'name' => __('Name'),
 				'slug' => __('Slug'),
@@ -818,7 +814,7 @@ function get_column_headers($page) {
 
 			break;
 		case 'users':
-			$columns[$page] = array(
+			$_wp_column_headers[$page] = array(
 				'cb' => '<input type="checkbox" />',
 				'username' => __('Username'),
 				'name' => __('Name'),
@@ -828,11 +824,11 @@ function get_column_headers($page) {
 			);
 			break;
 		default :
-			$columns[$page] = array();
+			$_wp_column_headers[$page] = array();
 	}
 
-	$columns[$page] = apply_filters('manage_' . $page . '_columns', $columns[$page]);
-	return $columns[$page];
+	$_wp_column_headers[$page] = apply_filters('manage_' . $page . '_columns', $_wp_column_headers[$page]);
+	return $_wp_column_headers[$page];
 }
 
 /**
@@ -875,6 +871,24 @@ function print_column_headers( $type, $id = true ) {
 ?>
 	<th scope="col" <?php echo $id ? "id=\"$column_key\"" : ""; echo $class; echo $style; ?>><?php echo $column_display_name; ?></th>
 <?php }
+}
+
+/**
+ * Register column headers for a particular screen.  The header names will be listed in the Screen Options.
+ *
+ * @since 2.7.0
+ *
+ * @param string $screen The handle for the screen to add help to.  This is usually the hook name returned by the add_*_page() functions.
+ * @param array $columns An array of columns with column IDs as the keys and translated column names as the values
+ * @see get_column_headers(), print_column_headers(), get_hidden_columns()
+ */
+function register_column_headers($screen, $columns) {
+	global $_wp_column_headers;
+
+	if ( !isset($_wp_column_headers) )
+		$_wp_column_headers = array();
+
+	$_wp_column_headers[$screen] = $columns;
 }
 
 /**
@@ -1409,7 +1423,7 @@ function _post_row($a_post, $pending_comments, $mode) {
 			$pending_phrase = sprintf( __('%s pending'), number_format( $pending_comments ) );
 			if ( $pending_comments )
 				echo '<strong>';
-				comments_number("<a href='edit.php?p=$post->ID' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('0') . '</span></a>', "<a href='edit.php?p=$post->ID' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('1') . '</span></a>', "<a href='edit.php?p=$post->ID' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('%') . '</span></a>');
+				comments_number("<a href='edit-comments.php?p=$post->ID' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('0') . '</span></a>', "<a href='edit-comments.php?p=$post->ID' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('1') . '</span></a>', "<a href='edit-comments.php?p=$post->ID' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('%') . '</span></a>');
 				if ( $pending_comments )
 				echo '</strong>';
 		?>
@@ -1560,7 +1574,7 @@ foreach ($posts_columns as $column_name=>$column_display_name) {
 		$pending_phrase = sprintf( __('%s pending'), number_format( $left ) );
 		if ( $left )
 			echo '<strong>';
-		comments_number("<a href='edit-comments.php?page_id=$id' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('0') . '</span></a>', "<a href='edit-comments.php?page_id=$id' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('1') . '</span></a>', "<a href='edit-comments.php?page_id=$id' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('%') . '</span></a>');
+		comments_number("<a href='edit-comments.php?p=$id' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('0') . '</span></a>', "<a href='edit-comments.php?p=$id' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('1') . '</span></a>', "<a href='edit-comments.php?p=$id' title='$pending_phrase' class='post-com-count'><span class='comment-count'>" . __('%') . '</span></a>');
 		if ( $left )
 			echo '</strong>';
 		?>
@@ -3206,11 +3220,12 @@ function _post_states($post) {
 }
 
 function screen_meta($screen) {
-	global $wp_meta_boxes;
+	global $wp_meta_boxes, $_wp_contextual_help;
 
 	$screen = str_replace('.php', '', $screen);
 	$screen = str_replace('-new', '', $screen);
 	$screen = str_replace('-add', '', $screen);
+	$screen = apply_filters('screen_meta_screen', $screen);
 
 	$column_screens = get_column_headers($screen);
 	$meta_screens = array('index' => 'dashboard');
@@ -3244,19 +3259,23 @@ function screen_meta($screen) {
 
 	global $title;
 
-	$help['post'] =  __('<a href="http://codex.wordpress.org/Writing_Posts" target="_blank">Writing Posts</a>');
-	$help['options-general'] =  __('<a href="http://codex.wordpress.org/Settings_General_SubPanel" target="_blank">General Settings</a>');
-	$help = apply_filters('contextual_help_link', $help, $screen); 
+	if ( !isset($_wp_contextual_help) )
+		$_wp_contextual_help = array();
+	if ( !isset($_wp_contextual_help['post']) )
+		$_wp_contextual_help['post'] =  __('<a href="http://codex.wordpress.org/Writing_Posts" target="_blank">Writing Posts</a>');
+	if ( !isset($_wp_contextual_help['options-general']) )
+		$_wp_contextual_help['options-general'] =  __('<a href="http://codex.wordpress.org/Settings_General_SubPanel" target="_blank">General Settings</a>');
+	$_wp_contextual_help = apply_filters('contextual_help_list', $_wp_contextual_help, $screen); 
 	?>
 	<div id="contextual-help-wrap" class="hidden">
 	<?php
 	$contextual_help = '';
-	if ( isset($help[$screen]) ) {
-		if ( isset($title) )
+	if ( isset($_wp_contextual_help[$screen]) ) {
+		if ( !empty($title) )
 			$contextual_help .= '<h5>' . sprintf(__('Get help with "%s"'), $title) . '</h5>';
 		else
 			$contextual_help .= '<h5>' . __('Get help with this page') . '</h5>';
-		$contextual_help .= '<div class="metabox-prefs">' . $help[$screen] . "</div>\n";
+		$contextual_help .= '<div class="metabox-prefs">' . $_wp_contextual_help[$screen] . "</div>\n";
 
 		$contextual_help .= '<h5>' . __('Other Help') . '</h5>';
 	} else {
@@ -3284,6 +3303,23 @@ function screen_meta($screen) {
 </div>
 </div>
 <?php
+}
+
+/**
+ * Add contextual help text for a page
+ *
+ * @since 2.7.0
+ *
+ * @param string $screen The handle for the screen to add help to.  This is usually the hook name returned by the add_*_page() functions.
+ * @param string $help Arbitrary help text
+ */
+function add_contextual_help($screen, $help) {
+	global $_wp_contextual_help;
+
+	if ( !isset($_wp_contextual_help) )
+		$_wp_contextual_help = array();
+
+	$_wp_contextual_help[$screen] = $help;
 }
 
 ?>

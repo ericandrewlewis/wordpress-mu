@@ -214,8 +214,8 @@ jQuery(document).ready( function($) {
 	});
 });
 
+var showNotice, adminMenu, columns;
 (function($){
-
 // stub for doing better warnings
 showNotice = {
 	warn : function(text) {
@@ -229,12 +229,13 @@ showNotice = {
 		alert(text);
 	}
 };
+})(jQuery);
 
+(function($){
 // sidebar admin menu
 adminMenu = {
 		
 	init : function() {
-		$('#adminmenu a').attr('tabindex', '10');
 		$('#adminmenu div.wp-menu-toggle').each( function() {
 			if ( $(this).siblings('.wp-submenu').length ) 
 				$(this).click(function(){ adminMenu.toggle( $(this).siblings('.wp-submenu') ); });
@@ -319,7 +320,9 @@ adminMenu = {
 };
 
 $(document).ready(function(){adminMenu.init();});
+})(jQuery);
 
+(function($){
 // show/hide/save table columns
 columns = {
 	init : function(page) {

@@ -2040,6 +2040,7 @@ function wp_check_filetype( $filename, $mimes = null ) {
 		'ico' => 'image/x-icon',
 		'asf|asx|wax|wmv|wmx' => 'video/asf',
 		'avi' => 'video/avi',
+		'divx' => 'video/divx',
 		'mov|qt' => 'video/quicktime',
 		'mpeg|mpg|mpe|mp4' => 'video/mpeg',
 		'txt|c|cc|h' => 'text/plain',
