@@ -818,7 +818,7 @@ function comments_template( $file = '/comments.php', $separate_comments = false 
 	} else if ( empty($comment_author) ) {
 		$comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND comment_approved = '1' ORDER BY comment_date", $post->ID));
 	} else {
-		$comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND ( comment_approved = '1' OR ( comment_author = %s AND comment_author_email = %s AND comment_approved = '0' ) ) ORDER BY comment_date", $post->ID, htmlspecialchars_decode($comment_author, ENT_QUOTES), $comment_author_email));
+		$comments = $wpdb->get_results($wpdb->prepare("SELECT * FROM $wpdb->comments WHERE comment_post_ID = %d AND ( comment_approved = '1' OR ( comment_author = %s AND comment_author_email = %s AND comment_approved = '0' ) ) ORDER BY comment_date", $post->ID, $comment_author, $comment_author_email));
 	}
 
 	// keep $comments for legacy's sake
@@ -1168,7 +1168,7 @@ class Walker_Comment extends Walker {
 			$add_below = 'div-comment';
 		}
 ?>
-		<<?php echo $tag ?> <?php comment_class() ?> id="comment-<?php comment_ID() ?>">
+		<<?php echo $tag ?> <?php comment_class(empty( $args['has_children'] ) ? '' : 'parent') ?> id="comment-<?php comment_ID() ?>">
 		<?php if ( 'ul' == $args['style'] ) : ?>
 		<div id="div-comment-<?php comment_ID() ?>">
 		<?php endif; ?>

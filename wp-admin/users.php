@@ -141,6 +141,7 @@ case 'delete':
 <?php
 	$go_delete = false;
 	foreach ( (array) $userids as $id ) {
+		$id = (int) $id;
 		$user = new WP_User($id);
 		if ( $id == $current_user->ID ) {
 			echo "<li>" . sprintf(__('ID #%1s: %2s <strong>The current user will not be deleted.</strong>'), $id, $user->user_login) . "</li>\n";
@@ -215,21 +216,6 @@ default:
 		case 'err_admin_del':
 			$messages[] = '<div id="message" class="error"><p>' . __("You can't delete the current user.") . '</p></div>';
 			$messages[] = '<div id="message" class="updated fade"><p>' . __('Other users have been deleted.') . '</p></div>';
-			break;
-		case 'notactive':
-		?>
-			<div id="message" class="updated fade"><p><?php _e('User not added. User is deleted or not active.'); ?></p></div>
-		<?php
-			break;
-		case 'add_existing':
-		?>
-			<div id="message" class="updated fade"><p><?php _e('User not added. User is already registered.'); ?></p></div>
-		<?php
-			break;
-		case 'notfound':
-		?>
-			<div id="message" class="updated fade"><p><?php _e('User not found. Please ask them to signup here first.'); ?></p></div>
-		<?php
 			break;
 		}
 	endif; ?>

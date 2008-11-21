@@ -1520,13 +1520,11 @@ function do_feed_atom( $for_comments ) {
  * @uses do_action() Calls 'do_robotstxt' hook for displaying robot.txt rules.
  */
 function do_robots() {
-	global $current_blog;
-
-	header('Content-Type: text/plain; charset=utf-8');
+	header( 'Content-Type: text/plain; charset=utf-8' );
 
 	do_action( 'do_robotstxt' );
 
-	if ( '0' == $current_blog->public ) {
+	if ( '0' == get_option( 'blog_public' ) ) {
 		echo "User-agent: *\n";
 		echo "Disallow: /\n";
 	} else {

@@ -41,7 +41,7 @@ function wp_default_scripts( &$scripts ) {
 	$scripts->base_url = $guessurl;
 	$scripts->default_version = get_bloginfo( 'version' );
 
-	$scripts->add( 'common', '/wp-admin/js/common.js', array('jquery', 'hoverIntent'), '20081118' );
+	$scripts->add( 'common', '/wp-admin/js/common.js', array('jquery', 'hoverIntent'), '20081120b' );
 	$scripts->add( 'sack', '/wp-includes/js/tw-sack.js', false, '1.6.1' );
 
 	$scripts->add( 'quicktags', '/wp-includes/js/quicktags.js', false, '20081103' );
@@ -228,7 +228,7 @@ function wp_default_scripts( &$scripts ) {
 		$scripts->add( 'admin-gallery', '/wp-admin/js/gallery.js', array( 'jquery-ui-sortable' ), '20080709' );
 		$scripts->add( 'media-upload', '/wp-admin/js/media-upload.js', array( 'thickbox' ), '20081031' );
 		
-		$scripts->add( 'admin-widgets', '/wp-admin/js/widgets.js', array( 'interface' ), '20081010' );
+		$scripts->add( 'admin-widgets', '/wp-admin/js/widgets.js', array( 'interface' ), '20081120' );
 		$scripts->localize( 'admin-widgets', 'widgetsL10n', array(
 			'add' => __('Add'),
 			'edit' => __('Edit'),

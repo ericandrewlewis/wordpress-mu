@@ -215,7 +215,7 @@ jQuery(document).ready( function($) {
 });
 
 var showNotice, adminMenu, columns;
-(function($){
+
 // stub for doing better warnings
 showNotice = {
 	warn : function(text) {
@@ -229,7 +229,6 @@ showNotice = {
 		alert(text);
 	}
 };
-})(jQuery);
 
 (function($){
 // sidebar admin menu
@@ -246,7 +245,7 @@ adminMenu = {
 		this.favorites();
 
 		$('.wp-menu-separator').click(function(){
-			if ( $('#adminmenu').hasClass('folded') ) {
+			if ( $('#wpcontent').hasClass('folded') ) {
 				adminMenu.fold(1);
 				setUserSetting( 'mfold', 'o' );
 			} else {
@@ -286,10 +285,10 @@ adminMenu = {
 	
 	fold : function(off) {
 		if (off) {
-			$('#adminmenu').removeClass('folded');
+			$('#wpcontent').removeClass('folded');
 			$('#adminmenu li.wp-has-submenu').unbind();
 		} else {
-			$('#adminmenu').addClass('folded');
+			$('#wpcontent').addClass('folded');
 			$('#adminmenu li.wp-has-submenu').hoverIntent({
 				over: function(e){
 					var m = $(this).find('.wp-submenu'), t = e.clientY, H = $(window).height(), h = m.height(), o;
@@ -350,39 +349,3 @@ columns = {
 }
 
 })(jQuery);
-
-
-/*
-(function($) {
-	$.fn.tTips = function() {
-
-		$('body').append('<div id="tTips"><p id="tTips_inside"></p></div>');
-		var TT = $('#tTips');
-
-		this.each(function() {
-			var el = $(this), txt;
-
-			if ( txt = el.attr('title') ) el.attr('tip', txt).removeAttr('title');
-			else return;
-			el.find('img').removeAttr('alt');
-
-			el.mouseover(function(e) {
-				txt = el.attr('tip'), o = el.offset();
-
-				clearTimeout(TT.sD);
-				TT.find('p').html(txt);
-
-				TT.css({'top': o.top - 43, 'left': o.left - 5});
-				TT.sD = setTimeout(function(){TT.fadeIn(150);}, 100);
-			});
-
-			el.mouseout(function() {
-				clearTimeout(TT.sD);
-				TT.css({display : 'none'});
-			})
-		});
-	}
-}(jQuery));
-*/
-
-//jQuery(function(){jQuery('#media-buttons a').tTips();});

@@ -111,7 +111,7 @@ function get_search_form() {
 	$form = '<form method="get" id="searchform" action="' . get_option('siteurl') . '/" >
 	<label class="hidden" for="s">' . __('Search for:') . '</label>
 	<div><input type="text" value="' . the_search_query() . '" name="s" id="s" />
-	<input type="submit" id="searchsubmit" value="Search" />
+	<input type="submit" id="searchsubmit" value="'.attribute_escape(__('Search')).'" /> 
 	</div>
 	</form>';
 
@@ -1393,9 +1393,8 @@ function wlwmanifest_link() {
  * @since 2.1.0
  */
 function noindex() {
-	global $current_blog;
 	// If the blog is not public, tell robots to go away.
-	if ( '0' == $current_blog->public )
+	if ( '0' == get_option('blog_public') )
 		echo "<meta name='robots' content='noindex,nofollow' />\n";
 }
 
