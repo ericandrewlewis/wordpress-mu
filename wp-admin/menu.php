@@ -63,7 +63,7 @@ $menu[30] = array( __('Appearance'), 'switch_themes', 'themes.php', '', 'menu-to
 $update_plugins = get_option( 'update_plugins' );
 $update_count = 0;
 if ( !empty($update_plugins->response) )
-	$update_count = count( $update_plugins->response );
+	$update_count = is_site_admin() ? count( $update_plugins->response ) : 0;
 
 $menu[35] = array( sprintf( __('Plugins %s'), "<span class='update-plugins count-$update_count'><span class='plugin-count'>" . number_format_i18n($update_count) . "</span></span>" ), 'activate_plugins', 'plugins.php', '', 'menu-top', 'menu-plugins', 'div' );
 	$submenu['plugins.php'][5]  = array( __('Installed'), 'activate_plugins', 'plugins.php' );
