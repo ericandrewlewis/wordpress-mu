@@ -235,7 +235,6 @@ switch ($_REQUEST['ajax']) {
 		// gather images and load some default JS
 		var last = null
 		var img, img_tag, aspect, w, h, skip, i, strtoappend = "";
-		if(!my_src) {
 			var my_src = eval(
 				jQuery.ajax({
 			   		type: "GET",
@@ -246,7 +245,23 @@ switch ($_REQUEST['ajax']) {
 					dataType : "script"
 				}).responseText
 			);
-		}
+			if(my_src.length == 0) {
+				var my_src = eval(
+				jQuery.ajax({
+			   		type: "GET",
+			   		url: "<?php echo clean_url($_SERVER['PHP_SELF']); ?>",
+					cache : false,
+					async : false,
+			   		data: "ajax=photo_images&u=<?php echo urlencode($url); ?>",
+					dataType : "script"
+				}).responseText
+				);
+				if(my_src.length == 0) {
+	
+					strtoappend = '<?php _e('Unable to retrieve images or no images on page.'); ?>';
+				}
+			}
+		
 
 		for (i = 0; i < my_src.length; i++) {
 			img = new Image();
@@ -293,14 +308,19 @@ switch ($_REQUEST['ajax']) {
 		}
 
 		jQuery(document).ready(function() {
-			jQuery('#extra_fields').html('<div class="postbox"><h2>Photo <small id="photo_directions">(<?php _e("click images to select") ?>)</small></h2><ul id="actions"><li><a href="#" id="photo_add_url" class="thickbox button"><?php _e("Add from URL") ?> +</a></li></ul><div class="inside"><div class="titlewrap"><div id="img_container"></div></div><p id="options"><a href="#" class="close button"><?php _e('Cancel'); ?></a></p></div>');
+			jQuery('#extra_fields').html('<div class="postbox"><h2>Photo <small id="photo_directions">(<?php _e("click images to select") ?>)</small></h2><ul id="actions"><li><a href="#" id="photo_add_url" class="thickbox button"><?php _e("Add from URL") ?> +</a></li></ul><div class="inside"><div class="titlewrap"><div id="img_container"></div></div><p id="options"><a href="#" class="close button"><?php _e('Cancel'); ?></a><a href="#" class="refresh button"><?php _e('Refresh'); ?></a></p></div>');
 			jQuery('.close').click(function() {
 				jQuery('#extra_fields').hide();
 				jQuery('#extra_fields').html('');
 			});
+			jQuery('.refresh').click(function() {
+						show('photo');
+					});
 			jQuery('#img_container').html(strtoappend);
 			jQuery('#photo_add_url').attr('href', '?ajax=photo_thickbox_url&height=200&width=500');
 			tb_init('#extra_fields .thickbox');
+			
+			
 		});
 		<?php break;
 }
@@ -412,10 +432,10 @@ die;
 				break;
 		}
 	}
-
 	jQuery(document).ready(function() {
 		//resize screen
-		top.resizeTo(720-screen.width+screen.availWidth,660-screen.height+screen.availHeight);
+		window.resizeTo(720,570);
+		
     	jQuery('#photo_button').click(function() { show('photo'); return false; });
 		jQuery('#video_button').click(function() { show('video'); return false; });
 		jQuery('#visual_mode_button').click(function() {
@@ -448,7 +468,7 @@ die;
 			
 			<?php wp_nonce_field('press-this') ?>
 			<input type="hidden" name="post_type" id="post_type" value="text"/>
-		
+		<input type="hidden" name="autosave" id="autosave" />
 			<!-- This div holds the photo metadata -->
 			<div class="photolist"></div>
 		
@@ -543,7 +563,7 @@ die;
 				<div class="editor-container">
 					<textarea name="content" id="content" style="width:100%;" class="mceEditor" rows="15">
 					<?php if ($selection) echo wp_richedit_pre(htmlspecialchars_decode($selection)); ?>
-					<?php if ($url) { echo '<p>'; if($selection) _e('via '); echo "<a href='$url'>$title</a>"; echo '</p>'; } ?>
+					<?php if ($url) { echo '<p>'; if($selection) _e('via '); echo "<a href='$url'>$title</a>."; echo '</p>'; } ?>
 					</textarea>
 				</div>
 			

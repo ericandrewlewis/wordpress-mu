@@ -635,7 +635,25 @@ function wp_list_pages($args = '') {
 }
 
 /**
- * Display menu of pages.
+ * Display or retrieve list of pages with optional home link.
+ *
+ * The arguments are listed below and part of the arguments are for {@link
+ * wp_list_pages()} function. Check that function for more info on those
+ * arguments.
+ *
+ * <ul>
+ * <li><strong>sort_column</strong> - How to sort the list of pages. Defaults
+ * to page title. Use column for posts table.</li>
+ * <li><strong>menu_class</strong> - Class to use for the div ID which contains
+ * the page list. Defaults to 'menu'.</li>
+ * <li><strong>echo</strong> - Whether to echo list or return it. Defaults to
+ * echo.</li>
+ * <li><strong>link_before</strong> - Text before show_home argument text.</li>
+ * <li><strong>link_after</strong> - Text after show_home argument text.</li>
+ * <li><strong>show_home</strong> - If you set this argument, then it will
+ * display the link to the home page. The show_home argument really just needs
+ * to be set to the value of the text of the link.</li>
+ * </ul>
  *
  * @since 2.7.0
  *
@@ -649,7 +667,7 @@ function wp_page_menu( $args = array() ) {
 	$menu = '';
 
 	// Show Home in the menu
-	if ( !empty($args['show_home']) ) {
+	if ( isset($args['show_home']) && ! empty($args['show_home']) ) {
 		if ( true === $args['show_home'] || '1' === $args['show_home'] || 1 === $args['show_home'] )
 			$text = __('Home');
 		else
@@ -687,9 +705,9 @@ function wp_page_menu( $args = array() ) {
  * @since 2.1.0
  * @see Walker_Page::walk() for parameters and return description.
  */
-function walk_page_tree() {
+function walk_page_tree($pages, $depth, $current_page, $r) {
 	$walker = new Walker_Page;
-	$args = func_get_args();
+	$args = array($pages, $depth, $r, $current_page);
 	return call_user_func_array(array(&$walker, 'walk'), $args);
 }
 
@@ -739,7 +757,7 @@ function the_attachment_link($id = 0, $fullsize = false, $deprecated = false, $p
  * @param bool $icon Optional, default is false. Whether to include icon.
  * @return string HTML content.
  */
-function wp_get_attachment_link($id = 0, $size = 'thumbnail', $permalink = false, $icon = false) {
+function wp_get_attachment_link($id = 0, $size = 'thumbnail', $permalink = false, $icon = false, $imgwidth = false) {
 	$id = intval($id);
 	$_post = & get_post( $id );
 
@@ -751,7 +769,7 @@ function wp_get_attachment_link($id = 0, $size = 'thumbnail', $permalink = false
 
 	$post_title = attribute_escape($_post->post_title);
 
-	$link_text = wp_get_attachment_image($id, $size, $icon);
+	$link_text = wp_get_attachment_image($id, $size, $icon, $imgwidth);
 	if ( !$link_text )
 		$link_text = $_post->post_title;
 

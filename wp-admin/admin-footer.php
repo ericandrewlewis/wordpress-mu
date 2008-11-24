@@ -7,13 +7,13 @@
  */
 ?>
 
-<div class="clear" /></div></div><!-- wpbody-content -->
+<div class="clear"></div></div><!-- wpbody-content -->
 </div><!-- wpbody -->
-<div class="clear" /></div></div><!-- wpcontent -->
+<div class="clear"></div></div><!-- wpcontent -->
 </div><!-- wpwrap -->
 
 <div id="footer">
-<p><?php
+<p id="footer-left" class="alignleft"><?php
 do_action( 'in_admin_footer' );
 $upgrade = '';
 $footer_text = __('Thank you for creating with <a href="http://mu.wordpress.org/">WordPress MU</a>');

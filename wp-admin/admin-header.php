@@ -30,17 +30,23 @@ wp_admin_css( 'css/ie' );
 addLoadEvent = function(func) {if (typeof jQuery != "undefined") jQuery(document).ready(func); else if (typeof wpOnload!='function'){wpOnload=func;} else {var oldonload=wpOnload; wpOnload=function(){oldonload();func();}}};
 
 function convertEntities(o) {
-	var p = document.createElement('p');
-	var c = function(s) { p.innerHTML = s; return p.innerHTML; }
+	var c = function(s) {
+		if (/&[^;]+;/.test(s)) {
+			var e = document.createElement("div");
+			e.innerHTML = s;
+			return !e.firstChild ? s : e.firstChild.nodeValue;
+		}
+		return s;
+	}
 
-	if ( typeof o === 'object' )
-		for (var v in o)
-			o[v] = c(o[v]);
-
-	else if ( typeof o === 'string' )
+	if ( typeof o === 'string' )
 		return c(o);
-
-	p = null;
+	else if ( typeof o === 'object' )
+		for (var v in o) {
+			if ( typeof o[v] === 'string' )
+				o[v] = c(o[v]);
+		}
+	return o;
 };
 //]]>
 </script>
