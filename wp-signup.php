@@ -359,7 +359,7 @@ function confirm_blog_signup($domain, $path, $blog_title, $user_name = '', $user
 	<p>
 		<?php _e("If you haven't received your email yet, there are a number of things you can do:") ?>
 		<ul>
-			<li><p><strong><?php _e('Wait a little longer.  Sometimes delivery of email can be delayed by precesses outside of our control.') ?></strong></p></li>
+			<li><p><strong><?php _e('Wait a little longer.  Sometimes delivery of email can be delayed by processes outside of our control.') ?></strong></p></li>
 			<li><p><?php _e('Check the junk email or spam folder of your email client.  Sometime emails wind up there by mistake.') ?></p></li>
 			<li><?php printf(__("Have you entered your email correctly?  We think it's %s but if you've entered it incorrectly, you won't receive it."), $user_email) ?></li>
 		</ul>
