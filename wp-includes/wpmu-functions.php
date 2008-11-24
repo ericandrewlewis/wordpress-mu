@@ -132,7 +132,7 @@ function get_blog_details( $id, $getall = true ) {
 			return $details;
 	}
 
-	$details = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE blog_id = %d", $id) ); // get_blog_details ?
+	$details = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE blog_id = %d /* get_blog_details */", $id) );
 	if ( !$details ) {
 		wp_cache_set( $id . $all, -1, 'blog-details' );
 		return false;
@@ -729,6 +729,30 @@ function get_blog_permalink( $blog_id, $post_id ) {
 	return $link;
 }
 
+function get_blog_id_from_url( $domain, $path = '/' ) {
+	global $wpdb;
+
+	$domain = strtolower( $wpdb->escape( $domain ) );
+	$path = strtolower( $wpdb->escape( $path ) );
+	$id = wp_cache_get( md5( $domain . $path ), 'blog-id-cache' );
+
+	if( $id == -1 ) { // blog does not exist
+		return 0;
+	} elseif( $id ) {
+		return (int)$id;
+	}
+
+	$id = $wpdb->get_var( "SELECT blog_id FROM $wpdb->blogs WHERE domain = '$domain' and path = '$path' /* get_blog_id_from_url */" );
+
+	if ( !$id ) {
+		wp_cache_set( md5( $domain . $path ), -1, 'blog-id-cache' );
+		return false;
+	}
+	wp_cache_set( md5( $domain . $path ), $id, 'blog-id-cache' );
+
+	return $id;
+}
+
 // wpmu admin functions
 
 function wpmu_admin_do_redirect( $url = '' ) {
@@ -737,7 +761,7 @@ function wpmu_admin_do_redirect( $url = '' ) {
 		$ref = $_GET['ref'];
 	if ( isset( $_POST['ref'] ) )
 		$ref = $_POST['ref'];
-	
+
 	if( $ref ) {
 		$ref = wpmu_admin_redirect_add_updated_param( $ref );
 		wp_redirect( $ref );
@@ -822,7 +846,7 @@ function is_email_address_unsafe( $user_email ) {
 					strstr( $banned_domain, '/' ) &&
 					preg_match( $banned_domain, $email_domain )
 				)
-			) 
+			)
 			return true;
 		}
 	}
