@@ -415,8 +415,7 @@ function get_blogs_of_user( $id, $all = false ) {
 
 	$blogs = $match = array();
 	foreach ( (array) $user as $key => $value ) {
-		if ( strstr( $key, '_capabilities') && strstr( $key, $wpdb->base_prefix) ) {
-			preg_match('/' . $wpdb->base_prefix . '(\d+)_capabilities/', $key, $match);
+		if ( false !== strpos( $key, '_capabilities') && 0 === strpos( $key, $wpdb->base_prefix ) && preg_match( '/' . $wpdb->base_prefix . '(\d+)_capabilities/', $key, $match ) ) {
 			$blog = get_blog_details( $match[1] );
 			if ( $blog && isset( $blog->domain ) && ( $all == true || $all == false && ( $blog->archived == 0 && $blog->spam == 0 && $blog->deleted == 0 ) ) ) {
 				$blogs[$match[1]]->userblog_id = $match[1];
@@ -445,6 +444,8 @@ function get_active_blog_for_user( $user_id ) { // get an active blog for user -
 		$ret = false;
 		if( is_array( $blogs ) && count( $blogs ) > 0 ) {
 			foreach( (array) $blogs as $blog_id => $blog ) {
+				if ( $blog->site_id != $wpdb->siteid )
+					continue;
 				$details = get_blog_details( $blog_id );
 				if( is_object( $details ) && $details->archived == 0 && $details->spam == 0 && $details->deleted == 0 ) {
 					$ret = $blog;
