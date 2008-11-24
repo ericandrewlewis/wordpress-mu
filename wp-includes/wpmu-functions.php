@@ -83,9 +83,9 @@ function get_admin_users_for_domain( $sitedomain = '', $path = '' ) {
 	} else {
 		$site_id = $wpdb->get_var( $wpdb->prepare("SELECT id FROM $wpdb->site WHERE domain = %s AND path = %s", $sitedomain, $path) );
 	}
-	
+
 	if( $site_id != false ) {
-		return $wpdb->get_results( $wpdb->prepare("SELECT u.ID, u.user_login, u.user_pass FROM $wpdb->users AS u, $wpdb->sitemeta AS sm WHERE sm.meta_key = 'admin_user_id' AND u.ID = %d AND sm.site_id = %d", $wpdb->sitemeta.'.meta_value', $site_id), ARRAY_A );
+		return $wpdb->get_results( $wpdb->prepare("SELECT u.ID, u.user_login, u.user_pass FROM $wpdb->users AS u, $wpdb->sitemeta AS sm WHERE sm.meta_key = 'admin_user_id' AND u.ID = sm.meta_value AND sm.site_id = %d", $site_id), ARRAY_A );
 	}
 	return false;
 }
@@ -1303,13 +1303,13 @@ function insert_blog($domain, $path, $site_id) {
 // Install an empty blog.  wpdb should already be switched.
 function install_blog($blog_id, $blog_title = '') {
 	global $wpdb, $table_prefix, $wp_roles;
-	
+	$wpdb->suppress_errors();
+
 	// Cast for security
 	$blog_id = (int) $blog_id;
 
 	require_once( ABSPATH . 'wp-admin/includes/upgrade.php');
-	
-	$wpdb->suppress_errors();
+
 	if ( $wpdb->get_results("SELECT ID FROM $wpdb->posts") ) 
 		die(__('<h1>Already Installed</h1><p>You appear to have already installed WordPress. To reinstall please clear your old database tables first.</p>') . '</body></html>');
 	$wpdb->suppress_errors( false);
@@ -1321,7 +1321,7 @@ function install_blog($blog_id, $blog_title = '') {
 	populate_options();
 	populate_roles();
 	$wp_roles->_init();
-	
+
 	// fix url.
 	update_option('siteurl', $url);
 	update_option('home', $url);
@@ -1352,8 +1352,6 @@ function install_blog($blog_id, $blog_title = '') {
 	$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key = %s", $table_prefix.'user_level') );
 	$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key = %s", $table_prefix.'capabilities') );
 
-	wp_cache_delete('notoptions', 'options');
-	wp_cache_delete('alloptions', 'options');
 
 	$wpdb->suppress_errors( false );
 }
