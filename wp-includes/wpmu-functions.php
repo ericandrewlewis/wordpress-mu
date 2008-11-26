@@ -432,6 +432,7 @@ function get_blogs_of_user( $id, $all = false ) {
 }
 
 function get_active_blog_for_user( $user_id ) { // get an active blog for user - either primary blog or from blogs list
+	global $wpdb;
 	$primary_blog = get_usermeta( $user_id, "primary_blog" );
 	if( $primary_blog == false ) {
 		$details = false;
