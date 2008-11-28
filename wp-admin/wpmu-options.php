@@ -70,6 +70,16 @@ if (isset($_GET['updated'])) {
 			</tr> 
 
 			<tr valign="top"> 
+				<th scope="row"><?php _e('Add New Users') ?></th> 
+				<td>
+					<a name='addnewusers'></a>
+					<input name="add_new_users" type="radio" id="add_new_users1" value='1' <?php echo get_site_option('add_new_users') == 1 ? 'checked="checked"' : ''; ?> /> <?php _e('Yes'); ?><br />
+					<input name="add_new_users" type="radio" id="add_new_users2" value='0' <?php echo get_site_option('add_new_users') == 0 ? 'checked="checked"' : ''; ?> /> <?php _e('No'); ?><br />
+					<?php _e('Allow blog administrators to add new users to their blog via the Users->Add New page.') ?>
+				</td> 
+			</tr> 
+
+			<tr valign="top"> 
 				<th scope="row"><?php _e('Welcome Email') ?></th> 
 				<td>
 					<textarea name="welcome_email" id="welcome_email" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('welcome_email') ) ?></textarea>
@@ -188,6 +198,7 @@ if (isset($_GET['updated'])) {
 				<th scope="row"><?php _e("Menu"); ?></th>
 				<th scope="row"><?php _e("Enabled"); ?></th>
 			</tr>
+			<a name='menu'></a>
 			<?php
 			$menu_perms = get_site_option( "menu_items" );
 			$menu_items = apply_filters( 'mu_menu_items', array('plugins' => __('Plugins')) );			

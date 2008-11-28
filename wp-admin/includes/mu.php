@@ -431,11 +431,27 @@ function wpmu_menu() {
 	if( is_array( $menu_perms ) == false )
 		$menu_perms = array();
 	if( $menu_perms[ 'plugins' ] != 1 ) {
-		unset( $submenu['plugins.php'][5] );
-		unset( $menu['35'] ); // Plugins
+		if( !is_site_admin() ) {
+			unset( $submenu['plugins.php'][5] );
+			unset( $menu['35'] ); // Plugins
+		} else {
+			$menu[ '35' ][0] .= ' <strong>*</strong>';
+			$menu[ '35' ][2] = 'wpmu-options.php#menu';
+		}
 	}
+	if( !is_site_admin() )
+		unset( $submenu['plugins.php'][10] ); // always remove the plugin installer
 	unset( $submenu['plugins.php'][15] ); // always remove the plugin editor
 	unset( $submenu['themes.php'][15] ); // always remove the themes editor
+
+	if( !get_site_option( 'add_new_users' ) ) {
+		if( !is_site_admin() ) {
+			unset( $submenu['users.php'][10] );
+		} else {
+			$submenu['users.php'][10] = array(__('Add New') . ' <strong>*</strong>', 'create_users', 'wpmu-options.php#addnewusers');
+		}
+	}
+
 }
 add_action( '_admin_menu', 'wpmu_menu' );
 
@@ -695,4 +711,11 @@ function admin_notice_feed() {
 	}
 }
 add_action( 'admin_notices', 'admin_notice_feed' );
+
+function site_admin_notice() {
+	global $current_user;
+	if( is_site_admin() )
+		echo "<div id='update-nag'>Hi {$current_user->user_login}! You're logged in as a site administrator.</div>";
+}
+add_action( 'admin_notices', 'site_admin_notice' );
 ?>

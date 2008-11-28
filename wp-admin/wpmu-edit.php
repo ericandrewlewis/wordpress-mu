@@ -38,6 +38,7 @@ switch( $_GET['action'] ) {
 
 		update_site_option( "registration", $_POST['registration'] );
 		update_site_option( "registrationnotification", $_POST['registrationnotification'] );
+		update_site_option( "add_new_users", $_POST['add_new_users'] );
 
 		if( $_POST['limited_email_domains'] != '' ) {
 			$limited_email_domains = str_replace( ' ', "\n", $_POST[ 'limited_email_domains' ] );
