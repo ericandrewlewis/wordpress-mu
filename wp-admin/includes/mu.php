@@ -26,7 +26,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 
 	if ( $blog_id != $wpdb->blogid ) {
 		$switch = true;
-		switch_to_blog($blog_id);	
+		switch_to_blog($blog_id);
 	}
 
 	do_action('delete_blog', $blog_id, $drop);
@@ -45,10 +45,9 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		$drop_tables = apply_filters( 'wpmu_drop_tables', $drop_tables ); 
 
 		reset( $drop_tables );
-		foreach ( (array) $drop_tables as $name ) {
-			$wpdb->query( "DROP TABLE IF EXISTS ". current( $name ) ."" );
+		foreach ( (array) $drop_tables as $drop_table) {
+			$wpdb->query( "DROP TABLE IF EXISTS ". current( $drop_table ) ."" );
 		}
-
 		$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->blogs WHERE blog_id = %d", $blog_id) );
 		$dir = constant( "ABSPATH" ) . "wp-content/blogs.dir/{$blog_id}/files/";
 		$dir = rtrim($dir, DIRECTORY_SEPARATOR);
@@ -81,7 +80,7 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 			@rmdir($dir);
 		}
 	}
-	$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->usermeta} WHERE meta_key = %s", 'wp_' . $blog_id . '_autosave_draft_ids') );
+	$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->usermeta} WHERE meta_key = %s", 'wp_{$blog_id}_autosave_draft_ids') );
 
 	if ( $switch === true )
 		restore_current_blog();
@@ -172,17 +171,17 @@ function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 	$themes = get_themes();
 	if( $blog_id == 0 )
 		$blog_allowed_themes = get_option( "allowedthemes" );
-	else 
+	else
 		$blog_allowed_themes = get_blog_option( $blog_id, "allowedthemes" );
 	if( !is_array( $blog_allowed_themes ) || empty( $blog_allowed_themes ) ) { // convert old allowed_themes to new allowedthemes
 		if( $blog_id == 0 )
 			$blog_allowed_themes = get_option( "allowed_themes" );
-		else 
+		else
 			$blog_allowed_themes = get_blog_option( $blog_id, "allowed_themes" );
-			
+
 		if( is_array( $blog_allowed_themes ) ) {
 			foreach( (array) $themes as $key => $theme ) {
-				$theme_key = wp_specialchars( $theme['Stylesheet'] );
+				$theme_key = wp_specialchars( $theme[ 'Stylesheet' ] );
 				if( isset( $blog_allowed_themes[ $key ] ) == true ) {
 					$blog_allowedthemes[ $theme_key ] = 1;
 				}
@@ -201,27 +200,39 @@ function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 }
 
 function update_option_new_admin_email($old_value, $value) {
+	global $current_site;
 	if ( $value == get_option( 'admin_email' ) || !is_email( $value ) )
 		return;
 
 	$hash = md5( $value. time() .mt_rand() );
-	$new_admin_email = array( "hash" => $hash, "newemail" => $value );
+	$new_admin_email = array(
+		"hash" => $hash,
+		"newemail" => $value
+	);
 	update_option( 'adminhash', $new_admin_email );
 	
-	$content = __("Dear user,\n\n
+	$content = apply_filters( 'new_admin_email_content', __("Dear user,
+
 You recently requested to have the administration email address on 
-your blog changed.\n
-If this is correct, please click on the following link to change it:\n
-###ADMIN_URL###\n\n
-You can safely ignore and delete this email if you do not want to take this action.\n\n
-This email has been sent to ###EMAIL###\n\n
-Regards,\n
-The Webmaster");
+your blog changed.
+If this is correct, please click on the following link to change it:
+###ADMIN_URL###
+
+You can safely ignore and delete this email if you do not want to
+take this action.
+
+This email has been sent to ###EMAIL###
+
+Regards,
+All at ###SITENAME###
+###SITEURL###"), $new_admin_email );
 	
 	$content = str_replace('###ADMIN_URL###', clean_url(get_option( "siteurl" ).'/wp-admin/options.php?adminhash='.$hash), $content);
 	$content = str_replace('###EMAIL###', $value, $content);
+	$content = str_replace('###SITENAME###', get_site_option( 'site_name' ), $content);
+	$content = str_replace('###SITEURL###', 'http://' . $current_site->domain . $current_site->path, $content);
 	
-	wp_mail( $value, sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
+	wp_mail( $value, "[ " . get_option( 'blogname' ) . " ]" . sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
 }
 add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
 
@@ -384,41 +395,28 @@ function sync_slugs( $term, $taxonomy, $args ) {
 add_filter( 'pre_update_term', 'sync_slugs', 10, 3 );
 
 function redirect_user_to_blog() {
-	global $wpdb, $current_user, $current_site;
-	get_currentuserinfo();
-	$primary_blog = (int) get_usermeta( $current_user->ID, 'primary_blog' );
-	if( !$primary_blog )
-		$primary_blog = 1;
-
-	$newblog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->blogs} WHERE blog_id = %d", $primary_blog ) );
-	if( $newblog != null ) {
-		$blogs = get_blogs_of_user( $current_user->ID );
-		if ( empty($blogs) || $blogs == false ) { // If user has no blog
-			add_user_to_blog('1', $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
-			wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
-			exit();
-		}
-
-		foreach ( (array) $blogs as $blog ) {
-			if ( $blog->userblog_id == $newblog->blog_id ) {
-				wp_redirect( 'http://' . $newblog->domain . $newblog->path . 'wp-admin/' );
-				exit();
-			}
-		}
-
-		reset( $blogs );
-		$blog = current( $blogs ); // Take the first blog...
-		wp_redirect( 'http://' . $blog->domain . $blog->path. 'wp-admin/' );
+	global $current_user, $current_site;
+	$details = get_active_blog_for_user( $current_user->ID );
+	if( !is_object( $details ) ) {
+		header( "Location: http://" . $current_site->domain . $current_site->path );
+		exit;
+	} elseif( $details == "username only" ) {
+		add_user_to_blog( get_blog_id_from_url( $current_site->domain, $current_site->path ), $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
+		wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
 		exit();
+	} else {
+		header( "Location: http://{$current_user->data->user_login}.wordpress.com/wp-admin/" );
+		exit;
 	}
+	wp_die( __('You do not have sufficient permissions to access this page.') );
 }
-add_action( 'admin_page_access_denied', 'redirect_user_to_blog' );
+add_action( 'admin_page_access_denied', 'redirect_user_to_blog', 99 );
 
 function wpmu_menu() {
 	global $menu, $submenu;
 
 	if( is_site_admin() ) {
-		$menu[29] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'wp-menu-open menu-top', 'menu-site', 'div');
+		$menu[4] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'wp-menu-open menu-top', 'menu-site', 'div');
 		$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
 		$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
 		$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
@@ -464,6 +462,8 @@ function mu_options( $options ) {
 	);
 
 	$added = array( 'general' => array( 'new_admin_email', 'WPLANG', 'language' ) );
+
+	unset( $options[ 'misc' ] );
 
 	$options = remove_option_whitelist( $removed, $options );
 	$options = add_option_whitelist( $added, $options );
