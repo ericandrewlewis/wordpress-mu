@@ -135,6 +135,7 @@ case 'delete':
 <?php echo $referer; ?>
 
 <div class="wrap">
+<?php screen_icon(); ?>
 <h2><?php _e('Delete Users'); ?></h2>
 <p><?php _e('You have specified these users for deletion:'); ?></p>
 <ul>
@@ -237,6 +238,7 @@ if ( ! empty($messages) ) {
 } ?>
 
 <div class="wrap">
+<?php screen_icon(); ?>
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
 
 <div class="filter">

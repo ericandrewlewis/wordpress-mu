@@ -39,8 +39,8 @@ $time_format = get_option('time_format');
 
 wp_reset_vars(array('profile', 'redirect', 'redirect_url', 'a', 'popuptitle', 'popupurl', 'text', 'trackback', 'pingback'));
 
-wp_admin_css_color('classic', __('Classic'), admin_url("css/colors-classic.css"), array('#07273E', '#14568A', '#D54E21', '#2683AE'));
-wp_admin_css_color('fresh', __('Fresh'), admin_url("css/colors-fresh.css"), array('#464646', '#CEE1EF', '#D54E21', '#2683AE'));
+wp_admin_css_color('classic', __('Bold'), admin_url("css/colors-classic.css"), array('#6D6D6D', '#F1F1F1', '#DFDFDF', '#E3E3E3'));
+wp_admin_css_color('fresh', __('Subtle'), admin_url("css/colors-fresh.css"), array('#6D6D6D', '#F1F1F1', '#DFDFDF', '#E3E3E3'));
 
 wp_enqueue_script( 'common' );
 wp_enqueue_script( 'jquery-color' );
@@ -61,8 +61,8 @@ if (isset($plugin_page)) {
 	if( ! $page_hook = get_plugin_page_hook($plugin_page, $pagenow) ) {
 		$page_hook = get_plugin_page_hook($plugin_page, $plugin_page);
 		// backwards compatibility for plugins using add_management_page
-		if ( empty( $page_hook ) && 'edit.php' == $pagenow && '' != get_plugin_page_hook($plugin_page, 'import.php') ) {
-			wp_redirect('import.php?page=' . $plugin_page);
+		if ( empty( $page_hook ) && 'edit.php' == $pagenow && '' != get_plugin_page_hook($plugin_page, 'tools.php') ) {
+			wp_redirect('tool.php?page=' . $plugin_page);
 			exit;
 		}
 	}
@@ -78,7 +78,7 @@ if (isset($plugin_page)) {
 			wp_die(__('Invalid plugin page'));
 		}
 
-		if (! ( file_exists(WP_PLUGIN_DIR . "/$plugin_page") && is_file(WP_PLUGIN_DIR . "/$plugin_page") ) || (file_exists(WPMU_PLUGIN_DIR . "/$plugin_page") && is_file(WPMU_PLUGIN_DIR . "/$plugin_page")))
+		if (! ( file_exists(WP_PLUGIN_DIR . "/$plugin_page") && is_file(WP_PLUGIN_DIR . "/$plugin_page") ) )
 			wp_die(sprintf(__('Cannot load %s.'), htmlentities($plugin_page)));
 
 		do_action('load-' . $plugin_page);
@@ -116,7 +116,7 @@ if (isset($plugin_page)) {
 		include(ABSPATH . "wp-admin/import/$importer.php");
 	}
 
-	$parent_file = 'users.php';
+	$parent_file = 'tools.php';
 	$submenu_file = 'import.php';
 	$title = __('Import');
 

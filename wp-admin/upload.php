@@ -163,6 +163,7 @@ if ( isset($_GET['message']) && (int) $_GET['message'] ) {
 <?php do_action('restrict_manage_posts'); ?>
 
 <div class="wrap">
+<?php screen_icon(); ?>
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
 
 <?php
@@ -220,8 +221,8 @@ if ( ! isset($page_links_total) )
 $page_links = paginate_links( array(
 	'base' => add_query_arg( 'paged', '%#%' ),
 	'format' => '',
-	'prev_text' => __('&larr;'),
-	'next_text' => __('&rarr;'),
+	'prev_text' => __('&laquo;'),
+	'next_text' => __('&raquo;'),
 	'total' => $page_links_total,
 	'current' => $_GET['paged']
 ));

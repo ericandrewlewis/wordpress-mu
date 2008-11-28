@@ -15,24 +15,9 @@
 				if ( el.nodeName != 'IMG' ) return;
 				if ( ed.dom.getAttrib(el, 'class').indexOf('wpGallery') == -1 )	return;
 
-				tb_show('', url + '/gallery.html?ver=321&TB_iframe=true');
-				tinymce.DOM.setStyles('TB_window', {
-					'width':( W - 50 )+'px',
-					'height':'430px',
-					'margin-left':'-'+parseInt((( W - 50 ) / 2),10) + 'px'
-				});
+				var post_id = tinymce.DOM.get('post_ID').value;
+				tb_show('', tinymce.documentBaseURL + '/media-upload.php?post_id='+post_id+'&tab=gallery&TB_iframe=true');
 
-				if ( ! tinymce.isIE6 ) {
-					tinymce.DOM.setStyles('TB_window', {
-						'top':'30px',
-						'marginTop':'0'
-					});
-				}
-
-				tinymce.DOM.setStyles('TB_iframeContent', {
-					'width':( W - 50 )+'px',
-					'height':'400px'
-				});
 				tinymce.DOM.setStyle( ['TB_overlay','TB_window','TB_load'], 'z-index', '999999' );
 			});
 
@@ -77,8 +62,8 @@
 		},
 
 		_do_gallery : function(co) {
-			return co.replace(/\[gallery([^\]]*)\]/g, function(a){
-				return '<img src="'+tinymce.baseURL+'/plugins/wpgallery/img/t.gif" class="wpGallery" title="'+tinymce.DOM.encode(a)+'" />';
+			return co.replace(/\[gallery([^\]]*)\]/g, function(a,b){
+				return '<img src="'+tinymce.baseURL+'/plugins/wpgallery/img/t.gif" class="wpGallery mceItem" title="gallery'+tinymce.DOM.encode(b)+'" />';
 			});
 		},
 
@@ -93,9 +78,9 @@
 				var cls = getAttr(im, 'class');
 
 				if ( cls.indexOf('wpGallery') != -1 )
-					return '<p>'+getAttr(im, 'title')+'</p>';
+					return '<p>['+tinymce.trim(getAttr(im, 'title'))+']</p>';
 
-				return im;
+				return a;
 			});
 		},
 
@@ -143,7 +128,7 @@
 				id : 'wp_editgallery',
 				width : '24',
 				height : '24',
-				title : ed.getLang('wpgallery.edit')
+				title : ed.getLang('wordpress.editgallery')
 			});
 
 			wp_editgallery.onmousedown = function(e) {
@@ -158,13 +143,13 @@
 				id : 'wp_delgallery',
 				width : '24',
 				height : '24',
-				title : ed.getLang('wpgallery.del')
+				title : ed.getLang('wordpress.delgallery')
 			});
 
 			wp_delgallery.onmousedown = function(e) {
 				var ed = tinyMCE.activeEditor, el = ed.selection.getNode();
 
-				if ( el.nodeName == 'IMG' && ed.dom.getAttrib(el, 'class').indexOf('mceItemWPgallery') != -1 ) {
+				if ( el.nodeName == 'IMG' && ed.dom.getAttrib(el, 'class').indexOf('wpGallery') != -1 ) {
 					ed.dom.remove(el);
 
 					this.parentNode.style.display = 'none';

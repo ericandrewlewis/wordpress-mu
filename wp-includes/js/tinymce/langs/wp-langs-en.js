@@ -389,7 +389,9 @@ wp_page_alt:"Next page...",
 add_media:"Add Media",
 add_image:"Add an Image",
 add_video:"Add Video",
-add_audio:"Add Audio"
+add_audio:"Add Audio",
+editgallery:"Edit Gallery",
+delgallery:"Delete Gallery"
 });
 
 tinyMCE.addI18n("en.wpeditimage",{
@@ -426,30 +428,4 @@ s130:"130%",
 img_title:"Edit Image Title",
 caption:"Edit Image Caption",
 alt:"Edit Alternate Text"
-});
-
-tinyMCE.addI18n("en.gallery",{
-settings:"Gallery Settings",
-linkto:"Link thumbnails to:",
-linktofile:"Image File",
-linktopost:"Attachment Page",
-orderby:"Order images by:",
-menu_order:"Menu order",
-byname:"Name",
-bydate:"Date/Time",
-random:"Random",
-order:"Order:",
-orderasc:"Ascending",
-orderdesc:"Descending",
-cols:"Gallery columns:",
-two:"two",
-three:"three",
-four:"four",
-five:"five",
-six:"six",
-seven:"seven",
-eight:"eight",
-nine:"nine",
-imgwidth:"Limit the thumbnails width:",
-imgwidthhelp:"Overrides the thumbnail images width. The default can be changed from the Media Settings page."
 });

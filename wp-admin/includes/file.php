@@ -238,6 +238,7 @@ function wp_handle_upload( &$file, $overrides = false, $time = null ) {
 		__( "The uploaded file exceeds the <em>MAX_FILE_SIZE</em> directive that was specified in the HTML form." ),
 		__( "The uploaded file was only partially uploaded." ),
 		__( "No file was uploaded." ),
+		'',
 		__( "Missing a temporary folder." ),
 		__( "Failed to write file to disk." ));
 
@@ -705,6 +706,7 @@ jQuery(function($){
 </script>
 <form action="<?php echo $form_post ?>" method="post">
 <div class="wrap">
+<?php screen_icon(); ?>
 <h2><?php _e('Connection Information') ?></h2>
 <p><?php _e('To perform the requested action, connection information is required.') ?></p>
 <table class="form-table">

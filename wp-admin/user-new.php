@@ -70,6 +70,7 @@ if ( isset($_REQUEST['action']) && 'adduser' == $_REQUEST['action'] ) {
 		}
 	}
 }
+
 $title = __('Add New User');
 $parent_file = 'users.php';
 
@@ -91,6 +92,7 @@ switch( $_GET[ 'update' ] ) {
 
 ?>
 <div class="wrap">
+<?php screen_icon(); ?>
 <h2 id="add-new-user"><?php _e('Add New User') ?></h2>
 
 <?php if ( isset($errors) && is_wp_error( $errors ) ) : ?>

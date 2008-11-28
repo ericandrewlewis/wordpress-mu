@@ -183,7 +183,8 @@ include ('admin-header.php');
 <?php } else { ?>
 
 <div class="wrap" id="profile-page">
-	<h2><?php echo wp_specialchars( $title ); ?></h2> 
+<?php screen_icon(); ?>
+<h2><?php echo wp_specialchars( $title ); ?></h2> 
 
 <form id="your-profile" action="" method="post">
 <?php wp_nonce_field('update-user_' . $user_id) ?>

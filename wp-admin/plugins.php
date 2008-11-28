@@ -208,6 +208,7 @@ if ( !empty($invalid) )
 <?php endif; ?>
 
 <div class="wrap">
+<?php screen_icon(); ?>
 	<h2><?php echo wp_specialchars( $title ); ?></h2> 
 
 <p><?php _e('Plugins extend and expand the functionality of WordPress. Once a plugin is installed, you may activate it or deactivate it here.'); ?></p>
@@ -286,15 +287,15 @@ function print_plugins_table($plugins, $context = '') {
 		$action_links = array();
 
 		if ( 'active' == $context )
-			$action_links[] = '<a href="' . wp_nonce_url('plugins.php?action=deactivate&amp;plugin=' . $plugin_file, 'deactivate-plugin_' . $plugin_file) . '" title="' . __('Deactivate this plugin') . '" class="delete">' . __('Deactivate') . '</a>';
+			$action_links[] = '<a href="' . wp_nonce_url('plugins.php?action=deactivate&amp;plugin=' . $plugin_file, 'deactivate-plugin_' . $plugin_file) . '" title="' . __('Deactivate this plugin') . '">' . __('Deactivate') . '</a>';
 		else //Inactive or Recently deactivated
 			$action_links[] = '<a href="' . wp_nonce_url('plugins.php?action=activate&amp;plugin=' . $plugin_file, 'activate-plugin_' . $plugin_file) . '" title="' . __('Activate this plugin') . '" class="edit">' . __('Activate') . '</a>';
 
 		if ( current_user_can('edit_plugins') && is_writable(WP_PLUGIN_DIR . '/' . $plugin_file) )
 			$action_links[] = '<a href="plugin-editor.php?file=' . $plugin_file . '" title="' . __('Open this file in the Plugin Editor') . '" class="edit">' . __('Edit') . '</a>';
 
-		$action_links = apply_filters('plugin_action_links', $action_links, $plugin_file, $plugin_data, $context);
-		$action_links = apply_filters("plugin_action_links_$plugin_file", $action_links, $plugin_data, $context);
+		$action_links = apply_filters( 'plugin_action_links', $action_links, $plugin_file, $plugin_data, $context );
+		$action_links = apply_filters( "plugin_action_links_$plugin_file", $action_links, $plugin_file, $plugin_data, $context );
 
 		echo "
 	<tr class='$context'>
@@ -308,7 +309,7 @@ function print_plugins_table($plugins, $context = '') {
 		echo '</td>
 	</tr>';
 		do_action( 'after_plugin_row', $plugin_file, $plugin_data, $context );
-		do_action( "after_plugin_row_$plugin_file", $plugin_data, $context );
+		do_action( "after_plugin_row_$plugin_file", $plugin_file, $plugin_data, $context );
 	}
 ?>
 	</tbody>

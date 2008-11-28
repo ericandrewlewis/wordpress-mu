@@ -271,8 +271,8 @@ function display_plugins_table($plugins, $page = 1, $totalpages = 1){
 			$page_links = paginate_links( array(
 				'base' => add_query_arg('paged', '%#%', $url),
 				'format' => '',
-				'prev_text' => __('&larr;'),
-				'next_text' => __('&rarr;'),
+				'prev_text' => __('&laquo;'),
+				'next_text' => __('&raquo;'),
 				'total' => $totalpages,
 				'current' => $page
 			));
@@ -547,6 +547,7 @@ function upload_plugin() {
 	check_admin_referer('plugin-upload');
 
 	echo '<div class="wrap">';
+	screen_icon();
 	echo '<h2>', sprintf( __('Installing Plugin from file: %s'), basename($filename) ), '</h2>';
 
 	//Handle a newly uploaded file, Else assume it was 
@@ -583,6 +584,7 @@ function install_plugin() {
 		wp_die($api);
 
 	echo '<div class="wrap">';
+	screen_icon();
 	echo '<h2>', sprintf( __('Installing Plugin: %s'), $api->name . ' ' . $api->version ), '</h2>';
 
 	do_plugin_install($api->download_link, $api);

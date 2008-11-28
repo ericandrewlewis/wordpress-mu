@@ -60,6 +60,7 @@ $messages[5] = __('Category not updated.');
 $messages[6] = __('Categories deleted.'); ?>
 
 <div class="wrap nosubsub">
+<?php screen_icon(); ?>
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
 
 <?php if ( isset($_GET['message']) && ( $msg = (int) $_GET['message'] ) ) : ?>
@@ -93,8 +94,8 @@ if( ! isset( $catsperpage ) || $catsperpage < 0 )
 $page_links = paginate_links( array(
 	'base' => add_query_arg( 'pagenum', '%#%' ),
 	'format' => '',
-	'prev_text' => __('&larr;'),
-	'next_text' => __('&rarr;'),
+	'prev_text' => __('&laquo;'),
+	'next_text' => __('&raquo;'),
 	'total' => ceil(wp_count_terms('link_category') / $catsperpage),
 	'current' => $pagenum
 ));

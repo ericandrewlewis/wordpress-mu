@@ -8,7 +8,7 @@
 ?>
 
 <div class="clear"></div></div><!-- wpbody-content -->
-</div><!-- wpbody -->
+<div class="clear"></div></div><!-- wpbody -->
 <div class="clear"></div></div><!-- wpcontent -->
 </div><!-- wpwrap -->
 
@@ -22,8 +22,9 @@ if( is_site_admin() ) {
 	$footer_text .= ' ' . $wpmu_version;
 }
 $footer_text .= ' | ' . __('<a href="http://mu.wordpress.org/docs/">Documentation</a>');
-echo apply_filters( 'admin_footer_text', $footer_text ) . ' ' . $upgrade;
-?></p>
+echo '<span id="footer-thankyou">' . apply_filters( 'admin_footer_text', $footer_text ) . '</span>';
+<p id="footer-upgrade" class="alignright"><?php echo $upgrade; ?></p>
+<div class="clear"></div>
 </div>
 <?php do_action('admin_footer', ''); ?>
 <script type="text/javascript">if(typeof wpOnload=='function')wpOnload();</script>

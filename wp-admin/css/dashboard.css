@@ -1,3 +1,5 @@
+.postbox p, .postbox ul, .postbox ol, .postbox blockquote, #wp-version-message { font-size: 11px; }
+
 .edit-box {
 	display: none;
 }
@@ -77,10 +79,13 @@ div.postbox div.inside {
 
 #dashboard-widgets h3 a {
 	text-decoration: underline;
+	position: absolute;
+	right: 30px;
 }
 
 #dashboard-widgets h4 {
-	font-size: 1em;
+	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
+	font-size: 13px;
 	margin: 0 0 .2em;
 	padding: 0;
 }
@@ -195,6 +200,16 @@ div.postbox div.inside {
 	margin-bottom: 0;
 }
 
+#dashboard_recent_comments .inside {
+	margin-top: 0;
+}
+
+#dashboard_recent_comments .comment-meta .approve {
+	font-style: italic;
+	font-family: "Lucida Sans", "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-size: 10px;
+}
+
 #the-comment-list {
 	position: relative;
 }
@@ -202,6 +217,10 @@ div.postbox div.inside {
 #the-comment-list .comment-item {
 	padding: 1em 10px 1em 70px;
 	border-top: 1px solid;
+}
+
+#the-comment-list .pingback {
+	padding-left: 9px !important;
 }
 
 #the-comment-list .comment-item,
@@ -225,10 +244,14 @@ div.postbox div.inside {
 	color: #999;
 }
 
+.comment-meta strong {
+	font-weight: normal;
+}
+
 #the-comment-list .comment-item h4 cite,
 #the-comment-list .comment-item h4 strong {
 	font-style: normal;
-	color: #333;
+	font-weight: normal;
 }
 
 #the-comment-list .comment-item p.comment-author {
@@ -247,15 +270,28 @@ div.postbox div.inside {
 	display: block;
 }
 
-#the-comment-list .comment-item p.comment-actions {
-	margin: 0;
+#the-comment-list .comment-item p.row-actions {
+	margin: 3px 0 0;
 	padding: 0;
-	font-size: 11px;
+	font-size: 10px;
 }
+
+#the-comment-list .approve a { 
+	color: #006505; 
+} 
+
+#the-comment-list .unapprove a { 
+	color: #d98500; 
+} 
+
+#the-comment-list .delete a { 
+	color: #bc0b0b; 
+} 
 
 /* QuickPress */
 
 #dashboard_quick_press h4 {
+	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 	float: left;
 	width: 5.5em;
 	clear: both;
@@ -316,8 +352,10 @@ div.postbox div.inside {
 }
 
 #dashboard_recent_drafts h4 abbr {
-	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
+	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-size: 11px;
 	color: #999;
+	margin-left: 3px;
 }
 
 #dashboard_recent_drafts p {
@@ -335,6 +373,7 @@ div.postbox div.inside {
 
 a.rsswidget {
 	font-size: 13px;
+	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
 	line-height: 1.7em;
 }
 /*
@@ -347,11 +386,12 @@ a.rsswidget {
 */
 
 .rss-widget ul li {
-	line-height: 1.4em;
+	line-height: 1.5em;
+	margin-bottom: 12px;
 }
 
 .rss-widget span.rss-date {
-	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
+	margin-left: 3px;
 }
 
 .rss-widget cite {
@@ -367,8 +407,13 @@ a.rsswidget {
 
 /* Plugins */
 
+#dashboard_plugins h4 {
+	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+}
+
 #dashboard_plugins h5 {
-	font-size: 13px;
+	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
+	font-size: 13px !important;
 	margin: 0;
 	display: inline;
 	line-height: 1.4em;
@@ -380,6 +425,6 @@ a.rsswidget {
 }
 
 #dashboard_plugins p {
-	margin: 0 0 1em;
+	margin: 0 0 1.4em;
 	line-height: 1.4em;
 }

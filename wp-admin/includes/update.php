@@ -31,9 +31,9 @@ function get_preferred_from_update_core() {
  */
 function get_core_updates( $options = array() ) {
 	$options = array_merge( array('available' => true, 'dismissed' => false ), $options );
-	$dismissed = get_option( 'dismissed_update_core' );
+	$dismissed = get_site_option( 'dismissed_update_core' );
 	if ( !is_array( $dismissed ) ) $dismissed = array();
-	$from_api = get_option( 'update_core' );
+	$from_api = get_site_option( 'update_core' );
 	if ( empty($from_api) )
 		return false;
 	if ( !is_array( $from_api->updates ) ) return false;
@@ -57,21 +57,21 @@ function get_core_updates( $options = array() ) {
 }
 
 function dismiss_core_update( $update ) {
-	$dismissed = get_option( 'dismissed_update_core' );
+	$dismissed = get_site_option( 'dismissed_update_core' );
 	$dismissed[ $update->current.'|'.$update->locale ] = true;
-	return update_option( 'dismissed_update_core', $dismissed );
+	return update_site_option( 'dismissed_update_core', $dismissed );
 }
 
 function undismiss_core_update( $version, $locale ) {
-	$dismissed = get_option( 'dismissed_update_core' );
+	$dismissed = get_site_option( 'dismissed_update_core' );
 	$key = $version.'|'.$locale;
 	if ( !isset( $dismissed[$key] ) ) return false;
 	unset( $dismissed[$key] );
-	return update_option( 'dismissed_update_core', $dismissed );
+	return update_site_option( 'dismissed_update_core', $dismissed );
 }
 
 function find_core_update( $version, $locale ) {
-	$from_api = get_option( 'update_core' );
+	$from_api = get_site_option( 'update_core' );
 	if ( !is_array( $from_api->updates ) ) return false;
 	$updates = $from_api->updates;
 	foreach($updates as $update) {
@@ -154,7 +154,7 @@ function update_right_now_message() {
 function wp_plugin_update_row( $file, $plugin_data ) {
 	if( !is_site_admin() )
 		return;
-	$current = get_option( 'update_plugins' );
+	$current = get_site_option( 'update_plugins' );
 	if ( !isset( $current->response[ $file ] ) )
 		return false;
 
@@ -183,7 +183,7 @@ function wp_update_plugin($plugin, $feedback = '') {
 		add_filter('update_feedback', $feedback);
 
 	// Is an update available?
-	$current = get_option( 'update_plugins' );
+	$current = get_site_option( 'update_plugins' );
 	if ( !isset( $current->response[ $plugin ] ) )
 		return new WP_Error('up_to_date', __('The plugin is at the latest version.'));
 
@@ -299,7 +299,7 @@ function wp_update_theme($theme, $feedback = '') {
 		add_filter('update_feedback', $feedback);
 
 	// Is an update available?
-	$current = get_option( 'update_themes' );
+	$current = get_site_option( 'update_themes' );
 	if ( !isset( $current->response[ $theme ] ) )
 		return new WP_Error('up_to_date', __('The theme is at the latest version.'));
 

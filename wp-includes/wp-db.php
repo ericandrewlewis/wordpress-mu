@@ -450,7 +450,7 @@ class wpdb {
 <ul>
 <li>Are you sure it exists?</li>
 <li>Does the user <code>%2$s</code> have permission to use the <code>%1$s</code> database?</li>
-<li>On some systems the name of your database is prefixed with your username, so it would be like username_wordpress. Could that be the problem?</li>
+<li>On some systems the name of your database is prefixed with your username, so it would be like <code>username_%1$s</code>. Could that be the problem?</li>
 </ul>
 <p>If you don\'t know how to setup a database you should <strong>contact your host</strong>. If all else fails you may find help at the <a href="http://wordpress.org/support/">WordPress Support Forums</a>.</p>'/*/WP_I18N_DB_SELECT_DB*/, $db, DB_USER));
 			return;
@@ -718,7 +718,7 @@ class wpdb {
 			}
 		}
 
-		if ( preg_match("/^\\s*(insert|delete|update|replace) /i",$query) ) {
+		if ( preg_match("/^\\s*(insert|delete|update|replace|alter) /i",$query) ) {
 			$this->rows_affected = mysql_affected_rows($dbh);
 			// Take note of the insert_id
 			if ( preg_match("/^\\s*(insert|replace) /i",$query) ) {
@@ -1059,21 +1059,19 @@ class wpdb {
 			return '';
 
 		$bt = debug_backtrace();
-		$caller = '';
+		$caller = array();
 
-		foreach ( (array) $bt as $trace ) {
-			if ( @$trace['class'] == __CLASS__ )
+		$bt = array_reverse( $bt );
+		foreach ( (array) $bt as $call ) {
+			if ( @$call['class'] == __CLASS__ )
 				continue;
-			elseif ( strtolower(@$trace['function']) == 'call_user_func_array' )
-				continue;
-			elseif ( strtolower(@$trace['function']) == 'apply_filters' )
-				continue;
-			elseif ( strtolower(@$trace['function']) == 'do_action' )
-				continue;
-
-			$caller = $trace['function'];
-			break;
+			$function = $call['function'];
+			if ( isset( $call['class'] ) )
+				$function = $call['class'] . "->$function";
+			$caller[] = $function;
 		}
+		$caller = join( ', ', $caller );
+
 		return $caller;
 	}
 

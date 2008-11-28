@@ -198,17 +198,6 @@ kbd, code {
 	border-bottom-right-radius: 3px;
 }
 
-form p.submit a.cancel {
-	padding: 3px 0 0;
-	background: transparent;
-	border-width: 0 0 1px;
-	border-style: none none solid;
-	-moz-border-radius: 0;
-	-webkit-border-radius: 0;
-	-khtml-border-radius: 0;
-	border-radius: 0;
-}
-
 form p.submit a.cancel:hover {
 	text-decoration: none;
 }
@@ -332,7 +321,7 @@ form p.submit a.cancel:hover {
 .button-secondary,
 .button-highlighted,
 #postcustomstuff .submit input {
-	font-family: "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 	text-decoration: none;
 	font-size: 11px !important;
 	line-height: 16px;
@@ -350,8 +339,12 @@ form p.submit a.cancel:hover {
 	box-sizing: content-box;
 }
 
-a.button {
-	padding: 4px 8px;
+a.button,
+a.button-primary,
+a.button-secondary {
+	line-height: 1.4em;
+	-webkit-border-radius: 10px;
+	padding: 3px 10px;
 }
 
 #doaction,
@@ -373,7 +366,7 @@ a.button {
 }
 
 #wpcontent select {
-	font: 11px/20px "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font: 11px/20px "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 	padding: 2px;
 	border-width: 1px;
 	border-style: solid;
@@ -724,7 +717,7 @@ p.pagenav {
 }
 
 .column-comment p {
-	margin-top: 0;
+	margin: 0.6em 0;
 }
 
 .column-author img, .column-username img {
@@ -817,11 +810,19 @@ a.view-comment-post-link {
 	text-decoration: underline;
 }
 
+.row-actions {
+	visibility: hidden;
+}
+
+tr:hover .row-actions,
+div.comment-item:hover .row-actions {
+	visibility: visible;
+}
+
 /* Admin Header */
 #wphead-info {
 	margin: 0 0 0 15px;
 	padding-right: 15px;
-	float: right;
 }
 
 #user_info {
@@ -857,12 +858,12 @@ a#view-site-link {
 
 #logo50 {
 	float: left;
-	margin: 9px 0 0 20px;
+	margin: 7px 0 0 15px;
 }
 
 #wphead h1 {
 	font: normal 22px Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
-	padding: 10px 10px 5px;
+	padding: 10px 8px 5px;
 	margin: 0;
 	float: left;
 }
@@ -898,7 +899,7 @@ a#view-site-link {
 }
 
 #adminmenu .wp-submenu a {
-	font: normal 11px/18px "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font: normal 11px/18px "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 }
 
 #adminmenu .wp-submenu li.current,
@@ -1045,7 +1046,12 @@ a#view-site-link {
 	height: 21px;
 	padding: 0;
 	margin: 0;
+	cursor: w-resize;
 }
+
+.folded #adminmenu li.wp-menu-separator { 
+ 	cursor: e-resize; 
+} 
 
 #adminmenu .wp-menu-separator-last {
 	height: 10px;
@@ -1110,12 +1116,24 @@ a#view-site-link {
 #adminmenu a span.update-plugins,
 #sidemenu li a span.update-plugins {
 	position: absolute;
-	margin-top: 0.2em;
-	font-size: 0.7em;
-	background-repeat: no-repeat;
-	background-position: 0 bottom;
-	height: 0.9em;
-	width: 1em;
+	font-family: Helvetica, Arial, sans-serif;
+	font-size: 9px;
+	margin-top: 2px;
+	margin-left: 2px;
+	-moz-border-radius: 7px;
+	-khtml-border-radius: 7px;
+	-webkit-border-radius: 7px;
+	border-radius: 7px;
+}
+
+#adminmenu li a #awaiting-mod span,
+#adminmenu li a span.update-plugins span,
+#sidemenu li a span.update-plugins span {
+	float: left;
+	display: block;
+	height: 1.6em;
+	line-height: 1.6em;
+	padding: 0 0.7em;
 }
 
 #adminmenu li span.count-0,
@@ -1125,6 +1143,7 @@ a#view-site-link {
 
 .post-com-count-wrapper {
 	min-width: 22px;
+	font-family: Helvetica, Arial, sans-serif;
 }
 
 .post-com-count {
@@ -1139,15 +1158,17 @@ a#view-site-link {
 }
 
 .post-com-count span {
-	height: 1.3em;
-	line-height: 1.2em;
-	padding: 0 0.5em;
+	height: 1.7em;
+	line-height: 1.7em;
+	padding: 0 0.4em;
+	min-width: 13px;
 	display: inline-block;
 	cursor: pointer;
-	-moz-border-radius: 3px;
-	-khtml-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
+	-moz-border-radius: 5px;
+	-khtml-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	border-radius: 5px;
+	font-size: 9px;
 }
 
 strong .post-com-count {
@@ -1158,27 +1179,6 @@ strong .post-com-count {
 	background-position: center -3px;
 }
 
-#adminmenu li a:hover #awaiting-mod,
-#adminmenu li a:hover span.update-plugins,
-#sidemenu li a:hover span.update-plugins {
-	background-position: -80px bottom;
-}
-
-#adminmenu li a #awaiting-mod span,
-#adminmenu li a span.update-plugins span,
-#sidemenu li a span.update-plugins span {
-	top: -0.8em;
-	right: 0;
-	position: absolute;
-	display: block;
-	height: 1.3em;
-	line-height: 1.3em;
-	padding: 0 0.6em;
-	-moz-border-radius: 3px;
-	-khtml-border-radius: 3px;
-	-webkit-border-radius: 3px;
-	border-radius: 3px;
-}
 /* end menu stuff */
 
 /* Admin Footer */
@@ -1214,15 +1214,14 @@ strong .post-com-count {
 	margin-top: 0.5em;
 	width: 100%;
 	margin-bottom: -8px;
+	clear: both;
 }
 
 .form-table td,
 #wpbody-content .describe td {
 	margin-bottom: 9px;
-	padding: 4px 10px;
+	padding: 4px 10px 12px;
 	line-height: 20px;
-	border-bottom-width: 8px;
-	border-bottom-style: solid;
 	font-size: 11px;
 }
 
@@ -1238,8 +1237,6 @@ strong .post-com-count {
 	text-align: left;
 	padding: 10px;
 	width: 200px;
-	border-bottom-width: 8px;
-	border-bottom-style: solid;
 }
 
 .form-table th.th-full {
@@ -1354,7 +1351,7 @@ table.form-table td .updated {
 
 .setting-description, .form-wrap p {
 	font-style: italic;
-	font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font-family: "Lucida Sans", "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 }
 
 .form-wrap .form-field {
@@ -1540,7 +1537,7 @@ table.form-table td .updated {
 .howto {
 	font-style: italic;
 	display: block;
-	font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font-family: "Lucida Grande", "Bitstream Vera Sans", "Lucida Sans", Verdana, Arial, sans-serif;
 }
 
 .ac_results {
@@ -2014,13 +2011,15 @@ td.post-title strong {
 }
 
 td.post-title p {
-	margin: 0;
+	margin: 6px 0;
 }
 
 /* Global classes */
 
-.wp-hidden-children .wp-hidden-child { display: none; }
-.ui-tabs-hide { display: none; }
+.wp-hidden-children .wp-hidden-child,
+.ui-tabs-hide {
+	display: none;
+}
 
 .commentlist .avatar {
 	vertical-align: text-top;
@@ -2049,6 +2048,11 @@ body.wp-admin {
 .filter {
 	float: left;
 	margin: -5px 0 0 10px;
+}
+
+.filter .subsubsub {
+	margin-left: -10px;
+	margin-top: 13px;
 }
 
 #the-comment-list td.comment p.comment-author {
@@ -2134,7 +2138,7 @@ table.diff tr {
 
 table.diff td, table.diff th {
 	padding: .5em;
-	font-family: monospace;
+	font-family: Consolas, Monaco, Courier, monospace;
 	border: none;
 }
 
@@ -2152,25 +2156,21 @@ fieldset {
 	margin: 0;
 }
 
-#gears-info-box {
-	max-width: 700px;
+.tool-box {
+	margin: 15px 0 35px;
 }
 
-#gears-info-box .gears-img {
-	float: right;
-	margin: 10px;
+.tool-box .buttons {
+	margin: 15px 0;
 }
 
-#gears-info-box .buttons {
-	margin: 10px 0 0;
-	padding: 1.5em 0 0;
+.tool-box .title {
+	margin: 8px 0;
+	font: 18px/24px Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
 }
 
-.info-box-title {
-	line-height: 2;
-	margin: 0;
-	padding: 4px 8px;
-	font: 18px "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+.pressthis a {
+	font-size: 1.2em;
 }
 
 #wp_editbtns,
@@ -2484,7 +2484,7 @@ fieldset {
 #contextual-help-link-wrap {
 	float: right;
 	background: transparent url( images/screen-options-left.gif ) no-repeat 0 0;
-	font-family: "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 	height: 22px;
 	padding: 0;
 	margin: 0 6px 0 0;
@@ -2762,7 +2762,7 @@ ul.cat-checklist {
 .inline-edit-row .catshow,
 .inline-edit-row .cathide,
 .inline-edit-row #bulk-titles div {
-	font-family: "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 	font-style: normal;
 	font-size: 11px;
 }
@@ -3026,7 +3026,7 @@ abbr.required {
 #utc-time, #local-time {
 	padding-left: 25px;
 	font-style: italic;
-	font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
+	font-family: "Lucida Sans", "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
 }
 
 ul#dismissed-updates {
@@ -3055,7 +3055,7 @@ br.clear {
 }
 
 .swfupload {
-	margin: 0 10px;
+	margin: 5px 10px;
 	vertical-align: middle;
 }
 
@@ -3096,9 +3096,9 @@ table.fixed {
 	width: 80px;
 }
 
-.fixed .comments .column-author,
-#commentstatusdiv .fixed .column-date,
-#commentstatusdiv .fixed .column-author {
+#commentstatusdiv .fixed .column-author,
+#comments-form .fixed .column-author,
+#commentstatusdiv .fixed .column-date {
 	width: 20%;
 }
 
@@ -3111,3 +3111,9 @@ table.fixed {
 	text-shadow: rgba(255,255,255,0.8) 0 1px 0;
 }
 
+.icon32 {
+	float: left;
+	height: 36px;
+	margin: 12px 6px 0 0;
+	width: 36px;
+}
