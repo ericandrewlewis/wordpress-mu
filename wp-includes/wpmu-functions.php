@@ -2035,5 +2035,9 @@ function add_new_user_to_blog( $user_id, $email, $meta ) {
 		add_user_to_blog( $blog_id, $user_id, $role );
 	}
 }
-add_action( 'wpmu_activate_user', $user_id, $email, $meta );
+
+function fix_phpmailer_messageid( $phpmailer ) {
+	global $current_site;
+	$phpmailer->Hostname = $current_site->domain;
+}
 ?>
