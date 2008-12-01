@@ -440,7 +440,7 @@ function wpmu_menu() {
 	if( !is_site_admin() )
 		unset( $submenu['plugins.php'][10] ); // always remove the plugin installer
 	unset( $submenu['plugins.php'][15] ); // always remove the plugin editor
-	unset( $submenu['themes.php'][15] ); // always remove the themes editor
+	unset( $submenu['themes.php'][10] ); // always remove the themes editor
 
 	if( !get_site_option( 'add_new_users' ) ) {
 		if( !is_site_admin() ) {
