@@ -17,7 +17,7 @@ function load_muplugin_textdomain($domain, $path = false) {
 function wpmu_update_blogs_date() {
 	global $wpdb;
 
-	$wpdb->update( $wpdb->blogs, array('last_updated' => current_time('mysql')), array('blog_id' => $wpdb->blogid) );
+	$wpdb->update( $wpdb->blogs, array('last_updated' => current_time('mysql', true)), array('blog_id' => $wpdb->blogid) );
 	refresh_blog_details( $wpdb->blogid );
 
 	do_action( 'wpmu_blog_updated', $wpdb->blogid );
@@ -491,7 +491,7 @@ function update_archived( $id, $archived ) {
 function update_blog_status( $id, $pref, $value, $refresh = 1 ) {
 	global $wpdb;
 
-	$wpdb->update( $wpdb->blogs, array($pref => $value, 'last_updated' => current_time('mysql')), array('blog_id' => $id) );
+	$wpdb->update( $wpdb->blogs, array($pref => $value, 'last_updated' => current_time('mysql', true)), array('blog_id' => $id) );
 	if( $refresh == 1 )
 		refresh_blog_details($id);
 
@@ -1366,7 +1366,7 @@ function install_blog($blog_id, $blog_title = '') {
 	
 	$blogroll_id = $wpdb->get_var( $wpdb->prepare( "SELECT cat_ID FROM {$wpdb->sitecategories} WHERE category_nicename = %s", $cat_slug ) );
 	if( $blogroll_id == null ) {
-		$wpdb->insert( $wpdb->sitecategories, array('cat_ID' => 0, 'cat_name' => $cat_name, 'category_nicename' => $cat_slug, 'last_updated' => current_time('mysql')) );
+		$wpdb->insert( $wpdb->sitecategories, array('cat_ID' => 0, 'cat_name' => $cat_name, 'category_nicename' => $cat_slug, 'last_updated' => current_time('mysql', true)) );
 		$blogroll_id = $wpdb->insert_id;
 	}
 	$wpdb->insert( $wpdb->terms, array('term_id' => $blogroll_id, 'name' => $cat_name, 'slug' => $cat_slug, 'term_group' => 0) );
