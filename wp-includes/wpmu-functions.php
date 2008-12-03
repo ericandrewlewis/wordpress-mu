@@ -454,7 +454,7 @@ function get_active_blog_for_user( $user_id ) { // get an active blog for user -
 				}
 			}
 		} else {
-			$ret = "username only"; // user has no blogs. We can add details for dashboard.wordpress.com here.
+			$ret = "username only"; // user has no blogs.
 		}
 		return $ret;
 	} else {

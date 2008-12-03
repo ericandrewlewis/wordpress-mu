@@ -397,15 +397,15 @@ add_filter( 'pre_update_term', 'sync_slugs', 10, 3 );
 function redirect_user_to_blog() {
 	global $current_user, $current_site;
 	$details = get_active_blog_for_user( $current_user->ID );
-	if( !is_object( $details ) ) {
-		header( "Location: http://" . $current_site->domain . $current_site->path );
-		exit;
-	} elseif( $details == "username only" ) {
+	if( $details == "username only" ) {
 		add_user_to_blog( get_blog_id_from_url( $current_site->domain, $current_site->path ), $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
 		wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
 		exit();
+	} elseif( is_object( $details ) ) {
+		wp_redirect( "http://" . $details->domain . $details->path . 'wp-admin/' );
+		exit;
 	} else {
-		header( "Location: http://{$current_user->data->user_login}.wordpress.com/wp-admin/" );
+		wp_redirect( "http://" . $current_site->domain . $current_site->path );
 		exit;
 	}
 	wp_die( __('You do not have sufficient permissions to access this page.') );
