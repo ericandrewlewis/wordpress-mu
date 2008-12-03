@@ -676,7 +676,9 @@ function remove_user_from_blog($user_id, $blog_id = '', $reassign = '') {
 		update_usermeta($user_id, 'source_domain', $new_domain);
 	}
 
-	wp_revoke_user($user_id);
+	// wp_revoke_user($user_id);
+	$user = new WP_User($user_id);
+	$user->remove_all_caps();
 
 	$blogs = get_blogs_of_user($user_id);
 	if ( count($blogs) == 0 ) {
@@ -1839,17 +1841,29 @@ function choose_primary_blog() {
 		<td>
 		<?php
 		$all_blogs = get_blogs_of_user( $current_user->ID );
+		$primary_blog = get_usermeta($current_user->ID, 'primary_blog');
 		if( count( $all_blogs ) > 1 ) {
-			$primary_blog = get_usermeta($current_user->ID, 'primary_blog');
+			$found = false;
 			?>
 			<select name="primary_blog">
-				<?php foreach( (array) $all_blogs as $blog ) { ?>
-					<option value='<?php echo $blog->userblog_id ?>'<?php if( $primary_blog == $blog->userblog_id ) echo ' selected="selected"' ?>>http://<?php echo $blog->domain.$blog->path ?></option>
-				<?php } ?>
+				<?php foreach( (array) $all_blogs as $blog ) { 
+					if( $primary_blog == $blog->userblog_id )
+						$found = true;
+					?><option value='<?php echo $blog->userblog_id ?>'<?php if( $primary_blog == $blog->userblog_id ) echo ' selected="selected"' ?>>http://<?php echo $blog->domain.$blog->path ?></option><?php 
+				} ?>
 			</select>
 			<?php
+			if( !$found ) {
+				$blog = array_shift( $all_blogs );
+				update_usermeta( $current_user->ID, 'primary_blog', $blog->userblog_id );
+			}
+		} elseif( count( $all_blogs ) == 1 ) {
+			$blog = array_shift( $all_blogs );
+			echo $blog->domain;
+			if( $primary_blog != $blog->userblog_id ) // Set the primary blog again if it's out of sync with blog list.
+				update_usermeta( $current_user->ID, 'primary_blog', $blog->userblog_id );
 		} else {
-			echo $_SERVER['HTTP_HOST'];
+			echo "N/A";
 		}
 		?>
 		</td>
@@ -2029,10 +2043,13 @@ function add_existing_user_to_blog() {
 }
 
 function add_new_user_to_blog( $user_id, $email, $meta ) {
+	global $current_site;
 	if( $meta[ 'add_to_blog' ] ) {
 		$blog_id = $meta[ 'add_to_blog' ];
 		$role = $meta[ 'new_role' ];
 		add_user_to_blog( $blog_id, $user_id, $role );
+		remove_user_from_blog($user_id, $current_site->blogid); // remove user from main blog.
+		update_usermeta( $user_id, 'primary_blog', $blog_id );
 	}
 }
 
