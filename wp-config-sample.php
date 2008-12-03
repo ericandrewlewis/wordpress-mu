@@ -40,6 +40,7 @@ define('VHOST', 'VHOSTSETTING');
 $base = 'BASE';
 define('DOMAIN_CURRENT_SITE', 'current_site_domain' );
 define('PATH_CURRENT_SITE', 'current_site_path' );
+define('BLOGID_CURRENT_SITE', '1' );
 
 /**#@+
  * Authentication Unique Keys.

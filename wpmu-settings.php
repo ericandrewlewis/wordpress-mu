@@ -33,6 +33,8 @@ function wpmu_current_site() {
 		$current_site->id = 1;
 		$current_site->domain = DOMAIN_CURRENT_SITE;
 		$current_site->path   = PATH_CURRENT_SITE;
+		if( defined( 'BLOGID_CURRENT_SITE' ) )
+			$current_site->blog_id = BLOGID_CURRENT_SITE;
 		return $current_site;
 	}
 
@@ -45,6 +47,7 @@ function wpmu_current_site() {
 	if( count( $sites ) == 1 ) {
 		$current_site = $sites[0];
 		$path = $current_site->path;
+		$current_site->blog_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain='{$current_site->domain}' AND path='{$current_site->path}'" );
 		wp_cache_set( "current_site", $current_site, "site-options" );
 		return $current_site;
 	}
@@ -94,6 +97,8 @@ function wpmu_current_site() {
 }
 
 $current_site = wpmu_current_site();
+if( !isset( $current_site->blog_id ) )
+	$current_site->blog_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain='{$current_site->domain}' AND path='{$current_site->path}'" );
 
 if( constant( 'VHOST' ) == 'yes' ) {
 	$current_blog = wp_cache_get( 'current_blog_' . $domain, 'site-options' );
