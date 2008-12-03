@@ -450,6 +450,17 @@ function get_active_blog_for_user( $user_id ) { // get an active blog for user -
 				$details = get_blog_details( $blog_id );
 				if( is_object( $details ) && $details->archived == 0 && $details->spam == 0 && $details->deleted == 0 ) {
 					$ret = $blog;
+					$changed = false;
+					if( !get_usermeta($user_id , 'primary_blog') ) {
+						update_usermeta($user_id, 'primary_blog', $blog->userblog_id);
+						$changed = true;
+					}
+					if( !get_usermeta($user_id , 'source_domain') ) {
+						update_usermeta($user_id, 'source_domain', $blog->domain);
+						$changed = true;
+					}
+					if( $changed )
+						wp_cache_delete( $user_id, 'users' );
 					break;
 				}
 			}
