@@ -53,12 +53,12 @@ if ( isset($_REQUEST['action']) && 'adduser' == $_REQUEST['action'] ) {
 		$new_user_email = wp_specialchars(trim($_REQUEST['email']));
 		$redirect = 'user-new.php';
 		$username = $user_details->user_login;
-		$user_id = $user_details->user_id;
+		$user_id = $user_details->ID;
 		if( ($username != null && is_site_admin( $username ) == false ) && ( array_key_exists($blog_id, get_blogs_of_user($user_id)) ) ) {
 			$redirect = add_query_arg( array('update' => 'addexisting'), 'user-new.php' );
 		} else {
 			$newuser_key = substr( md5( $user_id ), 0, 5 );
-			add_option( 'new_user_' . $newuser_key, array( 'user_id' => $user_id, 'email' => $user->user_email, 'role' => $_REQUEST[ 'role' ] ) );
+			add_option( 'new_user_' . $newuser_key, array( 'user_id' => $user_id, 'email' => $user_details->user_email, 'role' => $_REQUEST[ 'role' ] ) );
 			wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ), "Hi,\n\nYou have been invited to join '" . get_option( 'blogname' ) . "' at\n" . site_url() . "\nPlease click the following link to confirm the invite:\n" . site_url( "/newbloguser/$newuser_key/" ) );
 			$redirect = add_query_arg( array('update' => 'add'), 'user-new.php' );
 		}
