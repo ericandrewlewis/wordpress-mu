@@ -493,6 +493,7 @@ function step2() {
 			case "define('AUTH_SAL":
 			case "define('LOGGED_I":
 			case "define('SECURE_A":
+			case "define('NONCE_KE":
 				fwrite($handle, str_replace('put your unique phrase here', md5( mt_rand() ) . md5( mt_rand() ), $line));
 				break;
 			default:
