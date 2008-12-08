@@ -1422,7 +1422,7 @@ function wp_insert_post($postarr = array(), $wp_error = false) {
 	else
 		$menu_order = 0;
 
-	if ( !isset($post_password) )
+	if ( !isset($post_password) || 'private' == $post_status )
 		$post_password = '';
 
 	if ( !in_array( $post_status, array( 'draft', 'pending' ) ) ) {
@@ -2065,7 +2065,7 @@ function &get_pages($args = '') {
 	$r = wp_parse_args( $args, $defaults );
 	extract( $r, EXTR_SKIP );
 
-	$key = md5( serialize( $r ) );
+	$key = md5( serialize( compact(array_keys($defaults)) ) );
 	if ( $cache = wp_cache_get( 'get_pages', 'posts' ) ) {
 		if ( isset( $cache[ $key ] ) ) {
 			$pages = apply_filters('get_pages', $cache[ $key ], $r );

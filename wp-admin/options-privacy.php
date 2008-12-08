@@ -23,9 +23,7 @@ if( trim( get_option('blog_public') ) == '' )
 <h2><?php echo wp_specialchars( $title ); ?></h2> 
 
 <form method="post" action="options.php">
-<?php wp_nonce_field('privacy-options') ?>
-<input type='hidden' name='option_page' value='privacy' />
-<input type="hidden" name="action" value="update" />
+<?php settings_fields('privacy'); ?>
 
 <table class="form-table">
 <tr valign="top">

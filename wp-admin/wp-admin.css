@@ -23,36 +23,6 @@ p, ul, ol, blockquote { font-size: 12px; }
 	font-size: 16px;
 }
 
-#uploading {
-	border-style: none;
-	padding: 0;
-	margin-bottom: 16px;
-	height: 18em;
-	width: 100%;
-}
-
-form#upload th {
-	text-align: right;
-}
-
-form#upload #post_content, form#upload #post_title {
-	width: 250px;
-}
-
-.form-invalid input {
-	border-width: 1px !important;
-	border-style: solid !important;
-}
-
-form#upload #post_content {
-	height: 50px;
-}
-
-.attpreview {
-	width: 1px; /* hug */
-	text-align: center;
-}
-
 .anchors {
 	margin: 10px 20px 10px 20px;
 }
@@ -202,13 +172,8 @@ form p.submit a.cancel:hover {
 	text-decoration: none;
 }
 
-.submit-top {
-	border-top: 0 none;
-	border-bottom-style: solid;
-	border-bottom-width: 1px;
-}
-
-#submitdiv h3, #pagesubmitdiv h3 {
+#submitdiv h3,
+#pagesubmitdiv h3 {
 	margin-bottom: 0 !important;
 }
 
@@ -321,7 +286,7 @@ form p.submit a.cancel:hover {
 .button-secondary,
 .button-highlighted,
 #postcustomstuff .submit input {
-	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-family: "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 	text-decoration: none;
 	font-size: 11px !important;
 	line-height: 16px;
@@ -354,7 +319,7 @@ a.button-secondary {
 
 .tablenav select[name="action"],
 .tablenav select[name="action2"] {
-	width: 90px;
+	width: 120px;
 }
 
 .tablenav select[name="m"] {
@@ -366,7 +331,7 @@ a.button-secondary {
 }
 
 #wpcontent select {
-	font: 11px/20px "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font: 11px/20px "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 	padding: 2px;
 	border-width: 1px;
 	border-style: solid;
@@ -407,11 +372,6 @@ textarea.all-options, input.all-options {
 	width: 250px;
 }
 
-#postdiv, #titlediv, #guiddiv, #poststuff .stuffbox {
-	margin: 0;
-	padding: 0;
-}
-
 #namediv table {
 	width: 100%;
 }
@@ -431,11 +391,6 @@ textarea.all-options, input.all-options {
 
 #wpbody-content .metabox-holder {
 	padding-top: 10px;
-}
-
-#postdivrich {
-	margin: 0;
-	padding: 0;
 }
 
 #content {
@@ -511,41 +466,10 @@ textarea.all-options, input.all-options {
 	font-style: italic;
 }
 
-#attachmentlinks textarea {
-	width: 100%;
-	height: 2.5em;
-	margin-bottom: 6px;
-}
-
 #excerpt, .attachmentlinks {
 	margin: 0;
 	height: 4em;
 	width: 98%;
-}
-
-#login .fullwidth {
-	width: 320px;
-}
-
-#searchform fieldset {
-	float: left;
-	margin: 0 1.5ex 1em 0;
-	padding: 0;
-}
-
-#searchform fieldset legend {
-	padding: 0 0 .2em 1px;
-}
-
-#searchform #s {
-	padding: 4px 3px;
-}
-
-#searchform #post-query-submit {
-	float: left;
-	margin: 14px 0 1em;
-	position: relative;
-	top: .35em;
 }
 
 /* post meta postbox */
@@ -805,13 +729,9 @@ td.media-icon img {
 	width: 200px;
 }
 
-a.view-comment-post-link {
-	position: absolute;
-	text-decoration: underline;
-}
-
 .row-actions {
 	visibility: hidden;
+	padding: 2px 0 0;
 }
 
 tr:hover .row-actions,
@@ -838,11 +758,6 @@ div.comment-item:hover .row-actions {
 	line-height: 46px;
 }
 
-a#view-site-link {
-	position: relative;
-	bottom: 10px;
-}
-
 #wphead {
 	height: 46px;
 }
@@ -856,7 +771,7 @@ a#view-site-link {
 	text-decoration: none;
 }
 
-#logo50 {
+#header-logo {
 	float: left;
 	margin: 7px 0 0 15px;
 }
@@ -892,14 +807,8 @@ a#view-site-link {
 	border-style: solid none none;
 }
 
-#adminmenu {
-	padding: 0;
-	width: 12em;
-	list-style: none;
-}
-
 #adminmenu .wp-submenu a {
-	font: normal 11px/18px "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font: normal 11px/18px "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 }
 
 #adminmenu .wp-submenu li.current,
@@ -911,11 +820,6 @@ a#view-site-link {
 #adminmenu a.menu-top,
 #adminmenu .wp-submenu-head {
 	font: normal 13px/18px Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
-}
-
-.folded #adminmenu,
-.folded #adminmenu li.menu-top {
-	width: 28px;
 }
 
 #adminmenu div.wp-submenu-head {
@@ -947,6 +851,7 @@ a#view-site-link {
 #adminmenu li {
 	margin: 0;
 	padding: 0;
+	cursor: pointer;
 }
 
 #adminmenu a {
@@ -1036,6 +941,14 @@ a#view-site-link {
 #adminmenu img.wp-menu-image {
 	float: left;
 	padding: 8px 6px 0;
+	opacity: 0.6;
+	filter: alpha(opacity=60);
+}
+
+#adminmenu li.menu-top:hover img.wp-menu-image,
+#adminmenu li.wp-has-current-submenu img.wp-menu-image {
+	opacity: 1;
+	filter: alpha(opacity=100);
 }
 
 .folded #adminmenu img.wp-menu-image {
@@ -1103,6 +1016,7 @@ a#view-site-link {
 	margin: 1px 0 0;
 	height: 27px;
 	padding: 1px 2px 0 0;
+	cursor: default;
 }
 
 #adminmenu li.wp-has-current-submenu ul {
@@ -1111,13 +1025,14 @@ a#view-site-link {
 }
 /* end side admin menu */
 
-/* 2.6 */
-#adminmenu a #awaiting-mod,
-#adminmenu a span.update-plugins,
+/* comments/plugins bubble in menu */
+#adminmenu #awaiting-mod,
+#adminmenu span.update-plugins,
 #sidemenu li a span.update-plugins {
 	position: absolute;
 	font-family: Helvetica, Arial, sans-serif;
-	font-size: 9px;
+	font-size: 7pt;
+	font-weight: bold;
 	margin-top: 2px;
 	margin-left: 2px;
 	-moz-border-radius: 7px;
@@ -1126,21 +1041,23 @@ a#view-site-link {
 	border-radius: 7px;
 }
 
-#adminmenu li a #awaiting-mod span,
-#adminmenu li a span.update-plugins span,
+#adminmenu li #awaiting-mod span,
+#adminmenu li span.update-plugins span,
 #sidemenu li a span.update-plugins span {
 	float: left;
 	display: block;
 	height: 1.6em;
 	line-height: 1.6em;
-	padding: 0 0.7em;
+	padding: 0 6px;
 }
 
 #adminmenu li span.count-0,
 #sidemenu li a .count-0 {
 	display: none;
 }
+/* end menu stuff */
 
+/* comments bubble */
 .post-com-count-wrapper {
 	min-width: 22px;
 	font-family: Helvetica, Arial, sans-serif;
@@ -1158,17 +1075,18 @@ a#view-site-link {
 }
 
 .post-com-count span {
+	font-size: 9px;
+	font-weight: bild;
 	height: 1.7em;
-	line-height: 1.7em;
-	padding: 0 0.4em;
-	min-width: 13px;
+	line-height: 1.70em;
+	min-width: 0.7em;
+	padding: 0 6px;
 	display: inline-block;
 	cursor: pointer;
 	-moz-border-radius: 5px;
 	-khtml-border-radius: 5px;
 	-webkit-border-radius: 5px;
 	border-radius: 5px;
-	font-size: 9px;
 }
 
 strong .post-com-count {
@@ -1179,7 +1097,15 @@ strong .post-com-count {
 	background-position: center -3px;
 }
 
-/* end menu stuff */
+.column-response .post-com-count {
+	float: left;
+	margin-right: 5px;
+	text-align: center;
+}
+
+.response-links {
+	margin: 4px 0;
+}
 
 /* Admin Footer */
 #footer {
@@ -1351,7 +1277,7 @@ table.form-table td .updated {
 
 .setting-description, .form-wrap p {
 	font-style: italic;
-	font-family: "Lucida Sans", "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 }
 
 .form-wrap .form-field {
@@ -1424,15 +1350,6 @@ table.form-table td .updated {
 #side-sortables .comments-box,
 #side-sortables #show-comments {
 	display: none;
-}
-
-#mediadiv img {
-	float: left;
-	margin-right: 1em;
-}
-
-#mediadiv h4 {
-	margin: 0 0 .5em;
 }
 
 #post-body #tagsdiv #newtag {
@@ -1631,9 +1548,6 @@ table.form-table td .updated {
 .metabox-holder .postbox h3,
 #poststuff .postbox h3,
 #poststuff .stuffbox h3 {
-	background-image: url("images/postbox-bg.gif");
-	background-position: left top;
-	background-repeat: repeat-x;
 	-moz-border-radius: 6px 6px 0 0;
 	-webkit-border-top-right-radius: 6px;
 	-webkit-border-top-left-radius: 6px;
@@ -1806,12 +1720,6 @@ input#link_url {
 	margin: 0;
 }
 
-/*
-#side-info-column #side-sortables {
-	height: 100%;
-}
-*/
-
 .submitbox .submit {
 	text-align: left;
 	padding: 12px 10px 10px;
@@ -1823,13 +1731,6 @@ input#link_url {
 	border-bottom-style: solid;
 	text-decoration: none;
 	padding: 1px 2px;
-}
-
-.submitbox .inside-submitbox #deletebutton {
-	padding: 0 0 1px 17px;
-	background-image: url(images/del.png);
-	background-position: left bottom;
-	background-repeat: no-repeat;
 }
 
 .inside-submitbox #post_status {
@@ -1964,18 +1865,6 @@ form#tags-filter {
 	position: relative;
 }
 
-p#big-add-button {
-	position: absolute;
-	right: 0;
-	top: 0;
-	margin: 0;
-}
-
-p#big-add-button .button {
-	font-size: 18px;
-	padding: 3px 30px;
-}
-
 p.search-box {
 	float: right;
 	margin: -5px 0 0;
@@ -2036,13 +1925,11 @@ body.wp-admin {
 
 .view-switch {
 	float: right;
-	margin: 5px 8px 0;
+	margin: 6px 8px 0;
 }
 
-.view-switch img {
-	margin: 0;
-	border-width: 1px;
-	border-style: solid;
+.view-switch a {
+	text-decoration: none;
 }
 
 .filter {
@@ -2074,10 +1961,6 @@ body.wp-admin {
 }
 
 #the-comment-list td.comment {
-/*
-	width: 65%;
-	max-width: 460px;
-*/
 	word-wrap: break-word;
 }
 
@@ -2091,27 +1974,6 @@ body.wp-admin {
 
 .tablenav .delete {
 	margin-right: 20px;
-}
-
-#tTips {
-	display: none;
-	position: absolute;
-	margin: 0;
-	padding: 0 0 8px 0;
-	background-image: url(images/tail.gif);
-	background-repeat: no-repeat;
-	background-position: 15px bottom;
-	background-color: transparent;
-}
-
-#tTips p#tTips_inside {
-	margin: 0;
-	padding: 8px 12px;
-	text-align: center;
-	-moz-border-radius: 8px;
-	-khtml-border-radius: 8px;
-	-webkit-border-radius: 8px;
-	border-radius: 8px;
 }
 
 td.action-links, th.action-links {
@@ -2243,46 +2105,6 @@ fieldset {
 	border-style: solid;
 }
 
-#inbox-filter .actions {
-	margin-left: 6px;
-	background: url(images/archive-link.png) 0 12px no-repeat;
-	padding-left: 16px;
-}
-
-#inbox-filter .actions .button {
-	font-size: 11px;
-	padding: 2px;
-}
-
-#inbox-filter ul {
-	list-style: none;
-	margin: 0;
-	padding: 0;
-	position: relative;
-}
-
-#inbox-filter ul li {
-	position: relative;
-}
-
-#inbox-filter ul input.checkbox {
-	float: left;
-}
-
-#inbox-filter ul p {
-	float: left;
-	margin: 0;
-	margin-left: -40px;
-	width: 100%;
-	position: relative;
-	left: 50px;
-}
-
-#inbox-message {
-	margin: 0 0 0 7.5em;
-	padding: 5px;
-}
-
 /* media popup 0819 */
 #sidemenu {
 	margin: -30px 15px 0 315px;
@@ -2351,21 +2173,6 @@ fieldset {
 
 #sidemenu li a .count-0 {
 	display: none;
-}
-
-#previewview {
-	float: right;
-	margin-top: -53px;
-}
-
-#previewview a {
-	display: block;
-	font-size: 16px;
-	font-weight: normal;
-	padding: 4px 8px;
-	text-align: center;
-	text-decoration: none;
-	width: 200px;
 }
 
 /* reply to comments */
@@ -2456,9 +2263,9 @@ fieldset {
 
 #replyrow #ed_reply_toolbar input {
 	margin: 1px 2px 1px 1px;
-	min-width: 26px;
+	min-width: 24px;
 	padding: 3px 4px;
-	font-size: 12px;
+	font-size: 11px;
 	-moz-border-radius: 3px;
 	-khtml-border-radius: 3px;
 	-webkit-border-radius: 3px;
@@ -2484,7 +2291,7 @@ fieldset {
 #contextual-help-link-wrap {
 	float: right;
 	background: transparent url( images/screen-options-left.gif ) no-repeat 0 0;
-	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-family: "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 	height: 22px;
 	padding: 0;
 	margin: 0 6px 0 0;
@@ -2512,8 +2319,7 @@ fieldset {
 
 #screen-options-wrap h5,
 #contextual-help-wrap h5 {
-	padding: 10px 0 0 15px;
-	margin: 0;
+	margin: 8px 0;
 	font-size: 13px;
 }
 
@@ -2523,22 +2329,17 @@ fieldset {
 	border-top: 0 none;
 	border-width: 0 1px 1px;
 	margin: 0 15px;
+	padding: 8px 12px 12px;
 	-moz-border-radius: 0 0 0 4px;
 	-webkit-border-bottom-left-radius: 4px;
 	-khtml-border-bottom-left-radius: 4px;
 	border-bottom-left-radius: 4px;
 }
 
-.metabox-prefs {
-	padding: 5px 10px 10px;
-}
-
 .metabox-prefs label {
-	display: block;
-	float: left;
-	padding: 5px 3px;
+	padding-right: 15px;
 	white-space: nowrap;
-	min-width: 14em;
+	line-height: 30px;
 }
 
 .metabox-prefs label input {
@@ -2572,7 +2373,8 @@ tr.inline-edit-row td {
 }
 
 #wpbody-content .quick-edit-row-page fieldset.inline-edit-col-right .inline-edit-col {
-	border-left: 1px solid;
+	border-width: 0 0 0 1px;
+	border-style: none none none solid;
 }
 
 #wpbody-content .quick-edit-row-post .inline-edit-col-left {
@@ -2636,7 +2438,7 @@ tr.inline-edit-row td {
 .inline-edit-row h4 {
 	margin: .2em 0;
 	padding: 0;
-	line-height: 27px;
+	line-height: 23px;
 }
 .inline-edit-row fieldset span.title,
 .inline-edit-row fieldset span.checkbox-title {
@@ -2705,6 +2507,7 @@ tr.inline-edit-row td {
 .inline-edit-row fieldset span.checkbox-title {
 	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
 	font-style: italic;
+	line-height: 1.8em;
 }
 
 /*	Specific Elements */
@@ -2762,7 +2565,7 @@ ul.cat-checklist {
 .inline-edit-row .catshow,
 .inline-edit-row .cathide,
 .inline-edit-row #bulk-titles div {
-	font-family: "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-family: "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 	font-style: normal;
 	font-size: 11px;
 }
@@ -3026,7 +2829,7 @@ abbr.required {
 #utc-time, #local-time {
 	padding-left: 25px;
 	font-style: italic;
-	font-family: "Lucida Sans", "Lucida Grande", "Bitstream Vera Sans", Verdana, Arial, sans-serif;
+	font-family: "Lucida Sans", "Lucida Grande", Verdana, Arial, "Bitstream Vera Sans", sans-serif;
 }
 
 ul#dismissed-updates {
@@ -3114,6 +2917,16 @@ table.fixed {
 .icon32 {
 	float: left;
 	height: 36px;
-	margin: 12px 6px 0 0;
+	margin: 14px 6px 0 0;
 	width: 36px;
+}
+
+.key-labels label {
+	line-height: 24px;
+}
+
+.subtitle {
+	font-size: 0.75em;
+	line-height: 1;
+	padding-left: 25px;
 }

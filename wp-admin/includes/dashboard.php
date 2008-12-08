@@ -115,12 +115,12 @@ function wp_add_dashboard_widget( $widget_id, $widget_name, $callback, $control_
 		$wp_dashboard_control_callbacks[$widget_id] = $control_callback;
 		if ( isset( $_GET['edit'] ) && $widget_id == $_GET['edit'] ) {
 			list($url) = explode( '#', add_query_arg( 'edit', false ), 2 );
-			$widget_name .= ' <a href="' . clean_url( $url ) . '">' . __( 'Cancel' ) . '</a>';
+			$widget_name .= ' <span class="postbox-title-action"><a href="' . clean_url( $url ) . '">' . __( 'Cancel' ) . '</a></span>';
 			add_meta_box( $widget_id, $widget_name, '_wp_dashboard_control_callback', 'dashboard', 'normal', 'core' );
 			return;
 		}
 		list($url) = explode( '#', add_query_arg( 'edit', $widget_id ), 2 );
-		$widget_name .= ' <a href="' . clean_url( "$url#$widget_id" ) . '" class="edit-box open-box">' . __( 'Configure' ) . '</a>';
+		$widget_name .= ' <span class="postbox-title-action"><a href="' . clean_url( "$url#$widget_id" ) . '" class="edit-box open-box">' . __( 'Configure' ) . '</a></span>';
 	}
 	$side_widgets = array('dashboard_quick_press', 'dashboard_recent_drafts', 'dashboard_primary', 'dashboard_secondary');
 	$location = 'normal';
@@ -173,7 +173,7 @@ function wp_dashboard_right_now() {
 
 	$num_tags = wp_count_terms('post_tag');
 
-	$num_comm = get_comment_count( );
+	$num_comm = wp_count_comments( );
 
 	echo "\n\t".'<p class="sub">' . __('At a Glance') . '</p>';
 	echo "\n\t".'<div class="table">'."\n\t".'<table>';
@@ -205,11 +205,11 @@ function wp_dashboard_right_now() {
 	*/
 
 	// Total Comments
-	$num = number_format_i18n($num_comm['total_comments']);
+	$num = number_format_i18n($num_comm->total_comments);
 	if ( current_user_can( 'moderate_comments' ) )
 		$num = "<a href='edit-comments.php'>$num</a>";
 	echo '<td class="b b-comments">'.$num.'</td>';
-	echo '<td class="last t comments">' . __ngettext( 'Comment', 'Comments', $num_comm['total_comments'] ) . '</td>';
+	echo '<td class="last t comments">' . __ngettext( 'Comment', 'Comments', $num_comm->total_comments ) . '</td>';
 
 	echo '</tr><tr>';
 
@@ -221,11 +221,11 @@ function wp_dashboard_right_now() {
 	echo '<td class="t pages">' . __ngettext( 'Page', 'Pages', $num_pages->publish ) . '</td>';
 
 	// Approved Comments
-	$num = number_format_i18n($num_comm['approved']);
+	$num = number_format_i18n($num_comm->approved);
 	if ( current_user_can( 'moderate_comments' ) )
 		$num = "<a href='edit-comments.php?comment_status=approved'>$num</a>";
 	echo '<td class="b b_approved">'.$num.'</td>';
-	echo '<td class="last t approved">' . __ngettext( 'Approved', 'Approved', $num_comm['approved'] ) . '</td>';
+	echo '<td class="last t approved">' . __ngettext( 'Approved', 'Approved', $num_comm->approved ) . '</td>';
 
 	echo "</tr>\n\t<tr>";
 
@@ -237,11 +237,11 @@ function wp_dashboard_right_now() {
 	echo '<td class="t cats">' . __ngettext( 'Category', 'Categories', $num_cats ) . '</td>';
 
 	// Pending Comments
-	$num = number_format_i18n($num_comm['awaiting_moderation']);
+	$num = number_format_i18n($num_comm->moderated);
 	if ( current_user_can( 'moderate_comments' ) )
 		$num = "<a href='edit-comments.php?comment_status=moderated'><span class='pending-count'>$num</span></a>";
 	echo '<td class="b b-waiting">'.$num.'</td>';
-	echo '<td class="last t waiting">' . __ngettext( 'Pending', 'Pending', $num_comm['awaiting_moderation'] ) . '</td>';
+	echo '<td class="last t waiting">' . __ngettext( 'Pending', 'Pending', $num_comm->moderated ) . '</td>';
 
 	echo "</tr>\n\t<tr>";
 
@@ -253,11 +253,11 @@ function wp_dashboard_right_now() {
 	echo '<td class="t tags">' . __ngettext( 'Tag', 'Tags', $num_tags ) . '</td>';
 
 	// Spam Comments
-	$num = number_format_i18n($num_comm['spam']);
+	$num = number_format_i18n($num_comm->spam);
 	if ( current_user_can( 'moderate_comments' ) )
 		$num = "<a href='edit-comments.php?comment_status=spam'><span class='spam-count'>$num</span></a>";
 	echo '<td class="b b-spam">'.$num.'</td>';
-	echo '<td class="last t spam">' . __ngettext( 'Spam', 'Spam', $num_comm['spam'] ) . '</td>';
+	echo '<td class="last t spam">' . __ngettext( 'Spam', 'Spam', $num_comm->spam ) . '</td>';
 
 	echo "</tr>";
 	do_action('right_now_table_end');
@@ -308,6 +308,7 @@ function wp_dashboard_quick_press() {
 			if ( $drafts_query->posts )
 				$drafts =& $drafts_query->posts;
 		}
+		printf('<p class="textright">' . __('You can also try %s, easy blogging from anywhere on the Web.') . '</p>', '<a href="tools.php">' . __('Press This') . '</a>' );
 		$_REQUEST = array(); // hack for get_default_post_to_edit()
 	}
 
@@ -328,6 +329,8 @@ function wp_dashboard_quick_press() {
 		<div class="textarea-wrap">
 			<textarea name="content" id="content" class="mceEditor" rows="3" cols="15" tabindex="2"><?php echo $post->post_content; ?></textarea>
 		</div>
+		
+		<script type="text/javascript">edCanvas = document.getElementById('content');edInsertContent = null;</script>
 
 		<h4><label for="tags-input"><?php _e('Tags') ?></label></h4>
 		<div class="input-text-wrap">
@@ -396,9 +399,28 @@ function wp_dashboard_recent_drafts( $drafts = false ) {
  * @since unknown
  */
 function wp_dashboard_recent_comments() {
-	$status = ( current_user_can('edit_posts') ) ? '' : 'approved';
+	global $wpdb;
 
-	list($comments, $total) = _wp_get_comment_list( $status, false, 0, 5 );
+	if ( current_user_can('edit_posts') )
+		$allowed_states = array('0', '1');
+	else
+		$allowed_states = array('1');
+
+	// Select all comment types and filter out spam later for better query performance.
+	$comments = array();
+	$start = 0;
+
+	while ( count( $comments ) < 5 && $possible = $wpdb->get_results( "SELECT * FROM $wpdb->comments ORDER BY comment_date_gmt DESC LIMIT $start, 50" ) ) {
+
+		foreach ( $possible as $comment ) {
+			if ( count( $comments ) >= 5 )
+				break;
+			if ( in_array( $comment->comment_approved, $allowed_states ) )
+				$comments[] = $comment;
+		}
+
+		$start = $start + 50;
+	}
 
 	if ( $comments ) :
 ?>

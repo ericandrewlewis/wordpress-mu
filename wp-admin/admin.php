@@ -39,8 +39,8 @@ $time_format = get_option('time_format');
 
 wp_reset_vars(array('profile', 'redirect', 'redirect_url', 'a', 'popuptitle', 'popupurl', 'text', 'trackback', 'pingback'));
 
-wp_admin_css_color('classic', __('Bold'), admin_url("css/colors-classic.css"), array('#6D6D6D', '#F1F1F1', '#DFDFDF', '#E3E3E3'));
-wp_admin_css_color('fresh', __('Subtle'), admin_url("css/colors-fresh.css"), array('#6D6D6D', '#F1F1F1', '#DFDFDF', '#E3E3E3'));
+wp_admin_css_color('classic', __('Blue'), admin_url("css/colors-classic.css"), array('#073447', '#21759B', '#EAF3FA', '#BBD8E7'));
+wp_admin_css_color('fresh', __('Gray'), admin_url("css/colors-fresh.css"), array('#464646', '#6D6D6D', '#F1F1F1', '#DFDFDF'));
 
 wp_enqueue_script( 'common' );
 wp_enqueue_script( 'jquery-color' );
@@ -62,7 +62,7 @@ if (isset($plugin_page)) {
 		$page_hook = get_plugin_page_hook($plugin_page, $plugin_page);
 		// backwards compatibility for plugins using add_management_page
 		if ( empty( $page_hook ) && 'edit.php' == $pagenow && '' != get_plugin_page_hook($plugin_page, 'tools.php') ) {
-			wp_redirect('tool.php?page=' . $plugin_page);
+			wp_redirect('tools.php?page=' . $plugin_page);
 			exit;
 		}
 	}
