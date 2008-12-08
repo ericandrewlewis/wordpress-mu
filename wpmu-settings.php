@@ -32,7 +32,7 @@ function wpmu_current_site() {
 	if( defined( 'DOMAIN_CURRENT_SITE' ) && defined( 'PATH_CURRENT_SITE' ) ) {
 		$current_site->id = 1;
 		$current_site->domain = DOMAIN_CURRENT_SITE;
-		$current_site->path   = PATH_CURRENT_SITE;
+		$current_site->path   = $path = PATH_CURRENT_SITE;
 		if( defined( 'BLOGID_CURRENT_SITE' ) )
 			$current_site->blog_id = BLOGID_CURRENT_SITE;
 		return $current_site;
