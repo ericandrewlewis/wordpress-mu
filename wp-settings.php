@@ -366,12 +366,15 @@ if( $current_site->site_name == false )
 	
 if ( ! defined('WP_INSTALLING') ) {
 	// Used to guarantee unique hash cookies
-	$cookiehash = '';
+	if ( !isset($cookiehash) )
+		$cookiehash = '';
+
 	/**
 	 * Used to guarantee unique hash cookies
 	 * @since 1.5
 	 */
-	define('COOKIEHASH', $cookiehash);
+	if ( !defined('COOKIEHASH') )
+		define( 'COOKIEHASH', $cookiehash );
 }
 
 $wpdb->hide_errors();
@@ -411,8 +414,6 @@ if( $current_blog->archived == '1' || $current_blog->spam == '1' ) {
  * @since 2.5.0
  */
 $wp_default_secret_key = 'put your unique phrase here';
-if( defined( 'SECRET_KEY' ) )
-	$wp_default_secret_key = SECRET_KEY;
 
 /**
  * It is possible to define this in wp-config.php

@@ -647,14 +647,14 @@ remove_action( 'media_buttons', 'media_buttons' );
 function secret_salt_warning() {
 	if( !is_site_admin() )
 		return;
-	$secret_keys = array( 'SECRET_KEY', 'SECRET_SALT', 'LOGGED_IN_KEY', 'LOGGED_IN_SALT', 'AUTH_KEY', 'SECURE_AUTH_KEY', 'SECURE_AUTH_SALT' );
+	$secret_keys = array( 'AUTH_KEY', 'AUTH_SALT', 'LOGGED_IN_KEY', 'LOGGED_IN_SALT', 'SECURE_AUTH_KEY', 'SECURE_AUTH_SALT' );
 	$out = '';
 	foreach( $secret_keys as $key ) {
 		if( !defined( $key ) )
 			$out .= "define( '$key', '" . wp_generate_password() . wp_generate_password() . "' );<br />";
 	}
 	if( $out != '' ) {
-		$msg = sprintf( __( 'Warning! WordPress encrypts user cookies, but you must add the following lines to <strong>%swp-config.php</strong> for it to work properly.<br />Please add the code before the line, <code>/* That\'s all, stop editing! Happy blogging. */</code>' ), ABSPATH );
+		$msg = sprintf( __( 'Warning! WordPress encrypts user cookies, but you must add the following lines to <strong>%swp-config.php</strong> for it to be more secure.<br />Please add the code before the line, <code>/* That\'s all, stop editing! Happy blogging. */</code>' ), ABSPATH );
 		$msg .= "<blockquote>$out</blockquote>";
 
 		echo "<div id='update-nag'>$msg</div>";

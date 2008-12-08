@@ -489,10 +489,9 @@ function step2() {
 			case "define('PATH_CUR":
 				fwrite($handle, str_replace("current_site_path", str_replace( 'index.php', '', $_SERVER[ 'REQUEST_URI' ] ), $line));
 				break;
-			case "define('SECRET_K":
-			case "define('SECRET_S":
-			case "define('LOGGED_I":
 			case "define('AUTH_KEY":
+			case "define('AUTH_SAL":
+			case "define('LOGGED_I":
 			case "define('SECURE_A":
 				fwrite($handle, str_replace('put your unique phrase here', md5( mt_rand() ) . md5( mt_rand() ), $line));
 				break;
