@@ -250,7 +250,8 @@ function inline_edit_term_row($type) {
 
 	<p class="inline-edit-save submit">
 		<a accesskey="c" href="#inline-edit" title="<?php _e('Cancel'); ?>" class="cancel button-secondary alignleft"><?php _e('Cancel'); ?></a>
-		<a accesskey="s" href="#inline-edit" title="<?php _e('Save'); ?>" class="save button-primary alignright"><?php _e('Save'); ?></a>
+		<?php $update_text = ( $is_tag ) ? __( 'Update Tag' ) : __( 'Update Category' ); ?>
+		<a accesskey="s" href="#inline-edit" title="<?php echo attribute_escape( $update_text ); ?>" class="save button-primary alignright"><?php echo $update_text; ?></a>
 		<img class="waiting" style="display:none;" src="images/loading.gif" alt="" />
 		<span class="error" style="display:none;"></span>
 		<?php wp_nonce_field( 'taxinlineeditnonce', '_inline_edit', false ); ?>
@@ -1182,11 +1183,15 @@ function inline_edit_row( $type ) {
 	<p class="submit inline-edit-save">
 		<a accesskey="c" href="#inline-edit" title="<?php _e('Cancel'); ?>" class="button-secondary cancel alignleft"><?php _e('Cancel'); ?></a>
 		<?php if ( ! $bulk ) {
-			wp_nonce_field( 'inlineeditnonce', '_inline_edit', false ); ?>
-			<a accesskey="s" href="#inline-edit" title="<?php _e('Save'); ?>" class="button-primary save alignright"><?php _e('Save'); ?></a>
+			wp_nonce_field( 'inlineeditnonce', '_inline_edit', false );
+			$update_text = ( $is_page ) ? __( 'Update Page' ) : __( 'Update Post' );
+			?>
+			<a accesskey="s" href="#inline-edit" title="<?php _e('Update'); ?>" class="button-primary save alignright"><?php echo attribute_escape( $update_text ); ?></a>
 			<img class="waiting" style="display:none;" src="images/loading.gif" alt="" />
-		<?php } else { ?>
-			<input accesskey="s" class="button-primary alignright" type="submit" name="bulk_edit" value="<?php _e('Save'); ?>" />
+		<?php } else {
+			$update_text = ( $is_page ) ? __( 'Update Pages' ) : __( 'Update Posts' );
+		?>
+			<input accesskey="s" class="button-primary alignright" type="submit" name="bulk_edit" value="<?php echo attribute_escape( $update_text ); ?>" />
 		<?php } ?>
 		<input type="hidden" name="post_view" value="<?php echo $m; ?>" />
 		<br class="clear" />
@@ -1391,7 +1396,7 @@ function _post_row($a_post, $pending_comments, $mode) {
 			foreach ( $actions as $action => $link ) {
 				++$i;
 				( $i == $action_count ) ? $sep = '' : $sep = ' | ';
-				echo "<span class='$action'>$link</span>$sep";
+				echo "<span class='$action'>$link$sep</span>";
 			}
 			echo '</div>';
 
@@ -2054,7 +2059,10 @@ function _wp_comment_row( $comment_id, $mode, $comment_status, $checkbox = true,
 					}
 					echo '<a href="edit-comments.php?s=';
 					comment_author_IP();
-					echo '&amp;mode=detail">';
+					echo '&amp;mode=detail';
+					if ( 'spam' == $comment_status )
+						echo '&amp;comment_status=spam';
+					echo '">';
 					comment_author_IP();
 					echo '</a>';
 				} //current_user_can
@@ -2152,7 +2160,7 @@ function wp_comment_reply($position = '1', $checkbox = false, $mode = 'single', 
 	<p id="replysubmit" class="submit">
 	<a href="#comments-form" class="cancel button-secondary alignleft" tabindex="106"><?php _e('Cancel'); ?></a>
 	<a href="#comments-form" class="save button-primary alignright" tabindex="104">
-	<span id="savebtn" style="display:none;"><?php _e('Save'); ?></span>
+	<span id="savebtn" style="display:none;"><?php _e('Update Comment'); ?></span>
 	<span id="replybtn" style="display:none;"><?php _e('Submit Reply'); ?></span></a>
 	<img class="waiting" style="display:none;" src="images/loading.gif" alt="" />
 	<span class="error" style="display:none;"></span>

@@ -29,6 +29,26 @@ wp_admin_css( 'css/ie' );
 <script type="text/javascript">
 //<![CDATA[
 addLoadEvent = function(func) {if (typeof jQuery != "undefined") jQuery(document).ready(func); else if (typeof wpOnload!='function'){wpOnload=func;} else {var oldonload=wpOnload; wpOnload=function(){oldonload();func();}}};
+
+function convertEntities(o) {
+	var c = function(s) {
+		if (/&[^;]+;/.test(s)) {
+			var e = document.createElement("div");
+			e.innerHTML = s;
+			return !e.firstChild ? s : e.firstChild.nodeValue;
+		}
+		return s;
+	}
+
+	if ( typeof o === 'string' )
+		return c(o);
+	else if ( typeof o === 'object' )
+		for (var v in o) {
+			if ( typeof o[v] === 'string' )
+				o[v] = c(o[v]);
+		}
+	return o;
+};
 //]]>
 </script>
 <?php
@@ -87,6 +107,10 @@ if ( function_exists('mb_strlen') ) {
 <?php favorite_actions(); ?>
 </div>
 </div>
+
+<?php if ( get_user_setting('mfold') == 'f' ) { ?>
+<script type="text/javascript">jQuery('#wpcontent').addClass('folded');</script>
+<?php } ?>
 
 <div id="wpbody">
 <?php require(ABSPATH . 'wp-admin/menu-header.php'); ?>

@@ -1457,14 +1457,14 @@ fieldset.inline-edit-col-right .inline-edit-col {
 }
 
 #favorite-first {
-	background: #797979 url(../images/fav.png) repeat-x 0 center;
+	background: #797979 url(../images/fav.png) repeat-x left center;
 	border-color: #777 !important;
 	border-bottom-color: #666 !important;
 }
 
 #favorite-inside {
 	border-color: #797979;
-	background: #797979 url(../images/fav-bottom.png) repeat-x 0 bottom;
+	background-color: #797979;
 }
 
 #favorite-toggle {
@@ -1473,7 +1473,6 @@ fieldset.inline-edit-col-right .inline-edit-col {
 
 #favorite-actions a {
 	color: #ddd;
-	text-shadow: rgba(0,0,0,0.2) 0 -1px 0;
 }
 
 #favorite-actions a:hover {
@@ -1500,10 +1499,6 @@ fieldset.inline-edit-col-right .inline-edit-col {
 .button-primary,
 .submit .button-primary {
 	text-shadow: rgba(0,0,0,0.3) 0 -1px 0;
-}
-
-#wphead h1 {
-	text-shadow: rgba(0,0,0,0.6) 0 -1px 0;
 }
 
 #screen-meta a.show-settings {

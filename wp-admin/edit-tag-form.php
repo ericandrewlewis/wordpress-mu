@@ -29,7 +29,7 @@ do_action('edit_tag_form_pre', $tag); ?>
             <p><?php _e('The name is how the tag appears on your site.'); ?></p></td>
 		</tr>
 	</table>
-<p class="submit"><input type="submit" class="button" name="submit" value="<?php _e('Edit Tag'); ?>" /></p>
+<p class="submit"><input type="submit" class="button-primary" name="submit" value="<?php _e('Update Tag'); ?>" /></p>
 <?php do_action('edit_tag_form', $tag); ?>
 </form>
 </div>
