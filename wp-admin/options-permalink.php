@@ -133,7 +133,7 @@ else
 
 <div class="wrap">
 <?php screen_icon(); ?>
-<h2><?php echo wp_specialchars( $title ); ?></h2> 
+<h2><?php echo wp_specialchars( $title ); ?></h2>
 
 <form name="form" action="options-permalink.php" method="post">
 <?php wp_nonce_field('update-permalink') ?>

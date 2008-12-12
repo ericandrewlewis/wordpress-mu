@@ -209,7 +209,7 @@ if ( !empty($invalid) )
 
 <div class="wrap">
 <?php screen_icon(); ?>
-	<h2><?php echo wp_specialchars( $title ); ?></h2> 
+	<h2><?php echo wp_specialchars( $title ); ?></h2>
 
 <p><?php _e('Plugins extend and expand the functionality of WordPress. Once a plugin is installed, you may activate it or deactivate it here.'); ?></p>
 <?php
@@ -264,7 +264,7 @@ function print_plugins_table($plugins, $context = '') {
 		<th scope="col" class="action-links"><?php _e('Action'); ?></th>
 	</tr>
 	</thead>
-	
+
 	<tfoot>
 	<tr>
 		<th scope="col" class="check-column"><input type="checkbox" /></th>
@@ -274,7 +274,7 @@ function print_plugins_table($plugins, $context = '') {
 		<th scope="col" class="action-links"><?php _e('Action'); ?></th>
 	</tr>
 	</tfoot>
-	
+
 	<tbody class="plugins">
 <?php
 
@@ -341,7 +341,7 @@ function print_plugin_actions($context) {
 	<?php if( 'recent' == $context ) : ?>
 		<input type="submit" name="clear-recent-list" value="<?php _e('Clear List') ?>" class="button-secondary" />
 	<?php endif; ?>
-	</div>	
+	</div>
 <?php
 }
 ?>

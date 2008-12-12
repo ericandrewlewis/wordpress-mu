@@ -83,8 +83,14 @@ if ( $is_iphone ) { ?>
 <div id="wphead">
 <?php
 $blog_name = get_bloginfo('name', 'display');
-if ( '' == $blog_name )
+if ( '' == $blog_name ) {
 	$blog_name = '&nbsp;';
+} else {
+	$blog_name_excerpt = wp_html_excerpt($blog_name, 40);
+	if ( $blog_name != $blog_name_excerpt )
+		$blog_name_excerpt = trim($blog_name_excerpt) . '&hellip;';
+	$blog_name = $blog_name_excerpt;
+}
 $title_class = '';
 if ( function_exists('mb_strlen') ) {
 	if ( mb_strlen($blog_name, 'UTF-8') > 30 )
@@ -95,7 +101,7 @@ if ( function_exists('mb_strlen') ) {
 }
 ?>
 
-<img id="header-logo" src="../wp-includes/images/blank.gif" alt="" width="32" height="32" /> <h1 <?php echo $title_class ?>><a href="<?php echo trailingslashit( get_bloginfo('url') ); ?>" title="<?php _e('Visit site') ?>"><?php echo $blog_name ?></a></h1>
+<img id="header-logo" src="../wp-includes/images/blank.gif" alt="" width="32" height="32" /> <h1 <?php echo $title_class ?>><a href="<?php echo trailingslashit( get_bloginfo('url') ); ?>" title="<?php _e('Visit site') ?>"><?php echo $blog_name ?> <span>&larr; <?php _e('Visit site') ?></span></a></h1>
 
 <div id="wphead-info">
 <div id="user_info">

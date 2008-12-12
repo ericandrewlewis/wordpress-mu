@@ -20,7 +20,7 @@ if ( ( isset( $_REQUEST['delete_all_spam'] ) || isset( $_REQUEST['delete_all_spa
 	$delete_time = $wpdb->escape( $_REQUEST['pagegen_timestamp'] );
 	$deleted_spam = $wpdb->query( "DELETE FROM $wpdb->comments WHERE comment_approved = 'spam' AND '$delete_time' > comment_date_gmt" );
 
-	$redirect_to = 'edit-comments.php?comment_status=spam&deleted=' . (int) $deleted_spam; 
+	$redirect_to = 'edit-comments.php?comment_status=spam&deleted=' . (int) $deleted_spam;
 	if ( $post_id )
 		$redirect_to = add_query_arg( 'p', absint( $post_id ), $redirect_to );
 	wp_redirect( $redirect_to );
@@ -234,7 +234,7 @@ $page_links = paginate_links( array(
 
 <div class="alignleft actions">
 <select name="action">
-<option value="-1" selected="selected"><?php _e('Actions') ?></option>
+<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 <?php if ( empty($comment_status) || 'approved' == $comment_status ): ?>
 <option value="unapprove"><?php _e('Unapprove'); ?></option>
 <?php endif; ?>
@@ -320,7 +320,7 @@ if ( $page_links )
 
 <div class="alignleft actions">
 <select name="action2">
-<option value="-1" selected="selected"><?php _e('Actions') ?></option>
+<option value="-1" selected="selected"><?php _e('Bulk Actions') ?></option>
 <?php if ( empty($comment_status) || 'approved' == $comment_status ): ?>
 <option value="unapprove"><?php _e('Unapprove'); ?></option>
 <?php endif; ?>

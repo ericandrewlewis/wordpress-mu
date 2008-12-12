@@ -527,14 +527,11 @@ function wp_kses_attr($element, $attr, $allowed_html, $allowed_protocols) {
 
 			if ( $arreach['name'] == 'style' ) {
 				$orig_value = $arreach['value'];
-
 				$value = safecss_filter_attr($orig_value, $element);
-
 				if ( empty($value) )
 					continue;
 
 				$arreach['value'] = $value;
-
 				$arreach['whole'] = str_replace($orig_value, $value, $arreach['whole']);
 			}
 
@@ -617,7 +614,7 @@ function wp_kses_hair($attr, $allowed_protocols) {
 					# "value"
 					{
 					$thisval = $match[1];
-					if ( in_array($attrname, $uris) )		
+					if ( in_array($attrname, $uris) )
 						$thisval = wp_kses_bad_protocol($thisval, $allowed_protocols);
 
 					if(FALSE === array_key_exists($attrname, $attrarr)) {
@@ -633,7 +630,7 @@ function wp_kses_hair($attr, $allowed_protocols) {
 					# 'value'
 					{
 					$thisval = $match[1];
-					if ( in_array($attrname, $uris) )		
+					if ( in_array($attrname, $uris) )
 						$thisval = wp_kses_bad_protocol($thisval, $allowed_protocols);
 
 					if(FALSE === array_key_exists($attrname, $attrarr)) {
@@ -649,7 +646,7 @@ function wp_kses_hair($attr, $allowed_protocols) {
 					# value
 					{
 					$thisval = $match[1];
-					if ( in_array($attrname, $uris) )		
+					if ( in_array($attrname, $uris) )
 						$thisval = wp_kses_bad_protocol($thisval, $allowed_protocols);
 
 					if(FALSE === array_key_exists($attrname, $attrarr)) {
