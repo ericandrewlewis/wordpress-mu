@@ -477,7 +477,7 @@ function wp_load_alloptions() {
 function _get_option_cache( $setting ) {
 	global $_wp_alloptions;
 	global $blog_id;
-	
+
 	wp_load_alloptions();
 
 	if ( isset($_wp_alloptions[$blog_id][$setting]) )
@@ -638,8 +638,10 @@ function delete_option( $name ) {
 	$option = $wpdb->get_row( "SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'" );
 	if ( is_null($option) || !$option->option_id )
 		return false;
+
 	// expected_slashed ($name)
 	$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = '$name'" );
+
 	return true;
 }
 

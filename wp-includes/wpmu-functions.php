@@ -330,10 +330,9 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 	switch_to_blog($id);
 	update_option( $key, $value );
 	restore_current_blog();
-	
-	if( $refresh == true ) {
+
+	if( $refresh == true )
 		refresh_blog_details( $id );
-	}
 	wp_cache_set( $id."-".$key."-blog_option", $value, 'site-options');
 }
 
