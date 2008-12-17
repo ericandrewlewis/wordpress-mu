@@ -707,7 +707,7 @@ function admin_notice_feed() {
 		$msg .= "<p>" . $content . " <a href='$link'>" . __( 'Read More' ) . "</a> <a href='index.php?feed_dismiss=" . md5( $item[ 'title' ] ) . "'>" . __( "Dismiss" ) . "</a></p>";
 		echo "<div class='updated fade'>$msg</div>";
 	} elseif( is_site_admin() ) {
-		echo "<div id='update-nag'>Your feed at " . wp_specialchars( $url ) . " is empty.</div>";
+		printf("<div id='update-nag'>" . __("Your feed at %s is empty.") . "</div>", wp_specialchars( $url ));
 	}
 }
 add_action( 'admin_notices', 'admin_notice_feed' );
@@ -715,7 +715,7 @@ add_action( 'admin_notices', 'admin_notice_feed' );
 function site_admin_notice() {
 	global $current_user;
 	if( is_site_admin() )
-		echo "<div id='update-nag'>Hi {$current_user->user_login}! You're logged in as a site administrator.</div>";
+		printf("<div id='update-nag'>" . __("Hi %s! You're logged in as a site administrator.") . "</div>", $current_user->user_login);
 }
 add_action( 'admin_notices', 'site_admin_notice' );
 ?>
