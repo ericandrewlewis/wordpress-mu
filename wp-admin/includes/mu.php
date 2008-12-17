@@ -416,6 +416,7 @@ function wpmu_menu() {
 	global $menu, $submenu;
 
 	if( is_site_admin() ) {
+		$menu[3] = array( '', 'read', '', '', 'wp-menu-separator' );
 		$menu[4] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'wp-menu-open menu-top', 'menu-site', 'div');
 		$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
 		$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
