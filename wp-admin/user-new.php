@@ -59,7 +59,8 @@ if ( isset($_REQUEST['action']) && 'adduser' == $_REQUEST['action'] ) {
 		} else {
 			$newuser_key = substr( md5( $user_id ), 0, 5 );
 			add_option( 'new_user_' . $newuser_key, array( 'user_id' => $user_id, 'email' => $user_details->user_email, 'role' => $_REQUEST[ 'role' ] ) );
-			wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ), "Hi,\n\nYou have been invited to join '" . get_option( 'blogname' ) . "' at\n" . site_url() . "\nPlease click the following link to confirm the invite:\n" . site_url( "/newbloguser/$newuser_key/" ) );
+			$message = __("Hi,\n\nYou have been invited to join '%s' at\n%s\nPlease click the following link to confirm the invite:\n%s\n");
+			wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ),  sprintf($message, get_option('blogname'), site_url(), site_url("/newbloguser/$newuser_key/")));
 			$redirect = add_query_arg( array('update' => 'add'), 'user-new.php' );
 		}
 		wp_redirect( $redirect );
