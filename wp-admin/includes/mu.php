@@ -232,9 +232,83 @@ All at ###SITENAME###
 	$content = str_replace('###SITENAME###', get_site_option( 'site_name' ), $content);
 	$content = str_replace('###SITEURL###', 'http://' . $current_site->domain . $current_site->path, $content);
 	
-	wp_mail( $value, "[ " . get_option( 'blogname' ) . " ]" . sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
+	wp_mail( $value, sprintf(__('[%s] New Admin Email Address'), get_option('blogname')), $content );
 }
 add_action('update_option_new_admin_email', 'update_option_new_admin_email', 10, 2);
+
+function profile_page_email_warning_ob_start() {
+	ob_start( 'profile_page_email_warning_ob_content' );
+}
+
+function profile_page_email_warning_ob_content( $content ) {
+	$content = str_replace( ' class="regular-text" /> Required.</td>', ' class="regular-text" /> Required. (You will be sent an email to confirm the change)</td>', $content );
+	return $content;
+}
+
+function update_profile_email() {
+	global $current_user;
+	if( $_GET[ 'newuseremail' ] && $current_user->ID ) {
+		$new_email = get_option( $current_user->ID . '_new_email' );
+		if( $new_email[ 'hash' ] == $_GET[ 'newuseremail' ] ) {
+			$user->ID = $current_user->ID;
+			$user->user_email = wp_specialchars( trim( $new_email[ 'newemail' ] ) );
+			wp_update_user( get_object_vars( $user ) );
+			delete_option( $current_user->ID . '_new_email' );
+			wp_redirect( add_query_arg( array('updated' => 'true'), admin_url( 'profile.php' ) ) );
+			die();
+		}
+	}
+}
+if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
+	add_action( 'admin_init', 'update_profile_email' );
+	add_action( 'admin_init', 'profile_page_email_warning_ob_start' );
+}
+
+function send_confirmation_on_profile_email() {
+	global $current_user, $current_site;
+	if( $current_user->user_email != $_POST[ 'email' ] ) {
+		if ( !is_email( $_POST[ 'email' ] ) )
+			return;
+
+		$hash = md5( $_POST[ 'email' ] . time() . mt_rand() );
+		$new_user_email = array(
+				"hash" => $hash,
+				"newemail" => $_POST[ 'email' ]
+				);
+		update_option( $current_user->ID . '_new_email', $new_user_email );
+
+		$content = apply_filters( 'new_user_email_content', __("Dear user,
+
+You recently requested to have the email address on your account changed.
+If this is correct, please click on the following link to change it:
+###ADMIN_URL###
+
+You can safely ignore and delete this email if you do not want to
+take this action.
+
+This email has been sent to ###EMAIL###
+
+Regards,
+All at ###SITENAME###
+###SITEURL###"), $new_user_email );
+
+		$content = str_replace('###ADMIN_URL###', clean_url(get_option( "siteurl" ).'/wp-admin/profile.php?newuseremail='.$hash), $content);
+		$content = str_replace('###EMAIL###', $_POST[ 'email' ], $content);
+		$content = str_replace('###SITENAME###', get_site_option( 'site_name' ), $content);
+		$content = str_replace('###SITEURL###', 'http://' . $current_site->domain . $current_site->path, $content);
+
+		wp_mail( $_POST[ 'email' ], sprintf(__('[%s] New Email Address'), get_option('blogname')), $content );
+		$_POST[ 'email' ] = $current_user->user_email;
+	}
+}
+add_action( 'personal_options_update', 'send_confirmation_on_profile_email' );
+
+function new_user_email_admin_notice() {
+	global $current_user;
+	if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) && $_GET[ 'updated' ] && $email = get_option( $current_user->ID . '_new_email' ) )
+		echo "<div id='update-nag'>" . sprintf( __( "Your email address has not been updated yet. Please check your inbox at %s for a confirmation email." ), $email[ 'newemail' ] ) . "</div>";
+}
+add_action( 'admin_notices', 'new_user_email_admin_notice' );
 
 function get_site_allowed_themes() {
 	$themes = get_themes();
@@ -353,7 +427,7 @@ function refresh_user_details($id) {
   Determines if the available space defined by the admin has been exceeded by the user
 */
 function wpmu_checkAvailableSpace() {
-	$spaceAllowed = get_space_allowed(); 
+	$spaceAllowed = get_space_allowed();
 
 	$dirName = trailingslashit( BLOGUPLOADDIR );
 	if (!(is_dir($dirName) && is_readable($dirName))) 
@@ -416,8 +490,7 @@ function wpmu_menu() {
 	global $menu, $submenu;
 
 	if( is_site_admin() ) {
-		$menu[3] = array( '', 'read', '', '', 'wp-menu-separator' );
-		$menu[4] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'wp-menu-open menu-top', 'menu-site', 'div');
+		$menu[2] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'wp-menu-open menu-top', 'menu-dashboard', 'div');
 		$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
 		$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
 		$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
@@ -431,11 +504,10 @@ function wpmu_menu() {
 		$menu_perms = array();
 	if( $menu_perms[ 'plugins' ] != 1 ) {
 		if( !is_site_admin() ) {
-			unset( $submenu['plugins.php'][5] );
-			unset( $menu['35'] ); // Plugins
+			unset( $menu['45'] ); // Plugins
 		} else {
-			$menu[ '35' ][0] .= ' <strong>*</strong>';
-			$menu[ '35' ][2] = 'wpmu-options.php#menu';
+			$menu[ '45' ][0] .= ' <strong>*</strong>';
+			$menu[ '45' ][2] = 'wpmu-options.php#menu';
 		}
 	}
 	if( !is_site_admin() )
@@ -450,6 +522,8 @@ function wpmu_menu() {
 			$submenu['users.php'][10] = array(__('Add New') . ' <strong>*</strong>', 'create_users', 'wpmu-options.php#addnewusers');
 		}
 	}
+	unset( $submenu['tools.php'][20] ); // core upgrade
+	unset( $submenu['options-general.php'][45] ); // Misc
 
 }
 add_action( '_admin_menu', 'wpmu_menu' );
