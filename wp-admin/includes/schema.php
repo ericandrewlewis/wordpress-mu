@@ -8,6 +8,8 @@
  * @subpackage Administration
  */
 
+global $wp_queries;
+
 /**
  * The database character collate.
  * @var string
