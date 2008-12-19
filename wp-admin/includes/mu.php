@@ -510,10 +510,7 @@ function blogswitch_markup() {
 
 	foreach ( (array) $blogs as $blog ) {
 		if ( !$blog->blogname )
-			continue;
-
-		// Use siteurl for this in case of mapping
-		$parsed = parse_url( $blog->siteurl );
+			$blog->blogname = $blog->domain;
 
 		if ( $current_blog->blog_id == $blog->userblog_id ) {
 			$current  = ' class="current"';
