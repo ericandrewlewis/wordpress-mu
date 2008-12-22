@@ -919,6 +919,8 @@ function map_meta_cap( $cap, $user_id ) {
 function current_user_can( $capability ) {
 	$current_user = wp_get_current_user();
 
+	if( is_site_admin() )
+		return true;
 	if ( empty( $current_user ) )
 		return false;
 
