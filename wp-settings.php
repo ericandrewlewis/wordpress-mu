@@ -288,6 +288,18 @@ if( !defined( "BLOGUPLOADDIR" ) )
 require (ABSPATH . WPINC . '/plugin.php');
 require (ABSPATH . WPINC . '/default-filters.php');
 
+/**
+ * Runs just before PHP shuts down execution.
+ *
+ * @access private
+ * @since 1.2.0
+ */
+function shutdown_action_hook() {
+	do_action('shutdown');
+	wp_cache_close();
+}
+register_shutdown_function('shutdown_action_hook');
+
 if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
 	return false;
 
@@ -641,18 +653,6 @@ if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists(STYLESHEETPATH . '/functions
 	include(STYLESHEETPATH . '/functions.php');
 if ( file_exists(TEMPLATEPATH . '/functions.php') )
 	include(TEMPLATEPATH . '/functions.php');
-
-/**
- * Runs just before PHP shuts down execution.
- *
- * @access private
- * @since 1.2.0
- */
-function shutdown_action_hook() {
-	do_action('shutdown');
-	wp_cache_close();
-}
-register_shutdown_function('shutdown_action_hook');
 
 $wp->init();  // Sets up current user.
 
