@@ -2067,4 +2067,8 @@ function fix_phpmailer_messageid( $phpmailer ) {
 	global $current_site;
 	$phpmailer->Hostname = $current_site->domain;
 }
+
+// Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
+include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );
+
 ?>

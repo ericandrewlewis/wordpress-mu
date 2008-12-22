@@ -553,100 +553,6 @@ function import_no_new_users( $permission ) {
 add_filter( 'import_allow_create_users', 'import_no_new_users' );
 // See "import_allow_fetch_attachments" and "import_attachment_size_limit" filters too.
 
-/* Blogswitcher */
-function blogswitch_init() {
-	global $current_user;
-	$blogs = get_blogs_of_user( $current_user->ID );
-	if ( !$blogs )
-		return;
-	add_action( 'admin_menu', 'blogswitch_ob_start' );
-	add_action( 'dashmenu', 'blogswitch_markup' );
-}
-
-
-function blogswitch_ob_start() {
-	wp_enqueue_script( 'blog-switch', '/wp-admin/js/blog-switch.js', array( 'jquery' ), 2 );
-	ob_start( 'blogswitch_ob_content' );
-}
-
-function blogswitch_ob_content( $content ) {
-	$content = preg_replace( '#<ul id="dashmenu">.*?%%REAL_DASH_MENU%%#s', '<ul id="dashmenu">', $content );
-	return str_replace( '%%END_REAL_DASH_MENU%%</ul>', '', $content );
-}
-
-function blogswitch_markup() {
-	global $current_user, $current_blog;
-	$list = array();
-	$options = array();
-
-	$primary_blog = get_usermeta( $current_user->ID, 'primary_blog' );
-	$blogs = get_blogs_of_user( $current_user->ID );
-
-	foreach ( (array) $blogs as $blog ) {
-		if ( !$blog->blogname )
-			$blog->blogname = $blog->domain;
-
-		if ( $current_blog->blog_id == $blog->userblog_id ) {
-			$current  = ' class="current"';
-			$selected = ' selected="selected"';
-		} else {
-			$current  = '';
-			$selected = '';
-		}
-		
-		$url = clean_url( $blog->siteurl ) . '/wp-admin/';
-		$name = wp_specialchars( strip_tags( $blog->blogname ) );
-		$list_item = "<li><a href='$url'$current>$name</a></li>";
-		$option_item = "<option value='$url'$selected>$name</option>";
-
-		if ( $current_blog->blog_id == $blog->userblog_id ) {
-			$list[-2] = $list_item;
-			$options[] = $option_item; // [sic] don't reorder dropdown based on current blog
-		} elseif ( $primary_blog == $blog->userblog_id ) {
-			$list[-1] = $list_item;
-			$options[-1] = $option_item;
-		} else {
-			$list[] = $list_item;
-			$options[] = $option_item;
-		}
-	}
-	ksort($list);
-	ksort($options);
-
-	$list = array_slice( $list, 0, 4 ); // First 4
-
-	$select = "\n\t\t<select>\n\t\t\t" . join( "\n\t\t\t", $options ) . "\n\t\t</select>";
-
-	echo "%%REAL_DASH_MENU%%\n\t" . join( "\n\t", $list );
-
-	if ( count($list) < count($options) ) :
-?>
-
-	<li id="all-my-blogs-tab" class="wp-no-js-hidden"><a href="#" class="blog-picker-toggle"><?php _e( 'All my blogs' ); ?></a></li>
-
-	</ul>
-
-	<form id="all-my-blogs" action="" method="get" style="display: none">
-		<p>
-			<?php printf( __( 'Choose a blog: %s' ), $select ); ?>
-
-			<input type="submit" class="button" value="<?php _e( 'Go' ); ?>" />
-			<a href="#" class="blog-picker-toggle"><?php _e( 'Cancel' ); ?></a>
-		</p>
-	</form>
-
-<?php 	else : // counts ?>
-
-	</ul>
-
-<?php
-	endif; // counts
-
-	echo '%%END_REAL_DASH_MENU%%';
-}
-
-add_action( '_admin_menu', 'blogswitch_init' );
-
 function mu_css() {
 	wp_admin_css( 'css/mu' );
 }
@@ -790,4 +696,38 @@ function site_admin_notice() {
 		printf("<div id='update-nag'>" . __("Hi %s! You're logged in as a site administrator.") . "</div>", $current_user->user_login);
 }
 add_action( 'admin_notices', 'site_admin_notice' );
+
+function wpa_dashboards( $menu ) {
+	global $current_user;
+	$primary_blog = get_usermeta( $current_user->ID, 'primary_blog' );
+	$blogs = get_blogs_of_user( $current_user->ID );
+
+	foreach ( (array) $blogs as $blog ) {
+		if ( !$blog->blogname )
+			$blog->blogname = $blog->domain;
+
+		if ( $current_blog->blog_id == $blog->userblog_id ) {
+			$current_blog->blogname .= " *";
+		}
+		
+		$url = clean_url( $blog->siteurl ) . '/wp-admin/';
+		$name = wp_specialchars( strip_tags( $blog->blogname ) );
+		$list_item = array( 'url' => $url, 'name' => $name );
+
+		if ( $current_blog->blog_id == $blog->userblog_id ) {
+			$list[-2] = $list_item;
+		} elseif ( $primary_blog == $blog->userblog_id ) {
+			$list[-1] = $list_item;
+		} else {
+			$list[] = $list_item;
+		}
+	}
+	ksort($list);
+	foreach( $list as $blog ) {
+		$menu[ 'index.php' ][ $blog[ 'url' ] ] = array( 'title' => $blog[ 'name' ] );
+	}
+
+	return $menu;
+}
+add_filter( 'wpabar_menuitems', 'wpa_dashboards' );
 ?>
