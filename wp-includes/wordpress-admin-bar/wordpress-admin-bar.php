@@ -66,7 +66,7 @@ class WPAdminBar {
 		// Theme authors: use wpabar_register_theme() instead of the "wpabar_themes" filter
 		$this->themes = apply_filters( 'wpabar_themes', array(
 			'wordpress_grey' => array(
-				'name' => __( 'WordPress Grey', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Grey' ),
 				'css' => $this->folder . '/themes/grey/grey.css?ver=' . $this->version,
 			),
 		) );
@@ -305,7 +305,7 @@ class WPAdminBar {
 
 		$menu['edit-comments.php'][0]['title'] = str_replace(
 			array( "<span id='awaiting-mod' class='count-", '</span></span>' ),
-			array( "(<span title='" . __( 'Number of comments in the moderation queue', 'wordpress-admin-bar' ) . "' class='awaiting-mod count-", '</span></span>)'),
+			array( "(<span title='" . __( 'Number of comments in the moderation queue' ) . "' class='awaiting-mod count-", '</span></span>)'),
 			$menu['edit-comments.php'][0]['title']
 		);
 		
@@ -320,7 +320,7 @@ class WPAdminBar {
 
 		$menu['plugins.php'][0]['title'] = str_replace(
 			array( "<span class='update-plugins", '</span></span>' ),
-			array( "(<span title='" . __( 'Number of plugins needing upgrading', 'wordpress-admin-bar' ) . "' 'class='update-plugins", '</span></span>)'),
+			array( "(<span title='" . __( 'Number of plugins needing upgrading' ) . "' 'class='update-plugins", '</span></span>)'),
 			$menu['plugins.php'][0]['title']
 		);
 		
