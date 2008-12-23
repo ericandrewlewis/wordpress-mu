@@ -52,7 +52,10 @@ class WPAdminBar {
 		// Place it in this plugin's folder and name it "wordpress-admin-bar-[value in wp-config].mo"
 		load_plugin_textdomain( 'wordpress-admin-bar', FALSE, '/wordpress-admin-bar' );
 
+		// Register the admin settings page hooks
+		add_action( 'admin_menu', array(&$this, 'AddAdminMenu') );
 		//add_filter( 'plugin_action_links', array(&$this, 'AddPluginActionLink'), 10, 2 );
+		add_action( 'load-settings_page_wordpress-admin-bar', array(&$this, 'SettingsPageInit') );
 		add_action( 'admin_post_wordpress-admin-bar', array(&$this, 'HandleFormPOST') );
 
 		// Modify the menu array a little to make it better
@@ -69,6 +72,34 @@ class WPAdminBar {
 				'name' => __( 'WordPress Grey' ),
 				'css' => $this->folder . '/themes/grey/grey.css?ver=' . $this->version,
 			),
+			'wordpress_blue' => array(
+				'name' => __( 'WordPress Blue', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/blue/blue.css?ver=' . $this->version,
+			),
+			'wordpress_green' => array(
+				'name' => __( 'WordPress Green', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/green/green.css?ver=' . $this->version,
+			),
+			'wordpress_orange' => array(
+				'name' => __( 'WordPress Orange', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/orange/orange.css?ver=' . $this->version,
+			),
+			'wordpress_purple' => array(
+				'name' => __( 'WordPress Purple', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/purple/purple.css?ver=' . $this->version,
+			),
+			'wordpress_red' => array(
+				'name' => __( 'WordPress Red', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/red/red.css?ver=' . $this->version,
+			),
+			'wordpress_yellow' => array(
+				'name' => __( 'WordPress Yellow', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/yellow/yellow.css?ver=' . $this->version,
+			),
+			'wordpress_classic' => array(
+				'name' => __( 'WordPress Classic', 'wordpress-admin-bar' ),
+				'css' => $this->folder . '/themes/classic/classic.css?ver=' . $this->version,
+			),
 		) );
 
 		// Stop here until the theme is loaded (so it can add any admin bar themes)
@@ -81,12 +112,19 @@ class WPAdminBar {
 		$themekeys = array_keys($this->themes);
 
 		// Create the default settings
-		$this->settings = array(
-			'show_site'  => '1',
+		$this->defaults = array(
+			'show_site'  => '0',
 			'show_admin' => '1',
 			'theme'      => $themekeys[0],
 			'hide'       => array(),
 		);
+
+		// Load the settings
+		global $user_ID;
+		$settings = get_option( 'wordpress-admin-bar' );
+		if ( !is_array($settings) ) $settings = array();
+		if ( empty($settings[$user_ID]) ) $settings[$user_ID] = $this->defaults;
+		$this->settings = $settings[$user_ID]; // For coding ease
 
 		// Make sure a valid theme is requested
 		if ( !array_key_exists( $this->settings['theme'], $this->themes ) )
@@ -104,6 +142,12 @@ class WPAdminBar {
 
 		// Load the little JS file for this plugin
 		wp_enqueue_script( 'wordpress-admin-bar', $this->folder . '/wordpress-admin-bar.js', array(), $this->version );
+	}
+
+
+	// Register the settings page
+	function AddAdminMenu() {
+		add_options_page( __('WordPress Admin Bar', 'wordpress-admin-bar'), __('Admin Bar', 'wordpress-admin-bar'), 'read', 'wordpress-admin-bar', array(&$this, 'SettingsPage') );
 	}
 
 
@@ -159,21 +203,6 @@ class WPAdminBar {
 		check_admin_referer( 'wordpress-admin-bar' );
 		$_POST[ 'wpabar_items' ][ 'index.php' ][0] = 1;
 
-		// Start with a full menu and remove items that were checked. We'll be left with items to hide.
-		$this->SetupMenu();
-		$hide = $this->menu;
-		foreach ( $this->menu as $topfilename => $menuitem ) {
-			foreach( $menuitem as $submenustub => $submenutitle ) {
-				if ( isset( $_POST['wpabar_items'][$topfilename][$submenustub] ) )
-					unset( $hide[$topfilename][$submenustub] );
-				else
-					$hide[$topfilename][$submenustub] = TRUE; // Reduce array size
-			}
-		}
-		foreach ( $hide as $topfilename => $menuitem ) {
-			if ( empty($menuitem) )
-				unset( $hide[$topfilename] );
-		}
 
 		$settings = get_option( 'wordpress-admin-bar' );
 		if ( !is_array($settings) )
@@ -183,13 +212,60 @@ class WPAdminBar {
 			'show_site'  => $_POST['wpabar_site'],
 			'show_admin' => $_POST['wpabar_admin'],
 			'theme'      => $_POST['wpabar_theme'],
-			'hide'       => $hide,
+			'hide'       => array(),
 		);
 
 		update_option( 'wordpress-admin-bar', $settings );
 
 		wp_safe_redirect( add_query_arg( 'updated', 'true', wp_get_referer() ) );
 	}
+
+
+	// The settings page for this plugin
+	function SettingsPage() {
+		global $user_ID;
+
+		?>
+	<div class="wrap">
+	<h2><?php _e( 'WordPress Admin Bar', 'wordpress-admin-bar' ); ?></h2>
+
+	<form method="post" action="admin-post.php">
+	<?php wp_nonce_field('wordpress-admin-bar'); ?>
+
+	<p><?php _e( 'Everything here applies to your account only.', 'wordpress-admin-bar' ); ?></p>
+
+	<table class="form-table">
+		<tr valign="top">
+			<th scope="row"><?php _e( 'Show the admin bar', 'wordpress-admin-bar' ); ?></th>
+			<td>
+				<label for="wpabar_site"><input name="wpabar_site" type="checkbox" id="wpabar_site" value="1"<?php checked( 1, $this->settings['show_site'] ); ?> /> <?php _e( 'On the site', 'wordpress-admin-bar' ); ?></label><br />
+				<label for="wpabar_admin"><input name="wpabar_admin" type="checkbox" id="wpabar_admin" value="1"<?php checked( 1, $this->settings['show_admin'] ); ?> /> <?php _e( 'In the admin area', 'wordpress-admin-bar' ); ?></label>
+			</td>
+		</tr>
+		<tr valign="top">
+			<th scope="row"><label for="wpabar_theme"><?php _e( 'Theme', 'wordpress-admin-bar' ); ?></label></th>
+			<td>
+				<select name="wpabar_theme" id="wpabar_theme">
+				<?php foreach( $this->themes as $stub => $details ) : ?>
+					<option value="<?php echo $stub; ?>"<?php selected( $stub, $this->settings['theme'] ); ?>><?php echo htmlspecialchars( $details['name'] ); ?></option>
+				<?php endforeach; ?>
+				</select>
+			</td>
+		</tr>
+	</table>
+
+
+	<p class="submit">
+		<input type="hidden" name="action" value="wordpress-admin-bar" />
+		<input type="submit" name="Submit" value="<?php _e('Save Changes') ?>" />
+	</p>
+
+	</form>
+</div>
+
+<?php
+	}
+
 
 	// Output the needed CSS for the plugin
 	function OutputCSS() { ?>
