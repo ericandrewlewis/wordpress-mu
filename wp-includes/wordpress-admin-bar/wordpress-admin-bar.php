@@ -39,6 +39,8 @@ class WPAdminBar {
 
 	// Plugin initialization
 	function WPAdminBar() {
+		if( defined( 'BP_CORE_VERSION' ) ) // disable if Buddypress loaded
+			return;
 		// This version only supports WP 2.7+
 		if ( !function_exists('wp_list_comments') ) return;
 
@@ -406,7 +408,8 @@ class WPAdminBar {
 
 
 // Start this plugin once all other files and plugins are fully loaded
-add_action( 'plugins_loaded', create_function( '', 'global $WPAdminBar; $WPAdminBar = new WPAdminBar();' ) );
+if( !defined( 'NOADMINBAR' ) )
+	add_action( 'plugins_loaded', create_function( '', 'global $WPAdminBar; $WPAdminBar = new WPAdminBar();' ) );
 
 
 // Call this from your theme's functions.php to easily add a new bar style for your theme
