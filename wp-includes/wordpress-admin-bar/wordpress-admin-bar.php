@@ -57,7 +57,6 @@ class WPAdminBar {
 		// Register the admin settings page hooks
 		add_action( 'admin_menu', array(&$this, 'AddAdminMenu') );
 		//add_filter( 'plugin_action_links', array(&$this, 'AddPluginActionLink'), 10, 2 );
-		add_action( 'load-settings_page_wordpress-admin-bar', array(&$this, 'SettingsPageInit') );
 		add_action( 'admin_post_wordpress-admin-bar', array(&$this, 'HandleFormPOST') );
 
 		// Modify the menu array a little to make it better
