@@ -499,22 +499,23 @@ function wpmu_menu() {
 		$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
 	}
 
+	if( !is_site_admin() )
+		unset( $submenu['plugins.php'][10] ); // always remove the plugin installer
+	unset( $submenu['plugins.php'][15] ); // always remove the plugin editor
+	unset( $submenu['themes.php'][10] ); // always remove the themes editor
+
 	$menu_perms = get_site_option( "menu_items" );
 	if( is_array( $menu_perms ) == false )
 		$menu_perms = array();
 	if( $menu_perms[ 'plugins' ] != 1 ) {
 		if( !is_site_admin() ) {
 			unset( $menu['45'] ); // Plugins
+			unset( $submenu['plugins.php'] ); // always remove the plugin editor
 		} else {
-			$menu[ '45' ][0] .= ' <strong>*</strong>';
-			$menu[ '45' ][2] = 'wpmu-options.php#menu';
+			$menu[45] = array( __('Plugins') . ' <strong>*</strong>', 'activate_plugins', 'wpmu-options.php#menu', '', 'menu-top', 'menu-plugins', 'div' );
+			unset( $submenu[ 'plugins.php' ] );
 		}
 	}
-	if( !is_site_admin() )
-		unset( $submenu['plugins.php'][10] ); // always remove the plugin installer
-	unset( $submenu['plugins.php'][15] ); // always remove the plugin editor
-	unset( $submenu['themes.php'][10] ); // always remove the themes editor
-
 	if( !get_site_option( 'add_new_users' ) ) {
 		if( !is_site_admin() ) {
 			unset( $submenu['users.php'][10] );
@@ -524,7 +525,6 @@ function wpmu_menu() {
 	}
 	unset( $submenu['tools.php'][20] ); // core upgrade
 	unset( $submenu['options-general.php'][45] ); // Misc
-
 }
 add_action( '_admin_menu', 'wpmu_menu' );
 
