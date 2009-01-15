@@ -402,7 +402,8 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
 				<th scope='row'>Server Address</th> 
 				<td>
 					<input type='text' name='basedomain' value='<?php echo $hostname ?>' />
-					<br />What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.
+					<p>What is the Internet address of your site? You should enter the shortest address possible. For example, use <em>example.com</em> instead of <em>www.example.com</em> but if you are going to use an address like <em>blogs.example.com</em> then enter that unaltered in the box below.</p>
+					<p>Do not use an IP address (like 127.0.0.1) as your server address. Do not use a single word hostname like <q>localhost</q>, use <q>localhost.localdomain</q> instead.</p>
 				</td> 
 			</tr>
 		</table>
