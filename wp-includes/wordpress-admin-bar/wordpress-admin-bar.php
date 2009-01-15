@@ -344,7 +344,7 @@ class WPAdminBar {
 			}
 
 ?>
-			<li><a href="<?php bloginfo('wpurl'); ?>/wp-login.php?action=logout"><?php _e('Log Out'); ?></a></li>
+			<li><a href="<?php echo wp_logout_url(); ?>"><?php _e('Log Out'); ?></a></li>
 		</ul>
 	</div>
 </div>
