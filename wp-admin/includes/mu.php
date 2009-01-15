@@ -265,10 +265,19 @@ if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
 }
 
 function send_confirmation_on_profile_email() {
-	global $current_user, $current_site;
+	global $errors, $wpdb, $current_user, $current_site;
+	$errors = new WP_Error();
 	if( $current_user->user_email != $_POST[ 'email' ] ) {
-		if ( !is_email( $_POST[ 'email' ] ) )
+		if ( !is_email( $_POST[ 'email' ] ) ) {
+			$errors->add( 'user_email', __( "<strong>ERROR</strong>: The e-mail address isn't correct." ), array( 'form-field' => 'email' ) );
 			return;
+		}
+
+		if( $wpdb->get_var( $wpdb->prepare( "SELECT user_email FROM {$wpdb->users} WHERE user_email=%s", $_POST[ 'email' ] ) ) ) {
+			$errors->add( 'user_email', __( "<strong>ERROR</strong>: The e-mail address is already used." ), array( 'form-field' => 'email' ) );
+			delete_option( $current_user->ID . '_new_email' );
+			return;
+		}
 
 		$hash = md5( $_POST[ 'email' ] . time() . mt_rand() );
 		$new_user_email = array(

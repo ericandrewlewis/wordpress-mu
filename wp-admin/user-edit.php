@@ -150,7 +150,8 @@ if( $user_id != $current_user->ID ) {
 		$delete_role = true;
 	}
 }
-$errors = edit_user($user_id);
+if ( is_object( $errors ) && false == $errors->get_error_codes() )
+	$errors = edit_user($user_id);
 if( $delete_role ) // stops users being added to current blog when they are edited
 	update_usermeta( $user_id, $wpdb->base_prefix . $wpdb->blogid . '_capabilities' , '' );
 
