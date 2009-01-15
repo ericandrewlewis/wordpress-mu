@@ -143,9 +143,14 @@ else
 	do_action('edit_user_profile_update');
 
 $cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$user_id}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
+$delete_role = false;
+if( $null == $cap && $_POST[ 'role' ] == '' ) {
+	$_POST[ 'role' ] = 'contributor';
+	$delete_role = true;
+}
 $errors = edit_user($user_id);
-if( $cap == null ) // stops users being added to current blog when they are edited
-	$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$user_id}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
+if( $delete_role ) // stops users being added to current blog when they are edited
+	update_usermeta( $user_id, $wpdb->base_prefix . $wpdb->blogid . '_capabilities' , '' );
 
 if ( !is_wp_error( $errors ) ) {
 	$redirect = ($is_profile_page? "profile.php?" : "user-edit.php?user_id=$user_id&"). "updated=true";
