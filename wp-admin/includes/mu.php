@@ -533,12 +533,11 @@ function mu_options( $options ) {
 		'general' => array( 'siteurl', 'home', 'admin_email', 'default_role' ),
 		'reading' => array( 'gzipcompression' ),
 		'writing' => array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' ),
-		'misc' => array( 'hack_file', 'use_linksupdate', 'uploads_use_yearmonth_folders', 'upload_path' )
 	);
 
 	$added = array( 'general' => array( 'new_admin_email', 'WPLANG', 'language' ) );
 
-	unset( $options[ 'misc' ] );
+	$options[ 'misc' ] = array();
 
 	$options = remove_option_whitelist( $removed, $options );
 	$options = add_option_whitelist( $added, $options );
