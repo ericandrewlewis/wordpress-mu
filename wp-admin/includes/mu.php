@@ -519,11 +519,10 @@ function wpmu_menu() {
 	if( $menu_perms[ 'plugins' ] != 1 ) {
 		if( !is_site_admin() ) {
 			unset( $menu['45'] ); // Plugins
-			unset( $submenu['plugins.php'] ); // always remove the plugin editor
 		} else {
 			$menu[45] = array( __('Plugins') . ' <strong>*</strong>', 'activate_plugins', 'wpmu-options.php#menu', '', 'menu-top', 'menu-plugins', 'div' );
-			unset( $submenu[ 'plugins.php' ] );
 		}
+		unset( $submenu[ 'plugins.php' ] );
 	}
 	if( !get_site_option( 'add_new_users' ) ) {
 		if( !is_site_admin() ) {
