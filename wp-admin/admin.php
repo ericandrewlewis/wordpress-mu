@@ -19,7 +19,7 @@ else
 	require_once('../wp-load.php');
 
 if ( get_option('db_version') != $wp_db_version ) {
-	require_once('../wp-includes/http.php');
+	require_once( ABSPATH . WPINC . '/http.php' );
 	$response = wp_remote_get( get_option( "siteurl" ) . "wp-admin/upgrade.php?step=1", array( 'timeout' => 120, 'httpversion' => '1.1' ) );
 	// do something with response?
 }

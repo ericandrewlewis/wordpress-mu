@@ -1,6 +1,6 @@
 <?php
 require_once('admin.php');
-require_once( ABSPATH . 'wp-includes/class-snoopy.php' );
+require_once( ABSPATH . WPINC . '/http.php' );
 
 $title = __('WordPress MU &rsaquo; Admin &rsaquo; Upgrade Site');
 $parent_file = 'wpmu-admin.php';
