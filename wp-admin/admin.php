@@ -19,9 +19,9 @@ else
 	require_once('../wp-load.php');
 
 if ( get_option('db_version') != $wp_db_version ) {
-	require_once('../wp-includes/class-snoopy.php');
-	$client = new Snoopy();
-	@$client->fetch( get_option( "siteurl" ) . "wp-admin/upgrade.php?step=1");
+	require_once('../wp-includes/http.php');
+	$response = wp_remote_get( get_option( "siteurl" ) . "wp-admin/upgrade.php?step=1", array( 'timeout' => 120, 'httpversion' => '1.1' ) );
+	// do something with response?
 }
 
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
