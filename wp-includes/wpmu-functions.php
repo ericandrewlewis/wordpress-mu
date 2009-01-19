@@ -178,10 +178,13 @@ function is_site_admin( $user_login = false ) {
 	if ( !$current_user && !$user_login )
 		return false;
 
-	if ( $user_login )
+	if ( $user_login ) {
 		$user_login = sanitize_user( $user_login );
-	else
+	} elseif( isset( $current_user->user_login ) ) {
 		$user_login = $current_user->user_login;
+	} else {
+		return false;
+	}
 
 	$site_admins = get_site_option( 'site_admins', array('admin') );
 	if( is_array( $site_admins ) && in_array( $user_login, $site_admins ) )
