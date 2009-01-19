@@ -85,7 +85,7 @@ function wp_version_check() {
 	$updates->updates = $new_options;
 	$updates->last_checked = time();
 	$updates->version_checked = $wp_version;
-	update_option( 'update_core',  $updates);
+	update_site_option( 'update_core',  $updates);
 }
 add_action( 'init', 'wp_version_check' );
 
