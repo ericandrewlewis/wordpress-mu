@@ -96,6 +96,8 @@ if (isset($_SERVER['HTTP_IF_NONE_MATCH']))
 else
 	$client_etag = false;
 
+if( !isset( $_SERVER['HTTP_IF_MODIFIED_SINCE'] ) )
+	$_SERVER['HTTP_IF_MODIFIED_SINCE'] = false;
 $client_last_modified = trim( $_SERVER['HTTP_IF_MODIFIED_SINCE']);
 // If string is empty, return 0. If not, attempt to parse into a timestamp
 $client_modified_timestamp = $client_last_modified ? strtotime($client_last_modified) : 0;
