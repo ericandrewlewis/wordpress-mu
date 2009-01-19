@@ -311,7 +311,8 @@ class WPAdminBar {
 						$first = FALSe;
 					}
 
-					echo '"><a href="' . admin_url( $topstub ) . '">' . $menu[0]['title'] . "</a></li>\n";
+					$url = ( TRUE === $menu[0]['custom'] ) ? 'admin.php?page=' . $topstub : $topstub;
+					echo '"><a href="' . admin_url( $url ) . '">' . $menu[0]['title'] . "</a></li>\n";
 				} else {
 					echo '			<li class="wpabar-menu_';
 					if ( TRUE === $menu[0]['custom'] ) echo 'admin-php_';
