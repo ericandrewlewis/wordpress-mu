@@ -482,7 +482,7 @@ default:
 		<input type="hidden" name="redirect_to" value="<?php echo attribute_escape($redirect_to); ?>" />
 		<input type="hidden" name="testcookie" value="1" />
 	</p>
-	<p>&nbsp;</p>
+</form>
 <?php endif; ?>
 
 <p id="nav">
