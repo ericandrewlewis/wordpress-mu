@@ -392,7 +392,9 @@ class wpdb {
 		if ( preg_match('|[^a-z0-9_]|i', $prefix) )
 			return new WP_Error('invalid_db_prefix', /*WP_I18N_DB_BAD_PREFIX*/'Invalid database prefix'/*/WP_I18N_DB_BAD_PREFIX*/);
 
-		$old_prefix = $this->base_prefix;
+		$old_prefix = '';
+		if( isset( $this->base_prefix ) )
+			$old_prefix = $this->base_prefix;
 		$this->base_prefix = $prefix;
 		foreach ( $this->global_tables as $table )
 			$this->$table = $prefix . $table;

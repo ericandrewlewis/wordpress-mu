@@ -218,7 +218,7 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 		}
 	}
 
-	if (! unserialize($value) ) 
+	if (! @unserialize($value) ) 
 		$value = stripslashes( $value ); 
 
 	return apply_filters( 'site_option_' . $key, maybe_unserialize( $value ) );
@@ -300,7 +300,7 @@ function get_blog_option( $blog_id, $setting, $deprecated = '' ) {
 	if ( 'siteurl' == $setting || 'home' == $setting || 'category_base' == $setting )
 		$value = preg_replace('|/+$|', '', $value);
 
-	if (! unserialize($value) )
+	if (! @unserialize($value) )
 		$value = stripslashes( $value );
 
 	return apply_filters( 'option_' . $setting, maybe_unserialize($value) );

@@ -1,5 +1,5 @@
 <?php
-if( $current_site && $current_blog )
+if( isset( $current_site ) && isset( $current_blog ) )
 	return;
 
 // depreciated

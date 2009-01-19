@@ -666,7 +666,7 @@ function admin_notice_feed() {
 	if( substr( $_SERVER[ 'PHP_SELF' ], -19 ) != '/wp-admin/index.php' )
 		return;
 
-	if( $_GET[ 'feed_dismiss' ] )
+	if( isset( $_GET[ 'feed_dismiss' ] ) )
 		update_user_option( $current_user->id, 'admin_feed_dismiss', $_GET[ 'feed_dismiss' ], true );
 
 	$url = get_site_option( 'admin_notice_feed' );
@@ -705,7 +705,7 @@ function site_admin_notice() {
 add_action( 'admin_notices', 'site_admin_notice' );
 
 function wpa_dashboards( $menu ) {
-	global $current_user;
+	global $current_user, $current_blog;
 	$primary_blog = get_usermeta( $current_user->ID, 'primary_blog' );
 	$blogs = get_blogs_of_user( $current_user->ID );
 

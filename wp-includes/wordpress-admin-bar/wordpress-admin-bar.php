@@ -327,10 +327,10 @@ class WPAdminBar {
 					echo ' wpabar-menupop" onmouseover="showNav(this)" onmouseout="hideNav(this)">' . "\n" . '				<a href="' . admin_url( $url ) . '"><span class="wpabar-dropdown">' . $menu[0]['title'] . "</span></a>\n				<ul>\n";
 
 					foreach( $menu as $submenustub => $submenu ) {
-						if ( 0 === $submenustub || ( TRUE === $this->settings['hide'][$topstub][$submenustub] && ( 'wordpress-admin-bar' !== $submenustub || !is_admin() ) ) ) continue;
+						if ( 0 === $submenustub || ( isset( $this->settings['hide'][$topstub][$submenustub] ) && ( 'wordpress-admin-bar' !== $submenustub || !is_admin() ) ) ) continue;
 
 						$parent = ( TRUE === $menu[0]['custom'] ) ? 'admin.php' : $topstub;
-						$url = ( TRUE === $submenu['custom'] ) ? $parent . '?page=' . $submenustub : $submenustub;
+						$url = ( isset( $submenu['custom'] ) ) ? $parent . '?page=' . $submenustub : $submenustub;
 
 						if( substr( $url, 0, 7 ) == 'http://' ) {
 							echo '					<li><a href="' . $url . '">' . $submenu['title'] . "</a></li>\n";

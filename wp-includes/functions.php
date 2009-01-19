@@ -359,7 +359,7 @@ function get_option( $setting, $default = false ) {
 	if ( in_array( $setting, array('siteurl', 'home', 'category_base', 'tag_base') ) )
 		$value = untrailingslashit( $value );
 
-	if (! unserialize($value) )
+	if (! @unserialize($value) )
 		$value = stripslashes( $value );
 
 	return apply_filters( 'option_' . $setting, maybe_unserialize( $value ) );
