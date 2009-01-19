@@ -406,6 +406,7 @@ if( is_dir( WPMU_PLUGIN_DIR ) ) {
 		}
 	}
 }
+do_action('muplugins_loaded');
 $wpdb->show_errors();
 
 if ( '1' == $current_blog->deleted ) {
