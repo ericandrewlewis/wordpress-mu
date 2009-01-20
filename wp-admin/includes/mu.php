@@ -267,6 +267,10 @@ if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
 function send_confirmation_on_profile_email() {
 	global $errors, $wpdb, $current_user, $current_site;
 	$errors = new WP_Error();
+
+	if( $current_user->id != $_POST[ 'user_id' ] )
+		return false;
+
 	if( $current_user->user_email != $_POST[ 'email' ] ) {
 		if ( !is_email( $_POST[ 'email' ] ) ) {
 			$errors->add( 'user_email', __( "<strong>ERROR</strong>: The e-mail address isn't correct." ), array( 'form-field' => 'email' ) );
