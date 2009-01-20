@@ -73,7 +73,7 @@ function wp_version_check() {
 		if ( isset( $returns[1] ) )
 			$new_option->url = 'http://mu.wordpress.org/';
 		if ( isset( $returns[2] ) )
-			$new_option->package = clean_url( $returns[2] );
+			$new_option->package = 'http://mu.wordpress.org/latest.zip';
 		if ( isset( $returns[3] ) )
 			$new_option->current = attribute_escape( $returns[3] );
 		if ( isset( $returns[4] ) )

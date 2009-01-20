@@ -97,7 +97,7 @@ function core_upgrade_preamble() {
 <?php
 	if ( !isset($updates[0]->response) || 'latest' == $updates[0]->response ) {
 		echo '<h3>';
-		_e('You have the latest version of WordPress. You do not need to upgrade');
+		_e('You have the latest version of WordPress MU. You do not need to upgrade');
 		echo '</h3>';
 	} else {
 		echo '<div class="updated fade"><p>';
@@ -105,7 +105,7 @@ function core_upgrade_preamble() {
 		echo '</p></div>';
 
 		echo '<h3 class="response">';
-		_e( 'There is a new version of WordPress available for upgrade' );
+		_e( 'There is a new version of WordPress MU available for upgrade' );
 		echo '</h3>';
 	}
 
