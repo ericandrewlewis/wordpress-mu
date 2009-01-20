@@ -179,7 +179,7 @@ include ('admin-header.php');
 	<?php endif; ?>
 </div>
 <?php endif; ?>
-<?php if ( isset( $errors ) && is_wp_error( $errors ) ) { ?>
+<?php if ( isset( $errors ) && is_wp_error( $errors ) ) : ?>
 <div class="error">
 	<ul>
 	<?php
@@ -188,7 +188,7 @@ include ('admin-header.php');
 	?>
 	</ul>
 </div>
-<?php } else { ?>
+<?php endif; ?>
 
 <div class="wrap" id="profile-page">
 <?php screen_icon(); ?>
@@ -411,7 +411,6 @@ if ( $show_password_fields ) :
 </form>
 </div>
 <?php
-}
 break;
 }
 
