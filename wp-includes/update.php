@@ -47,12 +47,12 @@ function wp_version_check() {
 	else
 		$mysql_version = 'N/A';
 	$local_package = isset( $wp_local_package )? $wp_local_package : '';
-	$url = "http://api.wordpress.org/core/version-check/1.3-mu/?version=$wp_version&wpmu_version=$wpmu_version&php=$php_version&locale=$locale&mysql=$mysql_version&local_package=$local_package";
+	$url = "http://api.wordpress.org/core/version-check/1.3-mu/?version=$wp_version&wpmu_version=$wpmu_version&php=$php_version&locale=$locale&mysql=$mysql_version&local_package=$local_package&blogs=" . get_blog_count() . "&users=" . get_user_count();
 
 	$options = array('timeout' => 3);
 	$options['headers'] = array(
 		'Content-Type' => 'application/x-www-form-urlencoded; charset=' . get_option('blog_charset'),
-		'User-Agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path )
+		'User-Agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path ) 
 	);
 
 	$response = wp_remote_request($url, $options);

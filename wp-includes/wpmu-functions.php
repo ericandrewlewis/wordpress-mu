@@ -610,6 +610,21 @@ function get_blog_list( $start = 0, $num = 10, $deprecated = '' ) {
 	}
 }
 
+function get_user_count() {
+	global $wpdb;
+
+	$count_ts = get_site_option( "user_count_ts" );
+	if( time() - $count_ts > 3600 ) {
+		$count = $wpdb->get_var( $wpdb->prepare("SELECT COUNT(user_id) as c FROM $wpdb->users WHERE spam = '0' AND deleted = '0'") );
+		update_site_option( "user_count", $count );
+		update_site_option( "user_count_ts", time() );
+	}
+
+	$count = get_site_option( "user_count" );
+
+	return $count;
+}
+
 function get_blog_count( $id = 0 ) {
 	global $wpdb;
 
