@@ -247,7 +247,7 @@ function profile_page_email_warning_ob_content( $content ) {
 
 function update_profile_email() {
 	global $current_user;
-	if( $_GET[ 'newuseremail' ] && $current_user->ID ) {
+	if( isset( $_GET[ 'newuseremail' ] ) && $current_user->ID ) {
 		$new_email = get_option( $current_user->ID . '_new_email' );
 		if( $new_email[ 'hash' ] == $_GET[ 'newuseremail' ] ) {
 			$user->ID = $current_user->ID;
@@ -318,7 +318,7 @@ add_action( 'personal_options_update', 'send_confirmation_on_profile_email' );
 
 function new_user_email_admin_notice() {
 	global $current_user;
-	if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) && $_GET[ 'updated' ] && $email = get_option( $current_user->ID . '_new_email' ) )
+	if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) && isset( $_GET[ 'updated' ] ) && $email = get_option( $current_user->ID . '_new_email' ) )
 		echo "<div id='update-nag'>" . sprintf( __( "Your email address has not been updated yet. Please check your inbox at %s for a confirmation email." ), $email[ 'newemail' ] ) . "</div>";
 }
 add_action( 'admin_notices', 'new_user_email_admin_notice' );
