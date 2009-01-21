@@ -714,13 +714,17 @@ function wpa_dashboards( $menu ) {
 	$blogs = get_blogs_of_user( $current_user->ID );
 
 	foreach ( (array) $blogs as $blog ) {
-		if ( !$blog->blogname )
-			$blog->blogname = $blog->domain;
-
-		if ( $current_blog->blog_id == $blog->userblog_id ) {
-			$current_blog->blogname .= " *";
+		if ( !$blog->blogname || $blog->blogname == '' ) {
+			if( constant( VHOST ) ) {
+				$blog->blogname = $blog->domain;
+			} else {
+				$blog->blogname = $blog->path;
+			}
 		}
-		
+
+		if ( $current_blog->blog_id == $blog->userblog_id )
+			$blog->blogname = $blog->blogname . " *";
+
 		$url = clean_url( $blog->siteurl ) . '/wp-admin/';
 		$name = wp_specialchars( strip_tags( $blog->blogname ) );
 		$list_item = array( 'url' => $url, 'name' => $name );
