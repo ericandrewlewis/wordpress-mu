@@ -134,7 +134,7 @@ if( defined( "WP_INSTALLING" ) == false && !is_object( $current_blog ) ) {
 		if( constant( 'VHOST' ) == 'yes' ) {
 			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '.' . $current_site->domain, '', $domain ) );
 		} else {
-			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . $_SERVER[ 'REQUEST_URI' ] );
+			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '/', '', $_SERVER[ 'REQUEST_URI' ] ) );
 		}
 		die();
 	}
