@@ -130,7 +130,7 @@ function update_nag() {
 		return false;
 
 	if ( current_user_can('manage_options') )
-		$msg = sprintf( __('WordPress MU %1$s will be available soon! Please check <a href="%2$s">for updates</a>.'), $cur->current, 'update-core.php' );
+		$msg = sprintf( __('WordPress MU %1$s is available! Please <a href="%2$s">update</a>.'), $cur->current, 'update-core.php' );
 	else
 		$msg = sprintf( __('WordPress MU %1$s is available! Please notify the site administrator.'), $cur->current );
 
@@ -144,7 +144,7 @@ function update_right_now_message() {
 		return false;
 	$cur = get_preferred_from_update_core();
 
-	$msg = sprintf( __('You are using <span class="b">WordPress %s</span>.'), $GLOBALS['wp_version'] );
+	$msg = sprintf( __('You are using <span class="b">WordPress MU %s</span>.'), $GLOBALS['wp_version'] );
 	if ( isset( $cur->response ) && $cur->response == 'upgrade' && current_user_can('manage_options') )
 		$msg .= " <a href='update-core.php' class='button'>" . sprintf( __('Update to %s'), $cur->current ? $cur->current : __( 'Latest' ) ) . '</a>';
 
@@ -478,7 +478,7 @@ function wp_update_core($current, $feedback = '') {
 	}
 
 	// Copy update-core.php from the new version into place.
-	if ( !$wp_filesystem->copy($working_dir . '/wordpress/wp-admin/includes/update-core.php', $wp_dir . 'wp-admin/includes/update-core.php', true) ) {
+	if ( !$wp_filesystem->copy($working_dir . '/wordpress-mu/wp-admin/includes/update-core.php', $wp_dir . 'wp-admin/includes/update-core.php', true) ) {
 		$wp_filesystem->delete($working_dir, true);
 		return new WP_Error('copy_failed', __('Could not copy files'));
 	}
