@@ -17,5 +17,5 @@ $wp_version = '2.7';
  */
 $wp_db_version = 9872;
 
-$wpmu_version = '2.7-bleeding-edge';
+$wpmu_version = '2.7-beta';
 ?>
