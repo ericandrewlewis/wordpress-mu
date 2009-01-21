@@ -126,6 +126,21 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	}
 }
 
+if( defined( "WP_INSTALLING" ) == false && !is_object( $current_blog ) ) {
+	if( defined( 'NOBLOGREDIRECT' ) ) {
+		header( "Location: " . constant( 'NOBLOGREDIRECT' ) );
+		die();
+	} else {
+		if( constant( 'VHOST' ) == 'yes' ) {
+			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '.' . $current_site->domain, '', $domain ) );
+		} else {
+			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . $_SERVER[ 'REQUEST_URI' ] );
+		}
+		die();
+	}
+
+}
+
 if( defined( "WP_INSTALLING" ) == false ) {
 	if( $current_site && $current_blog == null ) {
 		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $current_site->domain, $current_site->path) );
