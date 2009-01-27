@@ -67,8 +67,8 @@ include('./admin-header.php');
 </tr>
 <tr valign="top">
 <tr valign="top">
-<th scope="row"><label for="admin_email"><?php _e('E-mail address') ?> </label></th>
-<td><input name="admin_email" type="text" id="admin_email" value="<?php form_option('admin_email'); ?>" class="regular-text code" />
+<th scope="row"><label for="new_admin_email"><?php _e('E-mail address') ?> </label></th>
+<td><input name="new_admin_email" type="text" id="new_admin_email" value="<?php form_option('admin_email'); ?>" class="regular-text code" />
 <span class="setting-description"><?php _e('This address is used for admin purposes.') ?> <?php _e('If you change this we will send you an email at your new address to confirm it. <strong>The new address will not become active until confirmed.</strong>') ?></span></td>
 </tr>
 <tr>
