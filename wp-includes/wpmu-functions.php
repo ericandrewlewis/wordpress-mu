@@ -2086,6 +2086,25 @@ function fix_phpmailer_messageid( $phpmailer ) {
 	$phpmailer->Hostname = $current_site->domain;
 }
 
+function catch_nonexistant_blogs() {
+	global $blog_exists, $current_site, $domain;
+
+	if ( defined( "WP_INSTALLING" ) == false && !$blog_exists ) {
+		if ( defined( 'NOBLOGREDIRECT' ) ) {
+			header( "Location: " . constant( 'NOBLOGREDIRECT' ) );
+			die();
+		} else {
+			if ( constant( 'VHOST' ) == 'yes' ) {
+				header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '.' . $current_site->domain, '', $domain ) );
+			} else {
+				header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '/', '', $_SERVER[ 'REQUEST_URI' ] ) );
+			}
+			die();
+		}
+	}
+}
+add_action( 'plugins_loaded', 'catch_nonexistant_blogs' );
+
 // Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
 include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );
 
