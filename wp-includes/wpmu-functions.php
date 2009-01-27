@@ -237,8 +237,7 @@ function add_site_option( $key, $value ) {
 		return false;
 	}
 
-	if ( is_array($value) || is_object($value) )
-		$value = serialize($value);
+	$value = maybe_serialize($value);
 	wp_cache_delete($wpdb->siteid . $key, 'site-options');
 
 	$wpdb->insert( $wpdb->sitemeta, array('site_id' => $wpdb->siteid, 'meta_key' => $key, 'meta_value' => $value) );
@@ -256,8 +255,7 @@ function update_site_option( $key, $value ) {
 	if ( false == is_object( $exists ) ) // It's a new record
 		return add_site_option( $key, $value );
 
-	if ( is_array($value) || is_object($value) )
-		$value = serialize($value);
+	$value = maybe_serialize($value);
 
 	$wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
 	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
@@ -2085,25 +2083,6 @@ function fix_phpmailer_messageid( $phpmailer ) {
 	global $current_site;
 	$phpmailer->Hostname = $current_site->domain;
 }
-
-function catch_nonexistant_blogs() {
-	global $blog_exists, $current_site, $domain;
-
-	if ( defined( "WP_INSTALLING" ) == false && !$blog_exists ) {
-		if ( defined( 'NOBLOGREDIRECT' ) ) {
-			header( "Location: " . constant( 'NOBLOGREDIRECT' ) );
-			die();
-		} else {
-			if ( constant( 'VHOST' ) == 'yes' ) {
-				header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '.' . $current_site->domain, '', $domain ) );
-			} else {
-				header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '/', '', $_SERVER[ 'REQUEST_URI' ] ) );
-			}
-			die();
-		}
-	}
-}
-add_action( 'plugins_loaded', 'catch_nonexistant_blogs' );
 
 // Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
 include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );

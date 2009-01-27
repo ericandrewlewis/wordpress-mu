@@ -112,8 +112,6 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	} else {
 		$blogname = substr( $domain, 0, strpos( $domain, '.' ) );
 	}
-
-	$blog_exists = $current_blog;
 } else {
 	$blogname = htmlspecialchars( substr( $_SERVER[ 'REQUEST_URI' ], strlen( $path ) ) );
 	if( strpos( $blogname, '/' ) )
@@ -126,8 +124,21 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	} else {
 		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path.$blogname.'/') );
 	}
-	
-	$blog_exists = $current_blog;
+}
+
+if( defined( "WP_INSTALLING" ) == false && constant( 'VHOST' ) == 'yes' && !is_object( $current_blog ) ) {
+	if( defined( 'NOBLOGREDIRECT' ) ) {
+		header( "Location: " . constant( 'NOBLOGREDIRECT' ) );
+		die();
+	} else {
+		if( constant( 'VHOST' ) == 'yes' ) {
+			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '.' . $current_site->domain, '', $domain ) );
+		} else {
+			header( "Location: http://" . $current_site->domain . $current_site->path . "wp-signup.php?new=" . str_replace( '/', '', $_SERVER[ 'REQUEST_URI' ] ) );
+		}
+		die();
+	}
+
 }
 
 if( defined( "WP_INSTALLING" ) == false ) {
