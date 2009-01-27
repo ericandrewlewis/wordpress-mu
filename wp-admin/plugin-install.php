@@ -9,6 +9,9 @@
 /** WordPress Administration Bootstrap */
 require_once('admin.php');
 
+if( !is_site_admin() )
+	wp_die( __( "Sorry, you're not allowed here." ) );
+
 if ( ! current_user_can('install_plugins') )
 	wp_die(__('You do not have sufficient permissions to install plugins on this blog.'));
 
