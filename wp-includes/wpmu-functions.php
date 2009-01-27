@@ -1689,7 +1689,7 @@ function check_upload_mimes($mimes) {
 	$site_exts = explode( " ", get_site_option( "upload_filetypes" ) );
 	foreach ( $site_exts as $ext ) {
 		foreach ( $mimes as $ext_pattern => $mime ) {
-			if( strpos( $ext_pattern, $ext ) !== false ) {
+			if( $ext != '' && strpos( $ext_pattern, $ext ) !== false ) {
 				$site_mimes[$ext_pattern] = $mime;
 			}
 		}
