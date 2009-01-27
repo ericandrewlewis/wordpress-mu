@@ -64,7 +64,7 @@ switch( $_GET['action'] ) {
 		update_site_option( "menu_items", $_POST['menu_items'] );
 		update_site_option( "mu_media_buttons", $_POST['mu_media_buttons'] );
 		update_site_option( "blog_upload_space", $_POST['blog_upload_space'] );
-		update_site_option( "upload_filetypes", $_POST['upload_filetypes'] );
+		update_site_option( "upload_filetypes", trim( $_POST['upload_filetypes'] ) );
 		update_site_option( "site_name", $_POST['site_name'] );
 		update_site_option( "first_post", $_POST['first_post'] );
 		update_site_option( "welcome_email", $_POST['welcome_email'] );
