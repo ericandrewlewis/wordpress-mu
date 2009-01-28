@@ -86,9 +86,10 @@ if( $base == 'BASE' )
 // remember to change WP_CONTENT too.
 // define( "UPLOADBLOGSDIR", "fileserver" );
 
-// Uncomment and set this to a URL to redirect if a blog does not exist or is a 404 on the main blog. (Useful if signup is disabled)
-// For example, browser will redirect to http://examples.com/ for the following: define( 'NOBLOGREDIRECT', 'http://example.com/' );
+// If VHOST is 'yes' uncomment and set this to a URL to redirect if a blog does not exist or is a 404 on the main blog. (Useful if signup is disabled)
+// For example, the browser will redirect to http://examples.com/ for the following: define( 'NOBLOGREDIRECT', 'http://example.com/' );
 // define( 'NOBLOGREDIRECT', '' );
+// On a directory based install you can use the 404 handler.
 
 // Location of mu-plugins
 // define( 'WPMU_PLUGIN_DIR', '' );
