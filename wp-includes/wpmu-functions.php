@@ -2003,7 +2003,7 @@ function promote_if_site_admin(&$user) {
     $user->{$level} = 10;
     $user->user_level = 10;
     $cap_key = $wpdb->prefix . 'capabilities';
-    $user->{$cap_key} = array( 'administrator' => '1' );
+    $user->{$cap_key} = array_merge(array( 'administrator' => '1' ), $user->{$cap_key});
     return true;
 }
 
