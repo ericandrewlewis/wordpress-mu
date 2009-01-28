@@ -2007,11 +2007,6 @@ function promote_if_site_admin(&$user) {
     return true;
 }
 
-if( is_object( $wp_object_cache ) ) {
-	$wp_object_cache->global_groups = array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss');
-	$wp_object_cache->non_persistent_groups = array('comment', 'counts');
-}
-
 function mu_locale( $locale ) {
 	if( defined('WP_INSTALLING') == false ) {
 		$mu_locale = get_option('WPLANG');
