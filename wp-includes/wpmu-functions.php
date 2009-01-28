@@ -2084,6 +2084,26 @@ function fix_phpmailer_messageid( $phpmailer ) {
 	$phpmailer->Hostname = $current_site->domain;
 }
 
+function is_user_spammy( $username = 0 ) {
+	if( $username == 0 ) {
+		global $current_user;
+		$user_id = $current_user->ID;
+	} else {
+		$user_id = get_user_id_from_string( $username );
+	}
+	$u = new WP_User( $user_id );
+	if( $u->spam == 1 )
+		return true;
+	return false;
+}
+
+function login_spam_check( $user, $password ) {
+	if( is_user_spammy( $user->id ) )
+		return new WP_Error('invalid_username', __('<strong>ERROR</strong>: your account has been marked as a spammer.'));
+	return $user;
+}
+add_action( 'wp_authenticate_user', 'login_spam_check', 10, 2 );
+
 // Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
 include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );
 
