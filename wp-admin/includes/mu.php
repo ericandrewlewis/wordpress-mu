@@ -86,13 +86,6 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		restore_current_blog();
 }
 
-function update_blog_public( $old_value, $value ) {
-	global $wpdb;
-	do_action('update_blog_public');
-	update_blog_status( $wpdb->blogid, 'public', (int) $value );
-}
-add_action('update_option_blog_public', 'update_blog_public', 10, 2);
-
 function wpmu_delete_user($id) {
 	global $wpdb;
 

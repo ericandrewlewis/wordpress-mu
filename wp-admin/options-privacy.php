@@ -14,8 +14,6 @@ $parent_file = 'options-general.php';
 
 include('./admin-header.php');
 
-if( trim( get_option('blog_public') ) == '' )
-	update_option('blog_public', get_blog_status( $wpdb->blogid, 'public'));
 ?>
 
 <div class="wrap">

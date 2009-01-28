@@ -2104,6 +2104,13 @@ function login_spam_check( $user, $password ) {
 }
 add_action( 'wp_authenticate_user', 'login_spam_check', 10, 2 );
 
+function update_blog_public( $old_value, $value ) {
+	global $wpdb;
+	do_action('update_blog_public');
+	update_blog_status( $wpdb->blogid, 'public', (int) $value );
+}
+add_action('update_option_blog_public', 'update_blog_public', 10, 2);
+
 // Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
 include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );
 
