@@ -378,14 +378,20 @@ function dashboard_quota() {
 
 	if ($used > $quota) $percentused = '100';
 	else $percentused = ( $used / $quota ) * 100;
-
+	$percentused = number_format($percentused);
+	$used = round($used,2);
+	$used_color = ($used < 70) ? (($used >= 40) ? 'waiting' : 'approved') : 'spam';
 	?>
-	<div id='spaceused'>
-		<h3><?php _e("Storage Space <a href='upload.php' title='Manage Uploads...'>&raquo;</a>"); ?></h3>
-		<p><?php _e('Total space available:'); ?> <strong><?php echo $quota . __('MB'); ?></strong></p>	
-		<p><?php _e('Upload space used:'); 	
-		?>
-		<strong><?php printf(__('%1sMB (%2s%%)'), round($used,2), number_format($percentused) ); ?></strong></p>
+	<p class="sub musub"><?php _e("Storage Space <a href='upload.php' title='Manage Uploads...'>&raquo;</a>"); ?></p>
+	<div class="table">
+	<table>
+		<tr class="first">
+			<td class="first b b-posts"><?php _e('<a href="upload.php" title="Manage Uploads..." class="musublink">'); echo $quota . __('MB</a>'); ?></td>
+			<td class="t posts"><?php _e('Space Allowed'); ?></td>
+			<td class="b b-comments"><?php _e('<a href="upload.php" title="Manage Uploads..." class="musublink">'. $used .'MB ('. $percentused .'%)</a>'); ?></td>
+			<td class="last t comments <?php echo $used_color;?>"><?php _e('Space Used');?></td>
+		</tr>
+	</table>
 	</div>
 	<?php
 }

@@ -48,3 +48,13 @@ form#wpmu-search {
 #adminmenu #menu-site:hover div.wp-menu-image {
 	background: transparent url("../images/site-admin.png") no-repeat scroll 0px -1px;
 }
+
+/* Dashboard: MU Specific Data */
+#dashboard_right_now p.musub {
+	margin-top: 12px;
+	border-top: 1px solid #ececec;
+}
+
+#dashboard_right_now td.b a.musublink {
+	font-size: 16px;
+}
