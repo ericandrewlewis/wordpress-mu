@@ -1539,7 +1539,7 @@ SITE_NAME" ) );
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
-	$subject = sprintf(__('New %1$s Blog: %2$s'), $current_site->site_name, stripslashes( $title ) );
+	$subject = apply_filters( 'update_welcome_subject', sprintf(__('New %1$s Blog: %2$s'), $current_site->site_name, stripslashes( $title ) ) );
 	wp_mail($user->user_email, $subject, $message, $message_headers);
 	return true;
 }
@@ -1580,7 +1580,7 @@ SITE_NAME" );
 	$message = $welcome_email;
 	if( empty( $current_site->site_name ) )
 		$current_site->site_name = "WordPress MU";
-	$subject = sprintf(__('New %1$s User: %2$s'), $current_site->site_name, $user->user_login);
+	$subject = apply_filters( 'update_welcome_user_subject', sprintf(__('New %1$s User: %2$s'), $current_site->site_name, $user->user_login) );
 	wp_mail($user->user_email, $subject, $message, $message_headers);
 	return true;
 }
