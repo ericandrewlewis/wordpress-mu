@@ -38,6 +38,7 @@ define('VHOST', 'VHOSTSETTING');
 $base = 'BASE';
 define('DOMAIN_CURRENT_SITE', 'current_site_domain' );
 define('PATH_CURRENT_SITE', 'current_site_path' );
+define('SITE_ID_CURRENT_SITE', 1);
 define('BLOGID_CURRENT_SITE', '1' );
 
 /**#@+
