@@ -23,7 +23,7 @@ switch( $_GET['action'] ) {
 				if( $details['spam'] == 0 && $details['deleted'] == 0 && $details['archived'] == 0 ) {
 					$siteurl = $wpdb->get_var("SELECT option_value from {$wpdb->base_prefix}{$details['blog_id']}_options WHERE option_name = 'siteurl'");
 					echo "<li>$siteurl</li>";
-					$response = wp_remote_get( $siteurl . "wp-admin/upgrade.php?step=1", array( 'timeout' => 120, 'httpversion' => '1.1' ) );
+					$response = wp_remote_get( trailingslashit( $siteurl ) . "wp-admin/upgrade.php?step=1", array( 'timeout' => 120, 'httpversion' => '1.1' ) );
 					// do something with response?
 				}
 			}
