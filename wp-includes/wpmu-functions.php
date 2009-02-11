@@ -2106,6 +2106,46 @@ function update_blog_public( $old_value, $value ) {
 }
 add_action('update_option_blog_public', 'update_blog_public', 10, 2);
 
+function wpa_dashboards( $menu ) {
+	global $current_user, $current_blog;
+	$primary_blog = get_usermeta( $current_user->ID, 'primary_blog' );
+	$blogs = get_blogs_of_user( $current_user->ID );
+
+	foreach ( (array) $blogs as $blog ) {
+		if ( !$blog->blogname || $blog->blogname == '' ) {
+			if( constant( VHOST ) ) {
+				$blog->blogname = $blog->domain;
+			} else {
+				$blog->blogname = $blog->path;
+			}
+		}
+
+		if ( $current_blog->blog_id == $blog->userblog_id )
+			$blog->blogname = $blog->blogname . " *";
+
+		$url = trailingslashit( clean_url( $blog->siteurl ) );
+		if( is_admin() )
+			$url .= 'wp-admin/';
+		$name = wp_specialchars( strip_tags( $blog->blogname ) );
+		$list_item = array( 'url' => $url, 'name' => $name );
+
+		if ( $current_blog->blog_id == $blog->userblog_id ) {
+			$list[-2] = $list_item;
+		} elseif ( $primary_blog == $blog->userblog_id ) {
+			$list[-1] = $list_item;
+		} else {
+			$list[] = $list_item;
+		}
+	}
+	ksort($list);
+	foreach( $list as $blog ) {
+		$menu[ 'index.php' ][ $blog[ 'url' ] ] = array( 'title' => $blog[ 'name' ] );
+	}
+
+	return $menu;
+}
+add_filter( 'wpabar_menuitems', 'wpa_dashboards' );
+
 // Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
 include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );
 

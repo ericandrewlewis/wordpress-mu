@@ -39,6 +39,7 @@ class WPAdminBar {
 
 	// Plugin initialization
 	function WPAdminBar() {
+		global $current_user;
 		if( defined( 'BP_CORE_VERSION' ) ) // disable if Buddypress loaded
 			return;
 		// This version only supports WP 2.7+
@@ -49,6 +50,9 @@ class WPAdminBar {
 
 		// Everything this plugin does is only for logged in users
 		if ( !current_user_can('read') ) return;
+		$current_user = wp_get_current_user();
+		if( !$current_user->ID )
+			return;
 
 		// Load up the localization file if we're using WordPress in a different language
 		// Place it in this plugin's folder and name it "wordpress-admin-bar-[value in wp-config].mo"
@@ -114,7 +118,7 @@ class WPAdminBar {
 
 		// Create the default settings
 		$this->defaults = array(
-			'show_site'  => '0',
+			'show_site'  => '1',
 			'show_admin' => '1',
 			'theme'      => $themekeys[0],
 			'hide'       => array(),
@@ -312,7 +316,12 @@ class WPAdminBar {
 					}
 
 					$url = ( TRUE === $menu[0]['custom'] ) ? 'admin.php?page=' . $topstub : $topstub;
-					echo '"><a href="' . admin_url( $url ) . '">' . $menu[0]['title'] . "</a></li>\n";
+					if( substr( key( $menu ), 0, 7 ) == 'http://' ) {
+						$m = current( $menu );
+						echo '"><a href="' . key( $menu ) . '">' . $m[ 'title' ] . "</a></li>\n";
+					} else {
+						echo '"><a href="' . admin_url( $url ) . '">' . $menu[0]['title'] . "</a></li>\n";
+					}
 				} else {
 					echo '			<li class="wpabar-menu_';
 					if ( TRUE === $menu[0]['custom'] ) echo 'admin-php_';
