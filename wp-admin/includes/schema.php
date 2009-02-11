@@ -217,7 +217,8 @@ CREATE TABLE IF NOT EXISTS $wpdb->sitemeta (
   meta_value longtext,
   PRIMARY KEY  (meta_id),
   KEY meta_key (meta_key),
-  KEY site_id (site_id)
+  KEY site_id (site_id),
+  UNIQUE `site_id_meta_key` (site_id, meta_key)
 ) $charset_collate;
 CREATE TABLE IF NOT EXISTS $wpdb->sitecategories (
   cat_ID bigint(20) NOT NULL auto_increment,
