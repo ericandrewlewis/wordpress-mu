@@ -49,14 +49,9 @@ class WPAdminBar {
 		if ( 'media-upload.php' == basename( $_SERVER['PHP_SELF'] ) ) return;
 
 		// Everything this plugin does is only for logged in users
-		if ( !current_user_can('read') ) return;
 		$current_user = wp_get_current_user();
 		if( !$current_user->ID )
 			return;
-
-		// Load up the localization file if we're using WordPress in a different language
-		// Place it in this plugin's folder and name it "wordpress-admin-bar-[value in wp-config].mo"
-		load_plugin_textdomain( 'wordpress-admin-bar', FALSE, '/wordpress-admin-bar' );
 
 		// Register the admin settings page hooks
 		add_action( 'admin_menu', array(&$this, 'AddAdminMenu') );
@@ -78,31 +73,31 @@ class WPAdminBar {
 				'css' => $this->folder . '/themes/grey/grey.css?ver=' . $this->version,
 			),
 			'wordpress_blue' => array(
-				'name' => __( 'WordPress Blue', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Blue' ),
 				'css' => $this->folder . '/themes/blue/blue.css?ver=' . $this->version,
 			),
 			'wordpress_green' => array(
-				'name' => __( 'WordPress Green', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Green' ),
 				'css' => $this->folder . '/themes/green/green.css?ver=' . $this->version,
 			),
 			'wordpress_orange' => array(
-				'name' => __( 'WordPress Orange', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Orange' ),
 				'css' => $this->folder . '/themes/orange/orange.css?ver=' . $this->version,
 			),
 			'wordpress_purple' => array(
-				'name' => __( 'WordPress Purple', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Purple' ),
 				'css' => $this->folder . '/themes/purple/purple.css?ver=' . $this->version,
 			),
 			'wordpress_red' => array(
-				'name' => __( 'WordPress Red', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Red' ),
 				'css' => $this->folder . '/themes/red/red.css?ver=' . $this->version,
 			),
 			'wordpress_yellow' => array(
-				'name' => __( 'WordPress Yellow', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Yellow' ),
 				'css' => $this->folder . '/themes/yellow/yellow.css?ver=' . $this->version,
 			),
 			'wordpress_classic' => array(
-				'name' => __( 'WordPress Classic', 'wordpress-admin-bar' ),
+				'name' => __( 'WordPress Classic' ),
 				'css' => $this->folder . '/themes/classic/classic.css?ver=' . $this->version,
 			),
 		) );
@@ -152,7 +147,7 @@ class WPAdminBar {
 
 	// Register the settings page
 	function AddAdminMenu() {
-		add_options_page( __('WordPress Admin Bar', 'wordpress-admin-bar'), __('Admin Bar', 'wordpress-admin-bar'), 'read', 'wordpress-admin-bar', array(&$this, 'SettingsPage') );
+		add_options_page( __('WordPress Admin Bar'), __('Admin Bar'), 'read', 'wordpress-admin-bar', array(&$this, 'SettingsPage') );
 	}
 
 
@@ -232,23 +227,23 @@ class WPAdminBar {
 
 		?>
 	<div class="wrap">
-	<h2><?php _e( 'WordPress Admin Bar', 'wordpress-admin-bar' ); ?></h2>
+	<h2><?php _e( 'WordPress Admin Bar' ); ?></h2>
 
 	<form method="post" action="admin-post.php">
 	<?php wp_nonce_field('wordpress-admin-bar'); ?>
 
-	<p><?php _e( 'Everything here applies to your account only.', 'wordpress-admin-bar' ); ?></p>
+	<p><?php _e( 'Everything here applies to your account only.' ); ?></p>
 
 	<table class="form-table">
 		<tr valign="top">
-			<th scope="row"><?php _e( 'Show the admin bar', 'wordpress-admin-bar' ); ?></th>
+			<th scope="row"><?php _e( 'Show the admin bar' ); ?></th>
 			<td>
-				<label for="wpabar_site"><input name="wpabar_site" type="checkbox" id="wpabar_site" value="1"<?php checked( 1, $this->settings['show_site'] ); ?> /> <?php _e( 'On the site', 'wordpress-admin-bar' ); ?></label><br />
-				<label for="wpabar_admin"><input name="wpabar_admin" type="checkbox" id="wpabar_admin" value="1"<?php checked( 1, $this->settings['show_admin'] ); ?> /> <?php _e( 'In the admin area', 'wordpress-admin-bar' ); ?></label>
+				<label for="wpabar_site"><input name="wpabar_site" type="checkbox" id="wpabar_site" value="1"<?php checked( 1, $this->settings['show_site'] ); ?> /> <?php _e( 'On the site' ); ?></label><br />
+				<label for="wpabar_admin"><input name="wpabar_admin" type="checkbox" id="wpabar_admin" value="1"<?php checked( 1, $this->settings['show_admin'] ); ?> /> <?php _e( 'In the admin area' ); ?></label>
 			</td>
 		</tr>
 		<tr valign="top">
-			<th scope="row"><label for="wpabar_theme"><?php _e( 'Theme', 'wordpress-admin-bar' ); ?></label></th>
+			<th scope="row"><label for="wpabar_theme"><?php _e( 'Theme' ); ?></label></th>
 			<td>
 				<select name="wpabar_theme" id="wpabar_theme">
 				<?php foreach( $this->themes as $stub => $details ) : ?>
@@ -273,8 +268,12 @@ class WPAdminBar {
 
 
 	// Output the needed CSS for the plugin
-	function OutputCSS() { ?>
-	<link rel="stylesheet" href="<?php echo $this->themes[$this->settings['theme']]['css']; ?>" type="text/css" />
+	function OutputCSS() { 
+	$adminbar_css_file = $this->themes[$this->settings['theme']]['css'];
+	echo '<link rel="stylesheet" href="' . $adminbar_css_file . '" type="text/css" />' . "\n";
+	if ( 'rtl' == get_bloginfo( 'text_direction' ) )
+		echo '<link rel="stylesheet" href="' . str_replace('.css','-rtl.css',$adminbar_css_file) . '" type="text/css" />' . "\n";
+	?>
 	<!--[if lt IE 7]><style type="text/css">#wpabar { position: absolute; } #wpabar .wpabar-menupop li a { width: 100%; }</style><![endif]-->
 <?php
 		if ( is_admin() ) {

@@ -1,0 +1,8 @@
+#wpabar ul {
+	text-align: right !important;
+}
+
+#wpabar ul li {
+	float: right !important;
+	margin: 0 !important;
+}
