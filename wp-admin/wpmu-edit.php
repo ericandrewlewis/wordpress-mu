@@ -79,7 +79,7 @@ switch( $_GET['action'] ) {
 				foreach( (array) $site_admins as $site_admin ) {
 					$uid = $wpdb->get_var( "SELECT ID FROM {$wpdb->users} WHERE user_login='{$site_admin}'" );
 					if( $uid )
-						add_user_to_blog( $mainblog_id, $uid, 'Administrator' );
+						add_user_to_blog( $mainblog_id, $uid, 'administrator' );
 				}
 			}
 			update_site_option( 'site_admins' , $site_admins );
