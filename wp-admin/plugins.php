@@ -392,10 +392,12 @@ function print_plugin_actions($context) {
 <p><?php _e('You do not appear to have any plugins available at this time.') ?></p>
 <?php endif; ?>
 
+<?php if( is_site_admin() ) { ?>
 <h2><?php _e('Get More Plugins'); ?></h2>
 <p><?php _e('You can find additional plugins for your site by using the new <a href="plugin-install.php">Plugin Browser/Installer</a> functionality, Or by browsing the <a href="http://wordpress.org/extend/plugins/">WordPress Plugin Directory</a> directly and installing manually.'); ?></p>
 <p><?php printf(__('To <em>manually</em> install a plugin you generally just need to upload the plugin file into your <code>%s</code> directory.'), WP_PLUGIN_DIR); ?></p>
 <p><?php _e('Once a plugin has been installed, you may activate it here.'); ?></p>
+<?php } ?>
 
 </div>
 
