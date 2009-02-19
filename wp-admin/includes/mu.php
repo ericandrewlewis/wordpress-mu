@@ -708,4 +708,27 @@ function site_admin_notice() {
 }
 add_action( 'admin_notices', 'site_admin_notice' );
 
+function avoid_blog_page_permalink_collision( $data, $postarr ) {
+	if( constant( 'VHOST' ) == 'yes' )
+		return $data;
+	if( $data[ 'post_type' ] != 'page' )
+		return $data;
+	if( !isset( $data[ 'post_name' ] ) || $data[ 'post_name' ] == '' )
+		return $data;
+	if( !is_main_blog() )
+		return $data;
+
+	$post_name = $data[ 'post_name' ];
+	$c = 0;
+	while( $c < 10 && get_id_from_blogname( $post_name ) ) {
+		$post_name .= mt_rand( 1, 10 );
+		$c ++;
+	}
+	if( $post_name != $data[ 'post_name' ] ) {
+		$data[ 'post_name' ] = $post_name;
+	}
+	return $data;
+}
+add_filter( 'wp_insert_post_data', 'avoid_blog_page_permalink_collision', 10, 2 );
+
 ?>

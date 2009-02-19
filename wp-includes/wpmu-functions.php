@@ -109,7 +109,7 @@ function get_id_from_blogname( $name ) {
 		$path = $current_site->path;
 	} else {
 		$domain = $current_site->domain;
-		$path = $current_site->path . $name;
+		$path = $current_site->path . $name . '/';
 	}
 	return $wpdb->get_var( $wpdb->prepare("SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s", $domain, $path) );
 }

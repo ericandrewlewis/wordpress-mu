@@ -119,7 +119,7 @@ if( constant( 'VHOST' ) == 'yes' ) {
 	if( strpos( " ".$blogname, '?' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '?' ) );
 	$blognames = array( 'page', 'comments', 'blog', 'wp-admin', 'wp-includes', 'wp-content', 'files', 'feed' );
-	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) || is_blogname_page( $blogname ) ) {
+	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) ) {
 		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path) );
 	} else {
 		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path.$blogname.'/') );
@@ -143,28 +143,14 @@ if( defined( "WP_INSTALLING" ) == false && constant( 'VHOST' ) == 'yes' && !is_o
 
 if( defined( "WP_INSTALLING" ) == false ) {
 	if( $current_site && $current_blog == null ) {
+		if( $current_site->domain != $_SERVER[ 'HTTP_HOST' ] ) {
+			header( "Location: http://" . $current_site->domain . $current_site->path );
+			exit;
+		}
 		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $current_site->domain, $current_site->path) );
 	}
 	if( $current_blog == false || $current_site == false )
 		is_installed();
-}
-
-function is_blogname_page( $blogname ) {
-	global $wpdb, $table_prefix, $domain, $path;
-
-	$blog_id = $wpdb->get_var( $wpdb->prepare("SELECT blog_id FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path) );
-
-	// is the request for a page of the main blog? We need to cache this information somewhere to save a request
-	$pages = $wpdb->get_col( "SELECT LOWER(post_name) FROM {$table_prefix}{$blog_id}_posts WHERE post_type='page'" ); 
-
-	if( is_array( $pages ) == false ) 
-		return false;
-
-	if( in_array( strtolower( $blogname ), $pages ) ) {
-		return true;
-	} else {
-		return false;
-	}
 }
 
 $blog_id = $current_blog->blog_id;
