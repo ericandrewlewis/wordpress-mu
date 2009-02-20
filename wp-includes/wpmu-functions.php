@@ -1185,6 +1185,7 @@ function wpmu_activate_signup($key) {
 			return new WP_Error('user_already_exists', __('That username is already activated.'), $signup);
 		wpmu_welcome_user_notification($user_id, $password, $meta);
 		add_user_to_blog('1', $user_id, 'subscriber');
+		add_new_user_to_blog( $user_id, $user_email, $meta );
 		do_action('wpmu_activate_user', $user_id, $password, $meta);
 		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
 	}
@@ -2068,8 +2069,8 @@ function add_new_user_to_blog( $user_id, $email, $meta ) {
 	if( $meta[ 'add_to_blog' ] ) {
 		$blog_id = $meta[ 'add_to_blog' ];
 		$role = $meta[ 'new_role' ];
-		add_user_to_blog( $blog_id, $user_id, $role );
 		remove_user_from_blog($user_id, $current_site->blogid); // remove user from main blog.
+		add_user_to_blog( $blog_id, $user_id, $role );
 		update_usermeta( $user_id, 'primary_blog', $blog_id );
 	}
 }
