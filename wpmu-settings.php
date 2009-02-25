@@ -160,10 +160,11 @@ if( $current_blog->site_id == 0 || $current_blog->site_id == '' )
 	$current_blog->site_id = 1;
 $site_id = $current_blog->site_id;
 
-
-$current_site->site_name = $wpdb->get_var( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = %d AND meta_key = 'site_name'", $site_id) );
-if( $current_site->site_name == null )
-	$current_site->site_name = ucfirst( $current_site->domain );
+if( !isset( $current_site->site_name ) || $current->site->site_name == '' ) {
+	$current_site->site_name = $wpdb->get_var( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = %d AND meta_key = 'site_name'", $site_id) );
+	if( $current_site->site_name == null )
+		$current_site->site_name = ucfirst( $current_site->domain );
+}
 
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
