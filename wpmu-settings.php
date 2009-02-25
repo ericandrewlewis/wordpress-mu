@@ -27,6 +27,16 @@ $path = preg_replace( '|([a-z0-9-]+.php.*)|', '', $_SERVER['REQUEST_URI'] );
 $path = str_replace ( '/wp-admin/', '/', $path );
 $path = preg_replace( '|(/[a-z0-9-]+?/).*|', '$1', $path );
 
+function get_current_site_name( $current_site ) {
+	global $wpdb;
+	if( !isset( $current_site->site_name ) || $current->site->site_name == '' ) {
+		$current_site->site_name = $wpdb->get_var( $wpdb->prepare( "SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = %d AND meta_key = 'site_name'", $current_site->id ) );
+		if( $current_site->site_name == null )
+			$current_site->site_name = ucfirst( $current_site->domain );
+	}
+	return $current_site;
+}
+
 function wpmu_current_site() {
 	global $wpdb, $current_site, $domain, $path, $sites;
 	if( defined( 'DOMAIN_CURRENT_SITE' ) && defined( 'PATH_CURRENT_SITE' ) ) {
@@ -48,6 +58,7 @@ function wpmu_current_site() {
 		$current_site = $sites[0];
 		$path = $current_site->path;
 		$current_site->blog_id = $wpdb->get_var( "SELECT blog_id FROM {$wpdb->blogs} WHERE domain='{$current_site->domain}' AND path='{$current_site->path}'" );
+		$current_site = get_current_site_name( $current_site );
 		wp_cache_set( "current_site", $current_site, "site-options" );
 		return $current_site;
 	}
@@ -160,11 +171,7 @@ if( $current_blog->site_id == 0 || $current_blog->site_id == '' )
 	$current_blog->site_id = 1;
 $site_id = $current_blog->site_id;
 
-if( !isset( $current_site->site_name ) || $current->site->site_name == '' ) {
-	$current_site->site_name = $wpdb->get_var( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE site_id = %d AND meta_key = 'site_name'", $site_id) );
-	if( $current_site->site_name == null )
-		$current_site->site_name = ucfirst( $current_site->domain );
-}
+$current_site = get_current_site_name( $current_site );
 
 if( $blog_id == false ) {
     // no blog found, are we installing? Check if the table exists.
