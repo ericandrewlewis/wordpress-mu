@@ -454,7 +454,40 @@ switch( $_GET['action'] ) {
  
 							case 'blogname': ?>
 								<td valign="top">
-									<a href="http://<?php echo $blog['domain']. $blog['path']; ?>" rel="permalink"><?php echo $blogname; ?></a>
+									<a href="wpmu-blogs.php?action=editblog&amp;id=<?php echo $blog['blog_id'] ?>" class="edit"><?php echo $blogname; ?></a>
+									<br/>
+									<?php
+									$controlActions	= array();
+									
+									$controlActions[]	= '<a href="wpmu-blogs.php?action=editblog&amp;id=' . $blog['blog_id'] . '" class="edit">' . __('Edit') . '</a>';
+									
+									$controlActions[]	= "<a href='http://{$blog['domain']}{$blog['path']}wp-admin/' class='edit'>" . __('Backend') . '</a>';
+									
+									if( get_blog_status( $blog['blog_id'], "deleted" ) == '1' )
+										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=activateblog&amp;ref=' . urlencode( $_SERVER['REQUEST_URI'] ) . '&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) . '">' . __('Activate') . '</a>';
+									else
+										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=deactivateblog&amp;ref=' . urlencode( $_SERVER['REQUEST_URI'] ) . '&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to deactivate the blog %s" ), $blogname ) ) . '">' . __('Deactivate') . '</a>';
+									
+									if( get_blog_status( $blog['blog_id'], "archived" ) == '1' )
+										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=unarchiveblog&amp;id=' .  $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to unarchive the blog %s" ), $blogname ) ) . '">' . __('Unarchive') . '</a>';
+									else
+										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=archiveblog&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to archive the blog %s" ), $blogname ) ) . '">' . __('Archive') . '</a>';
+									
+									if( get_blog_status( $blog['blog_id'], "spam" ) == '1' )
+										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=unspamblog&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to unspam the blog %s" ), $blogname ) ) . '">' . __('Not Spam') . '</a>';
+									else
+										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=spamblog&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to mark the blog %s as spam" ), $blogname ) ) . '">' . __("Spam") . '</a>';
+									
+									$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=deleteblog&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to delete the blog %s" ), $blogname ) ) . '">' . __("Delete") . '</a>';
+									
+									$controlActions[]	= "<a href='http://{$blog['domain']}{$blog['path']}' rel='permalink'>" . __('Visit') . '</a>';
+									?>
+									
+									<?php if (count($controlActions)) : ?>
+									<div class="row-actions">
+										<?php echo implode(' | ', $controlActions); ?>
+									</div>
+									<?php endif; ?>
 								</td>
 							<?php
 							break;
@@ -488,61 +521,6 @@ switch( $_GET['action'] ) {
 								</td>
 							<?php
 							break;
-							case 'control_edit': ?>
-								<td valign="top">
-									<?php echo "<a href='wpmu-blogs.php?action=editblog&amp;id=".$blog['blog_id']."' class='edit'>" . __('Edit') . "</a>"; ?>
-								</td>
-							<?php
-							break;
-							case 'control_backend':
-							?>
-								<td valign="top">
-									<?php echo "<a href='http://" . $blog['domain'] . $blog['path'] . "wp-admin/' class='edit'>" . __('Backend') . "</a>"; ?>
-								</td>
-							<?php
-							break;
-
-							case 'control_spam': 
-								if( get_blog_status( $blog['blog_id'], "spam" ) == '1' ) { ?>
-									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=unspamblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to unspam the blog %s" ), $blogname ) ) ?>"><?php _e("Not Spam") ?></a>
-									</td>
-								<?php } else { ?>
-									<td valign='top'>
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=spamblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to mark the blog %s as spam" ), $blogname ) ) ?>""><?php _e("Spam") ?></a>
-									</td>
-								<?php }
-							break;
-
-							case 'control_deactivate':
-								if( get_blog_status( $blog['blog_id'], "deleted" ) == '1' ) { ?>
-									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=activateblog&amp;ref=<?php echo urlencode( $_SERVER['REQUEST_URI'] ) ?>&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) ?>"><?php _e("Activate") ?></a>
-									</td>
-								<?php } else { ?>
-									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=deactivateblog&amp;ref=<?php echo urlencode( $_SERVER['REQUEST_URI'] ) ?>&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to deactivate the blog %s" ), $blogname ) ) ?>"><?php _e("Deactivate") ?></a>
-									</td>
-								<?php }
-							break;
-
-							case 'control_archive':
-								if( get_blog_status( $blog['blog_id'], "archived" ) == '1' ) { ?>
-									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=unarchiveblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to unarchive the blog %s" ), $blogname ) ) ?>"><?php _e("Unarchive") ?></a>
-									</td>
-								<?php } else { ?>
-									<td valign="top">
-										<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=archiveblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to archive the blog %s" ), $blogname ) ) ?>"><?php _e("Archive") ?></a>
-									</td>
-								<?php }
-							break;
-
-							case 'control_delete': ?>
-								<td valign="top">
-									<a class='delete' href="wpmu-edit.php?action=confirm&amp;action2=deleteblog&amp;id=<?php echo $blog['blog_id'] ?>&amp;msg=<?php echo urlencode( sprintf( __( "You are about to delete the blog %s" ), $blogname ) ) ?>"><?php _e("Delete") ?></a>
-								</td>
-							<?php break;
 
 							case 'plugins': ?>
 								<td valign="top">
