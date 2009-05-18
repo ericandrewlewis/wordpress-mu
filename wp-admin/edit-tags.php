@@ -263,12 +263,6 @@ else
     <p><?php _e('The name is how the tag appears on your site.'); ?></p>
 </div>
 
-<div class="form-field">
-	<label for="slug"><?php _e('Tag slug') ?></label>
-	<input name="slug" id="slug" type="text" value="" size="40" />
-    <p><?php _e('The &#8220;slug&#8221; is the URL-friendly version of the name. It is usually all lowercase and contains only letters, numbers, and hyphens.'); ?></p>
-</div>
-
 <p class="submit"><input type="submit" class="button" name="submit" value="<?php _e('Add Tag'); ?>" /></p>
 <?php do_action('add_tag_form'); ?>
 </form></div>

@@ -79,13 +79,13 @@ function mysql2date( $dateformatstring, $mysqlstring, $translate = true ) {
  * The 'mysql' type will return the time in the format for MySQL DATETIME field.
  * The 'timestamp' type will return the current timestamp.
  *
- * If the $gmt is set to either '1' or 'true', then both types will use the
- * GMT offset in the WordPress option to add the GMT offset to the time.
+ * If $gmt is set to either '1' or 'true', then both types will use GMT time.
+ * if $gmt is false, the output is adjusted with the GMT offset in the WordPress option.
  *
  * @since 1.0.0
  *
  * @param string $type Either 'mysql' or 'timestamp'.
- * @param int|bool $gmt Optional. Whether to use $gmt offset. Default is false.
+ * @param int|bool $gmt Optional. Whether to use GMT timezone. Default is false.
  * @return int|string String if $type is 'gmt', int if $type is 'timestamp'.
  */
 function current_time( $type, $gmt = 0 ) {
@@ -638,7 +638,6 @@ function delete_option( $name ) {
 	$option = $wpdb->get_row( "SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'" );
 	if ( is_null($option) || !$option->option_id )
 		return false;
-
 	// expected_slashed ($name)
 	$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = '$name'" );
 
@@ -2806,7 +2805,15 @@ function validate_file( $file, $allowed_files = '' ) {
  * @return bool True if SSL, false if not used.
  */
 function is_ssl() {
-	return ( isset($_SERVER['HTTPS']) && 'on' == strtolower($_SERVER['HTTPS']) ) ? true : false;
+	if ( isset($_SERVER['HTTPS']) ) {
+		if ( 'on' == strtolower($_SERVER['HTTPS']) )
+			return true;
+		if ( '1' == $_SERVER['HTTPS'] )
+			return true;
+	} elseif ( isset($_SERVER['SERVER_PORT']) && ( '443' == $_SERVER['SERVER_PORT'] ) ) {
+		return true;
+	}
+	return false;
 }
 
 /**
@@ -2899,8 +2906,12 @@ function wp_suspend_cache_invalidation($suspend = true) {
  * @param object $object The object to clone
  * @return object The cloned object
  */
-function wp_clone($object) {
-	return version_compare(phpversion(), '5.0') < 0 ? $object : clone($object);
+function wp_clone( $object ) {
+	static $can_clone;
+	if ( !isset( $can_clone ) ) {
+		$can_clone = version_compare( phpversion(), '5.0', '>=' );
+	}
+	return $can_clone ? clone( $object ) : $object;
 }
 
 

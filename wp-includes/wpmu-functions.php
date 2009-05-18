@@ -29,14 +29,14 @@ function get_blogaddress_by_id( $blog_id ) {
 }
 
 function get_blogaddress_by_name( $blogname ) {
-	global $hostname, $domain, $base;
+	global $current_site;
 
 	if( defined( "VHOST" ) && constant( "VHOST" ) == 'yes' ) {
 		if( $blogname == 'main' )
 			$blogname = 'www';
-		return clean_url("http://".$blogname.".".$domain.$base);
+		return clean_url( "http://" . $blogname . "." . $current_site->domain . $current_site->path );
 	} else {
-		return clean_url("http://".$hostname.$base.$blogname);
+		return clean_url( "http://" . $current_site->domain . $current_site->path . $blogname . '/' );
 	}
 }
 
@@ -601,6 +601,9 @@ function get_blog_list( $start = 0, $num = 10, $deprecated = '' ) {
 		update_site_option( "blog_list", $blogs );
 	}
 
+	if( false == is_array( $blogs ) )
+		return array();
+
 	if( $num == 'all' ) {
 		return array_slice( $blogs, $start, count( $blogs ) );
 	} else {
@@ -1124,9 +1127,9 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 		$admin_email = 'support@' . $_SERVER['SERVER_NAME'];
 	$from_name = get_site_option( "site_name" ) == '' ? 'WordPress' : wp_specialchars( get_site_option( "site_name" ) );
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
-	$message = sprintf(__("To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s"), $activate_url, clean_url("http://{$domain}{$path}"));
+	$message = sprintf( __( apply_filters( 'wpmu_signup_blog_notification_email', "To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s" ) ), $activate_url, clean_url( "http://{$domain}{$path}" ) );
 	// TODO: Don't hard code activation link.
-	$subject = '[' . $from_name . '] ' . sprintf(__('Activate %s'), clean_url('http://' . $domain . $path));
+	$subject = sprintf( __( apply_filters( 'wpmu_signup_blog_notification_subject', '[%s] Activate %s' ) ), $from_name, clean_url( 'http://' . $domain . $path ) );
 	wp_mail($user_email, $subject, $message, $message_headers);
 	return true;
 }
@@ -1184,7 +1187,11 @@ function wpmu_activate_signup($key) {
 		if ( isset($user_already_exists) )
 			return new WP_Error('user_already_exists', __('That username is already activated.'), $signup);
 		wpmu_welcome_user_notification($user_id, $password, $meta);
-		add_user_to_blog('1', $user_id, 'subscriber');
+		if ( get_site_option( 'dashboard_blog' ) == false ) {
+			add_user_to_blog( '1', $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+		} else {
+			add_user_to_blog( get_site_option( 'dashboard_blog' ), $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+		}
 		add_new_user_to_blog( $user_id, $user_email, $meta );
 		do_action('wpmu_activate_user', $user_id, $password, $meta);
 		return array('user_id' => $user_id, 'password' => $password, 'meta' => $meta);
@@ -1281,7 +1288,7 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	update_option( 'blog_public', $meta['public'] );
 
-	if(get_usermeta( $user_id, 'primary_blog' ) == 1 )
+	if ( !is_site_admin() && get_usermeta( $user_id, 'primary_blog' ) == get_site_option( 'dashboard_blog', 1 ) )
 		update_usermeta( $user_id, 'primary_blog', $blog_id );
 
 
@@ -1639,6 +1646,7 @@ function get_most_recent_post_of_user( $user_id ) {
 /* Misc functions */
 function fix_upload_details( $uploads ) {
 	$uploads['url'] = str_replace( UPLOADS, "files", $uploads['url'] );
+	$uploads['baseurl'] = str_replace( UPLOADS, "files", $uploads['baseurl'] );
 	return $uploads;
 }
 
@@ -1725,8 +1733,8 @@ function fix_import_form_size( $size ) {
 if ( !function_exists('graceful_fail') ) :
 function graceful_fail( $message ) {
 	$message = apply_filters('graceful_fail', $message);
-	die('
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+	$message_template = apply_filters( 'graceful_fail_template', 
+'<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"><head profile="http://gmpg.org/xfn/11">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 <title>Error!</title>
@@ -1746,10 +1754,10 @@ text-align: center;
 </style>
 </head>
 <body>
-<p class="message">' . $message . '</p>
+<p class="message">%s</p>
 </body>
-</html>
-	');
+</html>' );
+	die( sprintf( $message_template, $message ) );
 }
 endif;
 
@@ -1859,46 +1867,6 @@ function global_terms( $term_id, $deprecated = '' ) {
 	return $global_id; 
 }   
 
-function choose_primary_blog() {
-	global $current_user;
-	?>
-	<table class="form-table">
-	<tr>
-		<th scope="row"><?php _e('Primary Blog'); ?></th>
-		<td>
-		<?php
-		$all_blogs = get_blogs_of_user( $current_user->ID );
-		$primary_blog = get_usermeta($current_user->ID, 'primary_blog');
-		if( count( $all_blogs ) > 1 ) {
-			$found = false;
-			?>
-			<select name="primary_blog">
-				<?php foreach( (array) $all_blogs as $blog ) { 
-					if( $primary_blog == $blog->userblog_id )
-						$found = true;
-					?><option value='<?php echo $blog->userblog_id ?>'<?php if( $primary_blog == $blog->userblog_id ) echo ' selected="selected"' ?>>http://<?php echo $blog->domain.$blog->path ?></option><?php 
-				} ?>
-			</select>
-			<?php
-			if( !$found ) {
-				$blog = array_shift( $all_blogs );
-				update_usermeta( $current_user->ID, 'primary_blog', $blog->userblog_id );
-			}
-		} elseif( count( $all_blogs ) == 1 ) {
-			$blog = array_shift( $all_blogs );
-			echo $blog->domain;
-			if( $primary_blog != $blog->userblog_id ) // Set the primary blog again if it's out of sync with blog list.
-				update_usermeta( $current_user->ID, 'primary_blog', $blog->userblog_id );
-		} else {
-			echo "N/A";
-		}
-		?>
-		</td>
-	</tr>
-	</table>
-	<?php	
-}
-
 function redirect_this_site( $deprecated = '' ) {
 	global $current_site;
 	return array( $current_site->domain );
@@ -1996,6 +1964,7 @@ function attach_wpmu_xmlrpc($methods) {
 Users
 */
 function promote_if_site_admin(&$user) {
+	return false;
     if ( !is_site_admin( $user->user_login ) )
         return false;
 
@@ -2037,8 +2006,12 @@ function signup_nonce_check( $result ) {
 }
 
 function maybe_redirect_404() {
+	global $current_site;
 	if( is_main_blog() && is_404() && defined( 'NOBLOGREDIRECT' ) && constant( 'NOBLOGREDIRECT' ) != '' ) {
-		wp_redirect( constant( 'NOBLOGREDIRECT' ) );
+		$destination = constant( 'NOBLOGREDIRECT' );
+		if ( $destination == '%siteurl%' )
+			$destination = $current_site->domain . $current_site->path;
+		wp_redirect( $destination );
 		exit();
 	}
 }
@@ -2107,47 +2080,100 @@ function update_blog_public( $old_value, $value ) {
 }
 add_action('update_option_blog_public', 'update_blog_public', 10, 2);
 
-function wpa_dashboards( $menu ) {
-	global $current_user, $current_blog;
-	$primary_blog = get_usermeta( $current_user->ID, 'primary_blog' );
-	$blogs = get_blogs_of_user( $current_user->ID );
-
-	foreach ( (array) $blogs as $blog ) {
-		if ( !$blog->blogname || $blog->blogname == '' ) {
-			if( constant( VHOST ) ) {
-				$blog->blogname = $blog->domain;
-			} else {
-				$blog->blogname = $blog->path;
-			}
-		}
-
-		if ( $current_blog->blog_id == $blog->userblog_id )
-			$blog->blogname = $blog->blogname . " *";
-
-		$url = trailingslashit( clean_url( $blog->siteurl ) );
-		if( is_admin() )
-			$url .= 'wp-admin/';
-		$name = wp_specialchars( strip_tags( $blog->blogname ) );
-		$list_item = array( 'url' => $url, 'name' => $name );
-
-		if ( $current_blog->blog_id == $blog->userblog_id ) {
-			$list[-2] = $list_item;
-		} elseif ( $primary_blog == $blog->userblog_id ) {
-			$list[-1] = $list_item;
-		} else {
-			$list[] = $list_item;
-		}
-	}
-	ksort($list);
-	foreach( $list as $blog ) {
-		$menu[ 'index.php' ][ $blog[ 'url' ] ] = array( 'title' => $blog[ 'name' ] );
-	}
-
-	return $menu;
+function strtolower_usernames( $username, $raw, $strict ) {
+	return strtolower( $username );
 }
-add_filter( 'wpabar_menuitems', 'wpa_dashboards' );
 
-// Load WordPress Admin Bar plugin by Viper007Bond. http://www.viper007bond.com/wordpress-plugins/wordpress-admin-bar/
-include( ABSPATH . WPINC . '/wordpress-admin-bar/wordpress-admin-bar.php' );
+/* Shortcircuit the update checks. Make sure update informtion is 
+   stored in wp_sitemeta rather than the options table of individual blogs */
+// update_plugins
+function site_pre_update_plugins() {
+	return get_site_option( 'update_plugins' );
+}
+add_filter( 'pre_option_update_plugins', 'site_pre_update_plugins' );
 
+function site_pre_update_option_update_plugins( $new, $old ) {
+	update_site_option( 'update_plugins', $new );
+	delete_option( 'update_plugins' );
+	return $old;
+}
+add_filter( 'pre_update_option_update_plugins', 'site_pre_update_option_update_plugins', 10, 2 );
+
+// update_themes
+function site_pre_update_themes() {
+	return get_site_option( 'update_themes' );
+}
+add_filter( 'pre_option_update_themes', 'site_pre_update_themes' );
+
+function site_pre_update_option_update_themes( $new, $old ) {
+	update_site_option( 'update_themes', $new );
+	delete_option( 'update_themes' );
+	return $old;
+}
+add_filter( 'pre_update_option_update_themes', 'site_pre_update_option_update_themes', 10, 2 );
+
+// update_core
+function site_pre_update_core() {
+	return get_site_option( 'update_core' );
+}
+add_filter( 'pre_option_update_core', 'site_pre_update_core' );
+
+function site_pre_update_option_update_core( $new, $old ) {
+	update_site_option( 'update_core', $new );
+	delete_option( 'update_core' );
+	return $old;
+}
+add_filter( 'pre_update_option_update_core', 'site_pre_update_option_update_core', 10, 2 );
+
+// dismissed_update_core
+function site_pre_dismissed_update_core() {
+	return get_site_option( 'dismissed_update_core' );
+}
+add_filter( 'pre_option_dismissed_update_core', 'site_pre_dismissed_update_core' );
+
+function site_pre_update_option_dismissed_update_core( $new, $old ) {
+	update_site_option( 'dismissed_update_core', $new );
+	return $old;
+}
+add_action( 'pre_update_option_dismissed_update_core', 'site_pre_update_option_dismissed_update_core', 10, 2 );
+
+function site_update_option_dismissed_update_core( $old, $new ) {
+	delete_option( 'dismissed_update_core' );
+}
+add_action( 'update_option_dismissed_update_core', 'site_update_option_dismissed_update_core', 10, 2 );
+
+function redirect_mu_dashboard() {
+	global $current_site, $current_blog;
+
+	$dashboard_blog = get_site_option( 'dashboard_blog' );
+	if ( false != $dashboard_blog && $current_blog->blog_id == $dashboard_blog && $dashboard_blog != $current_site->blog_id ) { 
+		$details = get_blog_details( $dashboard_blog );
+		$protocol = ( is_ssl() ? 'https://' : 'http://' ); 
+		if( $details )
+			wp_redirect( $protocol . $details->domain . trailingslashit( $details->path ) . 'wp-admin/' );
+		die();
+	}
+}
+add_action( 'template_redirect', 'redirect_mu_dashboard' );
+
+function is_user_option_local( $key, $user_id = 0, $blog_id = 0 ) {
+	global $current_user, $wpdb;
+
+	if( $user_id == 0 )
+		$user_id = $current_user->ID;
+	if( $blog_id == 0 )
+		$blog_id = $wpdb->blogid;
+	
+	$local_key = $wpdb->base_prefix . $blog_id . "_" . $key;
+	if( isset( $current_user->$local_key ) )
+		return true;
+	return false;
+}
+
+function fix_active_plugins( $value ) {
+	if( false == is_array( $value ) )
+		$value = array();
+	return $value;
+}
+add_filter( "option_active_plugins", "fix_active_plugins" );
 ?>

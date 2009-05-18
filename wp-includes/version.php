@@ -8,7 +8,7 @@
  *
  * @global string $wp_version
  */
-$wp_version = '2.7';
+$wp_version = '2.7.1';
 
 /**
  * Holds the WordPress DB revision, increments when changes are made to the WordPress DB schema.
@@ -17,5 +17,5 @@ $wp_version = '2.7';
  */
 $wp_db_version = 9872;
 
-$wpmu_version = '2.7';
+$wpmu_version = '2.7.1';
 ?>

@@ -73,24 +73,23 @@ switch( $_GET['action'] ) {
 		$editblog_roles = get_blog_option( $id, "{$wpdb->base_prefix}{$id}_user_roles" );
 		?>
 		<div class="wrap">
-		<h2><?php _e('Edit Blog'); ?> - <a href='http://<?php echo $details['domain'].$details['path']; ?>'><?php echo $details['domain'].$details['path']; ?></a></h2>
+		<h2><?php _e('Edit Blog'); ?> - <a href='http://<?php echo $details['domain'].$details['path']; ?>'>http://<?php echo $details['domain'].$details['path']; ?></a></h2>
 		<form method="post" action="wpmu-edit.php?action=updateblog"> 
 			<?php wp_nonce_field('editblog'); ?>
 			<input type="hidden" name="id" value="<?php echo $id ?>" /> 
-			<table>
-			<tr>
-				<td valign="top">
-					<div class="wrap">
-						<h3><?php _e('Blog info (wp_blogs)'); ?></h3>
-						<table class="form-table">
+			<div class='metabox-holder' style='width:49%;float:left;'>
+			<div id="blogedit_bloginfo" class="postbox " >
+			<h3 class='hndle'><span><?php _e('Blog info (wp_blogs)'); ?></span></h3>
+			<div class="inside">
+				<table class="form-table">
 							<tr class="form-field form-required">
 								<th scope="row"><?php _e('Domain') ?></th> 
 								<td>http://<input name="blog[domain]" type="text" id="domain" value="<?php echo $details['domain'] ?>" size="33" /></td>
 							</tr> 
 							<tr class="form-field form-required">
 								<th scope="row"><?php _e('Path') ?></th> 
-								<td><input name="blog[path]" type="text" id="path" value="<?php echo $details['path'] ?>" size="40" />
-								<br />(<?php _e( 'siteurl and home will be modified too' ); ?>)</td> 
+								<td><input name="blog[path]" type="text" id="path" value="<?php echo $details['path'] ?>" size="40" style='margin-bottom:5px;' />
+								<br /><input type='checkbox' style='width:20px;' name='update_home_url' value='update' <?php if( get_blog_option( $id, 'siteurl' ) == preg_replace('|/+$|', '', 'http://' . $details['domain'] . $details['path']) || get_blog_option( $id, 'home' ) == preg_replace('|/+$|', '', 'http://' . $details['domain'] . $details['path']) ) echo 'checked="checked"'; ?> /> <?php _e( "Update 'siteurl' and 'home' as well." ); ?></td>
 							</tr> 
 							<tr class="form-field">
 								<th scope="row"><?php _e('Registered') ?></th> 
@@ -103,42 +102,46 @@ switch( $_GET['action'] ) {
 							<tr class="form-field">
 								<th scope="row"><?php _e('Public') ?></th> 
 								<td>
-									<input type='radio' name='blog[public]' value='1' <?php if( $details['public'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
-									<input type='radio' name='blog[public]' value='0' <?php if( $details['public'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
+									<input type='radio' style='width:20px;' name='blog[public]' value='1' <?php if( $details['public'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
+									<input type='radio' style='width:20px;' name='blog[public]' value='0' <?php if( $details['public'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
 							<tr class="form-field">
 								<th scope="row"><?php _e( 'Archived' ); ?></th> 
 								<td>
-									<input type='radio' name='blog[archived]' value='1' <?php if( $details['archived'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
-									<input type='radio' name='blog[archived]' value='0' <?php if( $details['archived'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
+									<input type='radio' style='width:20px;' name='blog[archived]' value='1' <?php if( $details['archived'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
+									<input type='radio' style='width:20px;' name='blog[archived]' value='0' <?php if( $details['archived'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
 							<tr class="form-field">
 								<th scope="row"><?php _e( 'Mature' ); ?></th> 
 								<td>
-									<input type='radio' name='blog[mature]' value='1' <?php if( $details['mature'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
-									<input type='radio' name='blog[mature]' value='0' <?php if( $details['mature'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
+									<input type='radio' style='width:20px;' name='blog[mature]' value='1' <?php if( $details['mature'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
+									<input type='radio' style='width:20px;' name='blog[mature]' value='0' <?php if( $details['mature'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
 							<tr class="form-field">
 								<th scope="row"><?php _e( 'Spam' ); ?></th> 
 								<td>
-									<input type='radio' name='blog[spam]' value='1' <?php if( $details['spam'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
-									<input type='radio' name='blog[spam]' value='0' <?php if( $details['spam'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
+									<input type='radio' style='width:20px;' name='blog[spam]' value='1' <?php if( $details['spam'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
+									<input type='radio' style='width:20px;' name='blog[spam]' value='0' <?php if( $details['spam'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
 							<tr class="form-field">
 								<th scope="row"><?php _e( 'Deleted' ); ?></th> 
 								<td>
-									<input type='radio' name='blog[deleted]' value='1' <?php if( $details['deleted'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
-									<input type='radio' name='blog[deleted]' value='0' <?php if( $details['deleted'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
+									<input type='radio' style='width:20px;' name='blog[deleted]' value='1' <?php if( $details['deleted'] == '1' ) echo 'checked="checked"'; ?> /> <?php _e('Yes') ?>
+									<input type='radio' style='width:20px;' name='blog[deleted]' value='0' <?php if( $details['deleted'] == '0' ) echo 'checked="checked"'; ?> /> <?php _e('No') ?>
 								</td> 
 							</tr> 
 						</table>
-
-						<h3><?php printf( __('Blog options (wp_%s_options)'), $id ); ?></h3>
-						<table class="form-table">
+						<p class="submit" style="margin:-15px 0 -5px 230px;"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
+			</div></div>
+			
+			<div id="blogedit_blogoptions" class="postbox " >
+			<h3 class='hndle'><span><?php printf( __('Blog options (wp_%s_options)'), $id ); ?></span></h3>
+			<div class="inside">
+				<table class="form-table">
 							<?php
 							$editblog_default_role = 'subscriber';
 							foreach ( $options as $key => $val ) {
@@ -172,12 +175,12 @@ switch( $_GET['action'] ) {
 							} // End foreach
 							?>
 						</table>
-						<p class="submit">
-							<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
-					</div>
-				</td>
-				<td valign="top">
-					<?php
+						<p class="submit" style="margin:-15px 0 -5px 230px;"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
+			</div></div>
+			</div>
+			
+			<div class='metabox-holder' style='width:49%;float:right;'>
+			<?php
 					// Blog Themes
 					$themes = get_themes();
 					$blog_allowed_themes = wpmu_get_blog_allowedthemes( $id );
@@ -192,24 +195,29 @@ switch( $_GET['action'] ) {
 							$checked = ( isset($blog_allowed_themes[ $theme_key ]) ) ? 'checked="checked"' : '';
 							$out .= '<tr class="form-field form-required">
 									<th title="'.htmlspecialchars( $theme["Description"] ).'" scope="row">'.$key.'</th> 
-									<td><input name="theme['.$theme_key.']" type="checkbox" value="on" '.$checked.'/></td> 
+									<td><input name="theme['.$theme_key.']" type="checkbox" style="width:20px;" value="on" '.$checked.'/>' . __( 'Active' ) . '</td> 
 								</tr>';
 						}
 					}
-
-
-					if( $out != '' ) {
-						echo "<h3>" . __('Blog Themes') . "</h3>";
-						echo '<table class="form-table">';
-							echo '<tr class=""><th>' . __('Theme') . '</th><th>' . __('Enable') . '</th></tr>';
-							echo $out;
-						echo "</table>";
-					}
-
+					
+					if ( $out != '' ) {
+			?>
+			<div id="blogedit_blogthemes" class="postbox">
+			<h3 class='hndle'><span><?php _e('Blog Themes'); ?></span></h3>
+			<div class="inside">
+				<table class="form-table">
+					<tr><th style="font-weight:bold;"><?php _e('Theme'); ?></th></tr>
+					<?php echo $out; ?>
+				</table>
+				<p class="submit" style="margin:-15px 0 -5px 230px;"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
+			</div></div>
+			<?php } ?>
+			
+			<?php
 					// Blog users
 					$blogusers = get_users_of_blog( $id );
-					echo '<h3>' . __('Blog Users') . '</h3>';
 					if( is_array( $blogusers ) ) {
+						echo '<div id="blogedit_blogusers" class="postbox"><h3 class="hndle"><span>' . __('Blog Users') . '</span></h3><div class="inside">';
 						echo '<table class="form-table">';
 						echo "<tr><th>" . __('User') . "</th><th>" . __('Role') . "</th><th>" . __('Password') . "</th><th>" . __('Remove') . "</th></tr>";
 						reset($blogusers);
@@ -243,12 +251,16 @@ switch( $_GET['action'] ) {
 							echo '</tr>';
 						}
 						echo "</table>";
+						echo '<p class="submit" style="margin:-15px 0 -5px 230px;"><input type="submit" name="Submit" value="' . __('Update Options &raquo;') . '" /></p>';
+						echo "</div></div>";
 					}
-
-					// New blog user
-					echo "<h3>" . __('Add a new user') . "</h3>"; ?>
-					<p><?php _e('As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.') ?></p>
-					<table class="form-table">
+			?>
+			
+			<div id="blogedit_blogadduser" class="postbox">
+			<h3 class='hndle'><span><?php _e('Add a new user'); ?></span></h3>
+			<div class="inside">
+				<p style="margin:10px 0 0px;padding:0px 10px 10px;border-bottom:1px solid #DFDFDF;"><?php _e('As you type WordPress will offer you a choice of usernames.<br /> Click them to select and hit <em>Update Options</em> to add the user.') ?></p>
+				<table class="form-table">
 						<tr>
 							<th scope="row"><?php _e('User&nbsp;Login:') ?></th>
 							<td><input type="text" name="newuser" id="newuser" /></td>
@@ -269,17 +281,21 @@ switch( $_GET['action'] ) {
 							</td>
 						</tr>
 					</table>
-
-					<h3><?php _e('Misc Blog Actions') ?></h3>
-					<table class="form-table">
+				<p class="submit" style="margin:-15px 0 -5px 230px;"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
+			</div></div>
+			
+			<div id="blogedit_miscoptions" class="postbox">
+			<h3 class='hndle'><span><?php _e('Misc Blog Actions') ?></span></h3>
+			<div class="inside">
+				<table class="form-table">
 						<?php do_action( 'wpmueditblogaction', $id ); ?>
 					</table>
-
-					<p class="submit">
-						<input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
-				</td>
-			</tr>
-			</table>
+				<p class="submit" style="margin:-15px 0 -5px 230px;"><input type="submit" name="Submit" value="<?php _e('Update Options &raquo;') ?>" /></p>
+			</div></div>
+			
+			</div>
+			
+			<div style="clear:both;"></div>
 		</form>
 		</div>
 		<?php
@@ -384,18 +400,13 @@ switch( $_GET['action'] ) {
 			'blogname'     => $blogname_columns,
 			'lastupdated'  => __('Last Updated'),
 			'registered'   => __('Registered'),
-			'users'        => __('Users'),
-			'plugins'      => __('Actions')
+			'users'        => __('Users')
 		);
+		
+		if( has_filter( 'wpmublogsaction' ) )
+			$posts_columns['plugins'] = __('Actions');
+			
 		$posts_columns = apply_filters('wpmu_blogs_columns', $posts_columns);
-
-		// you can not edit these at the moment
-		$posts_columns['control_edit']      = '';
-		$posts_columns['control_backend']   = '';
-		$posts_columns['control_deactivate']= '';
-		$posts_columns['control_archive']   = '';
-		$posts_columns['control_spam']   	= '';
-		$posts_columns['control_delete']    = '';
 
 		$sortby_url = "s=";
 		if( $_GET[ 'blog_ip' ] ) {
@@ -523,15 +534,19 @@ switch( $_GET['action'] ) {
 							break;
 
 							case 'plugins': ?>
+								<?php if( has_filter( 'wpmublogsaction' ) ) { ?>
 								<td valign="top">
 									<?php do_action( "wpmublogsaction", $blog['blog_id'] ); ?>
 								</td>
+								<?php } ?>
 							<?php break;
  
 							default: ?>
+								<?php if( has_filter( 'manage_blogs_custom_column' ) ) { ?>
 								<td valign="top">
 									<?php do_action('manage_blogs_custom_column', $column_name, $blog['blog_id']); ?>
 								</td>
+								<?php } ?>
 							<?php break;
 						}
 					}

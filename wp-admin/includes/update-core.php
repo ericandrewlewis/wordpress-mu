@@ -215,8 +215,8 @@ function update_core($from, $to) {
 
 	// Sanity check the unzipped distribution
 	apply_filters('update_feedback', __('Verifying the unpacked files'));
-	if ( !$wp_filesystem->exists($from . '/wordpress/wp-settings.php') || !$wp_filesystem->exists($from . '/wordpress/wp-admin/admin.php') ||
-		!$wp_filesystem->exists($from . '/wordpress/wp-includes/functions.php') ) {
+	if ( !$wp_filesystem->exists($from . '/wordpress-mu/wp-settings.php') || !$wp_filesystem->exists($from . '/wordpress-mu/wp-admin/admin.php') ||
+		!$wp_filesystem->exists($from . '/wordpress-mu/wp-includes/functions.php') ) {
 		$wp_filesystem->delete($from, true);
 		return new WP_Error('insane_distro', __('The update could not be unpacked') );
 	}
@@ -230,7 +230,7 @@ function update_core($from, $to) {
 	$wp_filesystem->put_contents($maintenance_file, $maintenance_string, FS_CHMOD_FILE);
 
 	// Copy new versions of WP files into place.
-	$result = copy_dir($from . '/wordpress', $to);
+	$result = copy_dir($from . '/wordpress-mu', $to);
 	if ( is_wp_error($result) ) {
 		$wp_filesystem->delete($maintenance_file);
 		//$wp_filesystem->delete($working_dir, true); //TODO: Uncomment? This DOES mean that the new files are available in the upgrade folder if it fails.

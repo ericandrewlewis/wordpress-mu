@@ -60,6 +60,48 @@ switch( $_GET['action'] ) {
 		} else {
 			update_site_option( "banned_email_domains", '' );
 		}
+		update_site_option( 'default_user_role', $_POST[ 'default_user_role' ] );
+		if( trim( $_POST[ 'dashboard_blog_orig' ] ) == '' )
+			$_POST[ 'dashboard_blog_orig' ] = $current_site->blog_id;
+		if( trim( $_POST[ 'dashboard_blog' ] ) == '' ) {
+			$_POST[ 'dashboard_blog' ] = $current_site->blog_id;
+			$dashboard_blog_id = $current_site->blog_id;
+		} else {
+			$dashboard_blog = sanitize_user( str_replace( '.', '', str_replace( $current_site->domain . $current_site->path, '', $_POST[ 'dashboard_blog' ] ) ) );
+			$blog_details = get_blog_details( $dashboard_blog );
+			if ( false === $blog_details ) {
+				if ( is_numeric( $dashboard_blog ) )
+					wp_die( 'Dashboard blog_id must be a blog that already exists' );
+				if ( constant( 'VHOST' ) == 'yes' ) {
+					$domain = $dashboard_blog . '.' . $current_site->domain;
+					$path = $current_site->path;
+				} else {
+					$domain = $current_site->domain;
+					$path = trailingslashit( $current_site->path . $dashboard_blog );
+				}
+				$wpdb->hide_errors();
+				$dashboard_blog_id = wpmu_create_blog( $domain, $path, __( 'My Dashboard' ), $current_user->id , array( "public" => 0 ), $current_site->id );
+				$wpdb->show_errors();
+			} else {
+				$dashboard_blog_id = $blog_details->blog_id;
+			}
+		}
+		if( $_POST[ 'dashboard_blog_orig' ] != $_POST[ 'dashboard_blog' ] ) {
+			$users = get_users_of_blog( get_site_option( 'dashboard_blog' ) );
+			$move_users = array();
+			foreach ( (array)$users as $user ) {
+				if( array_pop( array_keys( unserialize( $user->meta_value ) ) ) == 'subscriber' )
+					$move_users[] = $user->user_id;
+			}
+			if ( false == empty( $move_users ) ) {
+				foreach ( (array)$move_users as $user_id ) {
+					remove_user_from_blog($user_id, get_site_option( 'dashboard_blog' ) );
+					add_user_to_blog( $dashboard_blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+					update_usermeta( $user_id, 'primary_blog', $dashboard_blog_id );
+				}
+			}
+		}
+		update_site_option( "dashboard_blog", $dashboard_blog_id );
 
 		update_site_option( "menu_items", $_POST['menu_items'] );
 		update_site_option( "mu_media_buttons", $_POST['mu_media_buttons'] );
@@ -167,11 +209,14 @@ switch( $_GET['action'] ) {
 			}
 		}
 
-		if( get_blog_option( $id, 'siteurl' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
-			update_blog_option( $id, 'siteurl', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+		if( $_POST['update_home_url'] == 'update' ) {
+			if( get_blog_option( $id, 'siteurl' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
+				update_blog_option( $id, 'siteurl', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
 
-		if( get_blog_option( $id, 'home' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
-			update_blog_option( $id, 'home', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+			if( get_blog_option( $id, 'home' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
+				update_blog_option( $id, 'home', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+		}
+			
 		$wp_rewrite->flush_rules();
 
 		// update blogs table
@@ -465,7 +510,11 @@ switch( $_GET['action'] ) {
 		} else {
 			wp_new_user_notification($user_id, $password);
 		}
-		add_user_to_blog('1', $user_id, 'subscriber');
+		if ( get_site_option( 'dashboard_blog' ) == false ) {
+			add_user_to_blog( '1', $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+		} else {
+			add_user_to_blog( get_site_option( 'dashboard_blog' ), $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+		}
 
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'add'), $_SERVER['HTTP_REFERER'] ) );
 		exit();

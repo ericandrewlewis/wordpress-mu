@@ -121,7 +121,7 @@ function _get_plugin_data_markup_translate($plugin_data, $markup = true, $transl
 		else
 			$plugin_data['Title'] = $plugin_data['Name'];
 
-		if ( ! empty($plugin_data['AuthorURI']) )
+		if ( ! empty($plugin_data['AuthorURI']) && ! empty($plugin_data['Author']) )
 			$plugin_data['Author'] = '<a href="' . $plugin_data['AuthorURI'] . '" title="' . __( 'Visit author homepage' ) . '">' . $plugin_data['Author'] . '</a>';
 
 		$plugin_data['Description'] = wptexturize( $plugin_data['Description'] );
@@ -230,7 +230,7 @@ function get_plugins($plugin_folder = '') {
  * @return bool True, if in the active plugins list. False, not in the list.
  */
 function is_plugin_active($plugin) {
-	return in_array($plugin, get_option('active_plugins'));
+	return in_array($plugin, (array) get_option('active_plugins'));
 }
 
 /**
@@ -430,7 +430,7 @@ function delete_plugins($plugins, $redirect = '' ) {
 		return new WP_Error('could_not_remove_plugin', sprintf(__('Could not fully remove the plugin(s) %s'), implode(', ', $errors)) );
 
 	// Force refresh of plugin update information
-	delete_option('update_plugins');
+	update_option('update_plugins', false);
 
 	return true;
 }
@@ -454,7 +454,9 @@ function validate_active_plugins() {
 		$result = validate_plugin($check_plugin);
 		if ( is_wp_error( $result ) ) {
 			$invalid[$check_plugin] = $result;
-			deactivate_plugins( $check_plugin, true);
+			deactivate_plugins( $check_plugin, true );
+			
+			do_action( 'deactivate_invalid_plugin', $check_plugin );
 		}
 	}
 	return $invalid;
@@ -862,7 +864,7 @@ function user_can_access_admin_page() {
 
 	$parent = get_admin_page_parent();
 
-	if ( isset( $_wp_submenu_nopriv[$parent][$pagenow] ) )
+	if ( !isset( $plugin_page ) && isset( $_wp_submenu_nopriv[$parent][$pagenow] ) )
 		return false;
 
 	if ( isset( $plugin_page ) && isset( $_wp_submenu_nopriv[$parent][$plugin_page] ) )

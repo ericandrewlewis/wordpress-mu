@@ -428,7 +428,7 @@ function populate_roles_160() {
 	add_role('subscriber', 'Subscriber|User role');
 
 	// Add caps for Administrator role
-	$role = get_role('administrator');
+	$role =& get_role('administrator');
 	$role->add_cap('switch_themes');
 	$role->add_cap('edit_themes');
 	$role->add_cap('activate_plugins');
@@ -460,7 +460,7 @@ function populate_roles_160() {
 	$role->add_cap('level_0');
 
 	// Add caps for Editor role
-	$role = get_role('editor');
+	$role =& get_role('editor');
 	$role->add_cap('moderate_comments');
 	$role->add_cap('manage_categories');
 	$role->add_cap('manage_links');
@@ -481,7 +481,7 @@ function populate_roles_160() {
 	$role->add_cap('level_0');
 
 	// Add caps for Author role
-	$role = get_role('author');
+	$role =& get_role('author');
 	$role->add_cap('upload_files');
 	$role->add_cap('edit_posts');
 	$role->add_cap('edit_published_posts');
@@ -492,14 +492,14 @@ function populate_roles_160() {
 	$role->add_cap('level_0');
 
 	// Add caps for Contributor role
-	$role = get_role('contributor');
+	$role =& get_role('contributor');
 	$role->add_cap('edit_posts');
 	$role->add_cap('read');
 	$role->add_cap('level_1');
 	$role->add_cap('level_0');
 
 	// Add caps for Subscriber role
-	$role = get_role('subscriber');
+	$role =& get_role('subscriber');
 	$role->add_cap('read');
 	$role->add_cap('level_0');
 }
@@ -512,7 +512,7 @@ function populate_roles_160() {
 function populate_roles_210() {
 	$roles = array('administrator', 'editor');
 	foreach ($roles as $role) {
-		$role = get_role($role);
+		$role =& get_role($role);
 		if ( empty($role) )
 			continue;
 
@@ -533,19 +533,19 @@ function populate_roles_210() {
 		$role->add_cap('read_private_pages');
 	}
 
-	$role = get_role('administrator');
+	$role =& get_role('administrator');
 	if ( ! empty($role) ) {
 		$role->add_cap('delete_users');
 		$role->add_cap('create_users');
 	}
 
-	$role = get_role('author');
+	$role =& get_role('author');
 	if ( ! empty($role) ) {
 		$role->add_cap('delete_posts');
 		$role->add_cap('delete_published_posts');
 	}
 
-	$role = get_role('contributor');
+	$role =& get_role('contributor');
 	if ( ! empty($role) ) {
 		$role->add_cap('delete_posts');
 	}
@@ -558,7 +558,7 @@ function populate_roles_210() {
  */
 function populate_roles_230() {
 	/*
-	$role = get_role( 'administrator' );
+	$role =& get_role( 'administrator' );
 
 	if ( !empty( $role ) ) {
 		$role->add_cap( 'unfiltered_upload' );
@@ -572,7 +572,7 @@ function populate_roles_230() {
  * @since 2.5.0
  */
 function populate_roles_250() {
-	$role = get_role( 'administrator' );
+	$role =& get_role( 'administrator' );
 
 	if ( !empty( $role ) ) {
 		$role->add_cap( 'edit_dashboard' );
@@ -586,7 +586,7 @@ function populate_roles_250() {
  */
 function populate_roles_260() {
 	/*
-	$role = get_role( 'administrator' );
+	$role =& get_role( 'administrator' );
 
 	if ( !empty( $role ) ) {
 		$role->add_cap( 'update_plugins' );
@@ -602,7 +602,7 @@ function populate_roles_260() {
  */
 function populate_roles_270() {
 	/*
-	$role = get_role( 'administrator' );
+	$role =& get_role( 'administrator' );
 
 	if ( !empty( $role ) ) {
 		$role->add_cap( 'install_plugins' );

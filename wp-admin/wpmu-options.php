@@ -83,20 +83,30 @@ if (isset($_GET['updated'])) {
 			</tr> 
 
 			<tr valign="top"> 
-				<th scope="row"><?php _e('Welcome Email') ?></th> 
+				<th scope="row"><?php _e('Dashboard Blog') ?></th> 
 				<td>
-					<textarea name="welcome_email" id="welcome_email" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('welcome_email') ) ?></textarea>
+					<?php 
+					if ( $dashboard_blog = get_site_option( 'dashboard_blog' ) ) { 
+						$details = get_blog_details( $dashboard_blog );
+						$blogname = str_replace( '.', '', str_replace( $current_site->domain . $current_site->path, '', $details->domain . $details->path ) );
+					} else {
+						$blogname = '';
+					}?>
+					<input name="dashboard_blog_orig" type="hidden" id="dashboard_blog_orig" value="<?php echo $blogname; ?>" />
+					<input name="dashboard_blog" type="text" id="dashboard_blog" value="<?php echo $blogname; ?>" size="30" /> 
 					<br />
-					<?php _e('The welcome email sent to new blog owners.') ?>
+					<?php _e( "Blogname ('dashboard', 'control', 'manager', etc) or blog id.<br />New users are added to this blog as subscribers (or the user role defined below) if they don't have a blog. Leave blank for the main blog. 'Subscriber' users on old blog will be moved to the new blog if changed. New blog will be created if it does not exist." ); ?>
 				</td> 
 			</tr> 
-
 			<tr valign="top"> 
-				<th scope="row"><?php _e('First Post') ?></th> 
+				<th scope="row"><?php _e('Dashboard User Default Role') ?></th> 
 				<td>
-					<textarea name="first_post" id="first_post" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('first_post') ) ?></textarea>
+					<select name="default_user_role" id="role"><?php
+					wp_dropdown_roles( get_site_option( 'default_user_role', 'subscriber' ) );
+					?>
+					</select>
 					<br />
-					<?php _e('First post on a new blog.') ?>
+					<?php _e( "The default role for new users on the Dashboard blog. This should probably be 'Subscriber' or maybe 'Contributor'." ); ?>
 				</td> 
 			</tr> 
 
@@ -128,6 +138,24 @@ if (isset($_GET['updated'])) {
 					<?php _e('If you want to ban certain email domains from blog registrations. One domain per line.') ?>
 				</td> 
 			</tr>
+
+			<tr valign="top"> 
+				<th scope="row"><?php _e('Welcome Email') ?></th> 
+				<td>
+					<textarea name="welcome_email" id="welcome_email" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('welcome_email') ) ?></textarea>
+					<br />
+					<?php _e('The welcome email sent to new blog owners.') ?>
+				</td> 
+			</tr> 
+
+			<tr valign="top"> 
+				<th scope="row"><?php _e('First Post') ?></th> 
+				<td>
+					<textarea name="first_post" id="first_post" rows='5' cols='45' style="width: 95%"><?php echo stripslashes( get_site_option('first_post') ) ?></textarea>
+					<br />
+					<?php _e('First post on a new blog.') ?>
+				</td> 
+			</tr> 
 
 			<tr valign="top"> 
 				<th scope="row"><?php _e('Upload media button') ?></th> 

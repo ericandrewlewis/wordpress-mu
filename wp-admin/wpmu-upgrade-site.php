@@ -25,6 +25,9 @@ switch( $_GET['action'] ) {
 					echo "<li>$siteurl</li>";
 					$response = wp_remote_get( trailingslashit( $siteurl ) . "wp-admin/upgrade.php?step=1", array( 'timeout' => 120, 'httpversion' => '1.1' ) );
 					// do something with response?
+					if( is_wp_error( $response ) ) {
+						wp_die( "<strong>Warning!</strong> Problem upgrading {$siteurl}. Your server may not be able to connect to blogs running on it.<br /> Error message: <em>" . $response->get_error_message() ."</em>" );
+					}
 				}
 			}
 			echo "</ul>";

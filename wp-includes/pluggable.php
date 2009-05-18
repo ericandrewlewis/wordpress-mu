@@ -183,7 +183,7 @@ function get_userdatabylogin($user_login) {
 		return $user;
 	}
 
-	if ( !$user = $wpdb->get_row($wpdb->prepare("SELECT * FROM $wpdb->users WHERE user_login = %s", $user_login)) )
+	if ( !$user = $wpdb->get_row($wpdb->prepare("SELECT ID, LOWER( user_login ) as user_login, user_pass, user_nicename, user_email, user_url, user_registered, user_activation_key, user_status, display_name, spam, deleted FROM $wpdb->users WHERE user_login = %s", $user_login)) )
 		return false;
 
 	_fill_user($user);
@@ -1216,7 +1216,7 @@ if ( !function_exists('wp_salt') ) :
  * Below is an example of how the SECRET_KEY constant is defined with a value.
  * You must not copy the below example and paste into your wp-config.php. If you
  * need an example, then you can have a
- * {@link http://api.wordpress.org/secret-key/1.0/ secret key created} for you.
+ * {@link https://api.wordpress.org/secret-key/1.1/ secret key created} for you.
  *
  * <code>
  * define('SECRET_KEY', 'mAry1HadA15|\/|b17w55w1t3asSn09w');
@@ -1227,7 +1227,7 @@ if ( !function_exists('wp_salt') ) :
  * salt string is not weak.
  *
  * @since 2.5
- * @link http://api.wordpress.org/secret-key/1.0/ Create a Secret Key for wp-config.php
+ * @link https://api.wordpress.org/secret-key/1.1/ Create a Secret Key for wp-config.php
  *
  * @return string Salt value from either 'SECRET_KEY' or 'secret' option
  */
@@ -1400,6 +1400,8 @@ if ( !function_exists('wp_generate_password') ) :
  *
  * @since 2.5
  *
+ * @param int $length The length of password to generate
+ * @param bool $special_chars Whether to include standard special characters 
  * @return string The random password
  **/
 function wp_generate_password($length = 12, $special_chars = true) {
@@ -1533,21 +1535,26 @@ function get_avatar( $id_or_email, $size = '96', $default = '', $alt = false ) {
 			$default = $avatar_default;
 	}
 
+ 	if ( is_ssl() )
+		$host = 'https://secure.gravatar.com'; 
+	else
+		$host = 'http://www.gravatar.com';
+
 	if ( 'mystery' == $default )
-		$default = "http://www.gravatar.com/avatar/ad516503a11cd5ca435acc9bb6523536?s={$size}"; // ad516503a11cd5ca435acc9bb6523536 == md5('unknown@gravatar.com')
+		$default = "$host/avatar/ad516503a11cd5ca435acc9bb6523536?s={$size}"; // ad516503a11cd5ca435acc9bb6523536 == md5('unknown@gravatar.com')
 	elseif ( 'blank' == $default )
 		$default = includes_url('images/blank.gif');
 	elseif ( !empty($email) && 'gravatar_default' == $default )
 		$default = '';
 	elseif ( 'gravatar_default' == $default )
-		$default = "http://www.gravatar.com/avatar/s={$size}";
+		$default = "$host/avatar/s={$size}";
 	elseif ( empty($email) )
-		$default = "http://www.gravatar.com/avatar/?d=$default&amp;s={$size}";
+		$default = "$host/avatar/?d=$default&amp;s={$size}";
 	elseif ( strpos($default, 'http://') === 0 )
 		$default = add_query_arg( 's', $size, $default );
 
 	if ( !empty($email) ) {
-		$out = 'http://www.gravatar.com/avatar/';
+		$out = "$host/avatar/";
 		$out .= md5( strtolower( $email ) );
 		$out .= '?s='.$size;
 		$out .= '&amp;d=' . urlencode( $default );

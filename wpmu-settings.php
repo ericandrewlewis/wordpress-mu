@@ -139,7 +139,10 @@ if( constant( 'VHOST' ) == 'yes' ) {
 
 if( defined( "WP_INSTALLING" ) == false && constant( 'VHOST' ) == 'yes' && !is_object( $current_blog ) ) {
 	if( defined( 'NOBLOGREDIRECT' ) ) {
-		header( "Location: " . constant( 'NOBLOGREDIRECT' ) );
+		$destination = constant( 'NOBLOGREDIRECT' );
+		if ( $destination == '%siteurl%' )
+			$destination = "http://" . $current_site->domain . $current_site->path;
+		header( "Location: " .  $destination);
 		die();
 	} else {
 		if( constant( 'VHOST' ) == 'yes' ) {

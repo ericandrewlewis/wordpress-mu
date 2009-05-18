@@ -62,7 +62,12 @@ if (isset($plugin_page)) {
 		$page_hook = get_plugin_page_hook($plugin_page, $plugin_page);
 		// backwards compatibility for plugins using add_management_page
 		if ( empty( $page_hook ) && 'edit.php' == $pagenow && '' != get_plugin_page_hook($plugin_page, 'tools.php') ) {
-			wp_redirect('tools.php?page=' . $plugin_page);
+			// There could be plugin specific params on the URL, so we need the whole query string
+			if ( !empty($_SERVER[ 'QUERY_STRING' ]) )
+				$query_string = $_SERVER[ 'QUERY_STRING' ];
+			else
+				$query_string = 'page=' . $plugin_page;
+			wp_redirect( 'tools.php?' . $query_string );
 			exit;
 		}
 	}
@@ -78,7 +83,7 @@ if (isset($plugin_page)) {
 			wp_die(__('Invalid plugin page'));
 		}
 
-		if (! ( file_exists(WP_PLUGIN_DIR . "/$plugin_page") && is_file(WP_PLUGIN_DIR . "/$plugin_page") ) && ! file_exists(WPMU_PLUGIN_DIR . "/$plugin_page") ) 
+		if ( !( file_exists(WP_PLUGIN_DIR . "/$plugin_page") && is_file(WP_PLUGIN_DIR . "/$plugin_page") ) && !( file_exists(WPMU_PLUGIN_DIR . "/$plugin_page") && is_file(WPMU_PLUGIN_DIR . "/$plugin_page") ) )
 			wp_die(sprintf(__('Cannot load %s.'), htmlentities($plugin_page)));
 
 		do_action('load-' . $plugin_page);

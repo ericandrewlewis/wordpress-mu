@@ -6,6 +6,7 @@ add_filter ( 'xmlrpc_methods', 'attach_wpmu_xmlrpc' );
 add_filter ( 'wp_authenticate_user', 'wordpressmu_authenticate_siteadmin', 10, 2 );
 add_action ( 'wpmu_new_user', 'newuser_notify_siteadmin' );
 add_action ( 'wpmu_activate_user', 'add_new_user_to_blog', 10, 3 );
+add_action ( 'sanitize_user', 'strtolower_usernames', 10, 3 );
 
 // Blogs
 add_filter ( 'wpmu_validate_blog_signup', 'signup_nonce_check' );
@@ -24,7 +25,6 @@ add_filter ( 'allowed_redirect_hosts', 'redirect_this_site' );
 
 // Administration
 add_filter ( 'mce_buttons_2', 'remove_tinymce_media_button' );
-add_action ( 'profile_personal_options', 'choose_primary_blog' );
 add_filter ( 'term_id_filter', 'global_terms', 10, 2 );
 add_action ( 'publish_post', 'update_posts_count' );
 add_action ( 'delete_post', 'wpmu_update_blogs_date' );

@@ -439,7 +439,7 @@ function install_plugin_information() {
 						$newer_version = $installed_plugin[ $key ]['Version'];
 					} else {
 						//If the above update check failed, Then that probably means that the update checker has out-of-date information, force a refresh
-						delete_option('update_plugins');
+						update_option( 'update_plugins', false );
 						$update_file = $api->slug . '/' . $key; //This code branch only deals with a plugin which is in a folder the same name as its slug, Doesnt support plugins which have 'non-standard' names
 						$type = 'update_available';
 					}

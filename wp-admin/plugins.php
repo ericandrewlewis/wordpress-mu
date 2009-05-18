@@ -13,7 +13,7 @@ $menu_perms = get_site_option( "menu_items" );
 if( is_array( $menu_perms ) == false )
 	$menu_perms = array();
 
-if( $menu_perms[ 'plugins' ] != 1 )
+if ( $menu_perms[ 'plugins' ] != 1 && !is_site_admin() )
 	return;
 
 $action = '';
@@ -47,6 +47,9 @@ if( !empty($action) ) {
 		case 'activate-selected':
 			check_admin_referer('bulk-manage-plugins');
 			activate_plugins($_POST['checked'], 'plugins.php?error=true');
+			
+			/* Check to see if any of the plugins should only be active site-wide */
+			check_wpmu_plugins_on_bulk_activate( $_POST['checked']);
 
 			$recent = (array)get_option('recently_activated');
 			foreach( (array)$_POST['checked'] as $plugin => $time) {
@@ -243,6 +246,10 @@ foreach ( (array)$all_plugins as $plugin_file => $plugin_data) {
 	}
 }
 
+$active_plugins = apply_filters( 'active_plugins', $active_plugins );
+$recent_plugins = apply_filters( 'recent_plugins', $recent_plugins );
+$inactive_plugins = apply_filters( 'inactive_plugins', $inactive_plugins );
+
 ?>
 
 <?php
@@ -346,6 +353,8 @@ function print_plugin_actions($context) {
 }
 ?>
 
+<?php do_action( 'pre_current_active_plugins', $all_plugins ) ?>
+
 <?php if ( ! empty($active_plugins) ) : ?>
 <h3 id="currently-active"><?php _e('Currently Active Plugins') ?></h3>
 <form method="post" action="<?php echo admin_url('plugins.php') ?>">
@@ -358,7 +367,9 @@ function print_plugin_actions($context) {
 <?php print_plugins_table($active_plugins, 'active') ?>
 </form>
 
+<?php if( is_site_admin() ) { ?>
 <p><?php printf(__('If something goes wrong with a plugin and you can&#8217;t use WordPress, delete or rename that file in the <code>%s</code> directory and it will be automatically deactivated.'), WP_PLUGIN_DIR); ?></p>
+<?php } ?>
 <?php endif; ?>
 
 <?php if ( ! empty($recent_plugins) ) : ?>

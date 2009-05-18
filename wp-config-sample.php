@@ -45,7 +45,7 @@ define('BLOGID_CURRENT_SITE', '1' );
  * Authentication Unique Keys.
  *
  * Change these to different unique phrases!
- * You can generate these using the {@link http://api.wordpress.org/secret-key/1.1/ WordPress.org secret-key service}
+ * You can generate these using the {@link http://api.wordpress.org/secret-key/1.1/wpmu/salt WordPress.org secret-key service}
  *
  * @since 2.6.0
  */
@@ -89,8 +89,9 @@ if( $base == 'BASE' )
 
 // If VHOST is 'yes' uncomment and set this to a URL to redirect if a blog does not exist or is a 404 on the main blog. (Useful if signup is disabled)
 // For example, the browser will redirect to http://examples.com/ for the following: define( 'NOBLOGREDIRECT', 'http://example.com/' );
+// Set this value to %siteurl% to redirect to the root of the site
 // define( 'NOBLOGREDIRECT', '' );
-// On a directory based install you can use the 404 handler.
+// On a directory based install you must use the theme 404 handler.
 
 // Location of mu-plugins
 // define( 'WPMU_PLUGIN_DIR', '' );

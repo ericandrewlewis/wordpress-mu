@@ -21,8 +21,11 @@ if ( $_GET['updated'] == 'true' ) {
 				_e('User deleted !');
 			break;
 			case 'all_spam':
-				_e('Users mark as spam !');
+				_e('Users marked as spam !');
 			break;
+			case 'all_notspam': 
+				_e('Users marked as not spam !'); 
+			break; 
 			case 'all_delete':
 				_e('Users deleted !');
 			break;
@@ -79,23 +82,37 @@ if ( $_GET['updated'] == 'true' ) {
 
 	// Pagination
 	$user_navigation = paginate_links( array(
+		'total' => ceil($total / $num),	
+		'current' => $apage,
 		'base' => add_query_arg( 'apage', '%#%' ),
-		'format' => '',
-		'total' => ceil($total / $num),
-		'current' => $apage
+		'format' => ''
 	));
+	
+	if ( $user_navigation ) {
+		$user_navigation = sprintf( '<span class="displaying-num">' . __( 'Displaying %s&#8211;%s of %s' ) . '</span>%s',
+			number_format_i18n( ( $apage - 1 ) * $num + 1 ),
+			number_format_i18n( min( $apage * $num, $total ) ),
+			number_format_i18n( $total ),
+			$user_navigation
+		);
+	}
+	
 	?>
-	<h2><?php _e("Users"); ?></h2>
-	<form action="wpmu-users.php" method="get" id="wpmu-search"> 
-		<input type="text" name="s" value="<?php if (isset($_GET['s'])) echo stripslashes( $s ); ?>" size="17" />
+	<div class="wrap">
+	<h2><?php _e( $current_site->site_name ); ?> <?php _e("Users"); ?></h2>
+	<form action="wpmu-users.php" method="get" class="search-form">
+		<p class="search-box">
+		<input type="text" name="s" value="<?php if (isset($_GET['s'])) _e( stripslashes( $s ) ); ?>" class="search-input" id="user-search-input" />
 		<input type="submit" id="post-query-submit" value="<?php _e('Search Users') ?>" class="button" />
+		</p>
 	</form>
+	</div>
 
 	<form id="form-user-list" action='wpmu-edit.php?action=allusers' method='post'>
 		<div class="tablenav">
 			<?php if ( $user_navigation ) echo "<div class='tablenav-pages'>$user_navigation</div>"; ?>
 
-			<div class="alignleft">
+			<div class="alignleft actions">
 				<input type="submit" value="<?php _e('Delete') ?>" name="alluser_delete" class="button-secondary delete" />
 				<input type="submit" value="<?php _e('Mark as Spammers') ?>" name="alluser_spam" class="button-secondary" />
 				<input type="submit" value="<?php _e('Not Spam') ?>" name="alluser_notspam" class="button-secondary" />
@@ -104,33 +121,30 @@ if ( $_GET['updated'] == 'true' ) {
 			</div>
 		</div>
 
-		<br class="clear" />
-
 		<?php if( isset($_GET['s']) && $_GET['s'] != '' ) : ?>
-			<p><a href="wpmu-blogs.php?action=blogs&amp;s=<?php echo urlencode( stripslashes( $s ) ); ?>&blog_name=Search+blogs+by+name"><?php _e('Search Blogs:') ?> <strong><?php echo stripslashes( $s ) ?></strong></a></p>
+			<p><a href="wpmu-blogs.php?action=blogs&amp;s=<?php echo urlencode( stripslashes( $s ) ); ?>&blog_name=Search+blogs+by+name"><?php _e('Search Blogs for') ?> <strong><?php echo stripslashes( $s ) ?></strong></a></p>
 		<?php endif; ?>
 
 		<?php
 		// define the columns to display, the syntax is 'internal name' => 'display name'
 		$posts_columns = array(
 			'checkbox'	 => '',
-			'id'         => __('ID'),
-			'login'      => __('Login'),
-			'email'      => __('Email'),
+			'login'      => __('Username'),
 			'name'       => __('Name'),
+			'email'      => __('E-mail'),
 			'registered' => __('Registered'),
 			'blogs'      => ''
 		);
 		$posts_columns = apply_filters('wpmu_users_columns', $posts_columns);
 		?>
-		<table class="widefat" cellpadding="3" cellspacing="3">
+		<table class="widefat" cellspacing="0">
 			<thead>
 			<tr>
 				<?php foreach( (array) $posts_columns as $column_id => $column_display_name) {
 					if( $column_id == 'blogs' ) {
 						echo '<th scope="col">'.__('Blogs').'</th>';
 					} elseif( $column_id == 'checkbox') {
-						echo '<th scope="col" class="check-column"></th>';
+						echo '<th scope="col" class="check-column"><input type="checkbox" /></th>';
 					} else { ?>
 						<th scope="col"><a href="wpmu-users.php?sortby=<?php echo $column_id ?>&amp;<?php if( $_GET['sortby'] == $column_id ) { if( $_GET['order'] == 'DESC' ) { echo "order=ASC&amp;" ; } else { echo "order=DESC&amp;"; } } ?>apage=<?php echo $apage ?>"><?php echo $column_display_name; ?></a></th>
 					<?php } ?>
@@ -153,30 +167,35 @@ if ( $_GET['updated'] == 'true' ) {
 							<?php 
 							break;
 
-							case 'id': ?>
-								<td><?php echo $user['ID'] ?></td>
-							<?php
-							break;
-
 							case 'login':
-								$edit = clean_url( add_query_arg( 'wp_http_referer', urlencode( clean_url( stripslashes( $_SERVER['REQUEST_URI'] ) ) ), "user-edit.php?user_id=".$user['ID'] ) );
+								$avatar	= get_avatar( $user['user_email'], 32 );
+								$edit	= clean_url( add_query_arg( 'wp_http_referer', urlencode( clean_url( stripslashes( $_SERVER['REQUEST_URI'] ) ) ), "user-edit.php?user_id=".$user['ID'] ) );
+								// @todo Make delete link work like delete button with transfering users (in wpmu-edit.php)
+								//$delete	= clean_url( add_query_arg( 'wp_http_referer', urlencode( clean_url( stripslashes( $_SERVER['REQUEST_URI'] ) ) ), wp_nonce_url( 'wpmu-edit.php', 'deleteuser' ) . '&amp;action=deleteuser&amp;id=' . $user['ID'] ) );
 								?>
-								<td><strong><a href="<?php echo $edit; ?>" class="edit"><?php echo stripslashes($user['user_login']); ?></a></strong></td>
+								<td class="username column-username">
+									<?php echo $avatar; ?><strong><a href="<?php echo $edit; ?>" class="edit"><?php echo stripslashes($user['user_login']); ?></a></strong>
+									<br/>
+									<div class="row-actions">
+										<span class="edit"><a href="<?php echo $edit; ?>">Edit</a></span>
+										<?php /*<span class="delete"><a href="<?php echo $delete; ?>" class="delete">Delete</a></span> */ ?>
+									</div>
+								</td>
 							<?php
 							break;
 
 							case 'name': ?>
-								<td><?php echo $user['display_name'] ?></td>
+								<td class="name column-name"><?php echo $user['display_name'] ?></td>
 							<?php
 							break;
 
 							case 'email': ?>
-								<td><?php echo $user['user_email'] ?></td>
+								<td class="email column-email"><a href="mailto:<?php echo $user['user_email'] ?>"><?php echo $user['user_email'] ?></a></td>
 							<?php
 							break;
 
 							case 'registered': ?>
-								<td><?php echo mysql2date(__('Y-m-d \<\b\r \/\> g:i:s a'), $user['user_registered']); ?></td>
+								<td><?php echo mysql2date(__('Y-m-d \<\b\r \/\> g:i a'), $user['user_registered']); ?></td>
 							<?php
 							break;
 
@@ -187,10 +206,20 @@ if ( $_GET['updated'] == 'true' ) {
 									<?php
 									if( is_array( $blogs ) ) {
 										foreach ( (array) $blogs as $key => $val ) {
-											echo '<a href="wpmu-blogs.php?action=editblog&amp;id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain . $val->path ) . '</a> (<a '; 
+											$path	= ($val->path == '/') ? '' : $val->path;
+											echo '<a href="wpmu-blogs.php?action=editblog&amp;id=' . $val->userblog_id . '">' . str_replace( '.' . $current_site->domain, '', $val->domain . $path ) . '</a>';
+											echo ' <small class="row-actions">';
+											
+											// Edit
+											echo '<a href="wpmu-blogs.php?action=editblog&amp;id=' . $val->userblog_id . '">' . __('Edit') . '</a> | ';
+											
+											// View
+											echo '<a '; 
 											if( get_blog_status( $val->userblog_id, 'spam' ) == 1 )
 												echo 'style="background-color: #f66" ';
-											echo 'target="_new" href="http://'.$val->domain . $val->path.'">' . __('View') . '</a>)<br />'; 
+											echo 'target="_new" href="http://'.$val->domain . $val->path.'">' . __('View') . '</a>';
+											
+											echo '</small><br />'; 
 										}
 									}
 									?>
@@ -218,6 +247,18 @@ if ( $_GET['updated'] == 'true' ) {
 			?> 
 			</tbody>
 		</table>
+		
+		<div class="tablenav">
+			<?php if ( $user_navigation ) echo "<div class='tablenav-pages'>$user_navigation</div>"; ?>
+
+			<div class="alignleft">
+				<input type="submit" value="<?php _e('Delete') ?>" name="alluser_delete" class="button-secondary delete" />
+				<input type="submit" value="<?php _e('Mark as Spammers') ?>" name="alluser_spam" class="button-secondary" />
+				<input type="submit" value="<?php _e('Not Spam') ?>" name="alluser_notspam" class="button-secondary" />
+				<?php wp_nonce_field( 'allusers' ); ?>
+				<br class="clear" />
+			</div>
+		</div>
 	</form>
 </div>
 

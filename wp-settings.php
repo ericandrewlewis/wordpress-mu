@@ -15,6 +15,11 @@ if ( !defined('WP_MEMORY_LIMIT') )
 if ( function_exists('memory_get_usage') && ( (int) @ini_get('memory_limit') < abs(intval(WP_MEMORY_LIMIT)) ) )
 	@ini_set('memory_limit', WP_MEMORY_LIMIT);
 
+set_magic_quotes_runtime(0);
+@ini_set('magic_quotes_sybase', 0);
+
+if ( defined( 'VHOST' ) && ( constant( 'VHOST' ) != 'yes' && constant( 'VHOST' ) != 'no' ) )
+	die( "Warning! VHOST must be 'yes' or 'no' in wp-config.php" );
 
 /**
  * Turn register globals off.
@@ -195,7 +200,13 @@ timer_start();
 if (defined('WP_DEBUG') and WP_DEBUG == true) {
 	error_reporting(E_ALL);
 } else {
-	error_reporting(E_ALL ^ E_NOTICE ^ E_USER_NOTICE);
+	// Unicode Extension is in PHP 6.0 only or do version check when this changes.
+	if ( function_exists('unicode_decode') ) 
+		error_reporting( E_ALL ^ E_DEPRECATED ^ E_NOTICE ^ E_USER_NOTICE ^ E_STRICT );
+	else if ( defined( 'E_DEPRECATED' ) ) // Introduced in PHP 5.3
+		error_reporting( E_ALL ^ E_DEPRECATED ^ E_NOTICE ^ E_USER_NOTICE );
+	else
+		error_reporting(E_ALL ^ E_NOTICE ^ E_USER_NOTICE);
 }
 
 // For an advanced caching plugin to use, static because you would only want one
@@ -399,27 +410,53 @@ if( defined( 'MUPLUGINDIR' ) == false )
 
 if( is_dir( WPMU_PLUGIN_DIR ) ) {
 	if( $dh = opendir( WPMU_PLUGIN_DIR ) ) {
-		while( ( $plugin = readdir( $dh ) ) !== false ) {
-			if( substr( $plugin, -4 ) == '.php' ) {
-				include_once( WPMU_PLUGIN_DIR . '/' . $plugin );
-			}
-		}
+		$mu_plugins = array ();
+		while( ( $plugin = readdir( $dh ) ) !== false )
+			if( substr( $plugin, -4 ) == '.php' )
+				$mu_plugins[] = $plugin;
+		closedir($dh);
+		sort ($mu_plugins);
+		foreach ($mu_plugins as $mu_plugin)
+			include_once (WPMU_PLUGIN_DIR . '/' . $mu_plugin);
 	}
 }
+
+$wpmu_sitewide_plugins = (array) maybe_unserialize( get_site_option( 'wpmu_sitewide_plugins' ) );
+foreach ( $wpmu_sitewide_plugins as $plugin_file => $activation_time ) {
+	if ( $plugin_file && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) )
+		include_once( WP_PLUGIN_DIR . '/' . $plugin_file );		
+}
+
 do_action('muplugins_loaded');
 $wpdb->show_errors();
 
 if ( '1' == $current_blog->deleted ) {
-	header('HTTP/1.1 410 Gone');
-	graceful_fail(__('This user has elected to delete their account and the content is no longer available.'));
+	if ( file_exists( WP_CONTENT_DIR . '/blog-deleted.php' ) ) {
+		require_once( WP_CONTENT_DIR . '/blog-deleted.php' );
+		die();
+	} else {
+		header('HTTP/1.1 410 Gone');
+		graceful_fail(__('This user has elected to delete their account and the content is no longer available.'));
+	}
 }
 
-if ( '2' == $current_blog->deleted )
-	graceful_fail( sprintf( __( 'This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:%1$s">%1$s</a>.' ), str_replace( '@', ' AT ', get_site_option( 'admin_email', "support@{$current_site->domain}" ) ) ) );
+if ( '2' == $current_blog->deleted ) {
+	if ( file_exists( WP_CONTENT_DIR . '/blog-inactive.php' ) ) {
+		require_once( WP_CONTENT_DIR . '/blog-inactive.php' );
+		die();
+	} else {
+		graceful_fail( sprintf( __( 'This blog has not been activated yet. If you are having problems activating your blog, please contact <a href="mailto:%1$s">%1$s</a>.' ), str_replace( '@', ' AT ', get_site_option( 'admin_email', "support@{$current_site->domain}" ) ) ) );
+	}
+}
 
 if( $current_blog->archived == '1' || $current_blog->spam == '1' ) {
-	header('HTTP/1.1 410 Gone');
-	graceful_fail(__('This blog has been archived or suspended.'));
+	if ( file_exists( WP_CONTENT_DIR . '/blog-suspended.php' ) ) {
+		require_once( WP_CONTENT_DIR . '/blog-suspended.php' );
+		die();
+	} else {
+		header('HTTP/1.1 410 Gone');
+		graceful_fail(__('This blog has been archived or suspended.'));
+	}
 }
 
 /**

@@ -10,6 +10,30 @@ http://wordpress.com/ and sign yourself and your friends up to free blogs.
 It's easier in the long run and you'll save yourself a lot of pain
 and angst.
 
+
+Install
+=======
+1. Download and unzip the WordPress MU package, if you haven't already.
+   The unzipped files will be created in a directory named "wordpressmu"
+   followed by a version number.
+2. Create a database for WordPress MU on your web server, as well as a 
+   MySQL user who has all privileges for accessing and modifying it.
+3. Unzip to an empty folder, either in the main directory, or in a
+   subdirectory. If you want subdomain blogs, you must use the root of
+   your site.
+4. Make sure your install directory and the wp-contents directory are
+   writeable by the webserver.
+5. Run the WordPress MU installation script by accessing index.php
+   in your favorite web browser.
+   * If you installed WordPress MU in the root directory, you should 
+     visit: http://example.com/index.php
+   * If you installed WordPress MU in its own subdirectory called 
+     blogs, for example, you should visit: http://example.com/blogs/index.php 
+(Adapted from http://codex.wordpress.org/Installing_WordPress)
+
+If you're upgrading, skip to the end of this document.
+
+
 Apache
 ======
 Apache must be configured so that mod_rewrite works. Here are 
@@ -95,39 +119,6 @@ settings to be updated.
 4. If you want to restrict blog signups, set the restrict domain email 
 setting in the admin.
 
-
-Install
-=======
-1. Download and unzip the WordPress MU package, if you haven't already.
-   The unzipped files will be created in a directory named "wordpressmu"
-   followed by a version number.
-2. Create a database for WordPress MU on your web server, as well as a 
-   MySQL user who has all privileges for accessing and modifying it.
-3. Place the WordPress MU files in the desired location on your web server:
-   * If you want to integrate WordPress MU into the root of your 
-     domain (e.g. http://example.com/), move or upload all the files and
-     directories of the unzipped WordPress MU directory into the root 
-     directory of your web server.
-   * If you want to have your WordPress MU installation in its own 
-     subdirectory on your web site (e.g. http://example.com/blogs/), 
-     rename the directory wordpressmu to the name you'd like the 
-     subdirectory to have and move or upload it to your web server. 
-     For example if you want the WordPress MU installation in a 
-     subdirectory called "blog", you should rename the directory called 
-     "wordpressmu" to "blogs" and upload it to the root directory of your 
-     web server. 
-4. Make sure your install directory and the wp-contents directory are
-   writeable by the webserver.
-5. Run the WordPress MU installation script by accessing index.php
-   in your favorite web browser.
-   * If you installed WordPress MU in the root directory, you should 
-     visit: http://example.com/index.php
-   * If you installed WordPress MU in its own subdirectory called 
-     blogs, for example, you should visit: http://example.com/blogs/index.php 
-(Adapted from http://codex.wordpress.org/Installing_WordPress)
-
-If you're upgrading, skip to the end of this document.
-
 ERROR LOGGING
 =============
 If you are developing a site based on WPMU it is recommended that you
@@ -189,4 +180,26 @@ http://trac.mu.wordpress.org/report/1
 You can login to both sites using your wordpress.org username and
 password.
 
-http://mu.wordpress.org/
+Links
+=====
+1. Download Page
+The latest version of WordPress MU is available at http://mu.wordpress.org/download/
+
+2. Plugins
+Many WordPress plugins and almost all themes work fine in MU. The best 
+place to look for them is the WordPress Plugin Directory at 
+http://wordpress.org/extend/plugins/
+The "WordPress MU" and "WPMU" tags list plugins made specifically for MU:
+http://wordpress.org/extend/plugins/tags/wordpressmu
+http://wordpress.org/extend/plugins/tags/wpmu
+
+3. Themes
+The only site you should download WordPress themes from is the
+Themes Directory at http://wordpress.org/extend/themes/
+If you download themes from other sites, please make sure they don't contain
+sponsored links that would put your site at risk of being banned by Google.
+
+4. News
+http://ocaoimh.ie/category/wordpress/
+http://planet.wordpress.org/
+http://mu.wordpress.org/forums/

@@ -98,6 +98,10 @@ $themes = array_slice( $themes, $start, $per_page );
  */
 function theme_update_available( $theme ) {
 	static $themes_update;
+
+	if( false == is_site_admin() )
+		return;
+
 	if ( !isset($themes_update) )
 		$themes_update = get_option('update_themes');
 
@@ -236,7 +240,7 @@ $broken_themes = get_broken_themes();
 if ( is_site_admin() && count($broken_themes) ) {
 ?>
 
-<h2><?php _e('Broken Themes'); ?> (Site admin only)</h2>
+<h2><?php _e('Broken Themes'); ?> <?php _e( '(Site admin only)' ); ?></h2>
 <p><?php _e('The following themes are installed but incomplete.  Themes must have a stylesheet and a template.'); ?></p>
 
 <table width="100%" cellpadding="3" cellspacing="3">
@@ -268,7 +272,7 @@ if ( is_site_admin() && count($broken_themes) ) {
 ?>
 <br clear="all" />
 <?php if ( is_site_admin() ) { ?>
-<h2><?php _e('Get More Themes'); ?> (Site admin only)</h2>
+<h2><?php _e('Get More Themes'); ?> <?php _e( '(Site admin only)' ); ?></h2>
 <p><?php _e('You can find additional themes for your site in the <a href="http://wordpress.org/extend/themes/">WordPress theme directory</a>. To install a theme you generally just need to upload the theme folder into your <code>wp-content/themes</code> directory. Once a theme is uploaded, you should see it on this page.'); ?></p>
 <?php } ?>
 </div>

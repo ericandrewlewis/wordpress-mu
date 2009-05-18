@@ -439,7 +439,7 @@ function step2() {
 	$dbhost  = stripslashes($_POST['dbhost']);
 	$vhost   = stripslashes($_POST['vhost' ]);
 	$prefix  = 'wp_'; // Hardcoded
-	
+
 	$base = stripslashes( dirname($_SERVER["SCRIPT_NAME"]) );
 	if( $base != "/")
 		$base .= "/";
@@ -585,6 +585,37 @@ Thanks!
 	<h2>Installation Finished!</h2>
 	<p>Congratulations! <br />Your <a href='http://<?php echo $domain . $base; ?>'>WordPress &micro; site</a> has been configured.</p>
 	<p>You can <a class="button" href='wp-login.php'>log in</a> using the username "admin" and password <?php echo $pass; ?></p>
+
+	<?php
+	
+	if ( $_POST['vhost' ] == 'yes' ) {
+		$vhost_ok = false;
+		$hostname = substr( md5( time() ), 0, 6 ) . '.' . $domain; // Very random hostname!
+		if( include_once( 'wp-includes/http.php' ) ) {
+			$page = wp_remote_get( 'http://' . $hostname, array( 'timeout' => 5, 'httpversion' => '1.1' ) );
+			if( is_object( $page ) && is_wp_error( $page ) ) {
+				foreach ( $page->get_error_messages() as $err )
+					$errstr = $err;
+			} elseif( $page[ 'response' ][ 'code' ] == 200 ) {
+					$vhost_ok = true;	
+			}
+		} else {
+			$fp = fsockopen( $hostname, 80, $errno, $errstr, 5 ); // Very random hostname!
+			if( $fp ) {
+				$vhost_ok = true;
+				fclose( $fp );
+			}
+		}
+		if( !$vhost_ok ) {
+			echo "<h2>Warning! Wildcard DNS may not be configured correctly!</h2>";
+			echo "<p>To use the subdomain feature of WordPress MU you must have a wildcard entry in your dns. The installer attempted to contact a random hostname ($hostname) on your domain but failed. It returned this error message:<br /> <strong>$errstr</strong></p><p>From the README.txt:</p>";
+			echo "<p><blockquote> If you want to host blogs of the form http://blog.domain.tld/ where domain.tld is the domain name of your machine then you must add a wildcard record to your DNS records.<br />
+This usually means adding a '*' hostname record pointing at your webserver in your DNS configuration tool.  Matt has a more detailed <a href='http://ma.tt/2003/10/10/wildcard-dns-and-sub-domains/'>explanation</a> on his blog. If you still have problems, these <a href='http://mu.wordpress.org/forums/tags/wildcard'>forum messages</a> may help.</blockquote></p>";
+			echo "<p>You can still use your site but any subdomain you create may not be accessible. This check is not foolproof so ignore if you know your dns is correct.</p>";
+		}
+	}
+
+	?>
 	
 	<h2>Directory Permissions</h2>
 	<p>Please remember to reset the permissions on the following directories:

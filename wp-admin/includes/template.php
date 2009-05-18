@@ -220,11 +220,6 @@ function inline_edit_term_row($type) {
 				<span class="input-text-wrap"><input type="text" name="name" class="ptitle" value="" /></span>
 			</label>
 
-			<label>
-				<span class="title"><?php _e( 'Slug' ); ?></span>
-				<span class="input-text-wrap"><input type="text" name="slug" class="ptitle" value="" /></span>
-			</label>
-
 <?php if ( 'category' == $type ) : ?>
 
 			<label>
@@ -439,8 +434,10 @@ class Walker_Category_Checklist extends Walker {
  * @param unknown_type $selected_cats
  * @param unknown_type $popular_cats
  */
-function wp_category_checklist( $post_id = 0, $descendants_and_self = 0, $selected_cats = false, $popular_cats = false ) {
-	$walker = new Walker_Category_Checklist;
+function wp_category_checklist( $post_id = 0, $descendants_and_self = 0, $selected_cats = false, $popular_cats = false, $walker = null ) {
+	if ( empty($walker) || !is_a($walker, 'Walker') )
+		$walker = new Walker_Category_Checklist;
+
 	$descendants_and_self = (int) $descendants_and_self;
 
 	$args = array();

@@ -26,7 +26,7 @@ function wp_version_check() {
 	global $wp_version, $wpdb, $wp_local_package, $wpmu_version, $current_site;
 	$php_version = phpversion();
 
-	$current = get_site_option( 'update_core' );
+	$current = get_option( 'update_core' );
 	if ( ! is_object($current) )
 		$current = new stdClass;
 
@@ -40,7 +40,7 @@ function wp_version_check() {
 
 	// Update last_checked for current to prevent multiple blocking requests if request hangs
 	$current->last_checked = time();
-	update_site_option( 'update_core', $current );
+	update_option( 'update_core', $current );
 
 	if ( method_exists( $wpdb, 'db_version' ) )
 		$mysql_version = preg_replace('/[^0-9.].*/', '', $wpdb->db_version($wpdb->users));
@@ -85,9 +85,9 @@ function wp_version_check() {
 	$updates->updates = $new_options;
 	$updates->last_checked = time();
 	$updates->version_checked = $wp_version;
-	update_site_option( 'update_core',  $updates);
+	update_option( 'update_core',  $updates);
 }
-add_action( 'init', 'wp_version_check' );
+add_action( 'admin_init', 'wp_version_check' );
 
 /**
  * Check plugin versions against the latest versions hosted on WordPress.org.
@@ -103,7 +103,7 @@ add_action( 'init', 'wp_version_check' );
  * @return mixed Returns null if update is unsupported. Returns false if check is too soon.
  */
 function wp_update_plugins() {
-	global $wp_version;
+	global $wp_version, $current_site, $wpmu_version;
 
 	if ( defined('WP_INSTALLING') )
 		return false;
@@ -113,7 +113,8 @@ function wp_update_plugins() {
 		require_once( ABSPATH . 'wp-admin/includes/plugin.php' );
 
 	$plugins = get_plugins();
-	$active  = get_option( 'active_plugins' );
+	$active  = (array)get_site_option( 'active_sitewide_plugins' );
+	$active = array_keys( $active );
 	$current = get_option( 'update_plugins' );
 	if ( ! is_object($current) )
 		$current = new stdClass;
@@ -149,7 +150,7 @@ function wp_update_plugins() {
 
 	// Update last_checked for current to prevent multiple blocking requests if request hangs
 	$current->last_checked = time();
-	update_site_option( 'update_plugins', $current );
+	update_option( 'update_plugins', $current );
 
 	$to_send->plugins = $plugins;
 	$to_send->active = $active;
@@ -163,7 +164,7 @@ function wp_update_plugins() {
 		'User-Agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path )
 	);
 
-	$raw_response = wp_remote_request('http://api.wordpress.org/plugins/update-check/1.0/', $options);
+	$raw_response = wp_remote_request('http://api.wordpress.org/plugins/update-check/1.0-mu/', $options);
 
 	if ( is_wp_error( $raw_response ) )
 		return false;
@@ -196,7 +197,7 @@ function wp_update_plugins() {
  * @return mixed Returns null if update is unsupported. Returns false if check is too soon.
  */
 function wp_update_themes( ) {
-	global $wp_version;
+	global $wp_version, $current_site, $wpmu_version;
 
 	if( defined( 'WP_INSTALLING' ) )
 		return false;
@@ -218,7 +219,7 @@ function wp_update_themes( ) {
 
 	// Update last_checked for current to prevent multiple blocking requests if request hangs
 	$current_theme->last_checked = time();
-	update_site_option( 'update_themes', $current_theme );
+	update_option( 'update_themes', $current_theme );
 
 	$themes = array( );
 	$themes['current_theme'] = $current_theme;
@@ -238,10 +239,10 @@ function wp_update_themes( ) {
 	$options['headers'] = array(
 		'Content-Type'		=> 'application/x-www-form-urlencoded; charset=' . get_option( 'blog_charset' ),
 		'Content-Length'	=> strlen( $options['body'] ),
-		'User-Agent'		=> 'WordPress/' . $wp_version . '; ' . get_bloginfo( 'url' )
+		'User-Agent'		=> 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path ) 
 	);
 
-	$raw_response = wp_remote_request( 'http://api.wordpress.org/themes/update-check/1.0/', $options );
+	$raw_response = wp_remote_request( 'http://api.wordpress.org/themes/update-check/1.0-mu/', $options );
 
 	if( is_wp_error( $raw_response ) )
 		return false;
