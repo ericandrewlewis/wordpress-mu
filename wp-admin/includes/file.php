@@ -52,7 +52,7 @@ function get_file_description( $file ) {
 	elseif ( file_exists( WP_CONTENT_DIR . $file ) && is_file( WP_CONTENT_DIR . $file ) ) {
 		$template_data = implode( '', file( WP_CONTENT_DIR . $file ) );
 		if ( preg_match( '|Template Name:(.*)$|mi', $template_data, $name ))
-			return $name[1] . ' Page Template';
+			return _cleanup_header_comment($name[1]) . ' Page Template';
 	}
 
 	return basename( $file );
@@ -67,11 +67,12 @@ function get_file_description( $file ) {
  */
 function get_home_path() {
 	$home = get_option( 'home' );
-	if ( $home != '' && $home != get_option( 'siteurl' ) ) {
-		$home_path = parse_url( $home );
-		$home_path = $home_path['path'];
-		$root = str_replace( $_SERVER["PHP_SELF"], '', $_SERVER["SCRIPT_FILENAME"] );
-		$home_path = trailingslashit( $root.$home_path );
+	$siteurl = get_option( 'siteurl' );
+	if ( $home != '' && $home != $siteurl ) {
+	        $wp_path_rel_to_home = str_replace($home, '', $siteurl); /* $siteurl - $home */
+	        $pos = strpos($_SERVER["SCRIPT_FILENAME"], $wp_path_rel_to_home);
+	        $home_path = substr($_SERVER["SCRIPT_FILENAME"], 0, $pos);        
+		$home_path = trailingslashit( $home_path );
 	} else {
 		$home_path = ABSPATH;
 	}
@@ -194,7 +195,7 @@ function validate_file_to_edit( $file, $allowed_files = '' ) {
 
 	switch ( $code ) {
 		case 1 :
-			wp_die( __('Sorry, can&#8217;t edit files with ".." in the name. If you are trying to edit a file in your WordPress home directory, you can just type the name of the file in.' ));
+			wp_die( __('Sorry, can&#8217;t edit files with &#8220;..&#8221; in the name. If you are trying to edit a file in your WordPress home directory, you can just type the name of the file in.' ));
 
 		case 2 :
 			wp_die( __('Sorry, can&#8217;t call files with their real path.' ));
@@ -240,7 +241,8 @@ function wp_handle_upload( &$file, $overrides = false, $time = null ) {
 		__( "No file was uploaded." ),
 		'',
 		__( "Missing a temporary folder." ),
-		__( "Failed to write file to disk." ));
+		__( "Failed to write file to disk." ),
+		__( "File upload stopped by extension." ));
 
 	// All tests are on by default. Most can be turned off by $override[{test_name}] = false;
 	$test_form = true;
@@ -284,6 +286,8 @@ function wp_handle_upload( &$file, $overrides = false, $time = null ) {
 
 		if ( !$type )
 			$type = $file['type'];
+	} else {
+		$type = '';
 	}
 
 	// A writable uploads dir will pass this test. Again, there's no point overriding this one.
@@ -306,9 +310,7 @@ function wp_handle_upload( &$file, $overrides = false, $time = null ) {
 	// Compute the URL
 	$url = $uploads['url'] . "/$filename";
 
-	$return = apply_filters( 'wp_handle_upload', array( 'file' => $new_file, 'url' => $url, 'type' => $type ) );
-
-	return $return;
+	return apply_filters( 'wp_handle_upload', array( 'file' => $new_file, 'url' => $url, 'type' => $type ) );
 }
 
 /**
@@ -341,12 +343,14 @@ function wp_handle_sideload( &$file, $overrides = false ) {
 
 	// Courtesy of php.net, the strings that describe the error indicated in $_FILES[{form field}]['error'].
 	$upload_error_strings = array( false,
-		__( "The file exceeds the <code>upload_max_filesize</code> directive in <code>php.ini</code>." ),
-		__( "The file exceeds the <em>MAX_FILE_SIZE</em> directive that was specified in the HTML form." ),
-		__( "The file was only partially uploaded." ),
-		__( "No file was sent." ),
+		__( "The uploaded file exceeds the <code>upload_max_filesize</code> directive in <code>php.ini</code>." ),
+		__( "The uploaded file exceeds the <em>MAX_FILE_SIZE</em> directive that was specified in the HTML form." ),
+		__( "The uploaded file was only partially uploaded." ),
+		__( "No file was uploaded." ),
+		'',
 		__( "Missing a temporary folder." ),
-		__( "Failed to write file to disk." ));
+		__( "Failed to write file to disk." ),
+		__( "File upload stopped by extension." ));
 
 	// All tests are on by default. Most can be turned off by $override[{test_name}] = false;
 	$test_form = true;
@@ -600,7 +604,7 @@ function WP_Filesystem( $args = false ) {
 
 	$wp_filesystem = new $method($args);
 
-	if ( $wp_filesystem->errors->get_error_code() )
+	if ( is_wp_error($wp_filesystem->errors) && $wp_filesystem->errors->get_error_code() )
 		return false;
 
 	if ( !$wp_filesystem->connect() )
@@ -632,7 +636,7 @@ function get_filesystem_method($args = array()) {
 		unlink($temp_file);
 	}
 
-	if ( ! $method && isset($args['connection_type']) && 'ssh' == $args['connection_type'] && extension_loaded('ssh2') ) $method = 'ssh2';
+	if ( ! $method && isset($args['connection_type']) && 'ssh' == $args['connection_type'] && extension_loaded('ssh2') && extension_loaded('sockets') ) $method = 'ssh2';
 	if ( ! $method && extension_loaded('ftp') ) $method = 'ftpext';
 	if ( ! $method && ( extension_loaded('sockets') || function_exists('fsockopen') ) ) $method = 'ftpsockets'; //Sockets: Socket extension; PHP Mode: FSockopen / fwrite / fread
 	return apply_filters('filesystem_method', $method);
@@ -659,15 +663,16 @@ function request_filesystem_credentials($form_post, $type = '', $error = false) 
 	if ( 'direct' == $type )
 		return true;
 
-	$credentials = get_option('ftp_credentials', array());
+	$credentials = get_option('ftp_credentials', array( 'hostname' => '', 'username' => ''));
+
 	// If defined, set it to that, Else, If POST'd, set it to that, If not, Set it to whatever it previously was(saved details in option)
 	$credentials['hostname'] = defined('FTP_HOST') ? FTP_HOST : (!empty($_POST['hostname']) ? $_POST['hostname'] : $credentials['hostname']);
 	$credentials['username'] = defined('FTP_USER') ? FTP_USER : (!empty($_POST['username']) ? $_POST['username'] : $credentials['username']);
-	$credentials['password'] = defined('FTP_PASS') ? FTP_PASS : (!empty($_POST['password']) ? $_POST['password'] : $credentials['password']);
+	$credentials['password'] = defined('FTP_PASS') ? FTP_PASS : (!empty($_POST['password']) ? $_POST['password'] : '');
 
 	// Check to see if we are setting the public/private keys for ssh
-	$credentials['public_key'] = defined('FTP_PUBKEY') ? FTP_PUBKEY : (!empty($_POST['public_key']) ? $_POST['public_key'] : $credentials['public_key']);
-	$credentials['private_key'] = defined('FTP_PRIKEY') ? FTP_PRIKEY : (!empty($_POST['private_key']) ? $_POST['private_key'] : $credentials['private_key']);
+	$credentials['public_key'] = defined('FTP_PUBKEY') ? FTP_PUBKEY : (!empty($_POST['public_key']) ? $_POST['public_key'] : '');
+	$credentials['private_key'] = defined('FTP_PRIKEY') ? FTP_PRIKEY : (!empty($_POST['private_key']) ? $_POST['private_key'] : '');
 
 	//sanitize the hostname, Some people might pass in odd-data:
 	$credentials['hostname'] = preg_replace('|\w+://|', '', $credentials['hostname']); //Strip any schemes off
@@ -684,7 +689,11 @@ function request_filesystem_credentials($form_post, $type = '', $error = false) 
 	else if ( !isset($credentials['connection_type']) || (isset($_POST['connection_type']) && 'ftp' == $_POST['connection_type']) )
 		$credentials['connection_type'] = 'ftp';
 
-	if ( ! $error && !empty($credentials['password']) && !empty($credentials['username']) && !empty($credentials['hostname']) ) {
+	if ( ! $error && 
+			(
+				( !empty($credentials['password']) && !empty($credentials['username']) && !empty($credentials['hostname']) ) ||
+				( 'ssh' == $credentials['connection_type'] && !empty($credentials['public_key']) && !empty($credentials['private_key']) )
+			) ) {
 		$stored_credentials = $credentials;
 		if ( !empty($stored_credentials['port']) ) //save port as part of hostname to simplify above code.
 			$stored_credentials['hostname'] .= ':' . $stored_credentials['port'];
@@ -715,23 +724,25 @@ jQuery(function($){
 	jQuery("#ftp, #ftps").click(function () {
 		jQuery("#ssh_keys").hide();
 	});
+	jQuery('form input[value=""]:first').focus();
 });
 -->
 </script>
 <form action="<?php echo $form_post ?>" method="post">
 <div class="wrap">
+<?php screen_icon(); ?>
 <h2><?php _e('Connection Information') ?></h2>
 <p><?php _e('To perform the requested action, connection information is required.') ?></p>
 
 <table class="form-table">
 <tr valign="top">
 <th scope="row"><label for="hostname"><?php _e('Hostname') ?></label></th>
-<td><input name="hostname" type="text" id="hostname" value="<?php echo attribute_escape($hostname); if ( !empty($port) ) echo ":$port"; ?>"<?php if( defined('FTP_HOST') ) echo ' disabled="disabled"' ?> size="40" /></td>
+<td><input name="hostname" type="text" id="hostname" value="<?php echo esc_attr($hostname); if ( !empty($port) ) echo ":$port"; ?>"<?php if( defined('FTP_HOST') ) echo ' disabled="disabled"' ?> size="40" /></td>
 </tr>
 
 <tr valign="top">
 <th scope="row"><label for="username"><?php _e('Username') ?></label></th>
-<td><input name="username" type="text" id="username" value="<?php echo attribute_escape($username) ?>"<?php if( defined('FTP_USER') ) echo ' disabled="disabled"' ?> size="40" /></td>
+<td><input name="username" type="text" id="username" value="<?php echo esc_attr($username) ?>"<?php if( defined('FTP_USER') ) echo ' disabled="disabled"' ?> size="40" /></td>
 </tr>
 
 <tr valign="top">
@@ -745,14 +756,14 @@ jQuery(function($){
 <label for="public_key"><?php _e('Public Key:') ?></label ><br />
 <label for="private_key"><?php _e('Private Key:') ?></label>
 </div></th>
-<td><br /><input name="public_key" type="text" id="public_key" value=""<?php if( defined('FTP_PUBKEY') ) echo ' disabled="disabled"' ?> size="40" /><br /><input name="private_key" type="text" id="private_key" value=""<?php if( defined('FTP_PRIKEY') ) echo ' disabled="disabled"' ?> size="40" />
+<td><br /><input name="public_key" type="text" id="public_key" value="<?php echo esc_attr($public_key) ?>"<?php if( defined('FTP_PUBKEY') ) echo ' disabled="disabled"' ?> size="40" /><br /><input name="private_key" type="text" id="private_key" value="<?php echo esc_attr($private_key) ?>"<?php if( defined('FTP_PRIKEY') ) echo ' disabled="disabled"' ?> size="40" />
 <div><?php _e('Enter the location on the server where the keys are located. If a passphrase is needed, enter that in the password field above.') ?></div></td>
 </tr>
 
 <tr valign="top">
 <th scope="row"><?php _e('Connection Type') ?></th>
 <td>
-<fieldset><legend class="hidden"><?php _e('Connection Type') ?></legend>
+<fieldset><legend class="screen-reader-text"><span><?php _e('Connection Type') ?></span></legend>
 <label><input id="ftp" name="connection_type"  type="radio" value="ftp" <?php checked('ftp', $connection_type); if ( defined('FTP_SSL') || defined('FTP_SSH') ) echo ' disabled="disabled"'; ?>/> <?php _e('FTP') ?></label><br />
 <label><input id="ftps" name="connection_type" type="radio" value="ftps" <?php checked('ftps', $connection_type); if ( defined('FTP_SSH') || defined('FTP_SSH') ) echo ' disabled="disabled"';  ?>/> <?php _e('FTPS (SSL)') ?></label><br />
 <?php if ( extension_loaded('ssh2') ) { ?><label><input id="ssh" name="connection_type" type="radio" value="ssh" <?php checked('ssh', $connection_type);  if ( defined('FTP_SSL') || defined('FTP_SSH') ) echo ' disabled="disabled"'; ?>/> <?php _e('SSH') ?></label><?php } ?>
@@ -762,13 +773,13 @@ jQuery(function($){
 </table>
 
 <?php if ( isset( $_POST['version'] ) ) : ?>
-<input type="hidden" name="version" value="<?php echo attribute_escape($_POST['version']) ?>" />
+<input type="hidden" name="version" value="<?php echo esc_attr($_POST['version']) ?>" />
 <?php endif; ?>
 <?php if ( isset( $_POST['locale'] ) ) : ?>
-<input type="hidden" name="locale" value="<?php echo attribute_escape($_POST['locale']) ?>" />
+<input type="hidden" name="locale" value="<?php echo esc_attr($_POST['locale']) ?>" />
 <?php endif; ?>
 <p class="submit">
-<input id="upgrade" name="upgrade" type="submit" class="button" value="<?php _e('Proceed'); ?>" />
+<input id="upgrade" name="upgrade" type="submit" class="button" value="<?php esc_attr_e('Proceed'); ?>" />
 </p>
 </div>
 </form>

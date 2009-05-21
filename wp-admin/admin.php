@@ -11,14 +11,25 @@
  *
  * @since unknown
  */
-define('WP_ADMIN', TRUE);
+if ( !defined('WP_ADMIN') )
+	define('WP_ADMIN', TRUE);
 
 if ( defined('ABSPATH') )
 	require_once(ABSPATH . 'wp-load.php');
 else
 	require_once('../wp-load.php');
 
-if ( get_option('db_version') != $wp_db_version ) {
+if ( get_option('db_upgraded') ) {
+	$wp_rewrite->flush_rules();
+	update_option( 'db_upgraded',  false );
+
+	/**
+	 * Runs on the next page load after successful upgrade
+	 *
+	 * @since 2.8
+	 */
+	do_action('after_db_upgrade');
+} elseif ( get_option('db_version') != $wp_db_version ) {
 	require_once( ABSPATH . WPINC . '/http.php' );
 	$response = wp_remote_get( admin_url('upgrade.php?step=1'), array( 'timeout' => 120, 'httpversion' => '1.1' ) );
 	// do something with response?
@@ -32,8 +43,9 @@ nocache_headers();
 
 update_category_cache();
 
+set_screen_options();
+
 $posts_per_page = get_option('posts_per_page');
-$what_to_show = get_option('what_to_show');
 $date_format = get_option('date_format');
 $time_format = get_option('time_format');
 

@@ -12,14 +12,6 @@ require_once('admin.php');
 if ( !current_user_can('create_users') )
 	wp_die(__('Cheatin&#8217; uh?'));
 
-if( !get_site_option( 'add_new_users' ) ) {
-	if( is_site_admin() ) {
-		$messages[] = '<div id="message" class="updated fade"><p>' . __('Warning! Only site administrators may see this page. Everyone else will see a <em>page disabled</em> message. Enable it again on <a href="wpmu-options.php#addnewusers">the options page</a>.') . '</p></div>';
-	} else {
-		wp_die( __('Page disabled by the administrator') );
-	}
-}
-
 /** WordPress Registration API */
 require_once( ABSPATH . WPINC . '/registration.php');
 
@@ -83,7 +75,9 @@ if ( isset($_REQUEST['action']) && 'adduser' == $_REQUEST['action'] ) {
 $title = __('Add New User');
 $parent_file = 'users.php';
 
-wp_enqueue_script('admin-users');
+wp_enqueue_script('wp-ajax-response');
+wp_enqueue_script('user-profile');
+wp_enqueue_script('password-strength-meter');
 
 require_once ('admin-header.php');
 
@@ -168,12 +162,11 @@ foreach ( array('user_login' => 'login', 'first_name' => 'firstname', 'last_name
 	</tr>
 </table>
 <p class="submit">
-	<input name="adduser" type="submit" id="addusersub" class="button-primary" value="<?php _e('Add User') ?>" />
+	<input name="adduser" type="submit" id="addusersub" class="button-primary" value="<?php esc_attr_e('Add User') ?>" />
 </p>
 </form>
 
 </div>
-
 <?php
 include('admin-footer.php');
 ?>

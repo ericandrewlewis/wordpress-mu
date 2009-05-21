@@ -170,7 +170,7 @@ class MagpieRSS {
 		{
 			// if tags are inlined, then flatten
 			$attrs_str = join(' ',
-					array_map('map_attrs',
+					array_map(array('MagpieRSS', 'map_attrs'),
 					array_keys($attrs),
 					array_values($attrs) ) );
 
@@ -710,15 +710,10 @@ class RSSCache {
 	Output:		true on sucess
 \*=======================================================================*/
 	function set ($url, $rss) {
+		global $wpdb;
 		$cache_option = 'rss_' . $this->file_name( $url );
-		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
 
-		add_site_option( $cache_option, $rss );
-		add_site_option( $cache_timestamp, time() );
-
-		if ( !wp_next_scheduled( 'wp_rss_gc' ) )
-			wp_schedule_event(time(), 'twicedaily', 'wp_rss_gc');
-
+		set_transient($cache_option, $rss, $this->MAX_AGE);
 
 		return $cache_option;
 	}
@@ -733,11 +728,14 @@ class RSSCache {
 		$this->ERROR = "";
 		$cache_option = 'rss_' . $this->file_name( $url );
 
-		if ( ! get_site_option( $cache_option ) ) {
-			$this->debug( "Cache doesn't contain: $url (cache option: $cache_option)" );
+		if ( ! $rss = get_transient( $cache_option ) ) {
+			$this->debug(
+				"Cache doesn't contain: $url (cache option: $cache_option)"
+			);
 			return 0;
 		}
-		return get_site_option( $cache_option );
+
+		return $rss;
 	}
 
 /*=======================================================================*\
@@ -749,23 +747,12 @@ class RSSCache {
 \*=======================================================================*/
 	function check_cache ( $url ) {
 		$this->ERROR = "";
-		$cache_option = $this->file_name( $url );
-		$cache_timestamp = 'rss_' . $this->file_name( $url ) . '_ts';
+		$cache_option = 'rss_' . $this->file_name( $url );
 
-		if ( $mtime = get_site_option($cache_timestamp) ) {
-			// find how long ago the file was added to the cache
-			// and whether that is longer then MAX_AGE
-			$age = time() - $mtime;
-			if ( $this->MAX_AGE > $age ) {
-				// object exists and is current
+		if ( get_transient($cache_option) ) {
+			// object exists and is current
 				return 'HIT';
-			}
-			else {
-				// object exists but is old
-				return 'STALE';
-			}
-		}
-		else {
+		} else {
 			// object does not exist
 			return 'MISS';
 		}
@@ -885,8 +872,8 @@ function wp_rss( $url, $num_items = -1 ) {
 		foreach ( (array) $rss->items as $item ) {
 			printf(
 				'<li><a href="%1$s" title="%2$s">%3$s</a></li>',
-				clean_url( $item['link'] ),
-				attribute_escape( strip_tags( $item['description'] ) ),
+				esc_url( $item['link'] ),
+				esc_attr( strip_tags( $item['description'] ) ),
 				htmlentities( $item['title'] )
 			);
 		}
@@ -931,20 +918,5 @@ function get_rss ($url, $num_items = 5) { // Like get posts, but for RSS
 	}
 }
 endif;
-
-if ( !function_exists('rss_gc') ) :
-function rss_gc() {
-	global $wpdb;
-	// Garbage Collection
-	$rows = $wpdb->get_results( "SELECT meta_key FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'rss\_%\_ts' AND meta_value < unix_timestamp( date_sub( NOW(), interval 7200 second ) )" );
-	if( is_array( $rows ) ) {
-		foreach( $rows as $row ) {
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s", $row->meta_key ) );
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s", str_replace( '_ts', '', $row->meta_key ) ) );
-		}
-	}
-}
-endif;
-add_action( 'wp_rss_gc', 'rss_gc' );
 
 ?>

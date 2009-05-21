@@ -29,48 +29,18 @@ function mysql2date( $dateformatstring, $mysqlstring, $translate = true ) {
 		return false;
 
 	if( 'G' == $dateformatstring ) {
-		return gmmktime(
-			(int) substr( $m, 11, 2 ), (int) substr( $m, 14, 2 ), (int) substr( $m, 17, 2 ),
-			(int) substr( $m, 5, 2 ), (int) substr( $m, 8, 2 ), (int) substr( $m, 0, 4 )
-		);
+		return strtotime( $m . ' +0000' );
 	}
 
-	$i = mktime(
-		(int) substr( $m, 11, 2 ), (int) substr( $m, 14, 2 ), (int) substr( $m, 17, 2 ),
-		(int) substr( $m, 5, 2 ), (int) substr( $m, 8, 2 ), (int) substr( $m, 0, 4 )
-	);
+	$i = strtotime( $m );
 
 	if( 'U' == $dateformatstring )
 		return $i;
 
-	if ( -1 == $i || false == $i )
-		$i = 0;
-
-	if ( !empty( $wp_locale->month ) && !empty( $wp_locale->weekday ) && $translate ) {
-		$datemonth = $wp_locale->get_month( date( 'm', $i ) );
-		$datemonth_abbrev = $wp_locale->get_month_abbrev( $datemonth );
-		$dateweekday = $wp_locale->get_weekday( date( 'w', $i ) );
-		$dateweekday_abbrev = $wp_locale->get_weekday_abbrev( $dateweekday );
-		$datemeridiem = $wp_locale->get_meridiem( date( 'a', $i ) );
-		$datemeridiem_capital = $wp_locale->get_meridiem( date( 'A', $i ) );
-		$dateformatstring = ' ' . $dateformatstring;
-		$dateformatstring = preg_replace( "/([^\\\])D/", "\\1" . backslashit( $dateweekday_abbrev ), $dateformatstring );
-		$dateformatstring = preg_replace( "/([^\\\])F/", "\\1" . backslashit( $datemonth ), $dateformatstring );
-		$dateformatstring = preg_replace( "/([^\\\])l/", "\\1" . backslashit( $dateweekday ), $dateformatstring );
-		$dateformatstring = preg_replace( "/([^\\\])M/", "\\1" . backslashit( $datemonth_abbrev ), $dateformatstring );
-		$dateformatstring = preg_replace( "/([^\\\])a/", "\\1" . backslashit( $datemeridiem ), $dateformatstring );
-		$dateformatstring = preg_replace( "/([^\\\])A/", "\\1" . backslashit( $datemeridiem_capital ), $dateformatstring );
-
-		$dateformatstring = substr( $dateformatstring, 1, strlen( $dateformatstring ) -1 );
-	}
-	$j = @date( $dateformatstring, $i );
-
-	/*
-	if ( !$j ) // for debug purposes
-		echo $i." ".$mysqlstring;
-	*/
-
-	return $j;
+	if ( $translate)
+	    return date_i18n( $dateformatstring, $i );
+	else
+	    return date( $dateformatstring, $i );
 }
 
 /**
@@ -108,8 +78,9 @@ function current_time( $type, $gmt = 0 ) {
  *
  * @since 0.71
  *
- * @param string $dateformatstring Format to display the date
- * @param int $unixtimestamp Unix timestamp
+ * @param string $dateformatstring Format to display the date.
+ * @param int $unixtimestamp Optional. Unix timestamp.
+ * @param bool $gmt Optional, default is false. Whether to convert to GMT for time.
  * @return string The date, translated if locale specifies it.
  */
 function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
@@ -125,6 +96,10 @@ function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 		// specially computed timestamp
 		$gmt = true;
 	}
+
+	// store original value for language with untypical grammars
+	// see http://core.trac.wordpress.org/ticket/9396
+	$req_format = $dateformatstring;
 
 	$datefunc = $gmt? 'gmdate' : 'date';
 
@@ -146,6 +121,8 @@ function date_i18n( $dateformatstring, $unixtimestamp = false, $gmt = false ) {
 		$dateformatstring = substr( $dateformatstring, 1, strlen( $dateformatstring ) -1 );
 	}
 	$j = @$datefunc( $dateformatstring, $i );
+	// allow plugins to redo this entirely for languages with untypical grammars
+	$j = apply_filters('date_i18n', $j, $req_format, $i, $gmt);
 	return $j;
 }
 
@@ -249,8 +226,7 @@ function get_weekstartend( $mysqlstring, $start_of_week = '' ) {
  */
 function maybe_unserialize( $original ) {
 	if ( is_serialized( $original ) ) // don't attempt to unserialize data that wasn't serialized going in
-		if ( false !== $gm = @unserialize( $original ) )
-			return $gm;
+		return @unserialize( $original );
 	return $original;
 }
 
@@ -380,13 +356,13 @@ function get_option( $setting, $default = false ) {
 function wp_protect_special_option( $option ) {
 	$protected = array( 'alloptions', 'notoptions' );
 	if ( in_array( $option, $protected ) )
-		die( sprintf( __( '%s is a protected WP option and may not be modified' ), wp_specialchars( $option ) ) );
+		die( sprintf( __( '%s is a protected WP option and may not be modified' ), esc_html( $option ) ) );
 }
 
 /**
  * Print option value after sanitizing for forms.
  *
- * @uses attribute_escape Sanitizes value.
+ * @uses attr Sanitizes value.
  * @since 1.5.0
  * @package WordPress
  * @subpackage Option
@@ -394,7 +370,7 @@ function wp_protect_special_option( $option ) {
  * @param string $option Option name.
  */
 function form_option( $option ) {
-	echo attribute_escape (get_option( $option ) );
+	echo esc_attr(get_option( $option ) );
 }
 
 /**
@@ -520,10 +496,15 @@ function _delete_option_cache( $setting ) {
  * value, but you will not be able to set whether it is autoloaded. If you want
  * to set whether an option autoloaded, then you need to use the add_option().
  *
- * When the option is updated, then the filter named
- * 'update_option_$option_name', with the $option_name as the $option_name
+ * Before the option is updated, then the filter named
+ * 'pre_update_option_$option_name', with the $option_name as the $option_name
  * parameter value, will be called. The hook should accept two parameters, the
- * first is the old parameter and the second is the new parameter.
+ * first is the new value and the second is the old value.  Whatever is
+ * returned will be used as the new value.
+ * 
+ * After the value has been updated the action named 'update_option_$option_name'
+ * will be called.  This action receives two parameters the first being the old
+ * value and the second the new value.
  *
  * @since 1.0.0
  * @package WordPress
@@ -645,6 +626,107 @@ function delete_option( $name ) {
 }
 
 /**
+ * Delete a transient
+ *
+ * @since 2.8.0
+ * @package WordPress
+ * @subpackage Transient
+ *
+ * @param string $transient Transient name. Expected to not be SQL-escaped
+ * @return bool true if successful, false otherwise
+ */
+function delete_transient($transient) {
+	global $_wp_using_ext_object_cache, $wpdb;
+
+	if ( $_wp_using_ext_object_cache ) {
+		return wp_cache_delete($transient, 'transient');
+	} else {
+		$transient = '_transient_' . $wpdb->escape($transient);
+		return delete_option($transient);
+	}
+}
+
+/**
+ * Get the value of a transient
+ *
+ * If the transient does not exist or does not have a value, then the return value
+ * will be false.
+ *
+ * @since 2.8.0
+ * @package WordPress
+ * @subpackage Transient
+ *
+ * @param string $transient Transient name. Expected to not be SQL-escaped
+ * @return mixed Value of transient
+ */
+function get_transient($transient) {
+	global $_wp_using_ext_object_cache, $wpdb;
+
+	$pre = apply_filters( 'pre_transient_' . $transient, false );
+	if ( false !== $pre )
+		return $pre;
+
+	if ( $_wp_using_ext_object_cache ) {
+		$value = wp_cache_get($transient, 'transient');
+	} else {
+		$transient_option = '_transient_' . $wpdb->escape($transient);
+		// If option is not in alloptions, it is not autoloaded and thus has a timeout
+		$alloptions = wp_load_alloptions();
+		if ( !isset( $alloptions[$transient_option] ) ) {
+			$transient_timeout = '_transient_timeout_' . $wpdb->escape($transient);
+			if ( get_option($transient_timeout) < time() ) {
+				delete_option($transient_option);
+				delete_option($transient_timeout);
+				return false;
+			}
+		}
+
+		$value = get_option($transient_option);
+	}
+
+	return apply_filters('transient_' . $transient, $value);
+}
+
+/**
+ * Set/update the value of a transient
+ *
+ * You do not need to serialize values, if the value needs to be serialize, then
+ * it will be serialized before it is set.
+ *
+ * @since 2.8.0
+ * @package WordPress
+ * @subpackage Transient
+ *
+ * @param string $transient Transient name. Expected to not be SQL-escaped
+ * @param mixed $value Transient value.
+ * @param int $expiration Time until expiration in seconds, default 0
+ * @return bool False if value was not set and true if value was set.
+ */
+function set_transient($transient, $value, $expiration = 0) {
+	global $_wp_using_ext_object_cache, $wpdb;
+
+	if ( $_wp_using_ext_object_cache ) {
+		return wp_cache_set($transient, $value, 'transient', $expiration);
+	} else {
+		$transient_timeout = '_transient_timeout_' . $transient;
+		$transient = '_transient_' . $transient;
+		$safe_transient = $wpdb->escape($transient);
+		if ( false === get_option( $safe_transient ) ) {
+			$autoload = 'yes';
+			if ( 0 != $expiration ) {
+				$autoload = 'no';
+				add_option($transient_timeout, time() + $expiration, '', 'no');
+			}
+			return add_option($transient, $value, '', $autoload);
+		} else {
+			if ( 0 != $expiration )
+				update_option($transient_timeout, time() + $expiration);
+			return update_option($transient, $value);
+		}
+	}
+}
+
+/**
  * Saves and restores user interface settings stored in a cookie.
  *
  * Checks if the current user-settings cookie is updated and stores it. When no
@@ -739,7 +821,7 @@ function delete_user_setting( $names ) {
 		$settings = rtrim($settings, '&');
 
 		update_user_option( $current_user->ID, 'user-settings', $settings );
-		setcookie('wp-settings-'.$current_user->ID, $settings, time() + 31536000, SITECOOKIEPATH);
+		setcookie('wp-settings-' . $current_user->ID, $settings, time() + 31536000, SITECOOKIEPATH);
 	}
 }
 
@@ -756,16 +838,18 @@ function get_all_user_settings() {
 	if ( ! $user = wp_get_current_user() )
 		return array();
 
-	if ( isset($_COOKIE['wp-settings-'.$user->ID]) ) {
-		$cookie = preg_replace( '/[^A-Za-z0-9=&_]/', '', $_COOKIE['wp-settings-'.$user->ID] );
+	$arr = array();
+	if ( isset($_COOKIE['wp-settings-' . $user->ID]) ) {
+		$cookie = preg_replace( '/[^A-Za-z0-9=&_]/', '', $_COOKIE['wp-settings-' . $user->ID] );
 
-		if ( $cookie && strpos($cookie, '=') ) { // the '=' cannot be 1st char
+		if ( $cookie && strpos($cookie, '=') ) // the '=' cannot be 1st char
 			parse_str($cookie, $arr);
-			return $arr;
-		}
+
+	} elseif ( isset($user->wp_usersettings) && is_string($user->wp_usersettings) ) {
+		parse_str( $user->wp_usersettings, $arr );
 	}
 
-	return array();
+	return $arr;
 }
 
 /**
@@ -847,9 +931,7 @@ function make_url_footnote( $content ) {
 function xmlrpc_getposttitle( $content ) {
 	global $post_default_title;
 	if ( preg_match( '/<title>(.+?)<\/title>/is', $content, $matchtitle ) ) {
-		$post_title = $matchtitle[0];
-		$post_title = preg_replace( '/<title>/si', '', $post_title );
-		$post_title = preg_replace( '/<\/title>/si', '', $post_title );
+		$post_title = $matchtitle[1];
 	} else {
 		$post_title = $post_default_title;
 	}
@@ -968,7 +1050,8 @@ function debug_fclose( $fp ) {
 /**
  * Check content for video and audio links to add as enclosures.
  *
- * Will not add enclosures that have already been added. This is called as
+ * Will not add enclosures that have already been added and will
+ * remove enclosures that are no longer in the post. This is called as
  * pingbacks and trackbacks.
  *
  * @package WordPress
@@ -999,6 +1082,12 @@ function do_enclose( $content, $post_ID ) {
 	debug_fwrite( $log, 'Post contents:' );
 	debug_fwrite( $log, $content . "\n" );
 
+	foreach ( $pung as $link_test ) {
+		if ( !in_array( $link_test, $post_links_temp[0] ) ) { // link no longer in post
+			$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = 'enclosure' AND meta_value LIKE (%s)", $post_ID, $link_test . '%') );
+		}
+	}
+
 	foreach ( (array) $post_links_temp[0] as $link_test ) {
 		if ( !in_array( $link_test, $pung ) ) { // If we haven't pung it already
 			$test = parse_url( $link_test );
@@ -1013,12 +1102,11 @@ function do_enclose( $content, $post_ID ) {
 		if ( $url != '' && !$wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE post_id = %d AND meta_key = 'enclosure' AND meta_value LIKE (%s)", $post_ID, $url . '%' ) ) ) {
 			if ( $headers = wp_get_http_headers( $url) ) {
 				$len = (int) $headers['content-length'];
-				$type = $wpdb->escape( $headers['content-type'] );
+				$type = $headers['content-type'];
 				$allowed_types = array( 'video', 'audio' );
 				if ( in_array( substr( $type, 0, strpos( $type, "/" ) ), $allowed_types ) ) {
 					$meta_value = "$url\n$len\n$type\n";
-					$wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->postmeta` ( `post_id` , `meta_key` , `meta_value` )
-					VALUES ( %d, 'enclosure' , %s)", $post_ID, $meta_value ) );
+					$wpdb->insert($wpdb->postmeta, array('post_id' => $post_ID, 'meta_key' => 'enclosure', 'meta_value' => $meta_value) );
 				}
 			}
 		}
@@ -1305,6 +1393,7 @@ function get_status_header_desc( $code ) {
 		$wp_header_to_desc = array(
 			100 => 'Continue',
 			101 => 'Switching Protocols',
+			102 => 'Processing',
 
 			200 => 'OK',
 			201 => 'Created',
@@ -1313,6 +1402,8 @@ function get_status_header_desc( $code ) {
 			204 => 'No Content',
 			205 => 'Reset Content',
 			206 => 'Partial Content',
+			207 => 'Multi-Status',
+			226 => 'IM Used',
 
 			300 => 'Multiple Choices',
 			301 => 'Moved Permanently',
@@ -1320,10 +1411,12 @@ function get_status_header_desc( $code ) {
 			303 => 'See Other',
 			304 => 'Not Modified',
 			305 => 'Use Proxy',
+			306 => 'Reserved',
 			307 => 'Temporary Redirect',
 
 			400 => 'Bad Request',
 			401 => 'Unauthorized',
+			402 => 'Payment Required',
 			403 => 'Forbidden',
 			404 => 'Not Found',
 			405 => 'Method Not Allowed',
@@ -1339,13 +1432,20 @@ function get_status_header_desc( $code ) {
 			415 => 'Unsupported Media Type',
 			416 => 'Requested Range Not Satisfiable',
 			417 => 'Expectation Failed',
+			422 => 'Unprocessable Entity',
+			423 => 'Locked',
+			424 => 'Failed Dependency',
+			426 => 'Upgrade Required',
 
 			500 => 'Internal Server Error',
 			501 => 'Not Implemented',
 			502 => 'Bad Gateway',
 			503 => 'Service Unavailable',
 			504 => 'Gateway Timeout',
-			505 => 'HTTP Version Not Supported'
+			505 => 'HTTP Version Not Supported',
+			506 => 'Variant Also Negotiates',
+			507 => 'Insufficient Storage',
+			510 => 'Not Extended'
 		);
 	}
 
@@ -1379,10 +1479,32 @@ function status_header( $header ) {
 	if ( function_exists( 'apply_filters' ) )
 		$status_header = apply_filters( 'status_header', $status_header, $header, $text, $protocol );
 
-	if ( version_compare( phpversion(), '4.3.0', '>=' ) )
-		return @header( $status_header, true, $header );
-	else
-		return @header( $status_header );
+	return @header( $status_header, true, $header );
+}
+
+/**
+ * Gets the header information to prevent caching.
+ *
+ * The several different headers cover the different ways cache prevention is handled
+ * by different browsers
+ *
+ * @since 2.8
+ *
+ * @uses apply_filters()
+ * @return array The associative array of header names and field values.
+ */
+function wp_get_nocache_headers() {
+	$headers = array(
+		'Expires' => 'Wed, 11 Jan 1984 05:00:00 GMT',
+		'Last-Modified' => gmdate( 'D, d M Y H:i:s' ) . ' GMT',
+		'Cache-Control' => 'no-cache, must-revalidate, max-age=0',
+		'Pragma' => 'no-cache',
+	);
+
+	if ( function_exists('apply_filters') ) {
+		$headers = apply_filters('nocache_headers', $headers);
+	}
+	return $headers;
 }
 
 /**
@@ -1394,11 +1516,9 @@ function status_header( $header ) {
  * @since 2.0.0
  */
 function nocache_headers() {
-	// why are these @-silenced when other header calls aren't?
-	@header( 'Expires: Wed, 11 Jan 1984 05:00:00 GMT' );
-	@header( 'Last-Modified: ' . gmdate( 'D, d M Y H:i:s' ) . ' GMT' );
-	@header( 'Cache-Control: no-cache, must-revalidate, max-age=0' );
-	@header( 'Pragma: no-cache' );
+	$headers = wp_get_nocache_headers();
+	foreach( (array) $headers as $name => $field_value )
+		@header("{$name}: {$field_value}");
 }
 
 /**
@@ -1462,7 +1582,7 @@ function do_feed() {
 
 	$hook = 'do_feed_' . $feed;
 	if ( !has_action($hook) ) {
-		$message = sprintf( __( 'ERROR: %s is not a valid feed template' ), wp_specialchars($feed));
+		$message = sprintf( __( 'ERROR: %s is not a valid feed template' ), esc_html($feed));
 		wp_die($message);
 	}
 
@@ -1556,7 +1676,7 @@ function is_blog_installed() {
 	global $wpdb;
 
 	// Check cache first. If options table goes away and we have true cached, oh well.
-	if ( wp_cache_get('is_blog_installed') )
+	if ( wp_cache_get( 'is_blog_installed' ) )
 		return true;
 
 	$suppress = $wpdb->suppress_errors();
@@ -1582,7 +1702,7 @@ function is_blog_installed() {
  */
 function wp_nonce_url( $actionurl, $action = -1 ) {
 	$actionurl = str_replace( '&amp;', '&', $actionurl );
-	return wp_specialchars( add_query_arg( '_wpnonce', wp_create_nonce( $action ), $actionurl ) );
+	return esc_html( add_query_arg( '_wpnonce', wp_create_nonce( $action ), $actionurl ) );
 }
 
 /**
@@ -1619,7 +1739,7 @@ function wp_nonce_url( $actionurl, $action = -1 ) {
  * @return string Nonce field.
  */
 function wp_nonce_field( $action = -1, $name = "_wpnonce", $referer = true , $echo = true ) {
-	$name = attribute_escape( $name );
+	$name = esc_attr( $name );
 	$nonce_field = '<input type="hidden" id="' . $name . '" name="' . $name . '" value="' . wp_create_nonce( $action ) . '" />';
 	if ( $echo )
 		echo $nonce_field;
@@ -1644,7 +1764,7 @@ function wp_nonce_field( $action = -1, $name = "_wpnonce", $referer = true , $ec
  * @return string Referer field.
  */
 function wp_referer_field( $echo = true) {
-	$ref = attribute_escape( $_SERVER['REQUEST_URI'] );
+	$ref = esc_attr( $_SERVER['REQUEST_URI'] );
 	$referer_field = '<input type="hidden" name="_wp_http_referer" value="'. $ref . '" />';
 
 	if ( $echo )
@@ -1670,7 +1790,7 @@ function wp_referer_field( $echo = true) {
 function wp_original_referer_field( $echo = true, $jump_back_to = 'current' ) {
 	$jump_back_to = ( 'previous' == $jump_back_to ) ? wp_get_referer() : $_SERVER['REQUEST_URI'];
 	$ref = ( wp_get_original_referer() ) ? wp_get_original_referer() : $jump_back_to;
-	$orig_referer_field = '<input type="hidden" name="_wp_original_http_referer" value="' . attribute_escape( stripslashes( $ref ) ) . '" />';
+	$orig_referer_field = '<input type="hidden" name="_wp_original_http_referer" value="' . esc_attr( stripslashes( $ref ) ) . '" />';
 	if ( $echo )
 		echo $orig_referer_field;
 	return $orig_referer_field;
@@ -1892,7 +2012,9 @@ function wp_upload_dir( $time = null ) {
  * @return string New filename, if given wasn't unique.
  */
 function wp_unique_filename( $dir, $filename, $unique_filename_callback = null ) {
-	$filename = strtolower( $filename );
+	// sanitize the file name before we begin processing
+	$filename = sanitize_file_name($filename);
+
 	// separate the filename into a name and extension
 	$info = pathinfo($filename);
 	$ext = !empty($info['extension']) ? $info['extension'] : '';
@@ -1909,11 +2031,7 @@ function wp_unique_filename( $dir, $filename, $unique_filename_callback = null )
 		$number = '';
 
 		if ( !empty( $ext ) )
-			$ext = strtolower( ".$ext" );
-
-		$filename = str_replace( $ext, '', $filename );
-		// Strip % so the server doesn't try to decode entities.
-		$filename = str_replace('%', '', sanitize_title_with_dashes( $filename ) ) . $ext;
+			$ext = ".$ext";
 
 		while ( file_exists( $dir . "/$filename" ) ) {
 			if ( '' == "$number$ext" )
@@ -2008,7 +2126,7 @@ function wp_upload_bits( $name, $deprecated, $bits, $time = null ) {
 function wp_ext2type( $ext ) {
 	$ext2type = apply_filters('ext2type', array(
 		'audio' => array('aac','ac3','aif','aiff','mp1','mp2','mp3','m3a','m4a','m4b','ogg','ram','wav','wma'),
-		'video' => array('asf','avi','divx','dv','mov','mpg','mpeg','mp4','mpv','ogm','qt','rm','vob','wmv'),
+		'video' => array('asf','avi','divx','dv','mov','mpg','mpeg','mp4','mpv','ogm','qt','rm','vob','wmv', 'm4v'),
 		'document' => array('doc','docx','pages','odt','rtf','pdf'),
 		'spreadsheet' => array('xls','xlsx','numbers','ods'),
 		'interactive' => array('ppt','pptx','key','odp','swf'),
@@ -2045,12 +2163,13 @@ function wp_check_filetype( $filename, $mimes = null ) {
 		'avi' => 'video/avi',
 		'divx' => 'video/divx',
 		'mov|qt' => 'video/quicktime',
-		'mpeg|mpg|mpe|mp4' => 'video/mpeg',
+		'mpeg|mpg|mpe' => 'video/mpeg',
 		'txt|c|cc|h' => 'text/plain',
 		'rtx' => 'text/richtext',
 		'css' => 'text/css',
 		'htm|html' => 'text/html',
 		'mp3|m4a' => 'audio/mpeg',
+		'mp4|m4v' => 'video/mp4',
 		'ra|ram' => 'audio/x-realaudio',
 		'wav' => 'audio/wav',
 		'ogg' => 'audio/ogg',
@@ -2126,65 +2245,73 @@ function wp_explain_nonce( $action ) {
 		$noun = $matches[2];
 
 		$trans = array();
-		$trans['update']['attachment'] = array( __( 'Your attempt to edit this attachment: &quot;%s&quot; has failed.' ), 'get_the_title' );
+		$trans['update']['attachment'] = array( __( 'Your attempt to edit this attachment: &#8220;%s&#8221; has failed.' ), 'get_the_title' );
 
 		$trans['add']['category']      = array( __( 'Your attempt to add this category has failed.' ), false );
-		$trans['delete']['category']   = array( __( 'Your attempt to delete this category: &quot;%s&quot; has failed.' ), 'get_catname' );
-		$trans['update']['category']   = array( __( 'Your attempt to edit this category: &quot;%s&quot; has failed.' ), 'get_catname' );
+		$trans['delete']['category']   = array( __( 'Your attempt to delete this category: &#8220;%s&#8221; has failed.' ), 'get_cat_name' );
+		$trans['update']['category']   = array( __( 'Your attempt to edit this category: &#8220;%s&#8221; has failed.' ), 'get_cat_name' );
 
-		$trans['delete']['comment']    = array( __( 'Your attempt to delete this comment: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['unapprove']['comment'] = array( __( 'Your attempt to unapprove this comment: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['approve']['comment']   = array( __( 'Your attempt to approve this comment: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['update']['comment']    = array( __( 'Your attempt to edit this comment: &quot;%s&quot; has failed.' ), 'use_id' );
+		$trans['delete']['comment']    = array( __( 'Your attempt to delete this comment: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['unapprove']['comment'] = array( __( 'Your attempt to unapprove this comment: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['approve']['comment']   = array( __( 'Your attempt to approve this comment: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['update']['comment']    = array( __( 'Your attempt to edit this comment: &#8220;%s&#8221; has failed.' ), 'use_id' );
 		$trans['bulk']['comments']     = array( __( 'Your attempt to bulk modify comments has failed.' ), false );
 		$trans['moderate']['comments'] = array( __( 'Your attempt to moderate comments has failed.' ), false );
 
 		$trans['add']['bookmark']      = array( __( 'Your attempt to add this link has failed.' ), false );
-		$trans['delete']['bookmark']   = array( __( 'Your attempt to delete this link: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['update']['bookmark']   = array( __( 'Your attempt to edit this link: &quot;%s&quot; has failed.' ), 'use_id' );
+		$trans['delete']['bookmark']   = array( __( 'Your attempt to delete this link: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['update']['bookmark']   = array( __( 'Your attempt to edit this link: &#8220;%s&#8221; has failed.' ), 'use_id' );
 		$trans['bulk']['bookmarks']    = array( __( 'Your attempt to bulk modify links has failed.' ), false );
 
 		$trans['add']['page']          = array( __( 'Your attempt to add this page has failed.' ), false );
-		$trans['delete']['page']       = array( __( 'Your attempt to delete this page: &quot;%s&quot; has failed.' ), 'get_the_title' );
-		$trans['update']['page']       = array( __( 'Your attempt to edit this page: &quot;%s&quot; has failed.' ), 'get_the_title' );
+		$trans['delete']['page']       = array( __( 'Your attempt to delete this page: &#8220;%s&#8221; has failed.' ), 'get_the_title' );
+		$trans['update']['page']       = array( __( 'Your attempt to edit this page: &#8220;%s&#8221; has failed.' ), 'get_the_title' );
 
-		$trans['edit']['plugin']       = array( __( 'Your attempt to edit this plugin file: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['activate']['plugin']   = array( __( 'Your attempt to activate this plugin: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['deactivate']['plugin'] = array( __( 'Your attempt to deactivate this plugin: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['upgrade']['plugin']    = array( __( 'Your attempt to upgrade this plugin: &quot;%s&quot; has failed.' ), 'use_id' );
+		$trans['edit']['plugin']       = array( __( 'Your attempt to edit this plugin file: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['activate']['plugin']   = array( __( 'Your attempt to activate this plugin: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['deactivate']['plugin'] = array( __( 'Your attempt to deactivate this plugin: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['upgrade']['plugin']    = array( __( 'Your attempt to upgrade this plugin: &#8220;%s&#8221; has failed.' ), 'use_id' );
 
 		$trans['add']['post']          = array( __( 'Your attempt to add this post has failed.' ), false );
-		$trans['delete']['post']       = array( __( 'Your attempt to delete this post: &quot;%s&quot; has failed.' ), 'get_the_title' );
-		$trans['update']['post']       = array( __( 'Your attempt to edit this post: &quot;%s&quot; has failed.' ), 'get_the_title' );
+		$trans['delete']['post']       = array( __( 'Your attempt to delete this post: &#8220;%s&#8221; has failed.' ), 'get_the_title' );
+		$trans['update']['post']       = array( __( 'Your attempt to edit this post: &#8220;%s&#8221; has failed.' ), 'get_the_title' );
 
 		$trans['add']['user']          = array( __( 'Your attempt to add this user has failed.' ), false );
 		$trans['delete']['users']      = array( __( 'Your attempt to delete users has failed.' ), false );
 		$trans['bulk']['users']        = array( __( 'Your attempt to bulk modify users has failed.' ), false );
-		$trans['update']['user']       = array( __( 'Your attempt to edit this user: &quot;%s&quot; has failed.' ), 'get_author_name' );
-		$trans['update']['profile']    = array( __( 'Your attempt to modify the profile for: &quot;%s&quot; has failed.' ), 'get_author_name' );
+		$trans['update']['user']       = array( __( 'Your attempt to edit this user: &#8220;%s&#8221; has failed.' ), 'get_the_author_meta', 'display_name' );
+		$trans['update']['profile']    = array( __( 'Your attempt to modify the profile for: &#8220;%s&#8221; has failed.' ), 'get_the_author_meta', 'display_name' );
 
 		$trans['update']['options']    = array( __( 'Your attempt to edit your settings has failed.' ), false );
 		$trans['update']['permalink']  = array( __( 'Your attempt to change your permalink structure to: %s has failed.' ), 'use_id' );
-		$trans['edit']['file']         = array( __( 'Your attempt to edit this file: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['edit']['theme']        = array( __( 'Your attempt to edit this theme file: &quot;%s&quot; has failed.' ), 'use_id' );
-		$trans['switch']['theme']      = array( __( 'Your attempt to switch to this theme: &quot;%s&quot; has failed.' ), 'use_id' );
+		$trans['edit']['file']         = array( __( 'Your attempt to edit this file: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['edit']['theme']        = array( __( 'Your attempt to edit this theme file: &#8220;%s&#8221; has failed.' ), 'use_id' );
+		$trans['switch']['theme']      = array( __( 'Your attempt to switch to this theme: &#8220;%s&#8221; has failed.' ), 'use_id' );
 
 		$trans['log']['out']           = array( sprintf( __( 'You are attempting to log out of %s' ), get_bloginfo( 'sitename' ) ), false );
 
 		if ( isset( $trans[$verb][$noun] ) ) {
 			if ( !empty( $trans[$verb][$noun][1] ) ) {
 				$lookup = $trans[$verb][$noun][1];
+				if ( isset($trans[$verb][$noun][2]) )
+					$lookup_value = $trans[$verb][$noun][2];
 				$object = $matches[4];
-				if ( 'use_id' != $lookup )
-					$object = call_user_func( $lookup, $object );
-				return sprintf( $trans[$verb][$noun][0], wp_specialchars($object) );
+				if ( 'use_id' != $lookup ) {
+					if ( isset( $lookup_value ) )
+						$object = call_user_func( $lookup, $lookup_value, $object );
+					else
+						$object = call_user_func( $lookup, $object );
+				}
+				return sprintf( $trans[$verb][$noun][0], esc_html($object) );
 			} else {
 				return $trans[$verb][$noun][0];
 			}
 		}
-	}
 
-	return apply_filters( 'explain_nonce_' . $verb . '-' . $noun, __( 'Are you sure you want to do this?' ), $matches[4] );
+		return apply_filters( 'explain_nonce_' . $verb . '-' . $noun, __( 'Are you sure you want to do this?' ), $matches[4] );
+	} else {
+		return apply_filters( 'explain_nonce_' . $action, __( 'Are you sure you want to do this?' ) );
+	}
 }
 
 /**
@@ -2201,11 +2328,11 @@ function wp_explain_nonce( $action ) {
  */
 function wp_nonce_ays( $action ) {
 	$title = __( 'WordPress Failure Notice' );
-	$html = wp_specialchars( wp_explain_nonce( $action ) );
+	$html = esc_html( wp_explain_nonce( $action ) );
 	if ( wp_get_referer() )
-		$html .= "</p><p><a href='" . remove_query_arg( 'updated', clean_url( wp_get_referer() ) ) . "'>" . __( 'Please try again.' ) . "</a>";
+		$html .= "</p><p><a href='" . esc_url( remove_query_arg( 'updated', wp_get_referer() ) ) . "'>" . __( 'Please try again.' ) . "</a>";
 	elseif ( 'log-out' == $action )
-		$html .= "</p><p>" . sprintf( __( "Do you really want to <a href='%s'>log out</a>?"), wp_nonce_url( site_url('wp-login.php?action=logout', 'login'), 'log-out' ) );
+		$html .= "</p><p>" . sprintf( __( "Do you really want to <a href='%s'>log out</a>?"), wp_logout_url() );
 
 	wp_die( $html, $title);
 }
@@ -2230,6 +2357,8 @@ function wp_die( $message, $title = '', $args = array() ) {
 
 	$defaults = array( 'response' => 500 );
 	$r = wp_parse_args($args, $defaults);
+	
+	$have_gettext = function_exists('__');
 
 	if ( function_exists( 'is_wp_error' ) && is_wp_error( $message ) ) {
 		if ( empty( $title ) ) {
@@ -2252,7 +2381,12 @@ function wp_die( $message, $title = '', $args = array() ) {
 	} elseif ( is_string( $message ) ) {
 		$message = "<p>$message</p>";
 	}
-
+	
+	if ( isset( $r['back_link'] ) && $r['back_link'] ) {
+		$back_text = $have_gettext? __('&laquo; Back') : '&laquo; Back';
+		$message .= "\n<p><a href='javascript:history.back()'>$back_text</p>";
+	}
+	
 	if ( defined( 'WP_SITEURL' ) && '' != WP_SITEURL )
 		$admin_dir = WP_SITEURL . '/wp-admin/';
 	elseif ( function_exists( 'get_bloginfo' ) && '' != get_bloginfo( 'wpurl' ) )
@@ -2268,12 +2402,9 @@ function wp_die( $message, $title = '', $args = array() ) {
 		nocache_headers();
 		header( 'Content-Type: text/html; charset=utf-8' );
 	}
-
+	
 	if ( empty($title) ) {
-		if ( function_exists( '__' ) )
-			$title = __( 'WordPress &rsaquo; Error' );
-		else
-			$title = 'WordPress &rsaquo; Error';
+		$title = $have_gettext? __('WordPress &rsaquo; Error') : 'WordPress &rsaquo; Error';
 	}
 
 ?>
@@ -2291,8 +2422,8 @@ if ( ( $wp_locale ) && ( 'rtl' == $wp_locale->text_direction ) ) : ?>
 <body id="error-page">
 <?php endif; ?>
 	<?php echo $message; ?>
-	<?php if ( strlen($message) < 512) echo str_repeat(' ', 512-strlen($message)); ?>
 </body>
+<!-- Ticket #8942, IE bug fix: always pad the error page with enough characters such that it is greater than 512 bytes, even after gzip compression abcdefghijklmnopqrstuvwxyz1234567890aabbccddeeffgghhiijjkkllmmnnooppqqrrssttuuvvwwxxyyzz11223344556677889900abacbcbdcdcededfefegfgfhghgihihjijikjkjlklkmlmlnmnmononpopoqpqprqrqsrsrtstsubcbcdcdedefefgfabcadefbghicjkldmnoepqrfstugvwxhyz1i234j567k890laabmbccnddeoeffpgghqhiirjjksklltmmnunoovppqwqrrxsstytuuzvvw0wxx1yyz2z113223434455666777889890091abc2def3ghi4jkl5mno6pqr7stu8vwx9yz11aab2bcc3dd4ee5ff6gg7hh8ii9j0jk1kl2lmm3nnoo4p5pq6qrr7ss8tt9uuvv0wwx1x2yyzz13aba4cbcb5dcdc6dedfef8egf9gfh0ghg1ihi2hji3jik4jkj5lkl6kml7mln8mnm9ono -->
 </html>
 <?php
 	die();
@@ -2367,6 +2498,7 @@ function _mce_set_direction( $input ) {
 	return $input;
 }
 
+
 /**
  * Convert smiley code to the icon graphic file equivalent.
  *
@@ -2377,25 +2509,19 @@ function _mce_set_direction( $input ) {
  * to an array, with the key the code the blogger types in and the value the
  * image file.
  *
- * The $wp_smiliessearch global is for the regular expression array and is
- * set each time the function is called. The $wp_smiliesreplace is the full
- * replacement. Supposely, the $wp_smiliessearch array is looped over using
- * preg_replace() or just setting the array of $wp_smiliessearch along with the
- * array of $wp_smiliesreplace in the search and replace parameters of
- * preg_replace(), which would be faster and less overhead. Either way, both are
- * used with preg_replace() and can be defined after the function is called.
+ * The $wp_smiliessearch global is for the regular expression and is set each
+ * time the function is called.
  *
  * The full list of smilies can be found in the function and won't be listed in
  * the description. Probably should create a Codex page for it, so that it is
  * available.
  *
  * @global array $wpsmiliestrans
- * @global array $wp_smiliesreplace
  * @global array $wp_smiliessearch
  * @since 2.2.0
  */
 function smilies_init() {
-	global $wpsmiliestrans, $wp_smiliessearch, $wp_smiliesreplace;
+	global $wpsmiliestrans, $wp_smiliessearch;
 
 	// don't bother setting up smilies if they are disabled
 	if ( !get_option( 'use_smilies' ) )
@@ -2450,12 +2576,38 @@ function smilies_init() {
 		);
 	}
 
-	$siteurl = get_option( 'siteurl' );
-	foreach ( (array) $wpsmiliestrans as $smiley => $img ) {
-		$wp_smiliessearch[] = '/(\s|^)' . preg_quote( $smiley, '/' ) . '(\s|$)/';
-		$smiley_masked = attribute_escape( trim( $smiley ) );
-		$wp_smiliesreplace[] = " <img src='$siteurl/wp-includes/images/smilies/$img' alt='$smiley_masked' class='wp-smiley' /> ";
+	if (count($wpsmiliestrans) == 0) {
+		return;
 	}
+
+	/*
+	 * NOTE: we sort the smilies in reverse key order. This is to make sure
+	 * we match the longest possible smilie (:???: vs :?) as the regular
+	 * expression used below is first-match
+	 */
+	krsort($wpsmiliestrans);
+
+	$wp_smiliessearch = '/(?:\s|^)';
+
+	$subchar = '';
+	foreach ( (array) $wpsmiliestrans as $smiley => $img ) {
+		$firstchar = substr($smiley, 0, 1);
+		$rest = substr($smiley, 1);
+
+		// new subpattern?
+		if ($firstchar != $subchar) {
+			if ($subchar != '') {
+				$wp_smiliessearch .= ')|(?:\s|^)';
+			}
+			$subchar = $firstchar;
+			$wp_smiliessearch .= preg_quote($firstchar, '/') . '(?:';
+		} else {
+			$wp_smiliessearch .= '|';
+		}
+		$wp_smiliessearch .= preg_quote($rest);
+	}
+
+	$wp_smiliessearch .= ')(?:\s|$)/m';
 }
 
 /**
@@ -2493,10 +2645,10 @@ function wp_parse_args( $args, $defaults = '' ) {
  * @uses add_action() Calls '_admin_menu' hook with 'wp_widgets_add_menu' value.
  */
 function wp_maybe_load_widgets() {
-	if ( !function_exists( 'dynamic_sidebar' ) ) {
-		require_once( ABSPATH . WPINC . '/widgets.php' );
-		add_action( '_admin_menu', 'wp_widgets_add_menu' );
-	}
+	if ( ! apply_filters('load_default_widgets', true) )
+		return;
+	require_once( ABSPATH . WPINC . '/default-widgets.php' );
+	add_action( '_admin_menu', 'wp_widgets_add_menu' );
 }
 
 /**
@@ -2519,7 +2671,9 @@ function wp_widgets_add_menu() {
  * @since 2.2.0
  */
 function wp_ob_end_flush_all() {
-	while ( @ob_end_flush() );
+	$levels = ob_get_level(); 
+	for ($i=0; $i<$levels; $i++) 
+		ob_end_flush(); 
 }
 
 /**
@@ -2591,12 +2745,12 @@ function dead_db() {
 }
 
 /**
- * Converts value to positive integer.
+ * Converts value to nonnegative integer.
  *
  * @since 2.5.0
  *
- * @param mixed $maybeint Data you wish to have convered to an absolute integer
- * @return int An absolute integer
+ * @param mixed $maybeint Data you wish to have convered to an nonnegative integer
+ * @return int An nonnegative integer
  */
 function absint( $maybeint ) {
 	return abs( intval( $maybeint ) );
@@ -2622,6 +2776,7 @@ function url_is_accessable_via_ssl($url)
 		curl_setopt($ch, CURLOPT_FAILONERROR, true);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
 		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
 
 		curl_exec($ch);
 
@@ -2897,22 +3052,141 @@ function wp_suspend_cache_invalidation($suspend = true) {
 }
 
 /**
- * Copy an object.
+ * gmt_offset modification for smart timezone handling
  *
- * Returns a cloned copy of an object.
- *
- * @since 2.7.0
- *
- * @param object $object The object to clone
- * @return object The cloned object
+ * Overrides the gmt_offset option if we have a timezone_string available
  */
-function wp_clone( $object ) {
-	static $can_clone;
-	if ( !isset( $can_clone ) ) {
-		$can_clone = version_compare( phpversion(), '5.0', '>=' );
+function wp_timezone_override_offset() {
+	if (!wp_timezone_supported()) return false;
+
+	$tz = get_option('timezone_string');
+	if (empty($tz)) return false;
+
+	@date_default_timezone_set($tz);
+
+	$dateTimeZoneSelected = timezone_open($tz);
+	$dateTimeServer = date_create();
+	if ($dateTimeZoneSelected === false || $dateTimeServer === false) return false;
+
+	$timeOffset = timezone_offset_get($dateTimeZoneSelected, $dateTimeServer);
+	$timeOffset = $timeOffset / 3600;
+
+	return $timeOffset;
+}
+
+/**
+ * Check for PHP timezone support
+ *
+ */
+function wp_timezone_supported() {
+	if (function_exists('date_default_timezone_set')
+		&& function_exists('timezone_identifiers_list')
+		&& function_exists('timezone_open')
+		&& function_exists('timezone_offset_get')
+		)
+		return apply_filters('timezone_support',true);
+
+	return apply_filters('timezone_support',false);
+}
+
+/**
+ * Gives a nicely formatted list of timezone strings // temporary! Not in final
+ *
+ * @param string $selectedzone - which zone should be the selected one
+ *
+ */
+function wp_timezone_choice($selectedzone) {
+	static $mo_loaded = false;
+
+	$continents = array('Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific', 'Etc');
+
+	// Load translations for continents and cities
+	if ( ! $mo_loaded ) {
+		$locale = get_locale();
+		$mofile = WP_LANG_DIR . "/continents-cities-$locale.mo";
+		load_textdomain('continents-cities', $mofile);
+		$mo_loaded = true;
 	}
-	return $can_clone ? clone( $object ) : $object;
+
+	$all = timezone_identifiers_list();
+
+	$i = 0;
+	foreach ( $all as $zone ) {
+		$zone = explode('/',$zone);
+		if ( ! in_array($zone[0], $continents) )
+			continue;
+		$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
+		$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
+		$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
+		$i++;
+	}
+
+	usort($zonen, create_function(
+		'$a, $b', '
+		$a_continent = translate($a["continent"], "continents-cities");
+		$b_continent = translate($b["continent"], "continents-cities");
+		$a_city = translate($a["city"], "continents-cities");
+		$b_city = translate($b["city"], "continents-cities");
+		$a_subcity = translate($a["subcity"], "continents-cities");
+		$b_subcity = translate($b["subcity"], "continents-cities");
+		if ( $a_continent == $b_continent && $a_city == $b_city )
+			return strnatcasecmp($a_subcity, $b_subcity);
+		elseif ( $a_continent == $b_continent )
+			return strnatcasecmp($a_city, $b_city);
+		else
+			return strnatcasecmp($a_continent, $b_continent);
+		'));
+	
+	$structure = '';
+	$pad = '&nbsp;&nbsp;&nbsp;';
+
+	if ( empty($selectedzone) )
+		$structure .= '<option selected="selected" value="">' . __('Select a city') . "</option>\n";
+	foreach ( $zonen as $zone ) {
+		extract($zone);
+		if ( empty($selectcontinent) && !empty($city) ) {
+			$selectcontinent = $continent;
+			$structure .= '<optgroup label="'. esc_attr( translate( $continent, "continents-cities" ) ) .'">' . "\n"; // continent
+		} elseif ( !empty($selectcontinent) && $selectcontinent != $continent ) {
+			$structure .= "</optgroup>\n";
+			$selectcontinent = '';
+			if ( !empty($city) ) {
+				$selectcontinent = $continent;
+				$structure .= '<optgroup label="'. esc_attr( translate( $continent ) ) .'">' . "\n"; // continent
+			}
+		}
+
+		if ( !empty($city) ) {
+			$display = str_replace('_',' ',$city);
+			$display = translate($display, "continents-cities");
+			if ( !empty($subcity) ) {
+				$display_subcity = str_replace('_', ' ', $subcity);
+				$display_subcity = translate($display_subcity, "continents-cities");
+				$city = $city . '/'. $subcity;
+				$display = $display . '/' . $display_subcity;
+			}
+			if ( $continent == 'Etc' )
+				$display = strtr($display, '+-', '-+');
+			$structure .= "\t<option ".((($continent.'/'.$city)==$selectedzone)?'selected="selected"':'')." value=\"".($continent.'/'.$city)."\">$pad".$display."</option>\n"; //Timezone
+		} else {
+			$structure .= "<option ".(($continent==$selectedzone)?'selected="selected"':'')." value=\"".$continent."\">" . translate($continent, "continents-cities") . "</option>\n"; //Timezone
+		}
+	}
+
+	if ( !empty($selectcontinent) )
+		$structure .= "</optgroup>\n";
+	return $structure;
 }
 
 
+
+/**
+ * Strip close comment and close php tags from file headers used by WP
+ * See http://core.trac.wordpress.org/ticket/8497
+ *
+ * @since 2.8
+**/
+function _cleanup_header_comment($str) {
+	return trim(preg_replace("/\s*(?:\*\/|\?>).*/", '', $str));
+}
 ?>

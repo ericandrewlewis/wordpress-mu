@@ -6,6 +6,7 @@
  */
 
 if ( !isset($wp_did_header) ) {
+	// WPMU Runs installer if things aren't set up correctly
 	if ( !file_exists( dirname(__FILE__) . '/wp-config.php') && !file_exists( dirname( dirname(__FILE__) ) . '/wp-config.php')) {
 		if (strpos($_SERVER['PHP_SELF'], 'wp-admin') !== false) $path = '';
 		else $path = 'wp-admin/';

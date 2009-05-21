@@ -178,6 +178,9 @@ define('EP_ALL', 8191);
  * The endpoints are added to the end of the request. So a request matching
  * "/2008/10/14/my_post/myep/", the endpoint will be "/myep/".
  *
+ * Be sure to flush the rewrite rules (wp_rewrite->flush()) when your plugin gets
+ * activated (register_activation_hook()) and deactivated (register_deactivation_hook())
+ *
  * @since 2.1.0
  * @see WP_Rewrite::add_endpoint() Parameters and more description.
  * @uses $wp_rewrite
@@ -1596,11 +1599,11 @@ class WP_Rewrite {
 	 * @return array Rewrite rules.
 	 */
 	function wp_rewrite_rules() {
-		$this->rules = get_option('rewrite_rules');
+		$this->rules = get_transient('rewrite_rules');
 		if ( empty($this->rules) ) {
 			$this->matches = 'matches';
 			$this->rewrite_rules();
-			update_option('rewrite_rules', $this->rules);
+			set_transient('rewrite_rules', $this->rules);
 		}
 
 		return $this->rules;
@@ -1690,6 +1693,36 @@ class WP_Rewrite {
 		$rules = apply_filters('mod_rewrite_rules', $rules);
 		$rules = apply_filters('rewrite_rules', $rules);  // Deprecated
 
+		return $rules;
+	}
+	
+	/**
+	 * Retrieve IIS7 URL Rewrite formatted rewrite rules to write to web.config file.
+	 *
+	 * Does not actually write to the web.config file, but creates the rules for
+	 * the process that will.
+	 *
+	 * @since 2.8.0 
+	 * @access public
+	 *
+	 * @return string
+	 */
+	function iis7_url_rewrite_rules(){
+		
+		if ( ! $this->using_permalinks()) {
+			return '';
+		}
+		$rules  = "<rule name=\"wordpress\" patternSyntax=\"Wildcard\">\n";
+		$rules .= "	<match url=\"*\" />\n";
+		$rules .= "	<conditions>\n";
+		$rules .= "		<add input=\"{REQUEST_FILENAME}\" matchType=\"IsFile\" negate=\"true\" />\n";
+		$rules .= "		<add input=\"{REQUEST_FILENAME}\" matchType=\"IsDirectory\" negate=\"true\" />\n";
+		$rules .= "	</conditions>\n";
+		$rules .= "	<action type=\"Rewrite\" url=\"index.php\" />\n";
+		$rules .= "</rule>";
+				
+		$rules = apply_filters('iis7_url_rewrite_rules', $rules);
+		
 		return $rules;
 	}
 
@@ -1783,17 +1816,19 @@ class WP_Rewrite {
 	 * @access public
 	 */
 	function flush_rules() {
-		delete_option('rewrite_rules');
+		delete_transient('rewrite_rules');
 		$this->wp_rewrite_rules();
 		if ( function_exists('save_mod_rewrite_rules') )
 			save_mod_rewrite_rules();
+		if ( function_exists('iis7_save_url_rewrite_rules') )
+			iis7_save_url_rewrite_rules();
 	}
 
 	/**
 	 * Sets up the object's properties.
 	 *
-	 * The 'use_verbose_page_rules' object property will be turned on, if the
-	 * permalink structure includes the following: '%postname%', '%category%',
+	 * The 'use_verbose_page_rules' object property will be set to true if the
+	 * permalink structure begins with one of the following: '%postname%', '%category%',
 	 * '%tag%', or '%author%'.
 	 *
 	 * @since 1.5.0
@@ -1819,13 +1854,7 @@ class WP_Rewrite {
 		$this->use_trailing_slashes = ( substr($this->permalink_structure, -1, 1) == '/' ) ? true : false;
 
 		// Enable generic rules for pages if permalink structure doesn't begin with a wildcard.
-		$structure = ltrim($this->permalink_structure, '/');
-		if ( $this->using_index_permalinks() )
-			$structure = ltrim($this->permalink_structure, $this->index . '/');
-		if ( 0 === strpos($structure, '%postname%') ||
-			 0 === strpos($structure, '%category%') ||
-			 0 === strpos($structure, '%tag%') ||
-			 0 === strpos($structure, '%author%') )
+		if ( preg_match("/^[^%]*%(?:postname|category|tag|author)%/", $this->permalink_structure) )
 			 $this->use_verbose_page_rules = true;
 		else
 			$this->use_verbose_page_rules = false;
@@ -1837,6 +1866,9 @@ class WP_Rewrite {
 	 * Will update the 'permalink_structure' option, if there is a difference
 	 * between the current permalink structure and the parameter value. Calls
 	 * {@link WP_Rewrite::init()} after the option is updated.
+	 * 
+	 * Fires the 'permalink_structure_changed' action once the init call has
+	 * processed passing the old and new values
 	 *
 	 * @since 1.5.0
 	 * @access public
@@ -1847,6 +1879,7 @@ class WP_Rewrite {
 		if ($permalink_structure != $this->permalink_structure) {
 			update_option('permalink_structure', $permalink_structure);
 			$this->init();
+			do_action('permalink_structure_changed', $this->permalink_structure, $permalink_structure);
 		}
 	}
 

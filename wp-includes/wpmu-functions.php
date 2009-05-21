@@ -2176,4 +2176,32 @@ function fix_active_plugins( $value ) {
 	return $value;
 }
 add_filter( "option_active_plugins", "fix_active_plugins" );
+
+if ( !function_exists('rss_gc') ) :
+function rss_gc() {
+	global $wpdb;
+	// Garbage Collection
+	$rows = $wpdb->get_results( "SELECT meta_key FROM {$wpdb->sitemeta} WHERE meta_key LIKE 'rss\_%\_ts' AND meta_value < unix_timestamp( date_sub( NOW(), interval 7200 second ) )" );
+	if( is_array( $rows ) ) {
+		foreach( $rows as $row ) {
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s", $row->meta_key ) );
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s", str_replace( '_ts', '', $row->meta_key ) ) );
+		}
+	}
+}
+endif;
+add_action( 'wp_rss_gc', 'rss_gc' );
+
+function retrieve_password_sitename( $title ) {
+	global $current_site;
+	return sprintf( __( '[%s] Password Reset' ), $current_site->site_name );
+}
+add_filter( 'retrieve_password_title', 'retrieve_password_sitename' );
+
+function reset_password_sitename( $title ) {
+	global $current_site;
+	return sprintf( __( '[%s] Your new password' ), $current_site->site_name );
+}
+add_filter( 'password_reset_title', 'reset_password_sitename' );
+
 ?>

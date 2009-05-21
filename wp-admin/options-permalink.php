@@ -70,6 +70,7 @@ add_filter('admin_head', 'add_js');
 include('admin-header.php');
 
 $home_path = get_home_path();
+$iis7_permalinks = iis7_supports_permalinks();
 
 if ( isset($_POST['permalink_structure']) || isset($_POST['category_base']) ) {
 	check_admin_referer('update-permalink');
@@ -109,12 +110,19 @@ $permalink_structure = get_option('permalink_structure');
 $category_base = get_option('category_base');
 $tag_base = get_option( 'tag_base' );
 
-if ( (!file_exists($home_path.'.htaccess') && is_writable($home_path)) || is_writable($home_path.'.htaccess') )
-	$writable = true;
-else
-	$writable = false;
+if ( $iis7_permalinks ) {
+	if ( ( ! file_exists($home_path . 'web.config') && win_is_writable($home_path) ) || win_is_writable($home_path . 'web.config') )
+		$writable = true;
+	else
+		$writable = false;
+} else {
+	if ( ( ! file_exists($home_path . '.htaccess') && is_writable($home_path) ) || is_writable($home_path . '.htaccess') )
+		$writable = true;
+	else
+		$writable = false;
+}
 
-if ($wp_rewrite->using_index_permalinks())
+if ( $wp_rewrite->using_index_permalinks() )
 	$usingpi = true;
 else
 	$usingpi = false;
@@ -124,16 +132,26 @@ $wp_rewrite->flush_rules();
 
 <?php if (isset($_POST['submit'])) : ?>
 <div id="message" class="updated fade"><p><?php
-if ( $permalink_structure && !$usingpi && !$writable )
-	_e('You should update your .htaccess now.');
-else
-	_e('Permalink structure updated.');
-?></p></div>
+if ( $iis7_permalinks ) {
+	if ( $permalink_structure && ! $usingpi && ! $writable )
+		_e('You should update your web.config now');
+	else if ( $permalink_structure && ! $usingpi && $writable)
+		_e('Permalink structure updated. Remove write access on web.config file now!');
+	else
+		_e('Permalink structure updated');
+} else {
+	if ( $permalink_structure && ! $usingpi && ! $writable )
+		_e('You should update your .htaccess now.');
+	else
+		_e('Permalink structure updated.');
+}
+?>
+</p></div>
 <?php endif; ?>
 
 <div class="wrap">
 <?php screen_icon(); ?>
-<h2><?php echo wp_specialchars( $title ); ?></h2>
+<h2><?php echo esc_html( $title ); ?></h2>
 
 <form name="form" action="options-permalink.php" method="post">
 <?php wp_nonce_field('update-permalink') ?>
@@ -143,7 +161,7 @@ else
 <?php
 $prefix = '';
 
-if ( ! got_mod_rewrite() )
+if ( ! got_mod_rewrite() && ! $iis7_permalinks )
 	$prefix = '/index.php';
 
 $structures = array(
@@ -160,15 +178,15 @@ $structures = array(
 		<td><code><?php echo get_option('home'); ?>/?p=123</code></td>
 	</tr>
 	<tr>
-		<th><label><input name="selection" type="radio" value="<?php echo $structures[1]; ?>" class="tog" <?php checked($structures[1], $permalink_structure); ?> /> <?php _e('Day and name'); ?></label></th>
+		<th><label><input name="selection" type="radio" value="<?php echo esc_attr($structures[1]); ?>" class="tog" <?php checked($structures[1], $permalink_structure); ?> /> <?php _e('Day and name'); ?></label></th>
 		<td><code><?php echo get_option('home') . $prefix . '/' . date('Y') . '/' . date('m') . '/' . date('d') . '/sample-post/'; ?></code></td>
 	</tr>
 	<tr>
-		<th><label><input name="selection" type="radio" value="<?php echo $structures[2]; ?>" class="tog" <?php checked($structures[2], $permalink_structure); ?> /> <?php _e('Month and name'); ?></label></th>
+		<th><label><input name="selection" type="radio" value="<?php echo esc_attr($structures[2]); ?>" class="tog" <?php checked($structures[2], $permalink_structure); ?> /> <?php _e('Month and name'); ?></label></th>
 		<td><code><?php echo get_option('home') . $prefix . '/' . date('Y') . '/' . date('m') . '/sample-post/'; ?></code></td>
 	</tr>
 	<tr>
-		<th><label><input name="selection" type="radio" value="<?php echo $structures[3]; ?>" class="tog" <?php checked($structures[3], $permalink_structure); ?> /> <?php _e('Numeric'); ?></label></th>
+		<th><label><input name="selection" type="radio" value="<?php echo esc_attr($structures[3]); ?>" class="tog" <?php checked($structures[3], $permalink_structure); ?> /> <?php _e('Numeric'); ?></label></th>
 		<td><code><?php echo get_option('home') . $prefix  ; ?>/archives/123</code></td>
 	</tr>
 	<tr>
@@ -183,13 +201,13 @@ $structures = array(
 		</th>
 		<td>
 			<?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $permalink_structure = str_replace( "/blog", "", $permalink_structure ); }?>
-			<input name="permalink_structure" id="permalink_structure" type="text" value="<?php echo attribute_escape($permalink_structure); ?>" class="regular-text code" />
+			<input name="permalink_structure" id="permalink_structure" type="text" value="<?php echo esc_attr($permalink_structure); ?>" class="regular-text code" />
 		</td>
 	</tr>
 </table>
 
 <h3><?php _e('Optional'); ?></h3>
-<?php if ($is_apache) : ?>
+<?php if ( $is_apache || $iis7_permalinks ) : ?>
 	<p><?php _e('If you like, you may enter custom structures for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <kbd>topics</kbd> as your category base would make your category links like <code>http://example.org/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
 <?php else : ?>
 	<p><?php _e('If you like, you may enter custom structures for your category and tag <abbr title="Universal Resource Locator">URL</abbr>s here. For example, using <code>topics</code> as your category base would make your category links like <code>http://example.org/index.php/topics/uncategorized/</code>. If you leave these blank the defaults will be used.') ?></p>
@@ -198,11 +216,11 @@ $structures = array(
 <table class="form-table">
 	<tr>
 		<th><label for="category_base"><?php _e('Category base'); ?></label></th>
-		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?> <input name="category_base" id="category_base" type="text" value="<?php echo attribute_escape( $category_base ); ?>" class="regular-text code" /></td>
+		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $category_base = str_replace( "/blog", "", $category_base ); }?> <input name="category_base" id="category_base" type="text" value="<?php echo esc_attr( $category_base ); ?>" class="regular-text code" /></td>
 	</tr>
 	<tr>
 		<th><label for="tag_base"><?php _e('Tag base'); ?></label></th>
-		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" value="<?php echo attribute_escape($tag_base); ?>" class="regular-text code" /></td>
+		<td><?php if( constant( 'VHOST' ) == 'no' && $current_site->domain.$current_site->path == $current_blog->domain.$current_blog->path ) { echo "/blog"; $tag_base = str_replace( "/blog", "", $tag_base ); }?> <input name="tag_base" id="tag_base" type="text" value="<?php echo esc_attr($tag_base); ?>" class="regular-text code" /></td>
 	</tr>
 	<?php do_settings_fields('permalink', 'optional'); ?>
 </table>

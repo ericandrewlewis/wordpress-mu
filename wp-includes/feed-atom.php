@@ -5,11 +5,10 @@
  * @package WordPress
  */
 
-header('Content-Type: application/atom+xml; charset=' . get_option('blog_charset'), true);
+header('Content-Type: ' . feed_content_type('atom') . '; charset=' . get_option('blog_charset'), true);
 $more = 1;
 
-?>
-<?php echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>'; ?>
+echo '<?xml version="1.0" encoding="'.get_option('blog_charset').'"?'.'>'; ?>
 <feed
   xmlns="http://www.w3.org/2005/Atom"
   xmlns:thr="http://purl.org/syndication/thread/1.0"
@@ -20,7 +19,7 @@ $more = 1;
 	<title type="text"><?php bloginfo_rss('name'); wp_title_rss(); ?></title>
 	<subtitle type="text"><?php bloginfo_rss("description") ?></subtitle>
 
-	<updated><?php echo mysql2date('Y-m-d\TH:i:s\Z', get_lastpostmodified('GMT')); ?></updated>
+	<updated><?php echo mysql2date('Y-m-d\TH:i:s\Z', get_lastpostmodified('GMT'), false); ?></updated>
 	<?php the_generator( 'atom' ); ?>
 
 	<link rel="alternate" type="text/html" href="<?php bloginfo_rss('home') ?>" />
