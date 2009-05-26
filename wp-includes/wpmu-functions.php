@@ -269,7 +269,7 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 }
 
 function switch_to_blog( $new_blog ) {
-	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
+	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
 
 	if ( empty($new_blog) )
 		return false;
@@ -281,9 +281,6 @@ function switch_to_blog( $new_blog ) {
 
 	if ( $blog_id == $new_blog )
 		return false;
-
-	$wp_object_cache->switched_cache[ $blog_id ] = $wp_object_cache->cache;
-	unset( $wp_object_cache->cache );
 
 	$wpdb->set_blog_id($new_blog);
 	$table_prefix = $wpdb->prefix;
@@ -299,13 +296,19 @@ function switch_to_blog( $new_blog ) {
 	if ( is_object( $current_user ) )
 		$current_user->_init_caps();
 
+	wp_cache_init();
+	if ( function_exists('wp_cache_add_global_groups') ) {
+		wp_cache_add_global_groups(array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss'));
+		wp_cache_add_non_persistent_groups(array( 'comment', 'counts', 'plugins' ));
+	}
+
 	do_action('switch_blog', $blog_id, $prev_blog_id);
 	$switched = true;
 	return true;
 }
 
 function restore_current_blog() {
-	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
+	global $table_prefix, $wpdb, $blog_id, $switched, $switched_stack, $wp_roles, $current_user;
 
 	if ( !$switched )
 		return false;
@@ -313,9 +316,6 @@ function restore_current_blog() {
 	$blog = array_pop($switched_stack);
 	if ( $blog_id == $blog )
 		return false;
-
-	$wp_object_cache->cache = $wp_object_cache->switched_cache[ $blog ];
-	unset( $wp_object_cache->switched_cache[ $blog ] );
 
 	$wpdb->set_blog_id($blog);
 	$prev_blog_id = $blog_id;
@@ -330,6 +330,12 @@ function restore_current_blog() {
 
 	if ( is_object( $current_user ) )
 		$current_user->_init_caps();
+
+	wp_cache_init();
+	if ( function_exists('wp_cache_add_global_groups') ) {
+		wp_cache_add_global_groups(array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss'));
+		wp_cache_add_non_persistent_groups(array( 'comment', 'counts', 'plugins' ));
+	}
 
 	do_action('switch_blog', $blog_id, $prev_blog_id);
 

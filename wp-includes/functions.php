@@ -316,17 +316,43 @@ function is_serialized_string( $data ) {
  * @return mixed Value set for the option.
  */
 function get_option( $setting, $default = false ) {
-	global $wpdb, $switched, $current_blog;
+	global $wpdb;
 
-	$wpdb->hide_errors();
 	// Allow plugins to short-circuit options.
 	$pre = apply_filters( 'pre_option_' . $setting, false );
 	if ( false !== $pre )
 		return $pre;
 
-	$value = _get_option_cache( $setting );
-	if ( false === $value )
-			return $default;
+	// prevent non-existent options from triggering multiple queries
+	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	if ( isset( $notoptions[$setting] ) )
+		return $default;
+
+	$alloptions = wp_load_alloptions();
+
+	if ( isset( $alloptions[$setting] ) ) {
+		$value = $alloptions[$setting];
+	} else {
+		$value = wp_cache_get( $setting, 'options' );
+
+		if ( false === $value ) {
+			if ( defined( 'WP_INSTALLING' ) )
+				$suppress = $wpdb->suppress_errors();
+			// expected_slashed ($setting)
+			$row = $wpdb->get_row( "SELECT option_value FROM $wpdb->options WHERE option_name = '$setting' LIMIT 1" );
+			if ( defined( 'WP_INSTALLING' ) )
+				$wpdb->suppress_errors($suppress);
+
+			if ( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
+				$value = $row->option_value;
+				wp_cache_add( $setting, $value, 'options' );
+			} else { // option does not exist, so we must cache its non-existence
+				$notoptions[$setting] = true;
+				wp_cache_set( 'notoptions', $notoptions, 'options' );
+				return $default;
+			}
+		}
+	}
 
 	// If home is not set use siteurl.
 	if ( 'home' == $setting && '' == $value )
@@ -334,9 +360,6 @@ function get_option( $setting, $default = false ) {
 
 	if ( in_array( $setting, array('siteurl', 'home', 'category_base', 'tag_base') ) )
 		$value = untrailingslashit( $value );
-
-	if (! @unserialize($value) )
-		$value = stripslashes( $value );
 
 	return apply_filters( 'option_' . $setting, maybe_unserialize( $value ) );
 }
@@ -421,69 +444,20 @@ function get_alloptions() {
  */
 function wp_load_alloptions() {
 	global $wpdb;
-	global $_wp_alloptions;
-	global $blog_id;
 
-	if( !defined( 'WP_INSTALLING' ) ) {
-		if ( !empty($_wp_alloptions[$blog_id]) )
-			return $_wp_alloptions[$blog_id];
+	$alloptions = wp_cache_get( 'alloptions', 'options' );
 
-		$alloptions = wp_cache_get('alloptions', 'options');
-
-		if ( false !== $alloptions ) {
-			$_wp_alloptions[$blog_id] = $alloptions;
-			return $alloptions;
-		}
-
-		$_wp_alloptions[$blog_id] = array();
+	if ( !$alloptions ) {
+		$suppress = $wpdb->suppress_errors();
+		if ( !$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options WHERE autoload = 'yes'" ) )
+			$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options" );
+		$wpdb->suppress_errors($suppress);
+		$alloptions = array();
+		foreach ( (array) $alloptions_db as $o )
+			$alloptions[$o->option_name] = $o->option_value;
+		wp_cache_add( 'alloptions', $alloptions, 'options' );
 	}
-
-	$suppress = $wpdb->suppress_errors();
-	// order by option_id asc in case there are duplicate values - this makes the most recent value overwrite the others in the array
-	$alloptions_db = $wpdb->get_results( "SELECT option_name, option_value FROM $wpdb->options FORCE INDEX(PRIMARY) ORDER BY option_id ASC" );
-	$wpdb->suppress_errors($suppress);
-	foreach ( (array) $alloptions_db as $o )
-		$_wp_alloptions[$blog_id][$o->option_name] = $o->option_value;
-
-	wp_cache_add('alloptions', $_wp_alloptions[$blog_id], 'options');
-
-	return $_wp_alloptions[$blog_id];
-}
-
-function _get_option_cache( $setting ) {
-	global $_wp_alloptions;
-	global $blog_id;
-
-	if ( empty($_wp_alloptions[$blog_id]) || defined( 'WP_INSTALLING' ) )
-		wp_load_alloptions();
-
-	if ( isset($_wp_alloptions[$blog_id][$setting]) )
-		return $_wp_alloptions[$blog_id][$setting];
-
-	return false;
-}
-
-function _set_option_cache( $setting, $value ) {
-	global $_wp_alloptions;
-	global $blog_id;
-
-	wp_load_alloptions();
-
-	$_wp_alloptions[$blog_id][$setting] = $value;
-
-	wp_cache_delete('alloptions', 'options');
-}
-
-function _delete_option_cache( $setting ) {
-	global $_wp_alloptions;
-	global $blog_id;
-
-	wp_load_alloptions();
-
-	if ( isset($_wp_alloptions[$blog_id][$setting]) )
-		unset($_wp_alloptions[$blog_id][$setting]);
-
-	wp_cache_delete('alloptions', 'options');
+	return $alloptions;
 }
 
 /**
@@ -536,10 +510,22 @@ function update_option( $option_name, $newvalue ) {
 		return true;
 	}
 
+	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	if ( is_array( $notoptions ) && isset( $notoptions[$option_name] ) ) {
+		unset( $notoptions[$option_name] );
+		wp_cache_set( 'notoptions', $notoptions, 'options' );
+	}
+
 	$_newvalue = $newvalue;
 	$newvalue = maybe_serialize( $newvalue );
 
-	_set_option_cache($option_name, $newvalue);
+	$alloptions = wp_load_alloptions();
+	if ( isset( $alloptions[$option_name] ) ) {
+		$alloptions[$option_name] = $newvalue;
+		wp_cache_set( 'alloptions', $alloptions, 'options' );
+	} else {
+		wp_cache_set( $option_name, $newvalue, 'options' );
+	}
 
 	$wpdb->update($wpdb->options, array('option_value' => $newvalue), array('option_name' => $option_name) );
 
@@ -585,13 +571,29 @@ function add_option( $name, $value = '', $deprecated = '', $autoload = 'yes' ) {
 	$safe_name = $wpdb->escape( $name );
 	$value = sanitize_option( $name, $value );
 
-	if ( false !== get_option( $safe_name ) )
-		return;
+	// Make sure the option doesn't already exist. We can check the 'notoptions' cache before we ask for a db query
+	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	if ( !is_array( $notoptions ) || !isset( $notoptions[$name] ) )
+		if ( false !== get_option( $safe_name ) )
+			return;
 
 	$value = maybe_serialize( $value );
 	$autoload = ( 'no' === $autoload ) ? 'no' : 'yes';
 
-	_set_option_cache( $name, $value );
+	if ( 'yes' == $autoload ) {
+		$alloptions = wp_load_alloptions();
+		$alloptions[$name] = $value;
+		wp_cache_set( 'alloptions', $alloptions, 'options' );
+	} else {
+		wp_cache_set( $name, $value, 'options' );
+	}
+
+	// This option exists now
+	$notoptions = wp_cache_get( 'notoptions', 'options' ); // yes, again... we need it to be fresh
+	if ( is_array( $notoptions ) && isset( $notoptions[$name] ) ) {
+		unset( $notoptions[$name] );
+		wp_cache_set( 'notoptions', $notoptions, 'options' );
+	}
 
 	$wpdb->insert($wpdb->options, array('option_name' => $name, 'option_value' => $value, 'autoload' => $autoload) );
 
@@ -614,17 +616,22 @@ function delete_option( $name ) {
 
 	wp_protect_special_option( $name );
 
-	_delete_option_cache( $name );
-
 	// Get the ID, if no ID then return
 	// expected_slashed ($name)
 	$option = $wpdb->get_row( "SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'" );
 	if ( is_null($option) || !$option->option_id )
 		return false;
-
 	// expected_slashed ($name)
 	$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = '$name'" );
-
+	if ( 'yes' == $option->autoload ) {
+		$alloptions = wp_load_alloptions();
+		if ( isset( $alloptions[$name] ) ) {
+			unset( $alloptions[$name] );
+			wp_cache_set( 'alloptions', $alloptions, 'options' );
+		}
+	} else {
+		wp_cache_delete( $name, 'options' );
+	}
 	return true;
 }
 
