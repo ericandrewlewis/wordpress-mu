@@ -1148,6 +1148,8 @@ add_action( 'show_user_profile', 'myblogs_profile_link' );
 if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
 	add_action( 'admin_init', 'update_profile_email' );
 	add_action( 'admin_init', 'profile_page_email_warning_ob_start' );
+} elseif( strpos( $_SERVER['PHP_SELF'], 'wp-admin/page.php' ) ) {
+	$wp_rewrite->flush_rules();
 }
 
 function disable_some_pages() {
