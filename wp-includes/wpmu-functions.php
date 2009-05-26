@@ -193,75 +193,6 @@ function is_site_admin( $user_login = false ) {
 	return false;
 }
 
-// expects key not to be SQL escaped
-function get_site_option( $key, $default = false, $use_cache = true ) {
-	global $wpdb;
-
-	// Allow plugins to short-circuit site options. 
- 	$pre = apply_filters( 'pre_site_option_' . $key, false ); 
- 	if ( false !== $pre ) 
- 		return $pre; 
-
-	if( $use_cache == true ) {
-		$value = wp_cache_get($wpdb->siteid . $key, 'site-options');
-	} else {
-		$value = false;
-	}
-
-	if ( false === $value ) {
-		$value = $wpdb->get_var( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) );
-		if ( ! is_null($value) ) {
-			wp_cache_add($wpdb->siteid . $key, $value, 'site-options');
-		} elseif ( $default ) {
-			wp_cache_add($wpdb->siteid . $key, addslashes( $default ), 'site-options');
-			return $default;
-		} else {
-			wp_cache_add($wpdb->siteid . $key, false, 'site-options');
-			return false;
-		}
-	}
-
-	if (! @unserialize($value) ) 
-		$value = stripslashes( $value ); 
-
-	return apply_filters( 'site_option_' . $key, maybe_unserialize( $value ) );
-}
-
-// expects $key, $value not to be SQL escaped
-function add_site_option( $key, $value ) {
-	global $wpdb;
-
-	$exists = $wpdb->get_row( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) );
-	if ( is_object( $exists ) ) {// If we already have it
-		update_site_option( $key, $value );
-		return false;
-	}
-
-	$value = maybe_serialize($value);
-	wp_cache_delete($wpdb->siteid . $key, 'site-options');
-
-	$wpdb->insert( $wpdb->sitemeta, array('site_id' => $wpdb->siteid, 'meta_key' => $key, 'meta_value' => $value) );
-	return $wpdb->insert_id; 
-}
-
-// expects $key, $value not to be SQL escaped
-function update_site_option( $key, $value ) {
-	global $wpdb;
-
-	if ( $value == get_site_option( $key ) )
-	 	return false;
-
-	$exists = $wpdb->get_row( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) );
-	if ( false == is_object( $exists ) ) // It's a new record
-		return add_site_option( $key, $value );
-
-	$value = maybe_serialize($value);
-
-	$wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
-	wp_cache_delete( $wpdb->siteid . $key, 'site-options' );
-	return true;
-}
-
 /*
 function get_blog_option( $id, $key, $default='na' ) {
 	switch_to_blog($id);
@@ -2204,4 +2135,8 @@ function reset_password_sitename( $title ) {
 }
 add_filter( 'password_reset_title', 'reset_password_sitename' );
 
+function lowercase_username( $username, $raw_username, $strict ) {
+	return strtolower( $username );
+}
+add_filter( 'sanitize_user', 'lowercase_username', 10, 3 );
 ?>

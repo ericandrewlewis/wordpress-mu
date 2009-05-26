@@ -445,7 +445,7 @@ function wp_load_alloptions() {
 	foreach ( (array) $alloptions_db as $o )
 		$_wp_alloptions[$blog_id][$o->option_name] = $o->option_value;
 
-	wp_cache_set('alloptions', $_wp_alloptions[$blog_id], 'options');
+	wp_cache_add('alloptions', $_wp_alloptions[$blog_id], 'options');
 
 	return $_wp_alloptions[$blog_id];
 }
@@ -454,7 +454,8 @@ function _get_option_cache( $setting ) {
 	global $_wp_alloptions;
 	global $blog_id;
 
-	wp_load_alloptions();
+	if ( empty($_wp_alloptions[$blog_id]) || defined( 'WP_INSTALLING' ) )
+		wp_load_alloptions();
 
 	if ( isset($_wp_alloptions[$blog_id][$setting]) )
 		return $_wp_alloptions[$blog_id][$setting];
@@ -540,7 +541,8 @@ function update_option( $option_name, $newvalue ) {
 
 	_set_option_cache($option_name, $newvalue);
 
-	$wpdb->query( $wpdb->prepare( "UPDATE $wpdb->options SET option_value = %s WHERE option_name = %s", $newvalue, $option_name ) );
+	$wpdb->update($wpdb->options, array('option_value' => $newvalue), array('option_name' => $option_name) );
+
 	if ( $wpdb->rows_affected == 1 ) {
 		do_action( "update_option_{$option_name}", $oldvalue, $_newvalue );
 		return true;
@@ -591,7 +593,7 @@ function add_option( $name, $value = '', $deprecated = '', $autoload = 'yes' ) {
 
 	_set_option_cache( $name, $value );
 
-	$wpdb->query( $wpdb->prepare( "INSERT INTO $wpdb->options (option_name, option_value, autoload) VALUES (%s, %s, %s)", $name, $value, $autoload ) );
+	$wpdb->insert($wpdb->options, array('option_name' => $name, 'option_value' => $value, 'autoload' => $autoload) );
 
 	do_action( "add_option_{$name}", $name, $value );
 	return;
@@ -619,6 +621,7 @@ function delete_option( $name ) {
 	$option = $wpdb->get_row( "SELECT option_id, autoload FROM $wpdb->options WHERE option_name = '$name'" );
 	if ( is_null($option) || !$option->option_id )
 		return false;
+
 	// expected_slashed ($name)
 	$wpdb->query( "DELETE FROM $wpdb->options WHERE option_name = '$name'" );
 
@@ -1680,11 +1683,16 @@ function is_blog_installed() {
 		return true;
 
 	$suppress = $wpdb->suppress_errors();
-	$installed = $wpdb->get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = 'siteurl'" );
-	$wpdb->suppress_errors($suppress);
+	$alloptions = wp_load_alloptions();
+	// If siteurl is not set to autoload, check it specifically
+	if ( !isset( $alloptions['siteurl'] ) )
+		$installed = $wpdb->get_var( "SELECT option_value FROM $wpdb->options WHERE option_name = 'siteurl'" );
+	else
+		$installed = $alloptions['siteurl'];
+	$wpdb->suppress_errors( $suppress );
 
-	$installed = !empty( $installed ) ? true : false;
-	wp_cache_set('is_blog_installed', $installed);
+	$installed = !empty( $installed );
+	wp_cache_set( 'is_blog_installed', $installed );
 
 	return $installed;
 }
@@ -3049,6 +3057,70 @@ function wp_suspend_cache_invalidation($suspend = true) {
 	$current_suspend = $_wp_suspend_cache_invalidation;
 	$_wp_suspend_cache_invalidation = $suspend;
 	return $current_suspend;
+}
+
+// expects key not to be SQL escaped
+function get_site_option( $key, $default = false, $use_cache = true ) {
+	global $wpdb;
+
+	// Allow plugins to short-circuit site options. 
+ 	$pre = apply_filters( 'pre_site_option_' . $key, false ); 
+ 	if ( false !== $pre ) 
+ 		return $pre; 
+
+	$cache_key = "{$wpdb->siteid}:$key";
+
+	if ( $use_cache == true && $value = wp_cache_get($cache_key, 'site-options') )
+		return $value;
+
+	$value = $wpdb->get_var( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) );
+
+	if ( is_null($value) )
+		$value = $default;
+
+	$value = maybe_unserialize( stripslashes($value) );
+
+	wp_cache_set($cache_key, $value, 'site-options');
+
+	return apply_filters( 'site_option_' . $key, maybe_unserialize( $value ) );
+}
+
+// expects $key, $value not to be SQL escaped
+function add_site_option( $key, $value ) {
+	global $wpdb;
+
+	$cache_key = "{$wpdb->siteid}:$key";
+
+	if ( $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) ) )
+		return update_site_option( $key, $value );
+
+	wp_cache_set( $cache_key, $value, 'site-options');
+
+	$value = maybe_serialize($value);
+
+	$wpdb->insert( $wpdb->sitemeta, array('site_id' => $wpdb->siteid, 'meta_key' => $key, 'meta_value' => $value) );
+
+	return $wpdb->insert_id;
+}
+
+// expects $key, $value not to be SQL escaped
+function update_site_option( $key, $value ) {
+	global $wpdb;
+
+	if ( $value == get_site_option( $key ) )
+	 	return false;
+
+	$cache_key = "{$wpdb->siteid}:$key";
+
+	if ( $value && !$wpdb->get_row( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) ) )
+		return add_site_option( $key, $value );
+
+	wp_cache_set( $cache_key, $value, 'site-options');
+
+	$value = maybe_serialize($value);
+	$wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
+
+	return true;
 }
 
 /**
