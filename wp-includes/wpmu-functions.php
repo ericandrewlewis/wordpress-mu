@@ -2021,57 +2021,57 @@ function strtolower_usernames( $username, $raw, $strict ) {
 function site_pre_update_plugins() {
 	return get_site_option( 'update_plugins' );
 }
-add_filter( 'pre_option_update_plugins', 'site_pre_update_plugins' );
+add_filter( 'pre_transient_update_plugins', 'site_pre_update_plugins' );
 
-function site_pre_update_option_update_plugins( $new, $old ) {
+function site_pre_update_transient_update_plugins( $new, $old ) {
 	update_site_option( 'update_plugins', $new );
 	delete_option( 'update_plugins' );
 	return $old;
 }
-add_filter( 'pre_update_option_update_plugins', 'site_pre_update_option_update_plugins', 10, 2 );
+add_filter( 'pre_update_transient_update_plugins', 'site_pre_update_transient_update_plugins', 10, 2 );
 
 // update_themes
 function site_pre_update_themes() {
 	return get_site_option( 'update_themes' );
 }
-add_filter( 'pre_option_update_themes', 'site_pre_update_themes' );
+add_filter( 'pre_transient_update_themes', 'site_pre_update_themes' );
 
-function site_pre_update_option_update_themes( $new, $old ) {
+function site_pre_update_transient_update_themes( $new, $old ) {
 	update_site_option( 'update_themes', $new );
 	delete_option( 'update_themes' );
 	return $old;
 }
-add_filter( 'pre_update_option_update_themes', 'site_pre_update_option_update_themes', 10, 2 );
+add_filter( 'pre_update_transient_update_themes', 'site_pre_update_transient_update_themes', 10, 2 );
 
 // update_core
 function site_pre_update_core() {
 	return get_site_option( 'update_core' );
 }
-add_filter( 'pre_option_update_core', 'site_pre_update_core' );
+add_filter( 'pre_transient_update_core', 'site_pre_update_core' );
 
-function site_pre_update_option_update_core( $new, $old ) {
+function site_pre_update_transient_update_core( $new, $old ) {
 	update_site_option( 'update_core', $new );
 	delete_option( 'update_core' );
 	return $old;
 }
-add_filter( 'pre_update_option_update_core', 'site_pre_update_option_update_core', 10, 2 );
+add_filter( 'pre_update_transient_update_core', 'site_pre_update_transient_update_core', 10, 2 );
 
 // dismissed_update_core
 function site_pre_dismissed_update_core() {
 	return get_site_option( 'dismissed_update_core' );
 }
-add_filter( 'pre_option_dismissed_update_core', 'site_pre_dismissed_update_core' );
+add_filter( 'pre_transient_dismissed_update_core', 'site_pre_dismissed_update_core' );
 
-function site_pre_update_option_dismissed_update_core( $new, $old ) {
+function site_pre_update_transient_dismissed_update_core( $new, $old ) {
 	update_site_option( 'dismissed_update_core', $new );
 	return $old;
 }
-add_action( 'pre_update_option_dismissed_update_core', 'site_pre_update_option_dismissed_update_core', 10, 2 );
+add_action( 'pre_update_transient_dismissed_update_core', 'site_pre_update_transient_dismissed_update_core', 10, 2 );
 
-function site_update_option_dismissed_update_core( $old, $new ) {
+function site_update_transient_dismissed_update_core( $old, $new ) {
 	delete_option( 'dismissed_update_core' );
 }
-add_action( 'update_option_dismissed_update_core', 'site_update_option_dismissed_update_core', 10, 2 );
+add_action( 'update_transient_dismissed_update_core', 'site_update_transient_dismissed_update_core', 10, 2 );
 
 function redirect_mu_dashboard() {
 	global $current_site, $current_blog;
