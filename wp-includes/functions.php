@@ -1517,6 +1517,7 @@ function wp_get_nocache_headers() {
  * be sent so that all of them get the point that no caching should occur.
  *
  * @since 2.0.0
+ * @uses wp_get_nocache_headers()
  */
 function nocache_headers() {
 	$headers = wp_get_nocache_headers();
@@ -3059,7 +3060,6 @@ function wp_suspend_cache_invalidation($suspend = true) {
 	return $current_suspend;
 }
 
-// expects key not to be SQL escaped
 function get_site_option( $key, $default = false, $use_cache = true ) {
 	global $wpdb;
 
