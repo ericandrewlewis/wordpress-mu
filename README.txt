@@ -152,9 +152,6 @@ These work by storing commonly accessed data in a rapid access storage
 container such as RAM or directly on the filesystem. 
 To install these plugins copy them into your wp-content folder.
 Memcached: http://dev.wp-plugins.org/browser/memcached/trunk/
-Filesystem: http://neosmart.net/dl.php?id=14
-Xcache: http://neosmart.net/dl.php?id=12
-eAccelerator: http://neosmart.net/dl.php?id=13
 
 2. Full page cache. 
 These work by storing complete web pages and are generally faster than 
