@@ -164,6 +164,7 @@ function refresh_blog_details( $id ) {
 	$details = get_blog_details( $id, false );
 	
 	wp_cache_delete( $id , 'blog-details' );
+	wp_cache_delete( $id . 'short' , 'blog-details' );
 	wp_cache_delete( md5( $details->domain . $details->path )  , 'blog-lookup' );
 }
 
