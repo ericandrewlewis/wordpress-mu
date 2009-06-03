@@ -129,11 +129,15 @@ if( constant( 'VHOST' ) == 'yes' ) {
 		$blogname = substr( $blogname, 0, strpos( $blogname, '/' ) );
 	if( strpos( " ".$blogname, '?' ) )
 		$blogname = substr( $blogname, 0, strpos( $blogname, '?' ) );
-	$blognames = array( 'page', 'comments', 'blog', 'wp-admin', 'wp-includes', 'wp-content', 'files', 'feed' );
-	if( $blogname == '' || in_array( $blogname, $blognames ) || is_file( $blogname ) ) {
+	$reserved_blognames = array( 'page', 'comments', 'blog', 'wp-admin', 'wp-includes', 'wp-content', 'files', 'feed' );
+	if ( $blogname != '' && !in_array( $blogname, $reserved_blognames ) && !is_file( $blogname ) ) {
+		$path = $path . $blogname . '/';
+	}
+	$current_blog = wp_cache_get( 'current_blog_' . $domain . $path, 'site-options' );
+	if( !$current_blog ) {
 		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path) );
-	} else {
-		$current_blog = $wpdb->get_row( $wpdb->prepare("SELECT * FROM $wpdb->blogs WHERE domain = %s AND path = %s", $domain, $path.$blogname.'/') );
+		if( $current_blog )
+			wp_cache_set( 'current_blog_' . $domain . $path, $current_blog, 'site-options' );
 	}
 }
 
