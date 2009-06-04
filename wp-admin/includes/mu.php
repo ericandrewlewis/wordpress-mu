@@ -84,6 +84,15 @@ function wpmu_delete_blog($blog_id, $drop = false) {
 		}
 	}
 	$wpdb->query( $wpdb->prepare("DELETE FROM {$wpdb->usermeta} WHERE meta_key = %s", 'wp_{$blog_id}_autosave_draft_ids') );
+	$blogs = get_site_option( "blog_list" );
+	if ( is_array( $blogs ) ) {
+		foreach( $blogs as $n => $blog ) {
+			if( $blog[ 'blog_id' ] == $blog_id ) {
+				unset( $blogs[ $n ] );
+			}
+		}
+		update_site_option( 'blog_list', $blogs );
+	}
 
 	if ( $switch === true )
 		restore_current_blog();
