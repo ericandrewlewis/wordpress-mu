@@ -10,6 +10,7 @@ if( $_SERVER[ 'HTTP_HOST' ] == 'localhost' ) {
 }
 
 define('WP_INSTALLING', true);
+define('WP_FIRST_INSTALL', true);
 
 $dirs = array( dirname(__FILE__), dirname(__FILE__) . "/wp-content/" );
 

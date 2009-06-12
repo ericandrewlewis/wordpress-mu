@@ -142,6 +142,10 @@ CREATE TABLE $wpdb->posts (
   KEY type_status_date (post_type,post_status,post_date,ID),
   KEY post_parent (post_parent)
 ) $charset_collate;
+";
+
+if ( defined( 'WP_FIRST_INSTALL' ) ) {
+$wp_queries .= "CREATE TABLE IF NOT EXISTS $wpdb->users (
 CREATE TABLE IF NOT EXISTS $wpdb->users (
   ID bigint(20) unsigned NOT NULL auto_increment,
   user_login varchar(60) NOT NULL default '',
@@ -241,6 +245,7 @@ CREATE TABLE IF NOT EXISTS $wpdb->signups (
   KEY domain (domain)
 ) $charset_collate;
 ";
+} // WP_FIRST_INSTALL
 
 /**
  * Create WordPress options and set the default values.
