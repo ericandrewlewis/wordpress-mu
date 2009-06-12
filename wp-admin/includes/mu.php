@@ -517,7 +517,7 @@ function wpmu_menu() {
 
 	if( is_site_admin() ) {
 		$menu[1] = array( '', 'read', '', '', 'wp-menu-separator' );
-		$menu[2] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'wp-menu-open menu-top menu-top-first', 'menu-site', 'div');
+		$menu[2] = array(__('Site Admin'), '10', 'wpmu-admin.php', '', 'menu-top menu-top-first', 'menu-site', 'div');
 		$submenu[ 'wpmu-admin.php' ][1] = array( __('Admin'), '10', 'wpmu-admin.php' );
 		$submenu[ 'wpmu-admin.php' ][5] = array( __('Blogs'), '10', 'wpmu-blogs.php' );
 		$submenu[ 'wpmu-admin.php' ][10] = array( __('Users'), '10', 'wpmu-users.php' );
