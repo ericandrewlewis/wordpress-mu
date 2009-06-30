@@ -542,8 +542,8 @@ function wpmu_menu() {
 		if( !is_site_admin() ) {
 			unset( $menu['45'] ); // Plugins
 		} elseif ( strpos( $_SERVER[ 'PHP_SELF' ], 'wp-admin/plugins.php' ) ) {
-			$message = __( 'The plugins page is not visible to normal users. It must be <a href="wpmu-options.php#menu">activated</a> first.' );
-			$message = "<div class=\'error\'><p>$message</p></div>";
+			$message = sprintf( __( 'The plugins page is not visible to normal users. It must be activated first. %s' ), '<a href="wpmu-options.php#menu">' . __( 'Activate' ) . '</a>' );
+			$message = str_replace( "'", "\'", "<div class='error'><p>$message</p></div>" );
 			add_action( 'admin_notices', create_function( '', "echo '$message';" ) );
 		}
 		unset( $submenu[ 'plugins.php' ] );
