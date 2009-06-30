@@ -757,6 +757,10 @@ add_filter( 'wp_insert_post_data', 'avoid_blog_page_permalink_collision', 10, 2 
  * Activates a plugin site wide (for all blogs on an installation)
  */
 function activate_sitewide_plugin( $file, $silent = false ) {
+	/* Run the plugin through the normal activation procedure to register hooks and test the code */
+	if ( !$silent )
+		do_action( 'activate_' . $file );
+	
 	/* Run the check on 'Site Wide Only: true' in the plugin header */
 	if ( is_wpmu_sitewide_plugin( $file ) ) {
 		/*** 
@@ -783,10 +787,6 @@ function activate_sitewide_plugin( $file, $silent = false ) {
 	if ( !update_site_option( 'active_sitewide_plugins', $active_sitewide_plugins ) )
 		return false;
 
-	/* Run the activate hook */
-	if ( !$silent )
-		do_action( 'activate_' . $file );
-	
 	return true;
 }
 
