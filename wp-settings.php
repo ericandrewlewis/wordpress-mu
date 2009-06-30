@@ -476,8 +476,27 @@ if ( is_dir( WPMU_PLUGIN_DIR ) ) {
 
 $wpmu_sitewide_plugins = (array) maybe_unserialize( get_site_option( 'wpmu_sitewide_plugins' ) );
 foreach( $wpmu_sitewide_plugins as $plugin_file => $activation_time ) {
-	if ( $plugin_file && file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) )
-		include_once( WP_PLUGIN_DIR . '/' . $plugin_file );		
+	if ( !$plugin_file )
+		continue;
+
+	if ( !file_exists( WP_PLUGIN_DIR . '/' . $plugin_file ) ) {
+		$deleted_sitewide_plugins[] = $plugin_file;
+	} else {
+		include_once( WP_PLUGIN_DIR . '/' . $plugin_file );
+	}
+}
+
+if ( isset( $deleted_sitewide_plugins ) ) {
+	$active_sitewide_plugins = maybe_unserialize( get_site_option( 'active_sitewide_plugins' ) );
+
+	/* Remove any deleted plugins from the wpmu_sitewide_plugins array */
+	foreach( $deleted_sitewide_plugins as $plugin_file ) {
+		unset( $wpmu_sitewide_plugins[$plugin_file] );
+		unset( $active_sitewide_plugins[$plugin_file] );
+	}
+
+	update_site_option( 'wpmu_sitewide_plugins', $wpmu_sitewide_plugins );
+	update_site_option( 'active_sitewide_plugins', $wpmu_sitewide_plugins );
 }
 
 do_action( 'muplugins_loaded' );
