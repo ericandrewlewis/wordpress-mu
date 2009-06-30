@@ -32,6 +32,12 @@ function wptexturize($text) {
 	$curl = '';
 	$textarr = preg_split('/(<.*>|\[.*\])/Us', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
 	$stop = count($textarr);
+	
+	/* translators: opening curly quote */
+	$opening_quote = _x('&#8220;', 'opening curly quote');
+	/* translators: closing curly quote */
+	$closing_quote = _x('&#8221;', 'closing curly quote');
+	
 	$no_texturize_tags = apply_filters('no_texturize_tags', array('pre', 'code', 'kbd', 'style', 'script', 'tt'));
 	$no_texturize_shortcodes = apply_filters('no_texturize_shortcodes', array('code'));
 	$no_texturize_tags_stack = array();
@@ -47,10 +53,10 @@ function wptexturize($text) {
 	}
 
 	$static_characters = array_merge(array('---', ' -- ', '--', ' - ', 'xn&#8211;', '...', '``', '\'s', '\'\'', ' (tm)'), $cockney);
-	$static_replacements = array_merge(array('&#8212;', ' &#8212; ', '&#8211;', ' &#8211; ', 'xn--', '&#8230;', '&#8220;', '&#8217;s', '&#8221;', ' &#8482;'), $cockneyreplace);
+	$static_replacements = array_merge(array('&#8212;', ' &#8212; ', '&#8211;', ' &#8211; ', 'xn--', '&#8230;', $opening_quote, '&#8217;s', $closing_quote, ' &#8482;'), $cockneyreplace);
 
 	$dynamic_characters = array('/\'(\d\d(?:&#8217;|\')?s)/', '/(\s|\A|")\'/', '/(\d+)"/', '/(\d+)\'/', '/(\S)\'([^\'\s])/', '/(\s|\A)"(?!\s)/', '/"(\s|\S|\Z)/', '/\'([\s.]|\Z)/', '/(\d+)x(\d+)/');
-	$dynamic_replacements = array('&#8217;$1','$1&#8216;', '$1&#8243;', '$1&#8242;', '$1&#8217;$2', '$1&#8220;$2', '&#8221;$1', '&#8217;$1', '$1&#215;$2');
+	$dynamic_replacements = array('&#8217;$1','$1&#8216;', '$1&#8243;', '$1&#8242;', '$1&#8217;$2', '$1' . $opening_quote . '$2', $closing_quote . '$1', '&#8217;$1', '$1&#215;$2');
 
 	for ( $i = 0; $i < $stop; $i++ ) {
 		$curl = $textarr[$i];
@@ -74,8 +80,8 @@ function wptexturize($text) {
 }
 
 function wptexturize_pushpop_element($text, &$stack, $disabled_elements, $opening = '<', $closing = '>') {
-	$o = preg_quote($opening);
-	$c = preg_quote($closing);
+	$o = preg_quote($opening, '/');
+	$c = preg_quote($closing, '/');
 	foreach($disabled_elements as $element) {
 		if (preg_match('/^'.$o.$element.'\b/', $text)) array_push($stack, $element);
 		if (preg_match('/^'.$o.'\/'.$element.$c.'/', $text)) {
@@ -172,26 +178,29 @@ function wpautop($pee, $br = 1) {
 /**
  * Checks to see if a string is utf8 encoded.
  *
- * @author bmorel at ssi dot fr
+ * NOTE: This function checks for 5-Byte sequences, UTF8
+ *       has Bytes Sequences with a maximum length of 4.
  *
+ * @author bmorel at ssi dot fr (modified)
  * @since 1.2.1
  *
- * @param string $Str The string to be checked
- * @return bool True if $Str fits a UTF-8 model, false otherwise.
+ * @param string $str The string to be checked
+ * @return bool True if $str fits a UTF-8 model, false otherwise.
  */
-function seems_utf8($Str) { # by bmorel at ssi dot fr
-	$length = strlen($Str);
+function seems_utf8($str) {
+	$length = strlen($str);
 	for ($i=0; $i < $length; $i++) {
-		if (ord($Str[$i]) < 0x80) continue; # 0bbbbbbb
-		elseif ((ord($Str[$i]) & 0xE0) == 0xC0) $n=1; # 110bbbbb
-		elseif ((ord($Str[$i]) & 0xF0) == 0xE0) $n=2; # 1110bbbb
-		elseif ((ord($Str[$i]) & 0xF8) == 0xF0) $n=3; # 11110bbb
-		elseif ((ord($Str[$i]) & 0xFC) == 0xF8) $n=4; # 111110bb
-		elseif ((ord($Str[$i]) & 0xFE) == 0xFC) $n=5; # 1111110b
+		$c = ord($str[$i]);
+		if ($c < 0x80) $n = 0; # 0bbbbbbb
+		elseif (($c & 0xE0) == 0xC0) $n=1; # 110bbbbb
+		elseif (($c & 0xF0) == 0xE0) $n=2; # 1110bbbb
+		elseif (($c & 0xF8) == 0xF0) $n=3; # 11110bbb
+		elseif (($c & 0xFC) == 0xF8) $n=4; # 111110bb
+		elseif (($c & 0xFE) == 0xFC) $n=5; # 1111110b
 		else return false; # Does not match any model
 		for ($j=0; $j<$n; $j++) { # n bytes matching 10bbbbbb follow ?
-			if ((++$i == $length) || ((ord($Str[$i]) & 0xC0) != 0x80))
-			return false;
+			if ((++$i == $length) || ((ord($str[$i]) & 0xC0) != 0x80))
+				return false;
 		}
 	}
 	return true;
@@ -253,7 +262,7 @@ function _wp_specialchars( $string, $quote_style = ENT_NOQUOTES, $charset = fals
 	} elseif ( $quote_style === 'single' ) {
 		$quote_style = ENT_NOQUOTES;
 	}
-	
+
 	// Handle double encoding ourselves
 	if ( !$double_encode ) {
 		$string = wp_specialchars_decode( $string, $_quote_style );
@@ -578,9 +587,9 @@ function remove_accents($string) {
 /**
  * Sanitizes a filename replacing whitespace with dashes
  *
- * Removes special characters that are illegal in filenames on certain 
- * operating systems and special characters requiring special escaping 
- * to manipulate at the command line. Replaces spaces and consecutive 
+ * Removes special characters that are illegal in filenames on certain
+ * operating systems and special characters requiring special escaping
+ * to manipulate at the command line. Replaces spaces and consecutive
  * dashes with a single dash. Trim period, dash and underscore from beginning
  * and end of filename.
  *
@@ -713,6 +722,33 @@ function sanitize_sql_orderby( $orderby ){
 	if ( !$obmatches )
 		return false;
 	return $orderby;
+}
+
+/**
+ * Santizes a html classname to ensure it only contains valid characters
+ *
+ * Strips the string down to A-Z,a-z,0-9,'-' if this results in an empty
+ * string then it will return the alternative value supplied.
+ *
+ * @todo Expand to support the full range of CDATA that a class attribute can contain.
+ *
+ * @since 2.8.0
+ *
+ * @param string $class The classname to be sanitized
+ * @param string $fallback The value to return if the sanitization end's up as an empty string.
+ * @return string The sanitized value
+ */
+function sanitize_html_class($class, $fallback){
+	//Strip out any % encoded octets
+	$sanitized = preg_replace('|%[a-fA-F0-9][a-fA-F0-9]|', '', $class);
+
+	//Limit to A-Z,a-z,0-9,'-'
+	$sanitized = preg_replace('/[^A-Za-z0-9-]/', '', $sanitized);
+
+	if ('' == $sanitized)
+		$sanitized = $fallback;
+
+	return apply_filters('sanitize_html_class',$sanitized, $class, $fallback);
 }
 
 /**
@@ -2006,8 +2042,8 @@ function clean_url( $url, $protocols = null, $context = 'display' ) {
 
 	if ('' == $url) return $url;
 	$url = preg_replace('|[^a-z0-9-~+_.?#=!&;,/:%@$\|*\'()\\x80-\\xff]|i', '', $url);
-	$strip = array('%0d', '%0a');
-	$url = str_replace($strip, '', $url);
+	$strip = array('%0d', '%0a', '%0D', '%0A');
+	$url = _deep_replace($strip, $url);
 	$url = str_replace(';//', '://', $url);
 	/* If the URL doesn't appear to contain a scheme, we
 	 * presume it needs http:// appended (unless a relative
@@ -2030,6 +2066,50 @@ function clean_url( $url, $protocols = null, $context = 'display' ) {
 
 	return apply_filters('clean_url', $url, $original_url, $context);
 }
+
+/**
+ * Perform a deep string replace operation to ensure the values in $search are no longer present
+ * 
+ * Repeats the replacement operation until it no longer replaces anything so as to remove "nested" values
+ * e.g. $subject = '%0%0%0DDD', $search ='%0D', $result ='' rather than the '%0%0DD' that
+ * str_replace would return
+ * 
+ * @since 2.8.1
+ * @access private
+ * 
+ * @param string|array $search
+ * @param string $subject
+ * @return string The processed string
+ */
+function _deep_replace($search, $subject){
+	$found = true;
+	while($found) {
+		$found = false;
+		foreach( (array) $search as $val ) {
+			while(strpos($subject, $val) !== false) {
+				$found = true;
+				$subject = str_replace($val, '', $subject);
+			}
+		}
+	}
+	
+	return $subject;
+}
+
+/**
+ * Escapes data for use in a MySQL query
+ *
+ * This is just a handy shortcut for $wpdb->escape(), for completeness' sake
+ *
+ * @since 2.8.0
+ * @param string $sql Unescaped SQL data
+ * @return string The cleaned $sql
+ */
+function esc_sql( $sql ) {
+	global $wpdb;
+	return $wpdb->escape( $sql );
+}
+
 
 /**
  * Checks and cleans a URL.
@@ -2185,7 +2265,7 @@ function esc_attr( $text ) {
  *
  * @deprecated 2.8.0
  * @see esc_attr()
- * 
+ *
  * @param string $text
  * @return string
  */
@@ -2480,7 +2560,7 @@ function wp_sprintf_l($pattern, $args) {
 	while ( $i ) {
 		$arg = array_shift($args);
 		$i--;
-		if ( $i == 1 )
+		if ( 0 == $i )
 			$result .= $l['between_last_two'] . $arg;
 		else
 			$result .= $l['between'] . $arg;

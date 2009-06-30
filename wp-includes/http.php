@@ -239,7 +239,7 @@ class WP_Http {
 		$arrURL = parse_url($url);
 
 		if ( $this->block_request( $url ) )
-			return new WP_Error('http_request_failed', 'User has blocked requests through HTTP.');
+			return new WP_Error('http_request_failed', __('User has blocked requests through HTTP.'));
 
 		// Determine if this is a https call and pass that on to the transport functions
 		// so that we can blacklist the transports that do not support ssl verification
@@ -281,7 +281,7 @@ class WP_Http {
 			$transports = WP_Http::_getTransport($r);
 		} else {
 			if ( is_array( $r['body'] ) || is_object( $r['body'] ) ) {
-				if ( ! version_compare(phpversion(), '5.1.2', '>=') ) 
+				if ( ! version_compare(phpversion(), '5.1.2', '>=') )
 					$r['body'] = _http_build_query($r['body'], null, '&');
 				else
 					$r['body'] = http_build_query($r['body'], null, '&');

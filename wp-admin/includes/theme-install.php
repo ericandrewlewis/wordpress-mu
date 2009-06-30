@@ -156,7 +156,7 @@ function install_theme_search_form() {
 	<select	name="type" id="typeselector">
 	<option value="term" <?php selected('term', $type) ?>><?php _e('Term'); ?></option>
 	<option value="author" <?php selected('author', $type) ?>><?php _e('Author'); ?></option>
-	<option value="tag" <?php selected('tag', $type) ?>><?php _e('Tag'); ?></option>
+	<option value="tag" <?php selected('tag', $type) ?>><?php echo _x('Tag', 'Theme Installer'); ?></option>
 	</select>
 	<input type="text" name="s" size="30" value="<?php echo esc_attr($term) ?>" />
 	<input type="submit" name="search" value="<?php esc_attr_e('Search'); ?>" class="button" />
@@ -218,7 +218,7 @@ function install_themes_dashboard() {
 
 </div>
 <br class="clear" />
-<input type="submit" name="search" value="<?php esc_attr_e('Find Themes'); ?>" class="button" />
+<p><input type="submit" name="search" value="<?php esc_attr_e('Find Themes'); ?>" class="button" /></p>
 </form>
 <?php
 }
@@ -309,7 +309,7 @@ function display_theme($theme, $actions = null, $show_details = true) {
 	$actions = implode ( ' | ', $actions );
 	?>
 <a class='thickbox thickbox-preview screenshot'
-	href='<? echo esc_url($preview_link); ?>'
+	href='<?php echo esc_url($preview_link); ?>'
 	title='<?php echo esc_attr(sprintf(__('Preview &#8220;%s&#8221;'), $name)); ?>'>
 <img src='<?php echo esc_url($theme->screenshot_url); ?>' width='150' />
 </a>

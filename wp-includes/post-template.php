@@ -222,9 +222,9 @@ function get_the_content($more_link_text = null, $stripteaser = 0, $more_file = 
 		if ( $more ) {
 			$output .= '<span id="more-' . $id . '"></span>' . $content[1];
 		} else {
-			$output = balanceTags($output);
 			if ( ! empty($more_link_text) )
 				$output .= apply_filters( 'the_content_more_link', ' <a href="' . get_permalink() . "#more-$id\" class=\"more-link\">$more_link_text</a>", $more_link_text );
+			$output = force_balance_tags($output);
 		}
 
 	}
@@ -311,7 +311,7 @@ function get_post_class( $class = '', $post_id = null ) {
 	$post = get_post($post_id);
 
 	$classes = array();
-	
+
 	$classes[] = 'post-' . $post->ID;
 	$classes[] = $post->post_type;
 
@@ -324,16 +324,16 @@ function get_post_class( $class = '', $post_id = null ) {
 
 	// Categories
 	foreach ( (array) get_the_category($post->ID) as $cat ) {
-		if ( empty($cat->cat_ID ) )
+		if ( empty($cat->slug ) )
 			continue;
-		$classes[] = 'category-' . $cat->cat_ID;
+		$classes[] = 'category-' . sanitize_html_class($cat->slug, $cat->cat_ID);
 	}
 
 	// Tags
 	foreach ( (array) get_the_tags($post->ID) as $tag ) {
-		if ( empty($tag->term_id ) )
+		if ( empty($tag->slug ) )
 			continue;
-		$classes[] = 'tag-' . $tag->term_id;
+		$classes[] = 'tag-' . sanitize_html_class($tag->slug, $tag->term_id);
 	}
 
 	if ( !empty($class) ) {
@@ -407,15 +407,15 @@ function get_body_class( $class = '' ) {
 		if ( is_author() ) {
 			$author = $wp_query->get_queried_object();
 			$classes[] = 'author';
-			$classes[] = 'author-' . $author->user_id;
+			$classes[] = 'author-' . sanitize_html_class($author->user_nicename , $author->user_id);
 		} elseif ( is_category() ) {
 			$cat = $wp_query->get_queried_object();
 			$classes[] = 'category';
-			$classes[] = 'category-' . $cat->cat_ID;
+			$classes[] = 'category-' . sanitize_html_class($cat->slug, $cat->cat_ID);
 		} elseif ( is_tag() ) {
 			$tags = $wp_query->get_queried_object();
 			$classes[] = 'tag';
-			$classes[] = 'tag-' . $tags->term_id;
+			$classes[] = 'tag-' . sanitize_html_class($tags->slug, $tags->term_id);
 		}
 	} elseif ( is_page() ) {
 		$classes[] = 'page';
@@ -430,13 +430,14 @@ function get_body_class( $class = '' ) {
 		if ( $wpdb->get_var( $wpdb->prepare("SELECT ID FROM $wpdb->posts WHERE post_parent = %d AND post_type = 'page' LIMIT 1", $pageID) ) )
 			$classes[] = 'page-parent';
 
-		if ( $wp_query->post->post_parent )
+		if ( $wp_query->post->post_parent ) {
 			$classes[] = 'page-child';
 			$classes[] = 'parent-pageid-' . $wp_query->post->post_parent;
-
-		if ( is_page_template() )
+		}
+		if ( is_page_template() ) {
 			$classes[] = 'page-template';
 			$classes[] = 'page-template-' . str_replace( '.php', '-php', get_post_meta( $pageID, '_wp_page_template', true ) );
+		}
 	} elseif ( is_search() ) {
 		if ( !empty($wp_query->posts) )
 			$classes[] = 'search-results';
@@ -805,7 +806,7 @@ function wp_list_pages($args = '') {
  * @param array|string $args
  */
 function wp_page_menu( $args = array() ) {
-	$defaults = array('sort_column' => 'post_title', 'menu_class' => 'menu', 'echo' => true, 'link_before' => '', 'link_after' => '');
+	$defaults = array('sort_column' => 'menu_order, post_title', 'menu_class' => 'menu', 'echo' => true, 'link_before' => '', 'link_after' => '');
 	$args = wp_parse_args( $args, $defaults );
 	$args = apply_filters( 'wp_page_menu_args', $args );
 

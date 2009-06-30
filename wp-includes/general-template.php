@@ -23,7 +23,7 @@
  * @param string $name The name of the specialised header.
  */
 function get_header( $name = null ) {
-	do_action( 'get_header' );
+	do_action( 'get_header', $name );
 
 	$templates = array();
 	if ( isset($name) )
@@ -52,7 +52,7 @@ function get_header( $name = null ) {
  * @param string $name The name of the specialised footer.
  */
 function get_footer( $name = null ) {
-	do_action( 'get_footer' );
+	do_action( 'get_footer', $name );
 
 	$templates = array();
 	if ( isset($name) )
@@ -81,7 +81,7 @@ function get_footer( $name = null ) {
  * @param string $name The name of the specialised sidebar.
  */
 function get_sidebar( $name = null ) {
-	do_action( 'get_sidebar' );
+	do_action( 'get_sidebar', $name );
 
 	$templates = array();
 	if ( isset($name) )
@@ -115,8 +115,11 @@ function get_sidebar( $name = null ) {
 function get_search_form() {
 	do_action( 'get_search_form' );
 
-	if ( '' != locate_template(array('searchform.php'), true) )
+	$search_form_template = locate_template(array('searchform.php'));
+	if ( '' != $search_form_template ) {
+		require($search_form_template);
 		return;
+	}
 
 	$form = '<form role="search" method="get" id="searchform" action="' . get_option('home') . '/" >
 	<div><label class="screen-reader-text" for="s">' . __('Search for:') . '</label>
@@ -191,6 +194,27 @@ function wp_login_url($redirect = '') {
 	}
 
 	return apply_filters('login_url', $login_url, $redirect);
+}
+
+/**
+ * Returns the Lost Password URL.
+ *
+ * Returns the URL that allows the user to retrieve the lost password
+ *
+ * @since 2.8.0
+ * @uses site_url() To generate the lost password URL
+ * @uses apply_filters() calls 'lostpassword_url' hook on the lostpassword url
+ *
+ * @param string $redirect Path to redirect to on login.
+ */
+function wp_lostpassword_url($redirect = '') {
+	$args = array( 'action' => 'lostpassword' );
+	if ( !empty($redirect) ) {
+		$args['redirect_to'] = $redirect;
+	}
+
+	$lostpassword_url = add_query_arg($args, site_url('wp-login.php', 'login'));
+	return apply_filters('lostpassword_url', $lostpassword_url, $redirect);
 }
 
 /**
@@ -455,7 +479,7 @@ function wp_title($sep = '&raquo;', $display = true, $seplocation = '') {
 	}
 
 	// If there is a post
-	if ( is_single() ||  ( is_page() && !is_front_page() ) ) {
+	if ( is_single() || ( is_home() && !is_front_page() ) || ( is_page() && !is_front_page() ) ) {
 		$post = $wp_query->get_queried_object();
 		$title = strip_tags( apply_filters( 'single_post_title', $post->post_title ) );
 	}
@@ -472,7 +496,8 @@ function wp_title($sep = '&raquo;', $display = true, $seplocation = '') {
 
 	//If it's a search
 	if ( is_search() ) {
-		$title = sprintf(__('Search Results %s %s'), $t_sep, strip_tags($search));
+		/* translators: 1: separator, 2: search phrase */
+		$title = sprintf(__('Search Results %1$s %2$s'), $t_sep, strip_tags($search));
 	}
 
 	if ( is_404() ) {
@@ -944,7 +969,7 @@ function get_calendar($initial = true) {
 
 	// Quick check. If we have no posts at all, abort!
 	if ( !$posts ) {
-		$gotsome = $wpdb->get_var("SELECT 1 FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 1");
+		$gotsome = $wpdb->get_var("SELECT 1 as test FROM $wpdb->posts WHERE post_type = 'post' AND post_status = 'publish' LIMIT 1");
 		if ( !$gotsome ) {
 			$cache[ $key ] = '';
 			wp_cache_set( 'get_calendar', $cache, 'calendar' );
@@ -1429,15 +1454,17 @@ function automatic_feed_links( $add = true ) {
 function feed_links( $args ) {
 	$defaults = array(
 		/* translators: Separator between blog name and feed type in feed links */
-		'separator'   => _x('&raquo;', 'feed link'),
-		'feedtitle' => __('%s Feed'),
-		'comstitle' => __('%s Comments Feed'),
+		'separator'	=> _x('&raquo;', 'feed link'),
+		/* translators: 1: blog title, 2: separator (raquo) */
+		'feedtitle'	=> __('%1$s %2$s Feed'),
+		/* translators: %s: blog title, 2: separator (raquo) */
+		'comstitle'	=> __('%1$s %2$s Comments Feed'),
 	);
 
 	$args = wp_parse_args( $args, $defaults );
 
-	echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr(sprintf( $args['feedtitle'], get_bloginfo('name') )) . '" href="' . get_feed_link() . "\" />\n";
-	echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr(sprintf( $args['comstitle'], get_bloginfo('name') )) . '" href="' . get_feed_link( 'comments_' . get_default_feed() ) . "\" />\n";
+	echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr(sprintf( $args['feedtitle'], get_bloginfo('name'), $args['separator'] )) . '" href="' . get_feed_link() . "\" />\n";
+	echo '<link rel="alternate" type="' . feed_content_type() . '" title="' . esc_attr(sprintf( $args['comstitle'], get_bloginfo('name'), $args['separator'] )) . '" href="' . get_feed_link( 'comments_' . get_default_feed() ) . "\" />\n";
 }
 
 /**

@@ -267,7 +267,7 @@ td.help {
 	color: #000;
 }
 
-.side-info h5, .bordertitle {
+.side-info h5 {
 	border-bottom-color: #dadada;
 }
 
@@ -349,7 +349,10 @@ a:hover,
 div.dashboard-widget-submit input:hover,
 .subsubsub a:hover,
 .subsubsub a.current:hover,
-.ui-tabs-nav a:hover {
+.ui-tabs-nav a:hover,
+.plugins .inactive a:hover,
+#all-plugins-table .plugins .inactive a:hover,
+#search-plugins-table .plugins .inactive a:hover {
 	color: #d54e21;
 }
 
@@ -382,13 +385,17 @@ div.dashboard-widget-submit input:hover,
 	color: #ccc;
 }
 
-.submitbox .submitdelete, a.delete {
+.plugins a.delete:hover,
+#all-plugins-table .plugins a.delete:hover,
+#search-plugins-table .plugins a.delete:hover,
+.submitbox .submitdelete,
+a.delete {
 	color: #f00;
 	border-bottom-color: #f00;
 }
 
 .submitbox .submitdelete:hover,
-#media-upload a.delete:hover {
+#media-items a.delete:hover {
 	color: #fff;
 	background-color: #f00;
 	border-bottom-color: #f00;
@@ -423,6 +430,10 @@ div.dashboard-widget-submit input:hover,
 	border-color: #e6db55;
 }
 
+.update-message {
+	color: #000000;
+}
+
 a.page-numbers {
 	border-bottom-color: #b8d3e2;
 }
@@ -432,7 +443,9 @@ a.page-numbers {
 }
 
 .widefat td,
-.widefat th {
+.widefat th,
+#install-plugins .plugins td,
+#install-plugins .plugins th {
 	border-color: #dfdfdf;
 }
 
@@ -464,7 +477,8 @@ a,
 #poststuff #edButtonHTML,
 #the-comment-list p.comment-author strong a,
 #media-upload a.del-link,
-#media-upload a.delete,
+#media-items a.delete,
+.plugins a.delete,
 .ui-tabs-nav a {
 	color: #1c6280;
 }
@@ -574,10 +588,26 @@ input.readonly, textarea.readonly {
 	background-color: #fff;
 }
 
+.plugins .inactive,
+.plugins .inactive th,
+.plugins .inactive td,
+tr.inactive + tr.plugin-update-tr .plugin-update {
+	background-color: #ebeeef;
+}
+
+.plugin-update-tr .update-message {
+	background-color: #fffbe4;
+	border-color: #dfdfdf;
+}
+
 .plugins .active,
 .plugins .active th,
 .plugins .active td {
-	background-color: #e7f7d3;
+	color: #000;
+}
+
+.plugins .inactive a { 
+	color: #557799; 	
 }
 
 #the-comment-list .unapproved,
@@ -647,7 +677,7 @@ input.readonly, textarea.readonly {
 	background: url(../images/xit.gif) no-repeat -10px 0;
 }
 
-#update-nag, .plugin-update {
+#update-nag {
 	background-color: #fffeeb;
 	border-color: #ccc;
 	color: #555;
@@ -698,10 +728,6 @@ abbr.required,
 .widget-control-remove:hover,
 .delete a:hover {
 	color: #f00;
-}
-
-#media-upload a.delete {
-	color: #888;
 }
 
 /* password strength meter */
@@ -1319,10 +1345,6 @@ div.star.select:hover {
 	border-color: #ddd;
 }
 
-.inline-edit-row p.submit {
-	background-color: #f1f1f1;
-}
-
 .inline-editor .categories .catshow,
 .inline-editor .categories .cathide {
 	color: #21759b;
@@ -1616,25 +1638,34 @@ div.widgets-sortables,
 }
 
 #widgets-right .sidebar-name {
-	background-image: url(../images/fav.png);
+	background-image: url(../images/fav-vs.png);
 	text-shadow: #3f3f3f 0 -1px 0;
 	background-color: #636363;
 	border-color: #636363;
 	color: #fff;
 }
 
-.sidebar-name:hover {
+.sidebar-name:hover,
+#removing-widget {
 	color: #d54e21;
 }
 
+#removing-widget span {
+	color: black;
+}
+
 #widgets-left .sidebar-name-arrow {
-	background: transparent url(../images/menu-bits.gif) no-repeat scroll left -109px;
+	background: transparent url(../images/menu-bits-vs.gif) no-repeat scroll left -109px;
 }
 
 #widgets-right .sidebar-name-arrow {
-	background: transparent url(../images/fav-arrow.gif) no-repeat scroll 0 -1px;
+	background: transparent url(../images/fav-arrow-vs.gif) no-repeat scroll 0 -1px;
 }
 
-h4 .in-widget-title {
-	color: #636363;
+.in-widget-title {
+	color: #606060;
+}
+
+.deleting .widget-title * {
+	color: #aaa;
 }

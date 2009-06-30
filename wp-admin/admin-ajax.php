@@ -242,8 +242,10 @@ case 'delete-link-cat' :
 
 	$cat_name = get_term_field('name', $id, 'link_category');
 
+	$default = get_option('default_link_category');
+
 	// Don't delete the default cats.
-	if ( $id == get_option('default_link_category') ) {
+	if ( $id == $default ) {
 		$x = new WP_AJAX_Response( array(
 			'what' => 'link-cat',
 			'id' => $id,
@@ -252,7 +254,7 @@ case 'delete-link-cat' :
 		$x->send();
 	}
 
-	$r = wp_delete_term($id, 'link_category');
+	$r = wp_delete_term($id, 'link_category', array('default' => $default));
 	if ( !$r )
 		die('0');
 	if ( is_wp_error($r) ) {
@@ -558,7 +560,7 @@ case 'add-tag' : // From Manage->Tags
 		'what' => 'tag',
 		'id' => $tag->term_id,
 		'position' => '-1',
-		'data' => _tag_row( $tag ),
+		'data' => _tag_row( $tag, '', $taxonomy ),
 		'supplemental' => array('name' => $tag_full_name, 'show-link' => sprintf(__( 'Tag <a href="#%s">%s</a> added' ), "tag-$tag->term_id", $tag_full_name))
 	) );
 	$x->send();
@@ -600,8 +602,12 @@ case 'add-comment' :
 	if ( !current_user_can( 'edit_post', $id ) )
 		die('-1');
 	$search = isset($_POST['s']) ? $_POST['s'] : false;
-	$start = isset($_POST['page']) ? intval($_POST['page']) * 25 - 1: 24;
-	$status = isset($_POST['comment_status']) ? $_POST['comment_status'] : false;
+	$status = isset($_POST['comment_status']) ? $_POST['comment_status'] : 'all';
+	$per_page = isset($_POST['per_page']) ?  (int) $_POST['per_page'] + 8 : 28;
+	$start = isset($_POST['page']) ? ( intval($_POST['page']) * $per_page ) -1 : $per_page - 1;
+	if ( 1 > $start )
+		$start = 27;
+
 	$mode = isset($_POST['mode']) ? $_POST['mode'] : 'detail';
 	$p = isset($_POST['p']) ? $_POST['p'] : 0;
 	$comment_type = isset($_POST['comment_type']) ? $_POST['comment_type'] : '';
@@ -812,8 +818,10 @@ case 'add-meta' :
 			die('0'); // if meta doesn't exist
 		if ( !current_user_can( 'edit_post', $meta->post_id ) )
 			die('-1');
-		if ( !$u = update_meta( $mid, $key, $value ) )
-			die('0'); // We know meta exists; we also know it's unchanged (or DB error, in which case there are bigger problems).
+		if ( $meta->meta_value != stripslashes($value) ) {
+			if ( !$u = update_meta( $mid, $key, $value ) )
+				die('0'); // We know meta exists; we also know it's unchanged (or DB error, in which case there are bigger problems).
+		}
 
 		$key = stripslashes($key);
 		$value = stripslashes($value);
@@ -1062,10 +1070,10 @@ case 'inline-save':
 	}
 
 	$data = &$_POST;
-	
+
 	$post = get_post( $post_ID, ARRAY_A );
 	$post = add_magic_quotes($post); //since it is from db
-	
+
 	$data['content'] = $post['post_content'];
 	$data['excerpt'] = $post['post_excerpt'];
 
@@ -1280,63 +1288,43 @@ case 'save-widget' :
 
 	unset( $_POST['savewidgets'], $_POST['action'] );
 
+	do_action('load-widgets.php');
+	do_action('widgets.php');
+	do_action('sidebar_admin_setup');
+
 	$id_base = $_POST['id_base'];
-	$number = isset($_POST['widget_number']) ? $_POST['widget_number'] : '';
+	$widget_id = $_POST['widget-id'];
 	$sidebar_id = $_POST['sidebar'];
+	$multi_number = !empty($_POST['multi_number']) ? (int) $_POST['multi_number'] : 0;
+	$settings = isset($_POST['widget-' . $id_base]) && is_array($_POST['widget-' . $id_base]) ? $_POST['widget-' . $id_base] : false;
+	$error = '<p>' . __('An error has occured. Please reload the page and try again.') . '</p>';
+
 	$sidebars = wp_get_sidebars_widgets();
 	$sidebar = isset($sidebars[$sidebar_id]) ? $sidebars[$sidebar_id] : array();
 
 	// delete
 	if ( isset($_POST['delete_widget']) && $_POST['delete_widget'] ) {
-		$del_id = $_POST['widget-id'];
-		$widget = isset($wp_registered_widgets[$del_id]) ? $wp_registered_widgets[$del_id] : false;
 
-		if ( !in_array($del_id, $sidebar, true) )
-			die('-1');
+		if ( !isset($wp_registered_widgets[$widget_id]) )
+			die($error);
 
-		if ( $widget ) {
-			$option = str_replace( '-', '_', 'widget_' . $id_base );
-			$data = get_option($option);
+		$sidebar = array_diff( $sidebar, array($widget_id) );
+		$_POST = array('sidebar' => $sidebar_id, 'widget-' . $id_base => array(), 'the-widget-id' => $widget_id, 'delete_widget' => '1');
+	} elseif ( $settings && preg_match( '/__i__|%i%/', key($settings) ) ) {
+		if ( !$multi_number )
+			die($error);
 
-			if ( isset($widget['params'][0]['number']) ) {
-				$number = $widget['params'][0]['number'];
-				if ( is_array($data) && isset($data[$number]) ) {
-					unset( $data[$number] );
-					update_option($option, $data);
-				}
-			} else {
-				if ( $data ) {
-					$data = array();
-					update_option($option, $data);
-				}
-			}
-		}
-
-		$sidebar = array_diff( $sidebar, array($del_id) );
-		$sidebars[$sidebar_id] = $sidebar;
-		wp_set_sidebars_widgets($sidebars);
-
-		echo "deleted:$del_id";
-		die();
+		$_POST['widget-' . $id_base] = array( $multi_number => array_shift($settings) );
+		$widget_id = $id_base . '-' . $multi_number;
+		$sidebar[] = $widget_id;
 	}
+	$_POST['widget-id'] = $sidebar;
 
-	// save
 	foreach ( (array) $wp_registered_widget_updates as $name => $control ) {
+
 		if ( $name == $id_base ) {
 			if ( !is_callable( $control['callback'] ) )
 				continue;
-
-			if ( $number ) {
-				// don't delete other instances of the same multi-widget
-				foreach ( $sidebar as $_widget_id ) {
-					$_widget = $wp_registered_widgets[$_widget_id];
-
-					if ( isset($_widget['params']) && 
-						is_array($_widget['params'][0]) && 
-						array_key_exists('number', $_widget['params'][0]) )
-							unset($wp_registered_widgets[$_widget_id]['params'][0]['number']);
-				}
-			}
 
 			ob_start();
 				call_user_func_array( $control['callback'], $control['params'] );
@@ -1345,7 +1333,20 @@ case 'save-widget' :
 		}
 	}
 
-	die('1');
+	if ( isset($_POST['delete_widget']) && $_POST['delete_widget'] ) {
+		$sidebars[$sidebar_id] = $sidebar;
+		wp_set_sidebars_widgets($sidebars);
+		echo "deleted:$widget_id";
+		die();
+	}
+
+	if ( !empty($_POST['add_new']) )
+		die();
+
+	if ( $form = $wp_registered_widget_controls[$widget_id] )
+		call_user_func_array( $form['callback'], $form['params'] );
+
+	die();
 	break;
 default :
 	do_action( 'wp_ajax_' . $_POST['action'] );

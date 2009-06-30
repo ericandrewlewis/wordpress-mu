@@ -64,7 +64,7 @@ class WP_Widget {
 	 * @param array $instance Current settings
 	 */
 	function form($instance) {
-		echo '<p>' . __('There are no options for this widget.') . '</p>';
+		echo '<p class="no-options-widget">' . __('There are no options for this widget.') . '</p>';
 		return 'noform';
 	}
 
@@ -168,15 +168,15 @@ class WP_Widget {
 
 		$widget_args = wp_parse_args( $widget_args, array( 'number' => -1 ) );
 		$this->_set( $widget_args['number'] );
-		$settings = $this->get_settings();
+		$instance = $this->get_settings();
 
-		if ( array_key_exists( $this->number, $settings ) ) {
-            $settings = $settings[$this->number];
+		if ( array_key_exists( $this->number, $instance ) ) {
+			$instance = $instance[$this->number];
 			// filters the widget's settings, return false to stop displaying the widget
-			$settings = apply_filters('widget_display_callback', $settings, $this, $args);   
-            if ( false !== $settings )
-				$this->widget($args, $settings);
-        }
+			$instance = apply_filters('widget_display_callback', $instance, $this, $args);
+			if ( false !== $instance )
+				$this->widget($args, $instance);
+		}
 	}
 
 	/** Deal with changed settings.
@@ -191,58 +191,53 @@ class WP_Widget {
 		$all_instances = $this->get_settings();
 
 		// We need to update the data
-		if ( !$this->updated && !empty($_POST['sidebar']) ) {
+		if ( $this->updated )
+			return;
 
-			// Tells us what sidebar to put the data in
-			$sidebar = (string) $_POST['sidebar'];
+		$sidebars_widgets = wp_get_sidebars_widgets();
 
-			$sidebars_widgets = wp_get_sidebars_widgets();
-			if ( isset($sidebars_widgets[$sidebar]) )
-				$this_sidebar =& $sidebars_widgets[$sidebar];
+		if ( isset($_POST['delete_widget']) && $_POST['delete_widget'] ) {
+			// Delete the settings for this instance of the widget
+			if ( isset($_POST['the-widget-id']) )
+				$del_id = $_POST['the-widget-id'];
 			else
-				$this_sidebar = array();
+				return;
 
-			if ( isset($_POST['delete_widget']) && $_POST['delete_widget'] ) {
-				// Delete the settings for this instance of the widget
-				if ( isset($_POST['widget-id']) )
-					$del_id = $_POST['widget-id'];
-				else
-					return;
+			if ( isset($wp_registered_widgets[$del_id]['params'][0]['number']) ) {
+				$number = $wp_registered_widgets[$del_id]['params'][0]['number'];
 
-				if ( $this->_get_display_callback() == $wp_registered_widgets[$del_id]['callback'] && isset($wp_registered_widgets[$del_id]['params'][0]['number']) ) {
-					$number = $wp_registered_widgets[$del_id]['params'][0]['number'];
-
-					if ( $this->id_base . '-' . $number == $del_id ) {
-						unset($all_instances[$number]);
-					}
-				}
+				if ( $this->id_base . '-' . $number == $del_id )
+					unset($all_instances[$number]);
+			}
+		} else {
+			if ( isset($_POST['widget-' . $this->id_base]) && is_array($_POST['widget-' . $this->id_base]) ) {
+				$settings = $_POST['widget-' . $this->id_base];
+			} elseif ( isset($_POST['id_base']) && $_POST['id_base'] == $this->id_base ) {
+				$num = $_POST['multi_number'] ? (int) $_POST['multi_number'] : (int) $_POST['widget_number'];
+				$settings = array( $num => array() );
 			} else {
-				if ( isset($_POST['widget-' . $this->id_base]) && is_array($_POST['widget-' . $this->id_base]) ) {
-					$settings = $_POST['widget-' . $this->id_base];
-				} else {
-					$num = $_POST['multi_number'] ? (int) $_POST['multi_number'] : (int) $_POST['widget_number'];
-					$settings = array( $num => array() );
-				}
-
-				foreach ( $settings as $number => $new_instance ) {
-					$new_instance = stripslashes_deep($new_instance);
-					$this->_set($number);
-
-					if ( isset($all_instances[$number]) )
-						$instance = $this->update($new_instance, $all_instances[$number]);
-					else
-						$instance = $this->update($new_instance, array());
-
-					// filters the widget's settings before saving, return false to cancel saving (keep the old settings if updating)
-					$instance = apply_filters('widget_update_callback', $instance, $new_instance, $this);
-					if ( false !== $instance )
-						$all_instances[$number] = $instance;
-				}
+				return;
 			}
 
-			$this->save_settings($all_instances);
-			$this->updated = true;
+			foreach ( $settings as $number => $new_instance ) {
+				$new_instance = stripslashes_deep($new_instance);
+				$this->_set($number);
+
+				$old_instance = isset($all_instances[$number]) ? $all_instances[$number] : array();
+
+				$instance = $this->update($new_instance, $old_instance);
+
+				// filters the widget's settings before saving, return false to cancel saving (keep the old settings if updating)
+				$instance = apply_filters('widget_update_callback', $instance, $new_instance, $old_instance, $this);
+				if ( false !== $instance )
+					$all_instances[$number] = $instance;
+
+				break; // run only once
+			}
 		}
+
+		$this->save_settings($all_instances);
+		$this->updated = true;
 	}
 
 	/** Generate the control form.
@@ -269,8 +264,9 @@ class WP_Widget {
 		$return = null;
 		if ( false !== $instance ) {
 			$return = $this->form($instance);
-			if ( 'noform' !== $return )
-				do_action_ref_array( 'in_widget_form', array(&$this) ); // add extra fields in the widget form
+			// add extra fields in the widget form - be sure to set $return to null if you add any
+			// if the widget has no form the text echoed from the default form method can be hidden using css
+			do_action_ref_array( 'in_widget_form', array(&$this, &$return, $instance) );
 		}
 		return $return;
 	}
@@ -289,7 +285,7 @@ class WP_Widget {
 
 	function get_settings() {
 		$settings = get_option($this->option_name);
-		
+
 		if ( false === $settings && isset($this->alt_option_name) )
 			$settings = get_option($this->alt_option_name);
 
@@ -301,7 +297,7 @@ class WP_Widget {
 			$settings = wp_convert_widget_settings($this->id_base, $this->option_name, $settings);
 		}
 
-		unset($settings['_multiwidget']);
+		unset($settings['_multiwidget'], $settings['__i__']);
 		return $settings;
 	}
 }
@@ -330,9 +326,20 @@ class WP_Widget_Factory {
 	}
 
 	function _register_widgets() {
+		global $wp_registered_widgets;
 		$keys = array_keys($this->widgets);
-		foreach ( $keys as $key )
+		$registered = array_keys($wp_registered_widgets);
+		$registered = array_map('_get_widget_id_base', $registered);
+
+		foreach ( $keys as $key ) {
+			// don't register new widget if old widget with the same id is already registered
+			if ( in_array($this->widgets[$key]->id_base, $registered, true) ) {
+				unset($this->widgets[$key]);
+				continue;
+			}
+
 			$this->widgets[$key]->_register();
+		}
 	}
 }
 
@@ -370,6 +377,34 @@ $wp_registered_widget_updates = array();
  * Private
  */
 $_wp_sidebars_widgets = array();
+
+/**
+ * Private
+ */
+ $_wp_deprecated_widgets_callbacks = array(
+ 	'wp_widget_pages',
+	'wp_widget_pages_control',
+	'wp_widget_calendar',
+	'wp_widget_calendar_control',
+	'wp_widget_archives',
+	'wp_widget_archives_control',
+	'wp_widget_links',
+	'wp_widget_meta',
+	'wp_widget_meta_control',
+	'wp_widget_search',
+	'wp_widget_recent_entries',
+	'wp_widget_recent_entries_control',
+	'wp_widget_tag_cloud',
+	'wp_widget_tag_cloud_control',
+	'wp_widget_categories',
+	'wp_widget_categories_control',
+	'wp_widget_text',
+	'wp_widget_text_control',
+	'wp_widget_rss',
+	'wp_widget_rss_control',
+	'wp_widget_recent_comments',
+	'wp_widget_recent_comments_control'
+ );
 
 /* Template tags & API functions */
 
@@ -559,12 +594,23 @@ function unregister_sidebar( $name ) {
  * @return null Will return if $output_callback is empty after removing widget.
  */
 function wp_register_sidebar_widget($id, $name, $output_callback, $options = array()) {
-	global $wp_registered_widgets;
+	global $wp_registered_widgets, $wp_registered_widget_controls, $wp_registered_widget_updates, $_wp_deprecated_widgets_callbacks;
 
 	$id = strtolower($id);
 
 	if ( empty($output_callback) ) {
 		unset($wp_registered_widgets[$id]);
+		return;
+	}
+
+	$id_base = _get_widget_id_base($id);
+	if ( in_array($output_callback, $_wp_deprecated_widgets_callbacks, true) && !is_callable($output_callback) ) {
+		if ( isset($wp_registered_widget_controls[$id]) )
+			unset($wp_registered_widget_controls[$id]);
+
+		if ( isset($wp_registered_widget_updates[$id_base]) )
+			unset($wp_registered_widget_updates[$id_base]);
+
 		return;
 	}
 
@@ -635,14 +681,21 @@ function wp_unregister_sidebar_widget($id) {
  * @param mixed $params,... Optional. Additional parameters to add to widget.
  */
 function wp_register_widget_control($id, $name, $control_callback, $options = array()) {
-	global $wp_registered_widget_controls, $wp_registered_widget_updates;
+	global $wp_registered_widget_controls, $wp_registered_widget_updates, $wp_registered_widgets, $_wp_deprecated_widgets_callbacks;
 
 	$id = strtolower($id);
-	$update_id = preg_replace( '/-[0-9]+$/', '', $id );
+	$id_base = _get_widget_id_base($id);
 
 	if ( empty($control_callback) ) {
 		unset($wp_registered_widget_controls[$id]);
-		unset($wp_registered_widget_updates[$update_id]);
+		unset($wp_registered_widget_updates[$id_base]);
+		return;
+	}
+
+	if ( in_array($control_callback, $_wp_deprecated_widgets_callbacks, true) && !is_callable($control_callback) ) {
+		if ( isset($wp_registered_widgets[$id]) )
+			unset($wp_registered_widgets[$id]);
+
 		return;
 	}
 
@@ -664,14 +717,14 @@ function wp_register_widget_control($id, $name, $control_callback, $options = ar
 
 	$wp_registered_widget_controls[$id] = $widget;
 
-	if ( isset($wp_registered_widget_updates[$update_id]) )
+	if ( isset($wp_registered_widget_updates[$id_base]) )
 		return;
 
 	if ( isset($widget['params'][0]['number']) )
 		$widget['params'][0]['number'] = -1;
 
 	unset($widget['width'], $widget['height'], $widget['name'], $widget['id']);
-	$wp_registered_widget_updates[$update_id] = $widget;
+	$wp_registered_widget_updates[$id_base] = $widget;
 }
 
 function _register_widget_update_callback($id_base, $update_callback, $options = array()) {
@@ -776,9 +829,9 @@ function dynamic_sidebar($index = 1) {
 
 	$did_one = false;
 	foreach ( (array) $sidebars_widgets[$index] as $id ) {
-		
+
 		if ( !isset($wp_registered_widgets[$id]) ) continue;
-		
+
 		$params = array_merge(
 			array( array_merge( $sidebar, array('widget_id' => $id, 'widget_name' => $wp_registered_widgets[$id]['name']) ) ),
 			(array) $wp_registered_widgets[$id]['params']
@@ -817,7 +870,7 @@ function dynamic_sidebar($index = 1) {
  * in which the first instance of the widget with the given callback or $id_base is found.
  * With the $widget_id parameter, returns the ID of the sidebar where
  * the widget with that callback/$id_base AND that ID is found.
- * 
+ *
  * NOTE: $widget_id and $id_base are the same for single widgets. To be effective
  * this function has to run after widgets have initialized, at action 'init' or later.
  *
@@ -838,10 +891,10 @@ function is_active_widget($callback = false, $widget_id = false, $id_base = fals
 		foreach ( $sidebars_widgets as $sidebar => $widgets ) {
 			if ( $skip_inactive && 'wp_inactive_widgets' == $sidebar )
 				continue;
-			
+
 			if ( is_array($widgets) ) {
 				foreach ( $widgets as $widget ) {
-					if ( ( $callback && isset($wp_registered_widgets[$widget]['callback']) && $wp_registered_widgets[$widget]['callback'] == $callback ) || ( $id_base && preg_replace( '/-[0-9]+$/', '', $widget ) == $id_base ) ) {
+					if ( ( $callback && isset($wp_registered_widgets[$widget]['callback']) && $wp_registered_widgets[$widget]['callback'] == $callback ) || ( $id_base && _get_widget_id_base($widget) == $id_base ) ) {
 						if ( !$widget_id || $widget_id == $wp_registered_widgets[$widget]['id'] )
 							return $sidebar;
 					}
@@ -882,8 +935,8 @@ function is_dynamic_sidebar() {
  */
 function is_active_sidebar( $index ) {
 	$index = ( is_int($index) ) ? "sidebar-$index" : sanitize_title($index);
-	$sidebars_widgets = get_option( 'sidebars_widgets', array() );	
-	if ( isset($sidebars_widgets[$index]) && !empty($sidebars_widgets[$index]) ) 
+	$sidebars_widgets = wp_get_sidebars_widgets(false);
+	if ( isset($sidebars_widgets[$index]) && !empty($sidebars_widgets[$index]) )
 		return true;
 
 	return false;
@@ -1060,7 +1113,7 @@ function wp_convert_widget_settings($base_name, $option_name, $settings) {
 				$GLOBALS['_wp_sidebars_widgets'] = get_option('sidebars_widgets');
 			$sidebars_widgets = &$GLOBALS['_wp_sidebars_widgets'];
 		}
-		
+
 		foreach ( (array) $sidebars_widgets as $index => $sidebar ) {
 			if ( is_array($sidebar) ) {
 				foreach ( $sidebar as $i => $name ) {
@@ -1201,7 +1254,6 @@ function unregister_widget_control($id) {
  * @param array $args the widget's sidebar args
  * @return void
  **/
-
 function the_widget($widget, $instance = array(), $args = array()) {
 	global $wp_widget_factory;
 
@@ -1217,4 +1269,11 @@ function the_widget($widget, $instance = array(), $args = array()) {
 
 	$widget_obj->_set(-1);
 	$widget_obj->widget($args, $instance);
+}
+
+/**
+ * Private
+ */
+function _get_widget_id_base($id) {
+	return preg_replace( '/-[0-9]+$/', '', $id );
 }

@@ -21,12 +21,8 @@ function wp_list_widgets() {
 
 	$sort = $wp_registered_widgets;
 	usort( $sort, create_function( '$a, $b', 'return strnatcasecmp( $a["name"], $b["name"] );' ) );
-	$done = array(); ?>
+	$done = array();
 
-	<div class="widget-holder">
-	<p class="description"><?php _e('Drag widgets from here to a sidebar on the right to activate them.'); ?></p>
-	<div id="widget-list">
-<?php
 	foreach ( $sort as $widget ) {
 		if ( in_array( $widget['callback'], $done, true ) ) // We already showed this multi-widget
 			continue;
@@ -52,11 +48,7 @@ function wp_list_widgets() {
 
 		$args = wp_list_widget_controls_dynamic_sidebar( array( 0 => $args, 1 => $widget['params'][0] ) );
 		call_user_func_array( 'wp_widget_control', $args );
-	} ?>
-	</div>
-	<br class='clear' />
-	</div>
-<?php
+	}
 }
 
 /**
@@ -105,10 +97,13 @@ function wp_list_widget_controls_dynamic_sidebar( $params ) {
 
 function next_widget_id_number($id_base) {
 	global $wp_registered_widgets;
-	$number = 2;
+	$number = 1;
 
-	while ( isset($wp_registered_widgets["$id_base-$number"]) )
-		$number++;
+	foreach ( $wp_registered_widgets as $widget_id => $widget ) {
+		if ( preg_match( '/' . $id_base . '-([0-9]+)$/', $widget_id, $matches ) )
+			$number = max($number, $matches[1]);
+	}
+	$number++;
 
 	return $number;
 }
@@ -176,12 +171,13 @@ function wp_widget_control( $sidebar_args ) {
 
 	<div class="widget-inside">
 	<form action="" method="post">
+	<div class="widget-content">
 <?php
 	if ( isset($control['callback']) )
 		$has_form = call_user_func_array( $control['callback'], $control['params'] );
 	else
 		echo "\t\t<p>" . __('There are no options for this widget.') . "</p>\n"; ?>
-
+	</div>
 	<input type="hidden" name="widget-id" class="widget-id" value="<?php echo esc_attr($id_format); ?>" />
 	<input type="hidden" name="id_base" class="id_base" value="<?php echo esc_attr($id_base); ?>" />
 	<input type="hidden" name="widget-width" class="widget-width" value="<?php echo esc_attr($control['width']); ?>" />
@@ -191,10 +187,14 @@ function wp_widget_control( $sidebar_args ) {
 	<input type="hidden" name="add_new" class="add_new" value="<?php echo esc_attr($add_new); ?>" />
 
 	<div class="widget-control-actions">
-		<a class="button widget-control-remove alignleft" href="#remove"><?php _e('Remove'); ?></a>
-<?php		if ( 'noform' !== $has_form ) { ?>
-		<input type="submit" name="savewidget" class="button-primary widget-control-save alignright" value="<?php esc_attr_e('Save'); ?>" />
-<?php		} ?>
+		<div class="alignleft">
+		<a class="widget-control-remove" href="#remove"><?php _e('Remove'); ?></a> |
+		<a class="widget-control-close" href="#close"><?php _e('Close'); ?></a>
+		</div>
+		<div class="alignright<?php if ( 'noform' === $has_form ) echo ' widget-control-noform'; ?>">
+		<img src="images/wpspin_light.gif" class="ajax-feedback " title="" alt="" />
+		<input type="submit" name="savewidget" class="button-primary widget-control-save" value="<?php esc_attr_e('Save'); ?>" />
+		</div>
 		<br class="clear" />
 	</div>
 	</form>

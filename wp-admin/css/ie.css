@@ -246,7 +246,8 @@ a.button {
 .tagchecklist,
 #col-container,
 #col-left,
-#col-right {
+#col-right,
+.fileedit-sub {
 	display: block;
 	zoom: 100%;
 }
@@ -373,7 +374,11 @@ table.ie-fixed {
 }
 
 * html .widget-title h4 {
-	width: 210px;
+	width: 205px;
+}
+
+* html #removing-widget .in-widget-title {
+	display: none;
 }
 
 #available-widgets .widget-holder {

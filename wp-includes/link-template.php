@@ -711,26 +711,23 @@ function get_edit_post_link( $id = 0, $context = 'display' ) {
 }
 
 /**
- * Retrieve edit posts link for post.
+ * Display edit post link for post.
  *
  * @since 1.0.0
  *
  * @param string $link Optional. Anchor text.
  * @param string $before Optional. Display before edit link.
  * @param string $after Optional. Display after edit link.
+ * @param int $id Optional. Post ID.
  */
-function edit_post_link( $link = 'Edit This', $before = '', $after = '' ) {
-	global $post;
+function edit_post_link( $link = 'Edit This', $before = '', $after = '', $id = 0 ) {
+	if ( !$post = &get_post( $id ) )
+		return;
 
-	if ( $post->post_type == 'page' ) {
-		if ( !current_user_can( 'edit_page', $post->ID ) )
-			return;
-	} else {
-		if ( !current_user_can( 'edit_post', $post->ID ) )
-			return;
-	}
+	if ( !$url = get_edit_post_link( $post->ID ) )
+		return;
 
-	$link = '<a class="post-edit-link" href="' . get_edit_post_link( $post->ID ) . '" title="' . esc_attr( __( 'Edit post' ) ) . '">' . $link . '</a>';
+	$link = '<a class="post-edit-link" href="' . $url . '" title="' . esc_attr( __( 'Edit post' ) ) . '">' . $link . '</a>';
 	echo $before . apply_filters( 'edit_post_link', $link, $post->ID ) . $after;
 }
 
@@ -1037,11 +1034,11 @@ function get_boundary_post($in_same_cat = false, $excluded_categories = '', $sta
 		}
 	}
 
-	$categories = array_merge($cat_array, $excluded_categories);
+	$categories = implode(',', array_merge($cat_array, $excluded_categories) );
 
 	$order = $start ? 'ASC' : 'DESC';
 
-	return get_posts("numberposts=1&order=$order&orderby=ID&category=$categories");
+	return get_posts( array('numberposts' => 1, 'order' => $order, 'orderby' => 'ID', 'category' => $categories) );
 }
 
 /**
@@ -1436,17 +1433,17 @@ function previous_posts_link( $label = '&laquo; Previous Page' ) {
  * @since 2.8
  *
  * @param string|array $args Optional args.
- * @return string The posts link navigation. 
+ * @return string The posts link navigation.
  */
 function get_posts_nav_link( $args = array() ) {
 	global $wp_query;
-	
+
 	$return = '';
 
 	if ( !is_singular() ) {
 		$defaults = array(
-			'sep' => ' &#8212; ', 
-			'prelabel' => __('&laquo; Previous Page'), 
+			'sep' => ' &#8212; ',
+			'prelabel' => __('&laquo; Previous Page'),
 			'nxtlabel' => __('Next Page &raquo;'),
 		);
 		$args = wp_parse_args( $args, $defaults );

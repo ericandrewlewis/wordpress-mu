@@ -119,19 +119,18 @@ body#theme-information {
 	border-width: 1px;
 	border-style: solid;
 	padding: 8px 12px 0;
-	margin-bottom: 10px;
 }
 
 .feature-filter .feature-group {
 	float: left;
 	margin-bottom: 20px;
-	width: 725px;
+	width: 695px;
 }
 
 .feature-filter .feature-name {
 	float: left;
 	text-align: right;
-	width: 65px;
+	width: 95px;
 }
 
 .feature-filter .feature-group li {

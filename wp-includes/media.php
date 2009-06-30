@@ -503,6 +503,8 @@ function wp_get_attachment_image_src($attachment_id, $size='thumbnail', $icon = 
 	if ( $image = image_downsize($attachment_id, $size) )
 		return $image;
 
+	$src = false;
+
 	if ( $icon && $src = wp_mime_type_icon($attachment_id) ) {
 		$icon_dir = apply_filters( 'icon_dir', ABSPATH . WPINC . '/images/crystal' );
 		$src_file = $icon_dir . '/' . basename($src);
@@ -610,7 +612,7 @@ add_shortcode('gallery', 'gallery_shortcode');
  */
 function gallery_shortcode($attr) {
 	global $post;
-	
+
 	static $instance = 0;
 	$instance++;
 
@@ -654,7 +656,7 @@ function gallery_shortcode($attr) {
 	$captiontag = tag_escape($captiontag);
 	$columns = intval($columns);
 	$itemwidth = $columns > 0 ? floor(100/$columns) : 100;
-	
+
 	$selector = "gallery-{$instance}";
 
 	$output = apply_filters('gallery_style', "

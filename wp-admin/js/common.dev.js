@@ -10,7 +10,7 @@ adminMenu = {
 			else
 				$(this).hide();
 		});
-		$('#adminmenu li.menu-top .wp-menu-image').click( function() { window.location = $(this).siblings('a.menu-top')[0].href; } );
+
 		this.favorites();
 
 		$('a.separator').click(function(){
@@ -26,9 +26,8 @@ adminMenu = {
 
 		if ( $('body').hasClass('folded') ) {
 			this.fold();
-		} else {
-			this.restoreMenuState();
 		}
+		this.restoreMenuState();
 	},
 
 	restoreMenuState : function() {
@@ -61,10 +60,16 @@ adminMenu = {
 			$('body').addClass('folded');
 			$('#adminmenu li.wp-has-submenu').hoverIntent({
 				over: function(e){
-					var m = $(this).find('.wp-submenu'), t = e.clientY, H = $(window).height(), h = m.height(), o;
-
-					if ( (t+h+10) > H ) {
-						o = (t+h+10) - H;
+					var m, b, h, o, f;
+					m = $(this).find('.wp-submenu');
+					b = m.parent().offset().top + m.height() + 1; // Bottom offset of the menu
+					h = $('#wpwrap').height(); // Height of the entire page
+					o = 60 + b - h;
+					f = $(window).height() + $('body').scrollTop() - 15; // The fold
+					if (f < (b - o)) {
+						o = b - f;
+					}
+					if (o > 1) {
 						m.css({'marginTop':'-'+o+'px'});
 					} else if ( m.css('marginTop') ) {
 						m.css({'marginTop':''});
@@ -137,7 +142,7 @@ showNotice = {
 
 jQuery(document).ready( function($) {
 	var lastClicked = false, checks, first, last, checked;
-	
+
 	// pulse
 	$('.fade').animate( { backgroundColor: '#ffffe0' }, 300).animate( { backgroundColor: '#fffbcc' }, 300).animate( { backgroundColor: '#ffffe0' }, 300).animate( { backgroundColor: '#fffbcc' }, 300);
 
@@ -236,32 +241,27 @@ jQuery(document).ready( function($) {
 		$('div.default-password-nag').hide();
 		return false;
 	});
+	
+	
 });
 
-(function(){
-	if ( 'undefined' != typeof google && google.gears ) return;
+jQuery(document).ready( function($){
+	var turboNag = $('.turbo-nag');
 
-	var gf = false;
+	if ( !turboNag.length || ('undefined' != typeof(google) && google.gears) )
+		return;
+
 	if ( 'undefined' != typeof GearsFactory ) {
-		gf = new GearsFactory();
+		return;
 	} else {
 		try {
-			if ( window.ActiveXObject ) {
-				gf = new ActiveXObject('Gears.Factory');
-				if ( gf && gf.getBuildInfo().indexOf('ie_mobile') != -1 )
-					gf.privateSetGlobalObject(this);
-			} else if ( ( 'undefined' != typeof navigator.mimeTypes ) && navigator.mimeTypes['application/x-googlegears'] ) {
-				gf = document.createElement("object");
-				gf.style.display = "none";
-				gf.width = 0;
-				gf.height = 0;
-				gf.type = "application/x-googlegears";
-				document.documentElement.appendChild(gf);
+			if ( ( 'undefined' != typeof window.ActiveXObject && ActiveXObject('Gears.Factory') ) ||
+				( 'undefined' != typeof navigator.mimeTypes && navigator.mimeTypes['application/x-googlegears'] ) ) {
+					return;
 			}
 		} catch(e){}
 	}
-	if ( gf && gf.hasPermission )
-		return;
 
-	jQuery('.turbo-nag').show();
-})();
+	turboNag.show();
+
+});

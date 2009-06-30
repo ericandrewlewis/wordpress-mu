@@ -1347,6 +1347,12 @@ class WP_Rewrite {
 			$commentmatch = $match . $commentregex;
 			$commentquery = $index . '?' . $query . '&cpage=' . $this->preg_index($num_toks + 1);
 
+			if ( get_option('page_on_front') ) {
+				//create query for Root /comment-page-xx
+				$rootcommentmatch = $match . $commentregex;
+				$rootcommentquery = $index . '?' . $query . '&page_id=' . get_option('page_on_front') . '&cpage=' . $this->preg_index($num_toks + 1);
+			}
+
 			//create query for /feed/(feed|atom|rss|rss2|rdf)
 			$feedmatch = $match . $feedregex;
 			$feedquery = $feedindex . '?' . $query . '&feed=' . $this->preg_index($num_toks + 1);
@@ -1371,6 +1377,8 @@ class WP_Rewrite {
 			//only on pages with comments add ../comment-page-xx/
 			if ( EP_PAGES & $ep_mask || EP_PERMALINK & $ep_mask || EP_NONE & $ep_mask )
 				$rewrite = array_merge($rewrite, array($commentmatch => $commentquery));
+			else if ( EP_ROOT & $ep_mask && get_option('page_on_front') )
+				$rewrite = array_merge($rewrite, array($rootcommentmatch => $rootcommentquery));
 
 			//do endpoints
 			if ($endpoints) {
@@ -1695,20 +1703,20 @@ class WP_Rewrite {
 
 		return $rules;
 	}
-	
+
 	/**
 	 * Retrieve IIS7 URL Rewrite formatted rewrite rules to write to web.config file.
 	 *
 	 * Does not actually write to the web.config file, but creates the rules for
 	 * the process that will.
 	 *
-	 * @since 2.8.0 
+	 * @since 2.8.0
 	 * @access public
 	 *
 	 * @return string
 	 */
 	function iis7_url_rewrite_rules(){
-		
+
 		if ( ! $this->using_permalinks()) {
 			return '';
 		}
@@ -1720,9 +1728,9 @@ class WP_Rewrite {
 		$rules .= "	</conditions>\n";
 		$rules .= "	<action type=\"Rewrite\" url=\"index.php\" />\n";
 		$rules .= "</rule>";
-				
+
 		$rules = apply_filters('iis7_url_rewrite_rules', $rules);
-		
+
 		return $rules;
 	}
 
@@ -1814,13 +1822,14 @@ class WP_Rewrite {
 	 *
 	 * @since 2.0.1
 	 * @access public
+	 * @param $hard bool Whether to update .htaccess (hard flush) or just update rewrite_rules transient (soft flush). Default is true (hard).
 	 */
-	function flush_rules() {
+	function flush_rules($hard = true) {
 		delete_transient('rewrite_rules');
 		$this->wp_rewrite_rules();
-		if ( function_exists('save_mod_rewrite_rules') )
+		if ( $hard && function_exists('save_mod_rewrite_rules') )
 			save_mod_rewrite_rules();
-		if ( function_exists('iis7_save_url_rewrite_rules') )
+		if ( $hard && function_exists('iis7_save_url_rewrite_rules') )
 			iis7_save_url_rewrite_rules();
 	}
 
@@ -1866,7 +1875,7 @@ class WP_Rewrite {
 	 * Will update the 'permalink_structure' option, if there is a difference
 	 * between the current permalink structure and the parameter value. Calls
 	 * {@link WP_Rewrite::init()} after the option is updated.
-	 * 
+	 *
 	 * Fires the 'permalink_structure_changed' action once the init call has
 	 * processed passing the old and new values
 	 *

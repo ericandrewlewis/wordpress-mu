@@ -130,15 +130,20 @@ function get_image_send_to_editor($id, $alt, $title, $align, $url='', $rel = fal
  */
 function image_add_caption( $html, $id, $alt, $title, $align, $url, $size ) {
 
-	if ( empty($alt) || apply_filters( 'disable_captions', '' ) ) return $html;
+	if ( empty($alt) || apply_filters( 'disable_captions', '' ) )
+		return $html;
+
 	$id = ( 0 < (int) $id ) ? 'attachment_' . $id : '';
 
 	preg_match( '/width="([0-9]+)/', $html, $matches );
-	if ( ! isset($matches[1]) ) return $html;
+	if ( ! isset($matches[1]) )
+		return $html;
+
 	$width = $matches[1];
 
-	$html = preg_replace( '/align[^\s\'"]+\s?/', '', $html );
-	if ( empty($align) ) $align = 'none';
+	$html = preg_replace( '/(class=["\'][^\'"]*)align(none|left|right|center)\s?/', '$1', $html );
+	if ( empty($align) )
+		$align = 'none';
 
 	$alt = ! empty($alt) ? addslashes($alt) : '';
 
@@ -194,7 +199,7 @@ function media_handle_upload($file_id, $post_id, $post_data = array()) {
 
 	if ( isset($file['error']) )
 		return new WP_Error( 'upload_error', $file['error'] );
-		
+
 	$name_parts = pathinfo($name);
 	$name = trim( substr( $name, 0, -(1 + strlen($name_parts['extension'])) ) );
 
@@ -327,7 +332,7 @@ if ( is_string($content_func) )
 	$args = func_get_args();
 	$args = array_slice($args, 1);
 	call_user_func_array($content_func, $args);
-	
+
 	do_action('admin_print_footer_scripts');
 ?>
 <script type="text/javascript">if(typeof wpOnload=='function')wpOnload();</script>
@@ -364,7 +369,6 @@ EOF;
 	printf($context, $out);
 }
 add_action( 'media_buttons', 'media_buttons' );
-add_action('media_upload_media', 'media_upload_handler');
 
 /**
  * {@internal Missing Short Description}}
@@ -375,6 +379,8 @@ add_action('media_upload_media', 'media_upload_handler');
  */
 function media_upload_form_handler() {
 	check_admin_referer('media-form');
+
+	$errors = null;
 
 	if ( isset($_POST['send']) ) {
 		$keys = array_keys($_POST['send']);
@@ -402,8 +408,6 @@ function media_upload_form_handler() {
 		if ( isset($post['errors']) ) {
 			$errors[$attachment_id] = $post['errors'];
 			unset($post['errors']);
-		} else {
-			$errors = array();
 		}
 
 		if ( $post != $_post )
@@ -427,12 +431,14 @@ function media_upload_form_handler() {
 
 	if ( isset($send_id) ) {
 		$attachment = stripslashes_deep( $_POST['attachments'][$send_id] );
+
 		$html = $attachment['post_title'];
 		if ( !empty($attachment['url']) ) {
 			if ( strpos($attachment['url'], 'attachment_id') || false !== strpos($attachment['url'], get_permalink($_POST['post_id'])) )
 				$rel = " rel='attachment wp-att-" . esc_attr($send_id)."'";
 			$html = "<a href='{$attachment['url']}'$rel>$html</a>";
 		}
+
 		$html = apply_filters('media_send_to_editor', $html, $send_id, $attachment);
 		return media_send_to_editor($html);
 	}
@@ -1305,10 +1311,10 @@ var swfu;
 SWFUpload.onload = function() {
 	var settings = {
 			button_text: '<span class="button"><?php _e('Select Files'); ?></span>',
-			button_text_style: '.button { text-align: center; font-weight: bold; font-family:"Lucida Grande","Lucida Sans Unicode",Tahoma,Verdana,sans-serif; }',
+			button_text_style: '.button { text-align: center; font-weight: bold; font-family:"Lucida Grande",Verdana,Arial,"Bitstream Vera Sans",sans-serif; }',
 			button_height: "24",
 			button_width: "132",
-			button_text_top_padding: 1,
+			button_text_top_padding: 2,
 			button_image_url: '<?php echo includes_url('images/upload.png'); ?>',
 			button_placeholder_id: "flash-browse-button",
 			upload_url : "<?php echo esc_attr( $flash_action_url ); ?>",
