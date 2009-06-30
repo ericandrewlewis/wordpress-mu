@@ -520,12 +520,17 @@ switch( $_GET['action'] ) {
 								<td valign="top">
 									<?php
 									$blogusers = get_users_of_blog( $blog['blog_id'] ); 
-									if( is_array( $blogusers ) ) {
-										if( $blog['blog_id'] == 1 && count( $blogusers ) > 10 ) {
-											$blogusers = array_slice( $blogusers, 0, 10 );
+									if ( is_array( $blogusers ) ) {
+										$blogusers_warning = '';
+										if ( count( $blogusers ) > 5 ) {
+											$blogusers = array_slice( $blogusers, 0, 5 );
+											$blogusers_warning = __( 'Only showing first 5 users.' ) . ' <a href="http://' . $blog[ 'domain' ] . $blog[ 'path' ] . 'wp-admin/users.php">' . __( 'More' ) . '</a>';
 										}
 										foreach ( $blogusers as $key => $val ) {
 											echo '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a> ('.$val->user_email.')<br />'; 
+										}
+										if( $blogusers_warning != '' ) {
+											echo '<strong>' . $blogusers_warning . '</strong><br />';
 										}
 									}
 									?>
