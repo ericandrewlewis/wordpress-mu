@@ -145,7 +145,7 @@ CREATE TABLE $wpdb->posts (
 ";
 
 if ( defined( 'WP_FIRST_INSTALL' ) ) {
-$wp_queries .= "CREATE TABLE IF NOT EXISTS $wpdb->users (
+$wp_queries .= "
 CREATE TABLE IF NOT EXISTS $wpdb->users (
   ID bigint(20) unsigned NOT NULL auto_increment,
   user_login varchar(60) NOT NULL default '',
