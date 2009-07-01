@@ -140,7 +140,10 @@ function number_format_i18n( $number, $decimals = null ) {
 	// let the user override the precision only
 	$decimals = ( is_null( $decimals ) ) ? $wp_locale->number_format['decimals'] : intval( $decimals );
 
-	return number_format( $number, $decimals, $wp_locale->number_format['decimal_point'], $wp_locale->number_format['thousands_sep'] );
+	$num = number_format( $number, $decimals, $wp_locale->number_format['decimal_point'], $wp_locale->number_format['thousands_sep'] );
+
+	// let the user translate digits from latin to localized language
+	return apply_filters( 'number_format_i18n', $num );
 }
 
 /**
@@ -476,7 +479,7 @@ function wp_load_alloptions() {
  * parameter value, will be called. The hook should accept two parameters, the
  * first is the new value and the second is the old value.  Whatever is
  * returned will be used as the new value.
- * 
+ *
  * After the value has been updated the action named 'update_option_$option_name'
  * will be called.  This action receives two parameters the first being the old
  * value and the second the new value.
@@ -780,6 +783,7 @@ function wp_user_settings() {
 
 	setcookie( 'wp-settings-' . $user->ID, $settings, time() + 31536000, SITECOOKIEPATH );
 	setcookie( 'wp-settings-time-' . $user->ID, time(), time() + 31536000, SITECOOKIEPATH );
+	$_COOKIE['wp-settings-' . $user->ID] = $settings;
 }
 
 /**
@@ -795,44 +799,73 @@ function wp_user_settings() {
  */
 function get_user_setting( $name, $default = false ) {
 
-	$arr = get_all_user_settings();
+	$all = get_all_user_settings();
 
-	return isset($arr[$name]) ? $arr[$name] : $default;
+	return isset($all[$name]) ? $all[$name] : $default;
+}
+
+/**
+ * Add or update user interface setting.
+ *
+ * Both $name and $value can contain only ASCII letters, numbers and underscores.
+ * This function has to be used before any output has started as it calls setcookie().
+ *
+ * @package WordPress
+ * @subpackage Option
+ * @since 2.8.0
+ *
+ * @param string $name The name of the setting.
+ * @param string $value The value for the setting.
+ * @return bool true if set successfully/false if not.
+ */
+function set_user_setting( $name, $value ) {
+
+	if ( headers_sent() )
+		return false;
+
+	$all = get_all_user_settings();
+	$name = preg_replace( '/[^A-Za-z0-9_]+/', '', $name );
+
+	if ( empty($name) )
+		return false;
+
+	$all[$name] = $value;
+
+	return wp_set_all_user_settings($all);
 }
 
 /**
  * Delete user interface settings.
  *
  * Deleting settings would reset them to the defaults.
+ * This function has to be used before any output has started as it calls setcookie().
  *
  * @package WordPress
  * @subpackage Option
  * @since 2.7.0
  *
  * @param mixed $names The name or array of names of the setting to be deleted.
+ * @return bool true if deleted successfully/false if not.
  */
 function delete_user_setting( $names ) {
-	global $current_user;
 
-	$arr = get_all_user_settings();
+	if ( headers_sent() )
+		return false;
+
+	$all = get_all_user_settings();
 	$names = (array) $names;
 
 	foreach ( $names as $name ) {
-		if ( isset($arr[$name]) ) {
-			unset($arr[$name]);
-			$settings = '';
+		if ( isset($all[$name]) ) {
+			unset($all[$name]);
+			$deleted = true;
 		}
 	}
 
-	if ( isset($settings) ) {
-		foreach ( $arr as $k => $v )
-			$settings .= $k . '=' . $v . '&';
+	if ( isset($deleted) )
+		return wp_set_all_user_settings($all);
 
-		$settings = rtrim($settings, '&');
-
-		update_user_option( $current_user->ID, 'user-settings', $settings );
-		setcookie('wp-settings-' . $current_user->ID, $settings, time() + 31536000, SITECOOKIEPATH);
-	}
+	return false;
 }
 
 /**
@@ -845,21 +878,57 @@ function delete_user_setting( $names ) {
  * @return array the last saved user settings or empty array.
  */
 function get_all_user_settings() {
+	global $_updated_user_settings;
+
 	if ( ! $user = wp_get_current_user() )
 		return array();
 
-	$arr = array();
+	if ( isset($_updated_user_settings) && is_array($_updated_user_settings) )
+		return $_updated_user_settings;
+
+	$all = array();
 	if ( isset($_COOKIE['wp-settings-' . $user->ID]) ) {
 		$cookie = preg_replace( '/[^A-Za-z0-9=&_]/', '', $_COOKIE['wp-settings-' . $user->ID] );
 
 		if ( $cookie && strpos($cookie, '=') ) // the '=' cannot be 1st char
-			parse_str($cookie, $arr);
+			parse_str($cookie, $all);
 
-	} elseif ( isset($user->wp_usersettings) && is_string($user->wp_usersettings) ) {
-		parse_str( $user->wp_usersettings, $arr );
+	} else {
+		$option = get_user_option('user-settings', $user->ID);
+		if ( $option && is_string($option) )
+			parse_str( $option, $all );
 	}
 
-	return $arr;
+	return $all;
+}
+
+/**
+ * Private. Set all user interface settings.
+ *
+ * @package WordPress
+ * @subpackage Option
+ * @since 2.8.0
+ *
+ */
+function wp_set_all_user_settings($all) {
+	global $_updated_user_settings;
+
+	if ( ! $user = wp_get_current_user() )
+		return false;
+
+	$_updated_user_settings = $all;
+	$settings = '';
+	foreach ( $all as $k => $v ) {
+		$v = preg_replace( '/[^A-Za-z0-9_]+/', '', $v );
+		$settings .= $k . '=' . $v . '&';
+	}
+
+	$settings = rtrim($settings, '&');
+
+	update_user_option( $user->ID, 'user-settings', $settings, false );
+	update_user_option( $user->ID, 'user-settings-time', time(), false );
+
+	return true;
 }
 
 /**
@@ -873,8 +942,8 @@ function delete_all_user_settings() {
 	if ( ! $user = wp_get_current_user() )
 		return;
 
-	delete_usermeta( $user->ID, 'user-settings' );
-	setcookie('wp-settings-'.$user->ID, ' ', time() - 31536000, SITECOOKIEPATH);
+	update_user_option( $user->ID, 'user-settings', '', false );
+	setcookie('wp-settings-' . $user->ID, ' ', time() - 31536000, SITECOOKIEPATH);
 }
 
 /**
@@ -1999,15 +2068,15 @@ function wp_upload_dir( $time = null ) {
 	$dir .= $subdir;
 	$url .= $subdir;
 
+	$uploads = apply_filters( 'upload_dir', array( 'path' => $dir, 'url' => $url, 'subdir' => $subdir, 'basedir' => $bdir, 'baseurl' => $burl, 'error' => false ) );
+
 	// Make sure we have an uploads dir
-	if ( ! wp_mkdir_p( $dir ) ) {
-		$message = sprintf( __( 'Unable to create directory %s. Is its parent directory writable by the server?' ), $dir );
+	if ( ! wp_mkdir_p( $uploads['path'] ) ) {
+		$message = sprintf( __( 'Unable to create directory %s. Is its parent directory writable by the server?' ), $uploads['path'] );
 		return array( 'error' => $message );
 	}
 
-	$uploads = array( 'path' => $dir, 'url' => $url, 'subdir' => $subdir, 'basedir' => $bdir, 'baseurl' => $burl, 'error' => false );
-
-	return apply_filters( 'upload_dir', $uploads );
+	return $uploads;
 }
 
 /**
@@ -2373,7 +2442,7 @@ function wp_die( $message, $title = '', $args = array() ) {
 
 	$defaults = array( 'response' => 500 );
 	$r = wp_parse_args($args, $defaults);
-	
+
 	$have_gettext = function_exists('__');
 
 	if ( function_exists( 'is_wp_error' ) && is_wp_error( $message ) ) {
@@ -2397,12 +2466,12 @@ function wp_die( $message, $title = '', $args = array() ) {
 	} elseif ( is_string( $message ) ) {
 		$message = "<p>$message</p>";
 	}
-	
+
 	if ( isset( $r['back_link'] ) && $r['back_link'] ) {
 		$back_text = $have_gettext? __('&laquo; Back') : '&laquo; Back';
 		$message .= "\n<p><a href='javascript:history.back()'>$back_text</p>";
 	}
-	
+
 	if ( defined( 'WP_SITEURL' ) && '' != WP_SITEURL )
 		$admin_dir = WP_SITEURL . '/wp-admin/';
 	elseif ( function_exists( 'get_bloginfo' ) && '' != get_bloginfo( 'wpurl' ) )
@@ -2418,11 +2487,14 @@ function wp_die( $message, $title = '', $args = array() ) {
 		nocache_headers();
 		header( 'Content-Type: text/html; charset=utf-8' );
 	}
-	
+
 	if ( empty($title) ) {
 		$title = $have_gettext? __('WordPress &rsaquo; Error') : 'WordPress &rsaquo; Error';
 	}
 
+	$text_direction = 'ltr';
+	if ( isset($r['text_direction']) && $r['text_direction'] == 'rtl' ) $text_direction = 'rtl';
+	if ( ( $wp_locale ) && ( 'rtl' == $wp_locale->text_direction ) ) $text_direction = 'rtl';
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists( 'language_attributes' ) ) language_attributes(); ?>>
@@ -2431,7 +2503,7 @@ function wp_die( $message, $title = '', $args = array() ) {
 	<title><?php echo $title ?></title>
 	<link rel="stylesheet" href="<?php echo $admin_dir; ?>css/install.css" type="text/css" />
 <?php
-if ( ( $wp_locale ) && ( 'rtl' == $wp_locale->text_direction ) ) : ?>
+if ( 'rtl' == $text_direction ) : ?>
 	<link rel="stylesheet" href="<?php echo $admin_dir; ?>css/install-rtl.css" type="text/css" />
 <?php endif; ?>
 </head>
@@ -2620,7 +2692,7 @@ function smilies_init() {
 		} else {
 			$wp_smiliessearch .= '|';
 		}
-		$wp_smiliessearch .= preg_quote($rest);
+		$wp_smiliessearch .= preg_quote($rest, '/');
 	}
 
 	$wp_smiliessearch .= ')(?:\s|$)/m';
@@ -2687,9 +2759,9 @@ function wp_widgets_add_menu() {
  * @since 2.2.0
  */
 function wp_ob_end_flush_all() {
-	$levels = ob_get_level(); 
-	for ($i=0; $i<$levels; $i++) 
-		ob_end_flush(); 
+	$levels = ob_get_level();
+	for ($i=0; $i<$levels; $i++)
+		ob_end_flush();
 }
 
 /**
@@ -3136,36 +3208,74 @@ function update_site_option( $key, $value ) {
  * Overrides the gmt_offset option if we have a timezone_string available
  */
 function wp_timezone_override_offset() {
-	if (!wp_timezone_supported()) return false;
+	if ( !wp_timezone_supported() ) {
+		return false;
+	}
+	if ( !$timezone_string = get_option( 'timezone_string' ) ) {
+		return false;
+	}
 
-	$tz = get_option('timezone_string');
-	if (empty($tz)) return false;
-
-	@date_default_timezone_set($tz);
-
-	$dateTimeZoneSelected = timezone_open($tz);
-	$dateTimeServer = date_create();
-	if ($dateTimeZoneSelected === false || $dateTimeServer === false) return false;
-
-	$timeOffset = timezone_offset_get($dateTimeZoneSelected, $dateTimeServer);
-	$timeOffset = $timeOffset / 3600;
-
-	return $timeOffset;
+	@date_default_timezone_set( $timezone_string );
+	$timezone_object = timezone_open( $timezone_string );
+	$datetime_object = date_create();
+	if ( false === $timezone_object || false === $datetime_object ) {
+		return false;
+	}
+	return round( timezone_offset_get( $timezone_object, $datetime_object ) / 3600, 2 );
 }
 
 /**
  * Check for PHP timezone support
- *
  */
 function wp_timezone_supported() {
-	if (function_exists('date_default_timezone_set')
-		&& function_exists('timezone_identifiers_list')
-		&& function_exists('timezone_open')
-		&& function_exists('timezone_offset_get')
-		)
-		return apply_filters('timezone_support',true);
+	$support = false;
+	if (
+		function_exists( 'date_default_timezone_set' ) &&
+		function_exists( 'timezone_identifiers_list' ) &&
+		function_exists( 'timezone_open' ) &&
+		function_exists( 'timezone_offset_get' )
+	) {
+		$support = true;
+	}
+	return apply_filters( 'timezone_support', $support );
+}
 
-	return apply_filters('timezone_support',false);
+function _wp_timezone_choice_usort_callback( $a, $b ) {
+	// Don't use translated versions of Etc
+	if ( 'Etc' === $a['continent'] && 'Etc' === $b['continent'] ) {
+		// Make the order of these more like the old dropdown
+		if ( 'GMT+' === substr( $a['city'], 0, 4 ) && 'GMT+' === substr( $b['city'], 0, 4 ) ) {
+			return -1 * ( strnatcasecmp( $a['city'], $b['city'] ) );
+		}
+		if ( 'UTC' === $a['city'] ) {
+			if ( 'GMT+' === substr( $b['city'], 0, 4 ) ) {
+				return 1;
+			}
+			return -1;
+		}
+		if ( 'UTC' === $b['city'] ) {
+			if ( 'GMT+' === substr( $a['city'], 0, 4 ) ) {
+				return -1;
+			}
+			return 1;
+		}
+		return strnatcasecmp( $a['city'], $b['city'] );
+	}
+	if ( $a['t_continent'] == $b['t_continent'] ) {
+		if ( $a['t_city'] == $b['t_city'] ) {
+			return strnatcasecmp( $a['t_subcity'], $b['t_subcity'] );
+		}
+		return strnatcasecmp( $a['t_city'], $b['t_city'] );
+	} else {
+		// Force Etc to the bottom of the list
+		if ( 'Etc' === $a['continent'] ) {
+			return 1;
+		}
+		if ( 'Etc' === $b['continent'] ) {
+			return -1;
+		}
+		return strnatcasecmp( $a['t_continent'], $b['t_continent'] );
+	}
 }
 
 /**
@@ -3174,87 +3284,107 @@ function wp_timezone_supported() {
  * @param string $selectedzone - which zone should be the selected one
  *
  */
-function wp_timezone_choice($selectedzone) {
+function wp_timezone_choice( $selected_zone ) {
 	static $mo_loaded = false;
 
-	$continents = array('Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific', 'Etc');
+	$continents = array( 'Africa', 'America', 'Antarctica', 'Arctic', 'Asia', 'Atlantic', 'Australia', 'Europe', 'Indian', 'Pacific', 'Etc' );
 
 	// Load translations for continents and cities
-	if ( ! $mo_loaded ) {
+	if ( !$mo_loaded ) {
 		$locale = get_locale();
-		$mofile = WP_LANG_DIR . "/continents-cities-$locale.mo";
-		load_textdomain('continents-cities', $mofile);
+		$mofile = WP_LANG_DIR . '/continents-cities-' . $locale . '.mo';
+		load_textdomain( 'continents-cities', $mofile );
 		$mo_loaded = true;
 	}
 
-	$all = timezone_identifiers_list();
-
-	$i = 0;
-	foreach ( $all as $zone ) {
-		$zone = explode('/',$zone);
-		if ( ! in_array($zone[0], $continents) )
+	$zonen = array();
+	foreach ( timezone_identifiers_list() as $zone ) {
+		$zone = explode( '/', $zone );
+		if ( !in_array( $zone[0], $continents ) ) {
 			continue;
-		$zonen[$i]['continent'] = isset($zone[0]) ? $zone[0] : '';
-		$zonen[$i]['city'] = isset($zone[1]) ? $zone[1] : '';
-		$zonen[$i]['subcity'] = isset($zone[2]) ? $zone[2] : '';
-		$i++;
-	}
-
-	usort($zonen, create_function(
-		'$a, $b', '
-		$a_continent = translate($a["continent"], "continents-cities");
-		$b_continent = translate($b["continent"], "continents-cities");
-		$a_city = translate($a["city"], "continents-cities");
-		$b_city = translate($b["city"], "continents-cities");
-		$a_subcity = translate($a["subcity"], "continents-cities");
-		$b_subcity = translate($b["subcity"], "continents-cities");
-		if ( $a_continent == $b_continent && $a_city == $b_city )
-			return strnatcasecmp($a_subcity, $b_subcity);
-		elseif ( $a_continent == $b_continent )
-			return strnatcasecmp($a_city, $b_city);
-		else
-			return strnatcasecmp($a_continent, $b_continent);
-		'));
-	
-	$structure = '';
-	$pad = '&nbsp;&nbsp;&nbsp;';
-
-	if ( empty($selectedzone) )
-		$structure .= '<option selected="selected" value="">' . __('Select a city') . "</option>\n";
-	foreach ( $zonen as $zone ) {
-		extract($zone);
-		if ( empty($selectcontinent) && !empty($city) ) {
-			$selectcontinent = $continent;
-			$structure .= '<optgroup label="'. esc_attr( translate( $continent, "continents-cities" ) ) .'">' . "\n"; // continent
-		} elseif ( !empty($selectcontinent) && $selectcontinent != $continent ) {
-			$structure .= "</optgroup>\n";
-			$selectcontinent = '';
-			if ( !empty($city) ) {
-				$selectcontinent = $continent;
-				$structure .= '<optgroup label="'. esc_attr( translate( $continent ) ) .'">' . "\n"; // continent
-			}
+		}
+		if ( 'Etc' === $zone[0] && in_array( $zone[1], array( 'UCT', 'GMT', 'GMT0', 'GMT+0', 'GMT-0', 'Greenwich', 'Universal', 'Zulu' ) ) ) {
+			continue;
 		}
 
-		if ( !empty($city) ) {
-			$display = str_replace('_',' ',$city);
-			$display = translate($display, "continents-cities");
-			if ( !empty($subcity) ) {
-				$display_subcity = str_replace('_', ' ', $subcity);
-				$display_subcity = translate($display_subcity, "continents-cities");
-				$city = $city . '/'. $subcity;
-				$display = $display . '/' . $display_subcity;
-			}
-			if ( $continent == 'Etc' )
-				$display = strtr($display, '+-', '-+');
-			$structure .= "\t<option ".((($continent.'/'.$city)==$selectedzone)?'selected="selected"':'')." value=\"".($continent.'/'.$city)."\">$pad".$display."</option>\n"; //Timezone
+		// This determines what gets set and translated - we don't translate Etc/* strings here, they are done later
+		$exists = array(
+			0 => ( isset( $zone[0] ) && $zone[0] ) ? true : false,
+			1 => ( isset( $zone[1] ) && $zone[1] ) ? true : false,
+			2 => ( isset( $zone[2] ) && $zone[2] ) ? true : false
+		);
+		$exists[3] = ( $exists[0] && 'Etc' !== $zone[0] ) ? true : false;
+		$exists[4] = ( $exists[1] && $exists[3] ) ? true : false;
+		$exists[5] = ( $exists[2] && $exists[3] ) ? true : false;
+
+		$zonen[] = array(
+			'continent'   => ( $exists[0] ? $zone[0] : '' ),
+			'city'        => ( $exists[1] ? $zone[1] : '' ),
+			'subcity'     => ( $exists[2] ? $zone[2] : '' ),
+			't_continent' => ( $exists[3] ? translate( str_replace( '_', ' ', $zone[0] ), 'continents-cities' ) : '' ),
+			't_city'      => ( $exists[4] ? translate( str_replace( '_', ' ', $zone[1] ), 'continents-cities' ) : '' ),
+			't_subcity'   => ( $exists[5] ? translate( str_replace( '_', ' ', $zone[2] ), 'continents-cities' ) : '' )
+		);
+	}
+	usort( $zonen, '_wp_timezone_choice_usort_callback' );
+
+	$structure = array();
+
+	if ( empty( $selected_zone ) ) {
+		$structure[] = '<option selected="selected" value="">' . __( 'Select a city' ) . '</option>';
+	}
+
+	foreach ( $zonen as $key => $zone ) {
+		// Build value in an array to join later
+		$value = array( $zone['continent'] );
+
+		if ( empty( $zone['city'] ) ) {
+			// It's at the continent level (generally won't happen)
+			$display = $zone['t_continent'];
 		} else {
-			$structure .= "<option ".(($continent==$selectedzone)?'selected="selected"':'')." value=\"".$continent."\">" . translate($continent, "continents-cities") . "</option>\n"; //Timezone
+			// It's inside a continent group
+			
+			// Continent optgroup
+			if ( !isset( $zonen[$key - 1] ) || $zonen[$key - 1]['continent'] !== $zone['continent'] ) {
+				$label = ( 'Etc' === $zone['continent'] ) ? __( 'Manual offsets' ) : $zone['t_continent'];
+				$structure[] = '<optgroup label="'. esc_attr( $label ) .'">';
+			}
+			
+			// Add the city to the value
+			$value[] = $zone['city'];
+			if ( 'Etc' === $zone['continent'] ) {
+				if ( 'UTC' === $zone['city'] ) {
+					$display = '';
+				} else {
+					$display = str_replace( 'GMT', '', $zone['city'] );
+					$display = strtr( $display, '+-', '-+' ) . ':00';
+				}
+				$display = sprintf( __( 'UTC %s' ), $display );
+			} else {
+				$display = $zone['t_city'];
+				if ( !empty( $zone['subcity'] ) ) {
+					// Add the subcity to the value
+					$value[] = $zone['subcity'];
+					$display .= ' - ' . $zone['t_subcity'];
+				}
+			}
+		}
+
+		// Build the value
+		$value = join( '/', $value );
+		$selected = '';
+		if ( $value === $selected_zone ) {
+			$selected = 'selected="selected" ';
+		}
+		$structure[] = '<option ' . $selected . 'value="' . esc_attr( $value ) . '">' . esc_html( $display ) . "</option>";
+		
+		// Close continent optgroup
+		if ( !empty( $zone['city'] ) && isset( $zonen[$key + 1] ) && $zonen[$key + 1]['continent'] !== $zone['continent'] ) {
+			$structure[] = '</optgroup>';
 		}
 	}
 
-	if ( !empty($selectcontinent) )
-		$structure .= "</optgroup>\n";
-	return $structure;
+	return join( "\n", $structure );
 }
 
 

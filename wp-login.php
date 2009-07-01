@@ -39,7 +39,11 @@ if ( force_ssl_admin() && !is_ssl() ) {
  * @param WP_Error $wp_error Optional. WordPress Error Object
  */
 function login_header($title = 'Log In', $message = '', $wp_error = '') {
-	global $error, $current_site;
+	global $error, $is_iphone, $current_site;
+
+	// Don't index any of these forms
+	add_filter( 'pre_option_blog_public', create_function( '$a', 'return 0;' ) );
+	add_action( 'login_head', 'noindex' );
 
 	if ( empty($wp_error) )
 		$wp_error = new WP_Error();
@@ -52,6 +56,17 @@ function login_header($title = 'Log In', $message = '', $wp_error = '') {
 	<?php
 	wp_admin_css( 'login', true );
 	wp_admin_css( 'colors-fresh', true );
+
+	if ( $is_iphone ) {
+	?>
+	<meta name="viewport" content="width=320; initial-scale=0.9; maximum-scale=1.0; user-scalable=0;" /> 
+	<style type="text/css" media="screen"> 
+	form { margin-left: 0px; }
+	#login { margin-top: 20px; }
+	</style>
+	<?php
+	}
+
 	do_action('login_head'); ?>
 </head>
 <body class="login">
@@ -149,7 +164,7 @@ function retrieve_password() {
 	$message .= 'http://' . trailingslashit( $current_site->domain . $current_site->path ) . "wp-login.php?action=rp&key=$key\r\n";
 
 	$title = sprintf(__('[%s] Password Reset'), get_option('blogname'));
-	
+
 	$title = apply_filters('retrieve_password_title', $title);
 	$message = apply_filters('retrieve_password_message', $message, $key);
 
@@ -181,7 +196,7 @@ function reset_password($key) {
 
 	// Generate something random for a password...
 	$new_pass = wp_generate_password();
-	
+
 	do_action('password_reset', $user, $new_pass);
 
 	wp_set_password($new_pass, $user->ID);
@@ -194,7 +209,7 @@ function reset_password($key) {
 
 	$title = apply_filters('password_reset_title', $title);
 	$message = apply_filters('password_reset_message', $message, $new_pass);
-  
+
 	if ( $message && !wp_mail($user->user_email, $title, $message) )
 		die('<p>' . __('The e-mail could not be sent.') . "<br />\n" . __('Possible reason: your host may have disabled the mail() function...') . '</p>');
 

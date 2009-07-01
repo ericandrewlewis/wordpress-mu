@@ -1192,13 +1192,13 @@ function wp_delete_post($postid = 0) {
 		foreach ( (array) $children as $child )
 			clean_page_cache($child->ID);
 
-		$wp_rewrite->flush_rules();
+		$wp_rewrite->flush_rules(false);
 	} else {
 		clean_post_cache($postid);
 	}
 
-	wp_clear_scheduled_hook('publish_future_post', $postid); 
-	
+	wp_clear_scheduled_hook('publish_future_post', $postid);
+
 	do_action('deleted_post', $postid);
 
 	return $post;
@@ -1551,9 +1551,9 @@ function wp_insert_post($postarr = array(), $wp_error = false) {
 		$where = array( 'ID' => $post_ID );
 	}
 
-	if ( empty($post_name) && !in_array( $post_status, array( 'draft', 'pending' ) ) ) {
-		$post_name = sanitize_title($post_title, $post_ID);
-		$wpdb->update( $wpdb->posts, compact( 'post_name' ), $where );
+	if ( empty($data['post_name']) && !in_array( $data['post_status'], array( 'draft', 'pending' ) ) ) {
+		$data['post_name'] = sanitize_title($data['post_title'], $post_ID);
+		$wpdb->update( $wpdb->posts, array( 'post_name' => $data['post_name'] ), $where );
 	}
 
 	wp_set_post_categories( $post_ID, $post_category );
@@ -1569,7 +1569,7 @@ function wp_insert_post($postarr = array(), $wp_error = false) {
 
 	$current_guid = get_post_field( 'guid', $post_ID );
 
-	if ( 'page' == $post_type )
+	if ( 'page' == $data['post_type'] )
 		clean_page_cache($post_ID);
 	else
 		clean_post_cache($post_ID);
@@ -1580,7 +1580,7 @@ function wp_insert_post($postarr = array(), $wp_error = false) {
 
 	$post = get_post($post_ID);
 
-	if ( !empty($page_template) && 'page' == $post_type ) {
+	if ( !empty($page_template) && 'page' == $data['post_type'] ) {
 		$post->page_template = $page_template;
 		$page_templates = get_page_templates();
 		if ( 'default' != $page_template && !in_array($page_template, $page_templates) ) {
@@ -1592,7 +1592,7 @@ function wp_insert_post($postarr = array(), $wp_error = false) {
 		update_post_meta($post_ID, '_wp_page_template',  $page_template);
 	}
 
-	wp_transition_post_status($post_status, $previous_status, $post);
+	wp_transition_post_status($data['post_status'], $previous_status, $post);
 
 	if ( $update)
 		do_action('edit_post', $post_ID, $post);
@@ -1734,30 +1734,59 @@ function check_and_publish_future_post($post_id) {
  * @param string $post_status no uniqueness checks are made if the post is still draft or pending
  * @param string $post_type
  * @param integer $post_parent
- * @return string unique slug for the post, based on $post_name (with a -1, -2, etc. suffix) 
+ * @return string unique slug for the post, based on $post_name (with a -1, -2, etc. suffix)
  */
 function wp_unique_post_slug($slug, $post_ID, $post_status, $post_type, $post_parent) {
+	if ( in_array( $post_status, array( 'draft', 'pending' ) ) )
+		return $slug;
+	
 	global $wpdb, $wp_rewrite;
-	if ( !in_array( $post_status, array( 'draft', 'pending' ) ) ) {
-		$hierarchical_post_types = apply_filters('hierarchical_post_types', array('page', 'attachment'));
-		if ( in_array($post_type, $hierarchical_post_types) ) {
-			$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type IN ( '" . implode("', '", $wpdb->escape($hierarchical_post_types)) . "' ) AND ID != %d AND post_parent = %d LIMIT 1";
-			$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $slug, $post_ID, $post_parent));
-		} else {
-			$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID != %d AND post_parent = %d LIMIT 1";
-			$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $slug, $post_type, $post_ID, $post_parent));
-		}
+	$hierarchical_post_types = apply_filters('hierarchical_post_types', array('page'));
+	if ( 'attachment' == $post_type ) {
+		// Attachment slugs must be unique across all types.
+		$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND ID != %d LIMIT 1";
+		$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $slug, $post_ID));
 		
 		if ( $post_name_check || in_array($slug, $wp_rewrite->feeds) ) {
 			$suffix = 2;
 			do {
 				$alt_post_name = substr($slug, 0, 200-(strlen($suffix)+1)). "-$suffix";
-				$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $alt_post_name, $post_type, $post_ID, $post_parent));
+				$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $alt_post_name, $post_ID));
+				$suffix++;
+			} while ($post_name_check);
+			$slug = $alt_post_name;
+		}
+	} elseif ( in_array($post_type, $hierarchical_post_types) ) {
+		// Page slugs must be unique within their own trees.  Pages are in a
+		// separate namespace than posts so page slugs are allowed to overlap post slugs.
+		$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type IN ( '" . implode("', '", $wpdb->escape($hierarchical_post_types)) . "' ) AND ID != %d AND post_parent = %d LIMIT 1";
+		$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $slug, $post_ID, $post_parent));
+		
+		if ( $post_name_check || in_array($slug, $wp_rewrite->feeds) ) {
+			$suffix = 2;
+			do {
+				$alt_post_name = substr($slug, 0, 200-(strlen($suffix)+1)). "-$suffix";
+				$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $alt_post_name, $post_ID, $post_parent));
+				$suffix++;
+			} while ($post_name_check);
+			$slug = $alt_post_name;
+		}
+	} else {
+		// Post slugs must be unique across all posts.
+		$check_sql = "SELECT post_name FROM $wpdb->posts WHERE post_name = %s AND post_type = %s AND ID != %d LIMIT 1";
+		$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $slug, $post_type, $post_ID));
+		
+		if ( $post_name_check || in_array($slug, $wp_rewrite->feeds) ) {
+			$suffix = 2;
+			do {
+				$alt_post_name = substr($slug, 0, 200-(strlen($suffix)+1)). "-$suffix";
+				$post_name_check = $wpdb->get_var($wpdb->prepare($check_sql, $alt_post_name, $post_type, $post_ID));
 				$suffix++;
 			} while ($post_name_check);
 			$slug = $alt_post_name;
 		}
 	}
+
 	return $slug;
 }
 
@@ -2452,6 +2481,7 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 	else
 		$post_name = sanitize_title($post_name);
 
+	// expected_slashed ($post_name)
 	$post_name = wp_unique_post_slug($post_name, $post_ID, $post_status, $post_type, $post_parent);
 
 	if ( empty($post_date) )
@@ -3245,6 +3275,9 @@ function _transition_post_status($new_status, $old_status, $post) {
 		if ( '' == get_the_guid($post->ID) )
 			$wpdb->update( $wpdb->posts, array( 'guid' => get_permalink( $post->ID ) ), array( 'ID' => $post->ID ) );
 		do_action('private_to_published', $post->ID);  // Deprecated, use private_to_publish
+		// do generic pings once per hour at most
+		if ( !wp_next_scheduled('do_generic_ping') )
+			wp_schedule_single_event(time() + 3600, 'do_generic_ping');
 	}
 
 	// Always clears the hook in case the post status bounced from future to draft.
@@ -3322,7 +3355,7 @@ function _save_post_hook($post_id, $post) {
 		// Avoid flushing rules for every post during import.
 		if ( !defined('WP_IMPORTING') ) {
 			global $wp_rewrite;
-			$wp_rewrite->flush_rules();
+			$wp_rewrite->flush_rules(false);
 		}
 	} else {
 		clean_post_cache($post_id);

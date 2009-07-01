@@ -101,9 +101,6 @@ if( $base == 'BASE' )
 // define( 'WPMU_PLUGIN_URL', '' );
 // define( 'MUPLUGINDIR', 'wp-content/mu-plugins' );
 
-// Uncomment to disable the site admin bar
-//define( 'NOADMINBAR', 1 );
-
 define( "WP_USE_MULTIPLE_DB", false );
 
 /* That's all, stop editing! Happy blogging. */
@@ -114,4 +111,3 @@ if ( !defined('ABSPATH') )
 
 /** Sets up WordPress vars and included files. */
 require_once(ABSPATH . 'wp-settings.php');
-?>

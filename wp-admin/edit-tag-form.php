@@ -27,13 +27,14 @@ do_action('edit_tag_form_pre', $tag); ?>
 		<tr class="form-field form-required">
 			<th scope="row" valign="top"><label for="name"><?php _e('Tag name') ?></label></th>
 			<td><input name="name" id="name" type="text" value="<?php if ( isset( $tag->name ) ) echo esc_attr($tag->name); ?>" size="40" aria-required="true" />
-            <p><?php _e('The name is how the tag appears on your site.'); ?></p></td>
+            <p class="description"><?php _e('The name is how the tag appears on your site.'); ?></p></td>
 		</tr>
 		<tr class="form-field">
 			<th scope="row" valign="top"><label for="description"><?php _e('Description') ?></label></th>
 			<td><textarea name="description" id="description" rows="5" cols="50" style="width: 97%;"><?php echo esc_html($tag->description); ?></textarea><br />
-            <?php _e('The description is not prominent by default, however some themes may show it.'); ?></td>
+            <span class="description"><?php _e('The description is not prominent by default, however some themes may show it.'); ?></span></td>
 		</tr>
+		<?php do_action('edit_tag_form_fields', $tag); ?>
 	</table>
 <p class="submit"><input type="submit" class="button-primary" name="submit" value="<?php esc_attr_e('Update Tag'); ?>" /></p>
 <?php do_action('edit_tag_form', $tag); ?>

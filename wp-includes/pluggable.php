@@ -880,17 +880,8 @@ function wp_sanitize_redirect($location) {
 	$location = wp_kses_no_null($location);
 
 	// remove %0d and %0a from location
-	$strip = array('%0d', '%0a');
-	$found = true;
-	while($found) {
-		$found = false;
-		foreach( (array) $strip as $val ) {
-			while(strpos($location, $val) !== false) {
-				$found = true;
-				$location = str_replace($val, '', $location);
-			}
-		}
-	}
+	$strip = array('%0d', '%0a', '%0D', '%0A');
+	$location = _deep_replace($strip, $location);
 	return $location;
 }
 endif;
@@ -908,8 +899,7 @@ if ( !function_exists('wp_safe_redirect') ) :
  * but only used in a few places.
  *
  * @since 2.3
- * @uses apply_filters() Calls 'allowed_redirect_hosts' on an array containing
- *		WordPress host string and $location host string.
+ * @uses wp_validate_redirect() To validate the redirect is to an allowed host.
  *
  * @return void Does not return anything
  **/
@@ -918,6 +908,31 @@ function wp_safe_redirect($location, $status = 302) {
 	// Need to look at the URL the way it will end up in wp_redirect()
 	$location = wp_sanitize_redirect($location);
 
+	$location = wp_validate_redirect($location, admin_url());
+
+	wp_redirect($location, $status);
+}
+endif;
+
+if ( !function_exists('wp_validate_redirect') ) :
+/**
+ * Validates a URL for use in a redirect.
+ *
+ * Checks whether the $location is using an allowed host, if it has an absolute
+ * path. A plugin can therefore set or remove allowed host(s) to or from the
+ * list.
+ *
+ * If the host is not allowed, then the redirect is to $default supplied
+ *
+ * @since 2.8.1
+ * @uses apply_filters() Calls 'allowed_redirect_hosts' on an array containing
+ *		WordPress host string and $location host string.
+ *
+ * @param string $location The redirect to validate
+ * @param string $default The value to return is $location is not allowed
+ * @return string redirect-sanitized URL
+ **/
+function wp_validate_redirect($location, $default = '') {
 	// browsers will assume 'http' is your protocol, and will obey a redirect to a URL starting with '//'
 	if ( substr($location, 0, 2) == '//' )
 		$location = 'http:' . $location;
@@ -931,9 +946,9 @@ function wp_safe_redirect($location, $status = 302) {
 	$allowed_hosts = (array) apply_filters('allowed_redirect_hosts', array($wpp['host']), isset($lp['host']) ? $lp['host'] : '');
 
 	if ( isset($lp['host']) && ( !in_array($lp['host'], $allowed_hosts) && $lp['host'] != strtolower($wpp['host'])) )
-		$location = admin_url();
+		$location = $default;
 
-	wp_redirect($location, $status);
+	return $location;
 }
 endif;
 
@@ -952,8 +967,8 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 	$post    = get_post($comment->comment_post_ID);
 	$user    = get_userdata( $post->post_author );
 	$current_user = wp_get_current_user();
-	
-	if ( $current_user->ID == $user->ID ) return false; // The author moderated a comment on his own post
+
+	if ( $comment->user_id == $post->post_author ) return false; // The author moderated a comment on his own post
 
 	if ('' == $user->user_email) return false; // If there's no email to send the comment to
 
@@ -964,27 +979,36 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 	if ( empty( $comment_type ) ) $comment_type = 'comment';
 
 	if ('comment' == $comment_type) {
+		/* translators: 1: post id, 2: post title */
 		$notify_message  = sprintf( __('New comment on your post #%1$s "%2$s"'), $comment->comment_post_ID, $post->post_title ) . "\r\n";
+		/* translators: 1: comment author, 2: author IP, 3: author domain */
 		$notify_message .= sprintf( __('Author : %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
 		$notify_message .= sprintf( __('E-mail : %s'), $comment->comment_author_email ) . "\r\n";
 		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= sprintf( __('Whois  : http://ws.arin.net/cgi-bin/whois.pl?queryinput=%s'), $comment->comment_author_IP ) . "\r\n";
 		$notify_message .= __('Comment: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
 		$notify_message .= __('You can see all comments on this post here: ') . "\r\n";
+		/* translators: 1: blog name, 2: post title */
 		$subject = sprintf( __('[%1$s] Comment: "%2$s"'), $blogname, $post->post_title );
 	} elseif ('trackback' == $comment_type) {
+		/* translators: 1: post id, 2: post title */
 		$notify_message  = sprintf( __('New trackback on your post #%1$s "%2$s"'), $comment->comment_post_ID, $post->post_title ) . "\r\n";
+		/* translators: 1: website name, 2: author IP, 3: author domain */
 		$notify_message .= sprintf( __('Website: %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
 		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= __('Excerpt: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
 		$notify_message .= __('You can see all trackbacks on this post here: ') . "\r\n";
+		/* translators: 1: blog name, 2: post title */		
 		$subject = sprintf( __('[%1$s] Trackback: "%2$s"'), $blogname, $post->post_title );
 	} elseif ('pingback' == $comment_type) {
+		/* translators: 1: post id, 2: post title */
 		$notify_message  = sprintf( __('New pingback on your post #%1$s "%2$s"'), $comment->comment_post_ID, $post->post_title ) . "\r\n";
+		/* translators: 1: comment author, 2: author IP, 3: author domain */
 		$notify_message .= sprintf( __('Website: %1$s (IP: %2$s , %3$s)'), $comment->comment_author, $comment->comment_author_IP, $comment_author_domain ) . "\r\n";
 		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= __('Excerpt: ') . "\r\n" . sprintf('[...] %s [...]', $comment->comment_content ) . "\r\n\r\n";
 		$notify_message .= __('You can see all pingbacks on this post here: ') . "\r\n";
+		/* translators: 1: blog name, 2: post title */
 		$subject = sprintf( __('[%1$s] Pingback: "%2$s"'), $blogname, $post->post_title );
 	}
 	$notify_message .= get_permalink($comment->comment_post_ID) . "#comments\r\n\r\n";
@@ -1078,11 +1102,13 @@ function wp_notify_moderator($comment_id) {
 
 	$subject = sprintf( __('[%1$s] Please moderate: "%2$s"'), get_option('blogname'), $post->post_title );
 	$admin_email = get_option('admin_email');
+	$message_headers = '';
 
 	$notify_message = apply_filters('comment_moderation_text', $notify_message, $comment_id);
 	$subject = apply_filters('comment_moderation_subject', $subject, $comment_id);
+	$message_headers = apply_filters('comment_moderation_headers', $message_headers);
 
-	@wp_mail($admin_email, $subject, $notify_message);
+	@wp_mail($admin_email, $subject, $notify_message, $message_headers);
 
 	return true;
 }

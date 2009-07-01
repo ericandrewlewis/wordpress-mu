@@ -21,25 +21,25 @@
  * @param unknown_type $per_page
  */
 function cat_rows( $parent = 0, $level = 0, $categories = 0, $page = 1, $per_page = 20 ) {
-	
+
 	$count = 0;
-	
+
 	if ( empty($categories) ) {
-		
+
 		$args = array('hide_empty' => 0);
 		if ( !empty($_GET['s']) )
 			$args['search'] = $_GET['s'];
-			
-		$categories = get_categories( $args ); 
-		
+
+		$categories = get_categories( $args );
+
 		if ( empty($categories) )
 			return false;
 	}
 
-	$children = _get_term_hierarchy('category'); 
-	
-	_cat_rows( $parent, $level, $categories, $children, $page, $per_page, $count ); 
-	
+	$children = _get_term_hierarchy('category');
+
+	_cat_rows( $parent, $level, $categories, $children, $page, $per_page, $count );
+
 }
 
 /**
@@ -55,22 +55,22 @@ function cat_rows( $parent = 0, $level = 0, $categories = 0, $page = 1, $per_pag
  * @param unknown_type $per_page
  * @return unknown
  */
-function _cat_rows( $parent = 0, $level = 0, $categories, &$children, $page = 1, $per_page = 20, &$count ) { 
-	
+function _cat_rows( $parent = 0, $level = 0, $categories, &$children, $page = 1, $per_page = 20, &$count ) {
+
 	$start = ($page - 1) * $per_page;
 	$end = $start + $per_page;
 	ob_start();
-	
+
 	foreach ( $categories as $key => $category ) {
 		if ( $count >= $end )
 			break;
-			
+
 		if ( $category->parent != $parent && empty($_GET['s']) )
 			continue;
 
 		// If the page starts in a subtree, print the parents.
 		if ( $count == $start && $category->parent > 0 ) {
-			
+
 			$my_parents = array();
 			$p = $category->parent;
 			while ( $p ) {
@@ -80,7 +80,7 @@ function _cat_rows( $parent = 0, $level = 0, $categories, &$children, $page = 1,
 					break;
 				$p = $my_parent->parent;
 			}
-			
+
 			$num_parents = count($my_parents);
 			while( $my_parent = array_pop($my_parents) ) {
 				echo "\t" . _cat_row( $my_parent, $level - $num_parents );
@@ -91,12 +91,12 @@ function _cat_rows( $parent = 0, $level = 0, $categories, &$children, $page = 1,
 		if ( $count >= $start )
 			echo "\t" . _cat_row( $category, $level );
 
-		unset( $categories[ $key ] ); 
-		
+		unset( $categories[ $key ] );
+
 		$count++;
 
 		if ( isset($children[$category->term_id]) )
-			_cat_rows( $category->term_id, $level + 1, $categories, $children, $page, $per_page, $count ); 
+			_cat_rows( $category->term_id, $level + 1, $categories, $children, $page, $per_page, $count );
 	}
 
 	$output = ob_get_contents();
@@ -121,7 +121,7 @@ function _cat_row( $category, $level, $name_override = false ) {
 	$category = get_category( $category, OBJECT, 'display' );
 
 	$default_cat_id = (int) get_option( 'default_category' );
-	$pad = str_repeat( '&#8212; ', $level );
+	$pad = str_repeat( '&#8212; ', max(0, $level) );
 	$name = ( $name_override ? $name_override : $pad . ' ' . $category->name );
 	$edit_link = "categories.php?action=edit&amp;cat_ID=$category->term_id";
 	if ( current_user_can( 'manage_categories' ) ) {
@@ -512,13 +512,13 @@ function wp_category_checklist( $post_id = 0, $descendants_and_self = 0, $select
 
 	// Post process $categories rather than adding an exclude to the get_terms() query to keep the query the same across all posts (for any query cache)
 	$checked_categories = array();
-	$keys = array_keys( $categories ); 
-	
+	$keys = array_keys( $categories );
+
 	foreach( $keys as $k ) {
 		if ( in_array( $categories[$k]->term_id, $args['selected_cats'] ) ) {
 			$checked_categories[] = $categories[$k];
 			unset( $categories[$k] );
-		}	
+		}
 	}
 
 	// Put checked cats on top
@@ -630,7 +630,8 @@ function wp_link_category_checklist( $link_id = 0 ) {
  */
 function _tag_row( $tag, $class = '', $taxonomy = 'post_tag' ) {
 		$count = number_format_i18n( $tag->count );
-		$count = ( $count > 0 ) ? "<a href='edit.php?tag=$tag->slug'>$count</a>" : $count;
+		$tagsel = ($taxonomy == 'post_tag' ? 'tag' : $taxonomy);
+		$count = ( $count > 0 ) ? "<a href='edit.php?$tagsel=$tag->slug'>$count</a>" : $count;
 
 		$name = apply_filters( 'term_name', $tag->name );
 		$qe_data = get_term($tag->term_id, $taxonomy, object, 'edit');
@@ -1441,6 +1442,8 @@ function _post_row($a_post, $pending_comments, $mode) {
 			if ( current_user_can('edit_post', $post->ID) ) {
 				$actions['edit'] = '<a href="' . get_edit_post_link($post->ID, true) . '" title="' . esc_attr(__('Edit this post')) . '">' . __('Edit') . '</a>';
 				$actions['inline hide-if-no-js'] = '<a href="#" class="editinline" title="' . esc_attr(__('Edit this post inline')) . '">' . __('Quick&nbsp;Edit') . '</a>';
+			}
+			if ( current_user_can('delete_post', $post->ID) ) {
 				$actions['delete'] = "<a class='submitdelete' title='" . esc_attr(__('Delete this post')) . "' href='" . wp_nonce_url("post.php?action=delete&amp;post=$post->ID", 'delete-post_' . $post->ID) . "' onclick=\"if ( confirm('" . esc_js(sprintf( ('draft' == $post->post_status) ? __("You are about to delete this draft '%s'\n 'Cancel' to stop, 'OK' to delete.") : __("You are about to delete this post '%s'\n 'Cancel' to stop, 'OK' to delete."), $post->post_title )) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 			}
 			if ( in_array($post->post_status, array('pending', 'draft')) ) {
@@ -1648,12 +1651,14 @@ foreach ($posts_columns as $column_name=>$column_display_name) {
 		$attributes = 'class="post-title page-title column-title"' . $style;
 		$edit_link = get_edit_post_link( $page->ID );
 		?>
-		<td <?php echo $attributes ?>><strong><?php if ( current_user_can( 'edit_post', $page->ID ) ) { ?><a class="row-title" href="<?php echo $edit_link; ?>" title="<?php echo esc_attr(sprintf(__('Edit &#8220;%s&#8221;'), $title)); ?>"><?php echo $pad; echo $title ?></a><?php } else { echo $pad; echo $title; }; _post_states($page); echo isset($parent_name) ? ' | ' . __('Parent Page: ') . esc_html($parent_name) : ''; ?></strong>
+		<td <?php echo $attributes ?>><strong><?php if ( current_user_can( 'edit_page', $page->ID ) ) { ?><a class="row-title" href="<?php echo $edit_link; ?>" title="<?php echo esc_attr(sprintf(__('Edit &#8220;%s&#8221;'), $title)); ?>"><?php echo $pad; echo $title ?></a><?php } else { echo $pad; echo $title; }; _post_states($page); echo isset($parent_name) ? ' | ' . __('Parent Page: ') . esc_html($parent_name) : ''; ?></strong>
 		<?php
 		$actions = array();
 		if ( current_user_can('edit_page', $page->ID) ) {
 			$actions['edit'] = '<a href="' . $edit_link . '" title="' . esc_attr(__('Edit this page')) . '">' . __('Edit') . '</a>';
 			$actions['inline'] = '<a href="#" class="editinline">' . __('Quick&nbsp;Edit') . '</a>';
+		}
+		if ( current_user_can('delete_page', $page->ID) ) {
 			$actions['delete'] = "<a class='submitdelete' title='" . esc_attr(__('Delete this page')) . "' href='" . wp_nonce_url("page.php?action=delete&amp;post=$page->ID", 'delete-page_' . $page->ID) . "' onclick=\"if ( confirm('" . esc_js(sprintf( ('draft' == $page->post_status) ? __("You are about to delete this draft '%s'\n 'Cancel' to stop, 'OK' to delete.") : __("You are about to delete this page '%s'\n 'Cancel' to stop, 'OK' to delete."), $page->post_title )) . "') ) { return true;}return false;\">" . __('Delete') . "</a>";
 		}
 		if ( in_array($post->post_status, array('pending', 'draft')) ) {
@@ -3176,15 +3181,15 @@ function find_posts_div($found_action = '') {
 /**
  * Display the post password.
  *
- * The password is passed through {@link attribute_escape()} to ensure that it
+ * The password is passed through {@link esc_attr()} to ensure that it
  * is safe for placing in an html attribute.
  *
- * @uses attribute_escape
+ * @uses attr
  * @since 2.7.0
  */
 function the_post_password() {
 	global $post;
-	if ( isset( $post->post_password ) ) echo attribute_escape( $post->post_password );
+	if ( isset( $post->post_password ) ) echo esc_attr( $post->post_password );
 }
 
 /**
@@ -3192,7 +3197,52 @@ function the_post_password() {
  *
  * @since unknown
  */
-function favorite_actions() {
+function favorite_actions( $screen = null ) {
+	switch ( $screen ) {
+		case 'post-new.php':
+			$default_action = array('edit.php' => array(__('Edit Posts'), 'edit_posts'));
+			break;
+		case 'edit-pages.php':
+			$default_action = array('page-new.php' => array(__('New Page'), 'edit_pages'));
+			break;
+		case 'page-new.php':
+			$default_action = array('edit-pages.php' => array(__('Edit Pages'), 'edit_pages'));
+			break;
+		case 'upload.php':
+			$default_action = array('media-new.php' => array(__('New Media'), 'upload_files'));
+			break;
+		case 'media-new.php':
+			$default_action = array('upload.php' => array(__('Edit Media'), 'upload_files'));
+			break;
+		case 'link-manager.php':
+			$default_action = array('link-add.php' => array(__('New Link'), 'manage_links'));
+			break;
+		case 'link-add.php':
+			$default_action = array('link-manager.php' => array(__('Edit Links'), 'manage_links'));
+			break;
+		case 'users.php':
+			$default_action = array('user-new.php' => array(__('New User'), 'create_users'));
+			break;
+		case 'user-new.php':
+			$default_action = array('users.php' => array(__('Edit Users'), 'edit_users'));
+			break;
+		case 'plugins.php':
+			$default_action = array('plugin-install.php' => array(__('Install Plugins'), 'install_plugins'));
+			break;
+		case 'plugin-install.php':
+			$default_action = array('plugins.php' => array(__('Manage Plugins'), 'activate_plugins'));
+			break;
+		case 'themes.php':
+			$default_action = array('theme-install.php' => array(__('Install Themes'), 'install_themes'));
+			break;
+		case 'theme-install.php':
+			$default_action = array('themes.php' => array(__('Manage Themes'), 'switch_themes'));
+			break;
+		default:
+			$default_action = array('post-new.php' => array(__('New Post'), 'edit_posts'));
+			break;
+	}
+
 	$actions = array(
 		'post-new.php' => array(__('New Post'), 'edit_posts'),
 		'edit.php?post_status=draft' => array(__('Drafts'), 'edit_posts'),
@@ -3201,6 +3251,11 @@ function favorite_actions() {
 		'edit-comments.php' => array(__('Comments'), 'moderate_comments')
 		);
 
+	$default_key = array_keys($default_action);
+	$default_key = $default_key[0];
+	if ( isset($actions[$default_key]) )
+		unset($actions[$default_key]);
+	$actions = array_merge($default_action, $actions);
 	$actions = apply_filters('favorite_actions', $actions);
 
 	$allowed_actions = array();
@@ -3375,6 +3430,8 @@ function screen_meta($screen) {
 	if ( !isset($_wp_contextual_help) )
 		$_wp_contextual_help = array();
 
+	$settings = '';
+
 	switch ( $screen ) {
 		case 'post':
 			if ( !isset($_wp_contextual_help['post']) ) {
@@ -3418,6 +3475,8 @@ function screen_meta($screen) {
 				$help = widgets_help();
 				$_wp_contextual_help['widgets'] = $help;
 			}
+			$settings = '<p><a id="access-on" href="widgets.php?widgets-access=on">' . __('Enable accessibility mode') . '</a><a id="access-off" href="widgets.php?widgets-access=off">' . __('Disable accessibility mode') . "</a></p>\n";
+			$show_screen = true;
 			break;
 	}
 ?>
@@ -3440,6 +3499,7 @@ function screen_meta($screen) {
 <?php endif; ?>
 <?php echo screen_layout($screen); ?>
 <?php echo $screen_options; ?>
+<?php echo $settings; ?>
 <div><?php wp_nonce_field( 'screen-options-nonce', 'screenoptionnonce', false ); ?></div>
 </form>
 </div>
@@ -3527,7 +3587,7 @@ function plugins_search_help() {
 function widgets_help() {
 	return '
 	<p>' . __('Widgets are added and arranged by simple drag &#8217;n&#8217; drop. If you hover your mouse over the titlebar of a widget, you&#8217;ll see a 4-arrow cursor which indicates that the widget is movable.  Click on the titlebar, hold down the mouse button and drag the widget to a sidebar. As you drag, you&#8217;ll see a dotted box that also moves. This box shows where the widget will go once you drop it.') . '</p>
-	<p>' . __('To remove a widget from a sidebar, click on the arrow on its titlebar to reveal its settings, and then click Remove.') . '</p>
+	<p>' . __('To remove a widget from a sidebar, drag it back to Available Widgets or click on the arrow on its titlebar to reveal its settings, and then click Remove.') . '</p>
 	<p>' . __('To remove a widget from a sidebar <em>and keep its configuration</em>, drag it to Inactive Widgets.') . '</p>
 	<p>' . __('The Inactive Widgets area stores widgets that are configured but not curently used. If you change themes and the new theme has fewer sidebars than the old, all extra widgets will be stored to Inactive Widgets automatically.') . '</p>
 ';
@@ -3543,7 +3603,7 @@ function screen_layout($screen) {
 		$screen_layout_columns = 0;
 		return '';
  	}
-	
+
 	$screen_layout_columns = get_user_option("screen_layout_$screen");
 	$num = $columns[$screen];
 

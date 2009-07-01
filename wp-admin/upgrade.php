@@ -68,13 +68,11 @@ switch ( $step ) :
 		break;
 	case 1:
 		wp_upgrade();
-
-		if ( empty( $_GET['backto'] ) )
-			$backto = __get_option( 'home' ) . '/';
-		else {
-			$backto = stripslashes( urldecode( $_GET['backto'] ) );
-			$backto = esc_urlaw( $backto  );
-		}
+			
+			$backto = empty($_GET['backto']) ? '' : $_GET['backto'] ;
+			$backto = stripslashes( urldecode( $backto ) );
+			$backto = esc_url_raw( $backto  );
+			$backto = wp_validate_redirect($backto, __get_option( 'home' ) . '/');
 		if( $wpdb->get_row( "SELECT blog_id FROM {$wpdb->blog_versions} WHERE blog_id = '{$wpdb->blogid}'" ) ) {
 			$wpdb->query( "UPDATE {$wpdb->blog_versions} SET db_version = '{$wp_db_version}' WHERE blog_id = '{$wpdb->blogid}'" );
 		} else {

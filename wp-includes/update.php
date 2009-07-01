@@ -48,7 +48,7 @@ function wp_version_check() {
 
 	$options = array(
 		'timeout' => 3,
-		'User-Agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path ) 
+		'user-agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path ) 
 	);
 
 	$response = wp_remote_get($url, $options);
@@ -116,7 +116,7 @@ function wp_update_plugins() {
 
 	$new_option = new stdClass;
 	$new_option->last_checked = time();
-	$timeout = 'load-plugins.php' == current_filter() ? 360 : 43200; //Check for updated every 60 minutes if hitting the themes page, Else, check every 12 hours
+	$timeout = 'load-plugins.php' == current_filter() ? 3600 : 43200; //Check for updated every 60 minutes if hitting the themes page, Else, check every 12 hours
 	$time_not_changed = isset( $current->last_checked ) && $timeout > ( time() - $current->last_checked );
 
 	$plugin_changed = false;
@@ -149,7 +149,7 @@ function wp_update_plugins() {
 	$options = array(
 		'timeout' => 3,
 		'body' => array( 'plugins' => serialize( $to_send ) ),
-		'User-Agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path )
+		'user-agent' => 'WordPress MU/' . $wpmu_version . '; ' . apply_filters( 'currentsite_on_version_check', 'http://' . $current_site->domain . $current_site->path )
 	);
 
 	$raw_response = wp_remote_post('http://api.wordpress.org/plugins/update-check/1.0-mu/', $options);
@@ -199,7 +199,7 @@ function wp_update_themes( ) {
 
 	$new_option = new stdClass;
 	$new_option->last_checked = time( );
-	$timeout = 'load-themes.php' == current_filter() ? 360 : 43200; //Check for updated every 60 minutes if hitting the themes page, Else, check every 12 hours
+	$timeout = 'load-themes.php' == current_filter() ? 3600 : 43200; //Check for updated every 60 minutes if hitting the themes page, Else, check every 12 hours
 	$time_not_changed = isset( $current_theme->last_checked ) && $timeout > ( time( ) - $current_theme->last_checked );
 
 	if( $time_not_changed )
@@ -209,13 +209,15 @@ function wp_update_themes( ) {
 	$current_theme->last_checked = time();
 	set_transient( 'update_themes', $current_theme );
 
+	$current_theme->template = get_option( 'template' );
+
 	$themes = array( );
-	$themes['current_theme'] = $current_theme;
+	$themes['current_theme'] = (array) $current_theme;
 	foreach( (array) $installed_themes as $theme_title => $theme ) {
-		$themes[$theme['Template']] = array( );
+		$themes[$theme['Stylesheet']] = array( );
 
 		foreach( (array) $theme as $key => $value ) {
-			$themes[$theme['Template']][$key] = $value;
+			$themes[$theme['Stylesheet']][$key] = $value;
 		}
 	}
 

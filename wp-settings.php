@@ -63,8 +63,8 @@ $_REQUEST = array_merge($_GET, $_POST);
 if ( ! isset($blog_id) )
 	$blog_id = 0;
 
-// Fix for IIS, which doesn't set REQUEST_URI
-if ( empty( $_SERVER['REQUEST_URI'] ) ) {
+// Fix for IIS when running with PHP ISAPI
+if ( empty( $_SERVER['REQUEST_URI'] ) || ( php_sapi_name() != 'cgi-fcgi' && preg_match( '/^Microsoft-IIS\//', $_SERVER['SERVER_SOFTWARE'] ) ) ) {
 
 	// IIS Mod-Rewrite
 	if (isset($_SERVER['HTTP_X_ORIGINAL_URL'])) {
@@ -644,6 +644,10 @@ if ( !defined( 'AUTOSAVE_INTERVAL' ) )
 
 
 require (ABSPATH . WPINC . '/vars.php');
+
+// make taxonomies available to plugins and themes
+// @plugin authors: warning: this gets registered again on the init hook
+create_initial_taxonomies();
 
 $current_plugins = get_option('active_plugins');
 if ( is_array($current_plugins) && !defined('WP_INSTALLING') ) {

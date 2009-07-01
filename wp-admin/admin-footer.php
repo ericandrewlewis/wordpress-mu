@@ -22,7 +22,7 @@ if( is_site_admin() ) {
 	$footer_text .= ' ' . $wpmu_version;
 }
 $footer_text .= ' | ' . __('<a href="http://mu.wordpress.org/docs/">Documentation</a>');
-echo '<span id="footer-thankyou">' . apply_filters( 'admin_footer_text', $footer_text ) . '</span>';
+echo apply_filters( 'admin_footer_text', '<span id="footer-thankyou">' . $footer_text . '</span>' );
 ?></p>
 <p id="footer-upgrade" class="alignright"><?php echo $upgrade; ?></p>
 <div class="clear"></div>
