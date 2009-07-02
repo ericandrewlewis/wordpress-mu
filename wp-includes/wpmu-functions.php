@@ -104,6 +104,10 @@ function is_main_blog() {
 
 function get_id_from_blogname( $name ) {
 	global $wpdb, $current_site;
+	$blog_id = wp_cache_get( "get_id_from_blogname_" . $name, 'blog-details' );
+	if( $blog_id )
+		return $blog_id;
+
 	if( constant( 'VHOST' ) == 'yes' ) {
 		$domain = $name . '.' . $current_site->domain;
 		$path = $current_site->path;
@@ -111,7 +115,9 @@ function get_id_from_blogname( $name ) {
 		$domain = $current_site->domain;
 		$path = $current_site->path . $name . '/';
 	}
-	return $wpdb->get_var( $wpdb->prepare("SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s", $domain, $path) );
+	$blog_id = $wpdb->get_var( $wpdb->prepare("SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s", $domain, $path) );
+	wp_cache_add( 'get_id_from_blogname_' . $name, $blog_id, 'blog-details' );
+	return $blog_id;
 }
 
 function get_blog_details( $id, $getall = true ) {
