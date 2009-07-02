@@ -174,15 +174,13 @@ function confirm_delete_users( $users ) {
 
 function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 	$themes = get_themes();
-	if( $blog_id == 0 )
-		$blog_allowed_themes = get_option( "allowedthemes" );
-	else
-		$blog_allowed_themes = get_blog_option( $blog_id, "allowedthemes" );
+
+	if( $blog_id != 0 )
+		switch_to_blog( $blog_id );
+
+	$blog_allowed_themes = get_option( "allowedthemes" );
 	if( !is_array( $blog_allowed_themes ) || empty( $blog_allowed_themes ) ) { // convert old allowed_themes to new allowedthemes
-		if( $blog_id == 0 )
-			$blog_allowed_themes = get_option( "allowed_themes" );
-		else
-			$blog_allowed_themes = get_blog_option( $blog_id, "allowed_themes" );
+		$blog_allowed_themes = get_option( "allowed_themes" );
 
 		if( is_array( $blog_allowed_themes ) ) {
 			foreach( (array) $themes as $key => $theme ) {
@@ -192,15 +190,14 @@ function wpmu_get_blog_allowedthemes( $blog_id = 0 ) {
 				}
 			}
 			$blog_allowed_themes = $blog_allowedthemes;
-			if( $blog_id == 0 ) {
-				add_option( "allowedthemes", $blog_allowed_themes );
-				delete_option( "allowed_themes" );
-			} else {
-				add_blog_option( $blog_id, "allowedthemes", $blog_allowed_themes );
-				delete_blog_option( $blog_id, "allowed_themes" );
-			}
+			add_option( "allowedthemes", $blog_allowed_themes );
+			delete_option( "allowed_themes" );
 		}
 	}
+
+	if( $blog_id != 0 )
+		restore_current_blog();
+
 	return $blog_allowed_themes;
 }
 
