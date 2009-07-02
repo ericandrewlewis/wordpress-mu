@@ -3159,7 +3159,7 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 
 	$value = maybe_unserialize( stripslashes($value) );
 
-	wp_cache_set($cache_key, $value, 'site-options');
+	wp_cache_set( $cache_key, $value, 'site-options' );
 
 	return apply_filters( 'site_option_' . $key, maybe_unserialize( $value ) );
 }

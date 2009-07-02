@@ -116,7 +116,7 @@ function get_id_from_blogname( $name ) {
 		$path = $current_site->path . $name . '/';
 	}
 	$blog_id = $wpdb->get_var( $wpdb->prepare("SELECT blog_id FROM {$wpdb->blogs} WHERE domain = %s AND path = %s", $domain, $path) );
-	wp_cache_add( 'get_id_from_blogname_' . $name, $blog_id, 'blog-details' );
+	wp_cache_set( 'get_id_from_blogname_' . $name, $blog_id, 'blog-details' );
 	return $blog_id;
 }
 
@@ -145,7 +145,7 @@ function get_blog_details( $id, $getall = true ) {
 	}
 
 	if ( !$getall ) {
-		wp_cache_add( $id . $all, $details, 'blog-details' );
+		wp_cache_set( $id . $all, $details, 'blog-details' );
 		return $details;
 	}
 
