@@ -144,9 +144,11 @@ function get_blog_details( $id, $getall = true ) {
 	}
 
 	$wpdb->suppress_errors();
-	$details->blogname   = get_blog_option($id, 'blogname');
-	$details->siteurl    = get_blog_option($id, 'siteurl');
-	$details->post_count = get_blog_option($id, 'post_count');
+	switch_to_blog( $id );
+	$details->blogname   = get_option( 'blogname' );
+	$details->siteurl    = get_option( 'siteurl' );
+	$details->post_count = get_option( 'post_count' );
+	restore_current_blog();
 	$wpdb->suppress_errors( false );
 
 	$details = apply_filters('blog_details', $details);
@@ -1208,15 +1210,20 @@ function newblog_notify_siteadmin( $blog_id, $deprecated = '' ) {
 		return false;
 	
 	$options_site_url = clean_url("http://{$current_site->domain}{$current_site->path}wp-admin/wpmu-options.php");
+
+	switch_to_blog( $blog_id );
+	$blogname = get_option( 'blogname' );
+	$siteurl = get_option( 'siteurl' );
+	restore_current_blog();
 	
-	$msg = sprintf(__("New Blog: %1s
+	$msg = sprintf( __( "New Blog: %1s
 URL: %2s
 Remote IP: %3s
 
-Disable these notifications: %4s"), get_blog_option( $blog_id, "blogname" ), get_blog_option( $blog_id, "siteurl" ), $_SERVER['REMOTE_ADDR'], $options_site_url);
+Disable these notifications: %4s"), $blogname, $siteurl, $_SERVER['REMOTE_ADDR'], $options_site_url);
 	$msg = apply_filters( 'newblog_notify_siteadmin', $msg );
 	
-	wp_mail( $email, sprintf(__("New Blog Registration: %s"), get_blog_option( $blog_id, "siteurl" )), $msg );
+	wp_mail( $email, sprintf( __( "New Blog Registration: %s" ), $siteurl ), $msg );
 	return true;
 }
 
