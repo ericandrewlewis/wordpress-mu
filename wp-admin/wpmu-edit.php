@@ -196,25 +196,26 @@ switch( $_GET['action'] ) {
 			$_POST['option']['allowedthemes'] = '';
 		}
 
+		switch_to_blog( $id );
 		if( is_array( $_POST['option'] ) ) {
 			$c = 1;
 			$count = count( $_POST['option'] );
 			foreach ( (array) $_POST['option'] as $key => $val ) {
 				if( $c == $count ) {
-					update_blog_option( $id, $key, $val );
+					update_option( $key, $val );
 				} else {
-					update_blog_option( $id, $key, $val, false ); // no need to refresh blog details yet
+					update_option( $key, $val, false ); // no need to refresh blog details yet
 				}
 				$c++;
 			}
 		}
 
 		if( $_POST['update_home_url'] == 'update' ) {
-			if( get_blog_option( $id, 'siteurl' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
-				update_blog_option( $id, 'siteurl', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+			if( get_option( 'siteurl' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
+				update_option( 'siteurl', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
 
-			if( get_blog_option( $id, 'home' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
-				update_blog_option( $id, 'home', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
+			if( get_option( 'home' ) != 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] )
+				update_option( 'home', 'http://' . $_POST['blog']['domain'] . $_POST['blog']['path'] );
 		}
 			
 		$wp_rewrite->flush_rules();
@@ -232,7 +233,7 @@ switch( $_GET['action'] ) {
 			WHERE  blog_id = '$id'");
 
 		update_blog_status( $id, 'spam', $_POST['blog']['spam'] );
-		update_blog_option( $id, 'blog_public', $_POST['blog']['public'] );
+		update_option( 'blog_public', $_POST['blog']['public'] );
 
 		// user roles
 		if( is_array( $_POST['role'] ) == true ) {
@@ -287,6 +288,7 @@ switch( $_GET['action'] ) {
 				add_user_to_blog( $id, $userid, $_POST['new_role'] );
 		}
 		do_action( 'wpmu_update_blog_options' );
+		restore_current_blog();
 		wpmu_admin_do_redirect( "wpmu-blogs.php?action=editblog&updated=true&id=".$id );
 	break;
 
