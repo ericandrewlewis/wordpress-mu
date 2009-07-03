@@ -582,11 +582,13 @@ switch( $_GET['action'] ) {
 					<tr class="form-field form-required">
 						<th style="text-align:center;" scope='row'><?php _e('Blog Address') ?></th>
 						<td>
-						<?php if( constant( "VHOST" ) == 'yes' ) : ?>
-							<input name="blog[domain]" type="text" title="<?php _e('Domain') ?>"/>.<?php echo $current_site->domain;?>
-						<?php else:
+						<?php if ( constant( "VHOST" ) == 'yes' ) { ?>
+							<input name="blog[domain]" type="text" title="<?php _e('Domain') ?>"/>.<?php echo $current_site->domain;?> 
+						<?php } else {
 							echo $current_site->domain . $current_site->path ?><input name="blog[domain]" type="text" title="<?php _e('Domain') ?>"/>
-						<?php endif; ?>
+						<?php } 
+						echo "<p>" . __( 'Only the characters a-z and 0-9 recommended.' ) . "</p>";
+						?>
 						</td>
 					</tr>
 					<tr class="form-field form-required">
