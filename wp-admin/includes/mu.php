@@ -1185,4 +1185,60 @@ function disable_some_pages() {
 
 }
 add_action( 'admin_init', 'disable_some_pages' );
+
+function blogs_listing() {
+	global $current_user;
+	if ( isset( $_POST[ 'action' ] ) ) {
+		switch( $_POST[ 'action' ] ) {
+			case "update":
+				do_action( 'myblogs_update' );
+			wp_redirect( admin_url( 'blogs.php?updated=1' ) );
+			die();
+			break;
+		}
+	}
+
+	$blogs = get_blogs_of_user( $current_user->ID );
+	if( !$blogs || ( is_array( $blogs ) && empty( $blogs ) ) ) {
+		wp_die( __( 'You must be a member of at least one blog to use this page.' ) );
+	}
+
+	if ( empty($title) )
+		$title = __('My Blogs');
+	?>
+	<div class="wrap">
+	<?php if( $_GET[ 'updated' ] ) { ?>
+		<div id="message" class="updated fade"><p><strong><?php _e( 'Your blog options have been updated.' ); ?></strong></p></div>
+	<?php } ?>
+	<?php screen_icon(); ?>
+	<h2><?php echo wp_specialchars( $title ); ?></h2>
+	<form id="myblogs" action="" method="post">
+	<?php
+	do_action( 'myblogs_allblogs_options' );
+	?><table class='widefat'> <?php 
+	$settings_html = apply_filters( 'myblogs_options', '', 'global' );
+	if ( $settings_html != '' ) {
+		echo "<tr><td valign='top'><h3>" . __( 'Global Settings' ) . "</h3></td><td>";
+		echo $settings_html;
+		echo "</td></tr>";
+	}
+	reset( $blogs );
+	foreach( $blogs as $user_blog ) {
+		$c = $c == "alternate" ? "" : "alternate";
+		?><tr class='<?php echo $c; ?>'><td valign='top'><h3><?php echo $user_blog->blogname; ?></h3>
+		<p><?php echo apply_filters( "myblogs_blog_actions", "<a href='{$user_blog->siteurl}'>" . __( 'Visit' ) . "</a> | <a href='{$user_blog->siteurl}/wp-admin/'>" . __( 'Dashboard' ) . "</a>", $user_blog ); ?></p>
+		</td><td valign='top'>
+		<?php
+		echo apply_filters( 'myblogs_options', '', $user_blog );
+		?></td></tr><?php
+	}
+	?>
+	</table>
+	<input type="hidden" name="action" value="update" />
+	<input type="submit" class="button-primary" value="<?php _e('Update Options') ?>" name="submit" />
+	</form>
+	</div>
+	<?php
+}
+add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
 ?>
