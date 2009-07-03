@@ -32,7 +32,7 @@ require_once('admin-header.php');
 ?>
 <div class="wrap">
 <?php if( $_GET[ 'updated' ] ) { ?>
-<div id="message" class="updated fade"><p><strong><?php _e( 'Your blog options have been updated.' ); ?></strong></p></div>
+	<div id="message" class="updated fade"><p><strong><?php _e( 'Your blog options have been updated.' ); ?></strong></p></div>
 <?php } ?>
 <?php screen_icon(); ?>
 <h2><?php echo wp_specialchars( $title ); ?></h2>

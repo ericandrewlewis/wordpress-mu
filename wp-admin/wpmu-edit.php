@@ -71,7 +71,7 @@ switch( $_GET['action'] ) {
 			$blog_details = get_blog_details( $dashboard_blog );
 			if ( false === $blog_details ) {
 				if ( is_numeric( $dashboard_blog ) )
-					wp_die( 'Dashboard blog_id must be a blog that already exists' );
+					wp_die( __( 'Dashboard blog_id must be a blog that already exists' ) );
 				if ( constant( 'VHOST' ) == 'yes' ) {
 					$domain = $dashboard_blog . '.' . $current_site->domain;
 					$path = $current_site->path;
