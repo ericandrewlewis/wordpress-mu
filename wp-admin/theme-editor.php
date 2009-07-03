@@ -8,7 +8,6 @@
 
 /** WordPress Administration Bootstrap */
 require_once('admin.php');
-wp_die( 'Disabled' );
 $title = __("Edit Themes");
 $parent_file = 'themes.php';
 
