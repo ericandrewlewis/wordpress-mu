@@ -2688,7 +2688,6 @@ function wp_get_attachment_url( $post_id = 0 ) {
 		if ( ($uploads = wp_upload_dir()) && false === $uploads['error'] ) { //Get upload directory
 			if ( 0 === strpos($file, $uploads['basedir']) ) //Check that the upload base exists in the file location
 				$url = str_replace($uploads['basedir'], $uploads['baseurl'], $file); //replace file location with url location
-			/* Breaks WordPress MU image upload path */
 			elseif ( false !== strpos($file, 'wp-content/uploads') )
 				$url = $uploads['baseurl'] . substr( $file, strpos($file, 'wp-content/uploads') + 18 );
 			else
