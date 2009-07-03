@@ -2175,4 +2175,15 @@ function lowercase_username( $username, $raw_username, $strict ) {
 	return strtolower( $username );
 }
 add_filter( 'sanitize_user', 'lowercase_username', 10, 3 );
+
+function mu_upload_dir( $uploads ) {
+	$dir = $uploads[ 'basedir' ];
+	if( defined( 'BLOGUPLOADDIR' ) )
+		$dir = constant( 'BLOGUPLOADDIR' );
+	$dir = untrailingslashit( $dir ) . $uploads[ 'subdir' ];
+	$uploads[ 'path' ] = $dir;
+
+	return $uploads;
+}
+add_filter( 'upload_dir', 'mu_upload_dir' );
 ?>
