@@ -204,11 +204,65 @@ function is_site_admin( $user_login = false ) {
 	return false;
 }
 
-function get_blog_option( $blog_id, $key, $default=false ) {
-	switch_to_blog( $blog_id );
-	$option = get_option( $key, $default );
-	restore_current_blog();
-	return $option;
+/* get_blog_option() fetches the named option from a blog but it does not
+   execute the 
+/**
+ * Retrieve option value based on setting name and blog_id.
+ *
+ * If the option does not exist or does not have a value, then the return value
+ * will be false. This is useful to check whether you need to install an option
+ * and is commonly used during installation of plugin options and to test
+ * whether upgrading is required.
+ *
+ * There is a filter called 'blog_option_$option' with the $option being
+ * replaced with the option name. The filter takes two parameters. $value and
+ * $blog_id. It returns $value.
+ * The 'option_$option' filter in get_option() is not called.
+ *
+ * @since NA
+ * @package WordPress MU
+ * @subpackage Option
+ * @uses apply_filters() Calls 'blog_option_$optionname' with the option name value.
+ *
+ * @param int $blog_id is the id of the blog.
+ * @param string $setting Name of option to retrieve. Should already be SQL-escaped
+ * @param string $default (optional) Default value returned if option not found.
+ * @return mixed Value set for the option.
+ */
+function get_blog_option( $blog_id, $setting, $default = false ) {
+	global $wpdb;
+
+	$key = $blog_id."-".$setting."-blog_option";
+	$value = wp_cache_get( $key, "site-options" );
+	if ( $value == null ) {
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->base_prefix}{$blog_id}_options WHERE option_name = %s", $setting ) );
+		if ( is_object( $row ) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
+			$value = $row->option_value;
+			if ( $value == false ) {
+				wp_cache_set( $key, 'falsevalue', 'site-options' );
+			} else {
+				wp_cache_set( $key, $value, 'site-options' );
+			}
+		} else { // option does not exist, so we must cache its non-existence
+			wp_cache_set( $key, 'noop', 'site-options' );
+			$value = $default;
+		}
+	} elseif( $value == 'noop' ) {
+		$value = $default;
+	} elseif( $value == 'falsevalue' ) {
+		$value = false;
+	}
+	// If home is not set use siteurl.
+	if ( 'home' == $setting && '' == $value )
+		return get_blog_option( $blog_id, 'siteurl' );
+
+	if ( 'siteurl' == $setting || 'home' == $setting || 'category_base' == $setting )
+		$value = preg_replace( '|/+$|', '', $value );
+
+	if (! @unserialize( $value ) )
+		$value = stripslashes( $value );
+
+	return apply_filters( 'blog_option_' . $setting, maybe_unserialize( $value ), $blog_id );
 }
 
 function add_blog_option( $id, $key, $value ) {
@@ -217,6 +271,7 @@ function add_blog_option( $id, $key, $value ) {
 	switch_to_blog($id);
 	add_option( $key, $value );
 	restore_current_blog();
+	wp_cache_set( $id."-".$key."-blog_option", $value, 'site-options' );
 }
 
 function delete_blog_option( $id, $key ) {
@@ -225,6 +280,7 @@ function delete_blog_option( $id, $key ) {
 	switch_to_blog($id);
 	delete_option( $key );
 	restore_current_blog();
+	wp_cache_set( $id."-".$key."-blog_option", '', 'site-options' );
 }
 
 function update_blog_option( $id, $key, $value, $refresh = true ) {
@@ -236,6 +292,7 @@ function update_blog_option( $id, $key, $value, $refresh = true ) {
 
 	if( $refresh == true )
 		refresh_blog_details( $id );
+	wp_cache_set( $id."-".$key."-blog_option", $value, 'site-options');
 }
 
 function switch_to_blog( $new_blog ) {
