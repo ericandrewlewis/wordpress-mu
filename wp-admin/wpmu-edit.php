@@ -102,16 +102,11 @@ switch( $_GET['action'] ) {
 			}
 		}
 		update_site_option( "dashboard_blog", $dashboard_blog_id );
-
-		update_site_option( "menu_items", $_POST['menu_items'] );
-		update_site_option( "mu_media_buttons", $_POST['mu_media_buttons'] );
-		update_site_option( "blog_upload_space", $_POST['blog_upload_space'] );
-		update_site_option( "upload_filetypes", trim( $_POST['upload_filetypes'] ) );
-		update_site_option( "site_name", $_POST['site_name'] );
-		update_site_option( "first_post", $_POST['first_post'] );
-		update_site_option( "welcome_email", $_POST['welcome_email'] );
-		update_site_option( "fileupload_maxk", $_POST['fileupload_maxk'] );
-		update_site_option( "admin_notice_feed", clean_url( $_POST['admin_notice_feed'] ) );
+		$options = array( 'menu_items', 'mu_media_buttons', 'blog_upload_space', 'upload_filetypes', 'site_name', 'first_post', 'welcome_email', 'fileupload_maxk', 'admin_notice_feed' );
+		foreach( $options as $option_name ) {
+			$value = stripslashes_deep( $_POST[ $option_name ] );
+			update_site_option( $option_name, $value );
+		}
 
 		$site_admins = explode( ' ', str_replace( ",", " ", $_POST['site_admins'] ) );
 		if ( is_array( $site_admins ) ) {
