@@ -2184,4 +2184,14 @@ function mu_upload_dir( $uploads ) {
 	return $uploads;
 }
 add_filter( 'upload_dir', 'mu_upload_dir' );
+
+function users_can_register_signup_filter() {
+	$registration = get_site_option('registration');
+	if ( $registration == 'all' || $registration == 'user' ) {
+		return true;
+	} else {
+		return false;
+	}
+}
+add_filter('option_users_can_register', 'users_can_register_signup_filter');
 ?>
