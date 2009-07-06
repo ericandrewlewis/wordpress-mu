@@ -575,10 +575,12 @@ function mu_options( $options ) {
 }
 add_filter( 'whitelist_options', 'mu_options' );
 
-function import_no_new_users( $permission ) {
-	return false;
+function check_import_new_users( $permission ) {
+	if ( !is_site_admin() )
+		return false;
+	return true;
 }
-add_filter( 'import_allow_create_users', 'import_no_new_users' );
+add_filter( 'import_allow_create_users', 'check_import_new_users' );
 // See "import_allow_fetch_attachments" and "import_attachment_size_limit" filters too.
 
 function mu_css() {
