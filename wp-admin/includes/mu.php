@@ -1000,7 +1000,7 @@ function sitewide_filter_inactive_plugins_list( $inactive_plugins ) {
 	
 	return $inactive_plugins;
 }
-add_filter( 'inactive_plugins', 'sitewide_filter_inactive_plugins_list' );
+add_filter( 'all_plugins', 'sitewide_filter_inactive_plugins_list' );
 
 /**
  * sitewide_filter_active_plugins_list()
@@ -1017,7 +1017,7 @@ function sitewide_filter_active_plugins_list( $active_plugins ) {
 	
 	return $active_plugins;
 }
-add_filter( 'active_plugins', 'sitewide_filter_active_plugins_list' );
+add_filter( 'all_plugins', 'sitewide_filter_active_plugins_list' );
 
 /**
  * check_is_wpmu_plugin_on_activate()
