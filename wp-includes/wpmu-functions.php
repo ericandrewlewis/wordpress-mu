@@ -204,8 +204,6 @@ function is_site_admin( $user_login = false ) {
 	return false;
 }
 
-/* get_blog_option() fetches the named option from a blog but it does not
-   execute the 
 /**
  * Retrieve option value based on setting name and blog_id.
  *
