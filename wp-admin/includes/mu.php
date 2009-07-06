@@ -559,7 +559,7 @@ add_action( '_admin_menu', 'wpmu_menu' );
 
 function mu_options( $options ) {
 	$removed = array( 
-		'general' => array( 'siteurl', 'home', 'admin_email', 'default_role' ),
+		'general' => array( 'siteurl', 'home', 'admin_email', 'users_can_register', 'default_role' ),
 		'reading' => array( 'gzipcompression' ),
 		'writing' => array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' ),
 	);
