@@ -1847,35 +1847,6 @@ function upload_is_file_too_big( $upload ) {
 	return $upload;
 }
 
-function safecss_filter_attr( $css, $deprecated = '' ) {
-	$css = wp_kses_no_null($css);
-	$css = str_replace(array("\n","\r","\t"), '', $css);
-	$css_array = split( ';', trim( $css ) );
-	$allowed_attr = apply_filters( 'safe_style_css', array( 'text-align', 'margin', 'color', 'float', 
-	'text-direction', 'font', 'font-family', 'font-size', 'font-style', 'font-variant', 'font-weight', 'height',
-	'margin-bottom', 'margin-left', 'margin-right', 'margin-top', 'padding', 'padding-bottom',
-	'padding-left', 'padding-right', 'padding-top', 'width', 'border', 'vertical-align', 'text-decoration' ) );
-	$css = '';
-	foreach( $css_array as $css_item ) {
-		if( $css_item == '' )
-			continue;
-		$css_item = trim( $css_item );
-		$found = false;
-		if( strpos( $css_item, ':' ) === false ) {
-			$found = true;
-		} elseif( in_array( substr( $css_item, 0, strpos( $css_item, ':' ) ), $allowed_attr ) ) {
-			$found = true;
-		}
-		if( $found ) {
-			if( $css != '' )
-				$css .= ';';
-			$css .= $css_item;
-		}
-	}
-
-	return $css;
-}
-
 function wordpressmu_authenticate_siteadmin( $user, $password = '' ) {
 	if( is_site_admin( $user->user_login ) == false && ( $primary_blog = get_usermeta( $user->user_id, "primary_blog" ) ) ) {
 		$details = get_blog_details( $primary_blog );
