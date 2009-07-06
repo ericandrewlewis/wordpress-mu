@@ -882,7 +882,9 @@ function is_wpmu_sitewide_plugin( $file ) {
  *
  * Lists all the plugins that have been activated site wide.
  */
-function list_activate_sitewide_plugins( $all_plugins ) {
+function list_activate_sitewide_plugins() {
+	$all_plugins = apply_filters( 'all_plugins', get_plugins() );
+
 	if ( !is_site_admin() )
 		return false;
 		
@@ -894,33 +896,29 @@ function list_activate_sitewide_plugins( $all_plugins ) {
 		<h3><?php _e( 'Currently Active Site Wide Plugins' ) ?></h3>
 	
 		<p><?php _e( 'Plugins that appear in the list below are activate for all blogs across this installation.' ) ?></p>
-	
+
 		<table class="widefat" cellspacing="0" id="<?php echo $context ?>-plugins-table">
 			<thead>
-			<tr>
-				<th scope="col" class="check-column">&nbsp;</th>
-				<th scope="col"><?php _e('Plugin'); ?></th>
-				<th scope="col" class="num"><?php _e('Version'); ?></th>
-				<th scope="col"><?php _e('Description'); ?></th>
-				<th scope="col" class="action-links"><?php _e('Action'); ?></th>
-			</tr>
+				<tr>
+					<th scope="col" class="manage-column check-column">&nbsp;</th>
+					<th scope="col" class="manage-column"><?php _e('Plugin'); ?></th>
+					<th scope="col" class="manage-column"><?php _e('Description'); ?></th>
+				</tr>
 			</thead>
 
 			<tfoot>
-			<tr>
-				<th scope="col" class="check-column">&nbsp;</th>
-				<th scope="col"><?php _e('Plugin'); ?></th>
-				<th scope="col" class="num"><?php _e('Version'); ?></th>
-				<th scope="col"><?php _e('Description'); ?></th>
-				<th scope="col" class="action-links"><?php _e('Action'); ?></th>
-			</tr>
+				<tr>
+					<th scope="col" class="manage-column check-column">&nbsp;</th>
+					<th scope="col" class="manage-column"><?php _e('Plugin'); ?></th>
+					<th scope="col" class="manage-column"><?php _e('Description'); ?></th>
+				</tr>
 			</tfoot>
 
 			<tbody class="plugins">
 		<?php
 			foreach ( (array) $active_sitewide_plugins as $plugin_file => $activated_time ) {
 				$action_links = array();
-				$action_links[] = '<a href="' . wp_nonce_url( 'wpmu-sitewide-plugins.php?action=deactivate&amp;plugin=' . $plugin_file, 'deactivate-sitewide-plugin' ) . '" title="' . __('Deactivate this plugin site wide') . '">' . __('Deactivate Site Wide') . '</a>';
+				$action_links[] = '<a href="' . wp_nonce_url( 'wpmu-sitewide-plugins.php?action=deactivate&amp;plugin=' . $plugin_file, 'deactivate-sitewide-plugin' ) . '" title="' . __('Deactivate this plugin site wide') . '">' . __('Deactivate') . '</a>';
 
 				if ( current_user_can('edit_plugins') && is_writable(WP_PLUGIN_DIR . '/' . $plugin_file) )
 					$action_links[] = '<a href="plugin-editor.php?file=' . $plugin_file . '" title="' . __('Open this file in the Plugin Editor') . '" class="edit">' . __('Edit') . '</a>';
@@ -931,16 +929,38 @@ function list_activate_sitewide_plugins( $all_plugins ) {
 				$plugin_data = $all_plugins[$plugin_file];
 				
 				echo "
-			<tr class='" . $context . "' style='background: #eef2ff;'>
+			<tr class='$context' style='background: #eef2ff;'>
 				<th scope='row' class='check-column'>&nbsp;</th>
-				<td class='name'>{$plugin_data['Title']}</td>
-				<td class='vers'>{$plugin_data['Version']}</td>
+				<td class='plugin-title'><strong>{$plugin_data['Name']}</strong></td>
 				<td class='desc'><p>{$plugin_data['Description']}</p></td>
-				<td class='togl action-links'>";
-				if ( !empty($action_links) )
-					echo implode(' | ', $action_links);
-				echo '</td>
-			</tr>';
+			</tr>
+			<tr class='$context second' style='background: #eef2ff;'>
+				<td></td>
+				<td class='plugin-title'>";
+				echo '<div class="row-actions-visible">';
+				foreach ( $action_links as $action => $link ) {
+					$sep = end($action_links) == $link ? '' : ' | ';
+					echo "<span class='$action'>$link$sep</span>";
+				}
+				echo "</div></td>
+				<td class='desc'>";
+				$plugin_meta = array();
+				if ( !empty($plugin_data['Version']) )
+					$plugin_meta[] = sprintf(__('Version %s'), $plugin_data['Version']);
+				if ( !empty($plugin_data['Author']) ) {
+					$author = $plugin_data['Author'];
+					if ( !empty($plugin_data['AuthorURI']) )
+						$author = '<a href="' . $plugin_data['AuthorURI'] . '" title="' . __( 'Visit author homepage' ) . '">' . $plugin_data['Author'] . '</a>';
+					$plugin_meta[] = sprintf( __('By %s'), $author );
+				}
+				if ( ! empty($plugin_data['PluginURI']) )
+					$plugin_meta[] = '<a href="' . $plugin_data['PluginURI'] . '" title="' . __( 'Visit plugin site' ) . '">' . __('Visit plugin site') . '</a>';
+
+				$plugin_meta = apply_filters('plugin_row_meta', $plugin_meta, $plugin_file, $plugin_data, $context);
+				echo implode(' | ', $plugin_meta);
+				echo "</td>
+			</tr>\n";
+			
 				do_action( 'after_plugin_row', $plugin_file, $plugin_data, $context );
 				do_action( "after_plugin_row_$plugin_file", $plugin_file, $plugin_data, $context );
 			}
