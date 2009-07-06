@@ -3170,6 +3170,7 @@ function add_site_option( $key, $value ) {
 	if ( $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) ) )
 		return update_site_option( $key, $value );
 
+	$value = sanitize_option( $key, $value );
 	wp_cache_set( $cache_key, $value, 'site-options');
 
 	$value = maybe_serialize($value);
@@ -3191,6 +3192,7 @@ function update_site_option( $key, $value ) {
 	if ( $value && !$wpdb->get_row( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) ) )
 		return add_site_option( $key, $value );
 
+	$value = sanitize_option( $key, $value );
 	wp_cache_set( $cache_key, $value, 'site-options');
 
 	$value = maybe_serialize($value);
