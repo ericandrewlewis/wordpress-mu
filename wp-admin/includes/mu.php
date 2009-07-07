@@ -523,10 +523,6 @@ function wpmu_menu() {
 		$submenu[ 'wpmu-admin.php' ][30] = array( __('Upgrade'), '10', 'wpmu-upgrade-site.php' );
 	}
 
-	$all_blogs = get_blogs_of_user( $current_user->ID );
-	if ( $all_blogs != false && !empty( $all_blogs ) )
-		add_submenu_page( 'index.php', __('My Blogs'), __('My Blogs'), 'read', 'blogs.php', 'blogs.php' );
-
 	if( !is_site_admin() )
 		unset( $submenu['plugins.php'][10] ); // always remove the plugin installer for regular users
 	unset( $submenu['plugins.php'][15] ); // always remove the plugin editor
@@ -1262,5 +1258,8 @@ function blogs_listing() {
 	</div>
 	<?php
 }
-add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
+$all_blogs = get_blogs_of_user( $current_user->ID );
+if ( $all_blogs != false && !empty( $all_blogs ) )
+	add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
+
 ?>
