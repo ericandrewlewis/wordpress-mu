@@ -328,6 +328,8 @@ function get_option( $setting, $default = false ) {
 
 	// prevent non-existent options from triggering multiple queries
 	$notoptions = wp_cache_get( 'notoptions', 'options' );
+	if ( defined( 'WP_INSTALLING' ) )
+		$notoptions = array();
 	if ( isset( $notoptions[$setting] ) )
 		return $default;
 
@@ -348,7 +350,7 @@ function get_option( $setting, $default = false ) {
 
 			if ( is_object( $row) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 				$value = $row->option_value;
-				wp_cache_add( $setting, $value, 'options' );
+				wp_cache_set( $setting, $value, 'options' );
 			} else { // option does not exist, so we must cache its non-existence
 				$notoptions[$setting] = true;
 				wp_cache_set( 'notoptions', $notoptions, 'options' );
@@ -448,7 +450,8 @@ function get_alloptions() {
 function wp_load_alloptions() {
 	global $wpdb;
 
-	$alloptions = wp_cache_get( 'alloptions', 'options' );
+	if ( false == defined( 'WP_INSTALLING' ) )
+		$alloptions = wp_cache_get( 'alloptions', 'options' );
 
 	if ( !$alloptions ) {
 		$suppress = $wpdb->suppress_errors();
