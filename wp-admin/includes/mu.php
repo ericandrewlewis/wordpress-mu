@@ -1258,8 +1258,13 @@ function blogs_listing() {
 	</div>
 	<?php
 }
-$all_blogs = get_blogs_of_user( $current_user->ID );
-if ( $all_blogs != false && !empty( $all_blogs ) )
-	add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
+
+function blogs_page_init() {
+	global $current_user;
+	$all_blogs = get_blogs_of_user( $current_user->ID );
+	if ( $all_blogs != false && !empty( $all_blogs ) )
+		add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
+}
+add_action('admin_menu', 'blogs_page_init');
 
 ?>
