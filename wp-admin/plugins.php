@@ -14,7 +14,7 @@ if( is_array( $menu_perms ) == false )
 	$menu_perms = array();
 
 if ( $menu_perms[ 'plugins' ] != 1 && !is_site_admin() )
-	return;
+	wp_die( __( 'Page disabled by the administrator' ) );
 
 if ( isset($_POST['clear-recent-list']) )
 	$action = 'clear-recent-list';

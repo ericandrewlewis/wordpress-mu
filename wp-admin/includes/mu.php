@@ -533,7 +533,7 @@ function wpmu_menu() {
 		$menu_perms = array();
 	if( $menu_perms[ 'plugins' ] != 1 ) {
 		if( !is_site_admin() ) {
-			unset( $menu['45'] ); // Plugins
+			unset( $menu['65'] ); // Plugins
 			unset( $submenu[ 'plugins.php' ] );
 		} elseif ( strpos( $_SERVER[ 'PHP_SELF' ], 'wp-admin/plugins.php' ) ) {
 			$message = sprintf( __( 'The plugins page is not visible to normal users. It must be activated first. %s' ), '<a href="wpmu-options.php#menu">' . __( 'Activate' ) . '</a>' );
