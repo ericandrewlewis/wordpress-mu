@@ -881,7 +881,7 @@ function is_wpmu_sitewide_plugin( $file ) {
  * Lists all the plugins that have been activated site wide.
  */
 function list_activate_sitewide_plugins() {
-	$all_plugins = apply_filters( 'all_plugins', get_plugins() );
+	$all_plugins = get_plugins();
 
 	if ( !is_site_admin() )
 		return false;
