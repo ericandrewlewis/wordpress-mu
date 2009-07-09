@@ -351,9 +351,9 @@ switch( $_GET['action'] ) {
 		// Pagination
 		$url2 = "&order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=";
 		if( $_GET[ 'blog_ip' ] ) {
-			$url2 .= "&ip_address=" . urlencode( $s );
+			$url2 .= "&amp;ip_address=" . urlencode( $s );
 		} else {
-			$url2 .= $s . "&ip_address=" . urlencode( $s );
+			$url2 .= $s . "&amp;ip_address=" . urlencode( $s );
 		}
 		$blog_navigation = paginate_links( array(
 			'base' => add_query_arg( 'apage', '%#%' ).$url2,
