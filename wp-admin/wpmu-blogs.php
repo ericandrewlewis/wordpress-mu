@@ -349,7 +349,7 @@ switch( $_GET['action'] ) {
 		$blog_list = $wpdb->get_results( $query, ARRAY_A );
 
 		// Pagination
-		$url2 = "&order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=";
+		$url2 = "&amp;order=" . $_GET['order'] . "&amp;sortby=" . $_GET['sortby'] . "&amp;s=";
 		if( $_GET[ 'blog_ip' ] ) {
 			$url2 .= "&amp;ip_address=" . urlencode( $s );
 		} else {
