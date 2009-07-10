@@ -461,7 +461,8 @@ function wp_load_alloptions() {
 		$alloptions = array();
 		foreach ( (array) $alloptions_db as $o )
 			$alloptions[$o->option_name] = $o->option_value;
-		wp_cache_add( 'alloptions', $alloptions, 'options' );
+		if ( false == defined( 'WP_INSTALLING' ) )
+			wp_cache_add( 'alloptions', $alloptions, 'options' );
 	}
 	return $alloptions;
 }
