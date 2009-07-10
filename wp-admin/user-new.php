@@ -126,7 +126,7 @@ if ( ! empty($messages) ) {
 
 <?php
 echo '<p>' . __( 'You can add new users to your blog in two ways:' ) . '<ol><li> ' . __( 'Enter the username and email address of an existing user on this site.' ) . '</li><li> ' . __( 'Enter the username and the email address of a person who is not already a member of this site. Choose the username carefully, it cannot be changed.' ) . '</li></ol></p>';
-echo '<p>' . __( 'That person will be sent an email asking them to click a link confirming the invite. New users will then be sent an email with a randomly password and a login link.' ) . '</p>';
+echo '<p>' . __( 'That person will be sent an email asking them to click a link confirming the invite. New users will then be sent an email with a randomly generated password and a login link.' ) . '</p>';
 ?>
 <form action="" method="post" name="adduser" id="adduser" class="add:users: validate">
 <?php wp_nonce_field('add-user') ?>
