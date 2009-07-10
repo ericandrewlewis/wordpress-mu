@@ -248,12 +248,15 @@ function profile_page_email_warning_ob_content( $content ) {
 }
 
 function update_profile_email() {
-	global $current_user;
+	global $current_user, $wpdb;
 	if( isset( $_GET[ 'newuseremail' ] ) && $current_user->ID ) {
 		$new_email = get_option( $current_user->ID . '_new_email' );
 		if( $new_email[ 'hash' ] == $_GET[ 'newuseremail' ] ) {
 			$user->ID = $current_user->ID;
 			$user->user_email = wp_specialchars( trim( $new_email[ 'newemail' ] ) );
+			if ( $wpdb->get_var( $wpdb->prepare( "SELECT user_login FROM {$wpdb->signups} WHERE user_login = %s", $current_user->user_login ) ) ) {
+				$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->signups} SET user_email = %s WHERE user_login = %s", $user->user_email, $current_user->user_login ) );
+			}
 			wp_update_user( get_object_vars( $user ) );
 			delete_option( $current_user->ID . '_new_email' );
 			wp_redirect( add_query_arg( array('updated' => 'true'), admin_url( 'profile.php' ) ) );
@@ -1266,5 +1269,14 @@ function blogs_page_init() {
 		add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
 }
 add_action('admin_menu', 'blogs_page_init');
+
+function update_signup_email_from_profile( $user_id ) {
+	global $wpdb;
+	$user_login = $wpdb->get_var( $wpdb->prepare( "SELECT user_login FROM {$wpdb->users} WHERE ID = %d", $user_id ) );
+	if ( $user_login && is_email( $_POST[ 'email' ] ) && $wpdb->get_var( $wpdb->prepare( "SELECT user_login FROM {$wpdb->signups} WHERE user_login = %s", $user_login ) ) ) {
+		$wpdb->query( $wpdb->prepare( "UPDATE {$wpdb->signups} SET user_email = %s WHERE user_login = %s", $_POST[ 'email' ], $user_login ) );
+	}
+}
+add_action( 'edit_user_profile_update', 'update_signup_email_from_profile' );
 
 ?>
