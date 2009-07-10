@@ -1167,11 +1167,6 @@ function choose_primary_blog() {
 }
 add_action ( 'myblogs_allblogs_options', 'choose_primary_blog' );
 
-function myblogs_profile_link() {
-	printf( __( 'Edit your blog options on the <a href="%s">My Blogs</a> page.' ), admin_url( 'blogs.php' ) );
-}
-add_action( 'show_user_profile', 'myblogs_profile_link' );
-
 if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
 	add_action( 'admin_init', 'update_profile_email' );
 	add_action( 'admin_init', 'profile_page_email_warning_ob_start' );
