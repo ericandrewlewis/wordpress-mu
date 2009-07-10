@@ -122,7 +122,7 @@ function printheader() {
 			vertical-align: top;
 		}
 
-		.form-table tr {
+		.form-table tr, .blog-address {
 			background: #eaf3fa;
 		}
 
@@ -370,9 +370,9 @@ function printstep1form( $dbname = 'wordpress', $uname = 'username', $pwd = 'pas
 		<input type='hidden' name='action' value='step2' />
 		<h2>Blog Addresses</h2>
 		<p>Please choose whether you would like blogs for the WordPress &micro; install to use sub-domains or sub-directories. You can not change this later. We recommend sub-domains.</p>
-		<p>
+		<p class="blog-address">
 			<label><input type='radio' name='vhost' value='yes' <?php if( $vhost == 'yes' ) echo 'checked="checked"'; ?> /> Sub-domains (like <code>blog1.example.com</code>)</label><br />
-			<label><input type='radio' name='vhost' value='no' <?php if( $vhost == 'no' ) echo 'checked="checked"'; ?> /> Sub-directories (like <code>example.com/blog1</code></label>
+			<label><input type='radio' name='vhost' value='no' <?php if( $vhost == 'no' ) echo 'checked="checked"'; ?> /> Sub-directories (like <code>example.com/blog1</code>)</label>
 		</p>
 
 		<h2>Database</h2>
