@@ -1220,7 +1220,7 @@ function blogs_listing() {
 	}
 
 	if ( empty($title) )
-		$title = __('My Blogs');
+		$title = apply_filters( 'my_blogs_title', __( 'My Blogs' ) );
 	?>
 	<div class="wrap">
 	<?php if( $_GET[ 'updated' ] ) { ?>
@@ -1260,8 +1260,10 @@ function blogs_listing() {
 function blogs_page_init() {
 	global $current_user;
 	$all_blogs = get_blogs_of_user( $current_user->ID );
-	if ( $all_blogs != false && !empty( $all_blogs ) )
-		add_submenu_page( 'index.php', __( 'My Blogs' ), __( 'My Blogs' ), 'subscriber', 'myblogs', 'blogs_listing' );
+	if ( $all_blogs != false && !empty( $all_blogs ) ) {
+		$title = apply_filters( 'my_blogs_title', __( 'My Blogs' ) );
+		add_submenu_page( 'index.php', $title, $title, 'subscriber', 'myblogs', 'blogs_listing' );
+	}
 }
 add_action('admin_menu', 'blogs_page_init');
 
