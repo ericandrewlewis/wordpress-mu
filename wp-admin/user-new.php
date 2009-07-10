@@ -49,11 +49,16 @@ if ( isset($_REQUEST['action']) && 'adduser' == $_REQUEST['action'] ) {
 		if( ($username != null && is_site_admin( $username ) == false ) && ( array_key_exists($blog_id, get_blogs_of_user($user_id)) ) ) {
 			$redirect = add_query_arg( array('update' => 'addexisting'), 'user-new.php' );
 		} else {
-			$newuser_key = substr( md5( $user_id ), 0, 5 );
-			add_option( 'new_user_' . $newuser_key, array( 'user_id' => $user_id, 'email' => $user_details->user_email, 'role' => $_REQUEST[ 'role' ] ) );
-			$message = __("Hi,\n\nYou have been invited to join '%s' at\n%s\nPlease click the following link to confirm the invite:\n%s\n");
-			wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ),  sprintf($message, get_option('blogname'), site_url(), site_url("/newbloguser/$newuser_key/")));
-			$redirect = add_query_arg( array('update' => 'add'), 'user-new.php' );
+			if ( false == isset( $_POST[ 'noconfirmation' ] ) ) {
+				$newuser_key = substr( md5( $user_id ), 0, 5 );
+				add_option( 'new_user_' . $newuser_key, array( 'user_id' => $user_id, 'email' => $user_details->user_email, 'role' => $_REQUEST[ 'role' ] ) );
+				$message = __("Hi,\n\nYou have been invited to join '%s' at\n%s\nPlease click the following link to confirm the invite:\n%s\n");
+				wp_mail( $new_user_email, sprintf( __( '[%s] Joining confirmation' ), get_option( 'blogname' ) ),  sprintf($message, get_option('blogname'), site_url(), site_url("/newbloguser/$newuser_key/")));
+				$redirect = add_query_arg( array('update' => 'add'), 'user-new.php' );
+			} else {
+				add_existing_user_to_blog( array( 'user_id' => $user_id, 'role' => $_REQUEST[ 'role' ] ) );
+				$redirect = add_query_arg( array('update' => 'addnoconfirmation'), 'user-new.php' );
+			}
 		}
 		wp_redirect( $redirect );
 		die();
@@ -63,9 +68,18 @@ if ( isset($_REQUEST['action']) && 'adduser' == $_REQUEST['action'] ) {
 		if ( is_wp_error( $user_details[ 'errors' ] ) && !empty( $user_details[ 'errors' ]->errors ) ) {
 			$add_user_errors = $user_details[ 'errors' ];
 		} else {
-			wpmu_signup_user( $_REQUEST[ 'user_login' ], $_REQUEST[ 'email' ], array( 'add_to_blog' => $wpdb->blogid, 'new_role' => $_REQUEST[ 'role' ] ) );
 			$new_user_login = apply_filters('pre_user_login', sanitize_user(stripslashes($_REQUEST['user_login']), true));
-			$redirect = add_query_arg( array('update' => 'newuserconfimation'), 'user-new.php' );
+			if ( isset( $_POST[ 'noconfirmation' ] ) ) {
+				add_filter( 'wpmu_signup_user_notification', create_function('', '{return false;}') ); // Disable confirmation email
+			}
+			wpmu_signup_user( $new_user_login, $_REQUEST[ 'email' ], array( 'add_to_blog' => $wpdb->blogid, 'new_role' => $_REQUEST[ 'role' ] ) );
+			if ( isset( $_POST[ 'noconfirmation' ] ) ) {
+				$key = $wpdb->get_var( $wpdb->prepare( "SELECT activation_key FROM {$wpdb->signups} WHERE user_login = %s AND user_email = %s", $new_user_login, $_REQUEST[ 'email' ] ) );
+				wpmu_activate_signup( $key );
+				$redirect = add_query_arg( array('update' => 'addnoconfirmation'), 'user-new.php' );
+			} else {
+				$redirect = add_query_arg( array('update' => 'newuserconfimation'), 'user-new.php' );
+			}
 			wp_redirect( $redirect );
 			die();
 		}
@@ -87,6 +101,9 @@ switch( $_GET[ 'update' ] ) {
 		break;
 	case "add":
 		$messages[] = '<div id="message" class="updated fade"><p>' . __('Invitation email sent to user. A confirmation link must be clicked for them to be added to your blog.') . '</p></div>';
+		break;
+	case "addnoconfirmation":
+		$messages[] = '<div id="message" class="updated fade"><p>' . __('User has been added to your blog.') . '</p></div>';
 		break;
 	case "addexisting":
 		$messages[] = '<div id="message" class="updated fade"><p>' . __('That user is already a member of this blog.') . '</p></div>';
@@ -160,6 +177,12 @@ foreach ( array('user_login' => 'login', 'first_name' => 'firstname', 'last_name
 			</select>
 		</td>
 	</tr>
+	<?php if ( is_site_admin() ) { ?>
+	<tr class="form-field">
+		<th scope="row"><label for="noconfirmation"><?php _e('Skip Confirmation Email') ?></label></th>
+		<td><input name="noconfirmation" type="checkbox" id="noconfirmation" value="1" /> <label for="noconfirmation"><?php _e( 'Site administrators can add a user without sending the confirmation email.' ); ?></label></td>
+	</tr>
+	<?php } ?>
 </table>
 <p class="submit">
 	<input name="adduser" type="submit" id="addusersub" class="button-primary" value="<?php esc_attr_e('Add User') ?>" />

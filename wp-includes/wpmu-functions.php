@@ -1957,19 +1957,25 @@ function remove_tinymce_media_button( $buttons ) {
 	return $buttons;
 }
 
-function add_existing_user_to_blog() {
-	if( false !== strpos( $_SERVER[ 'REQUEST_URI' ], '/newbloguser/' ) ) {
-		$parts = explode( '/', $_SERVER[ 'REQUEST_URI' ] );
+function maybe_add_existing_user_to_blog() {
+	if ( false === strpos( $_SERVER[ 'REQUEST_URI' ], '/newbloguser/' ) ) {
+		return false;
+	}
+
+	$parts = explode( '/', $_SERVER[ 'REQUEST_URI' ] );
+	$key = array_pop( $parts );
+	if ( $key == '' )
 		$key = array_pop( $parts );
-		if( $key == '' )
-			$key = array_pop( $parts );
-		$details = get_option( "new_user_" . $key );
-		if( is_array( $details ) ) {
-			add_user_to_blog( '', $details[ 'user_id' ], $details[ 'role' ] );
-			delete_option( 'new_user_' . $key );
-			do_action( "added_existing_user", $details[ 'user_id' ] );
-			wp_die( sprintf(__('You have been added to this blog. Please visit the <a href="%s">homepage</a> or <a href="%s">login</a> using your username and password.'), site_url(), site_url( '/wp-admin/' ) ) );
-		}
+	$details = get_option( "new_user_" . $key );
+	add_existing_user_to_blog( $details );
+	delete_option( 'new_user_' . $key );
+	wp_die( sprintf(__('You have been added to this blog. Please visit the <a href="%s">homepage</a> or <a href="%s">login</a> using your username and password.'), site_url(), site_url( '/wp-admin/' ) ) );
+}
+
+function add_existing_user_to_blog( $details = false ) {
+	if ( is_array( $details ) ) {
+		add_user_to_blog( '', $details[ 'user_id' ], $details[ 'role' ] );
+		do_action( "added_existing_user", $details[ 'user_id' ] );
 	}
 }
 

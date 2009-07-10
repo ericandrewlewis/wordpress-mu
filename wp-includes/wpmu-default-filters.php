@@ -1,7 +1,7 @@
 <?php
 // Users
 add_filter ( 'wpmu_validate_user_signup', 'signup_nonce_check' );
-add_action ( 'init', 'add_existing_user_to_blog' );
+add_action ( 'init', 'maybe_add_existing_user_to_blog' );
 add_filter ( 'xmlrpc_methods', 'attach_wpmu_xmlrpc' );
 add_filter ( 'wp_authenticate_user', 'wordpressmu_authenticate_siteadmin', 10, 2 );
 add_action ( 'wpmu_new_user', 'newuser_notify_siteadmin' );
