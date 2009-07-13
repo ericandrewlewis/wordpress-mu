@@ -1900,7 +1900,6 @@ function attach_wpmu_xmlrpc($methods) {
 Users
 */
 function promote_if_site_admin(&$user) {
-	return false;
     if ( !is_site_admin( $user->user_login ) )
         return false;
 
@@ -1909,7 +1908,11 @@ function promote_if_site_admin(&$user) {
     $user->{$level} = 10;
     $user->user_level = 10;
     $cap_key = $wpdb->prefix . 'capabilities';
-    $user->{$cap_key} = array_merge(array( 'administrator' => '1' ), (array)$user->{$cap_key});
+    if ( is_array( $user->{$cap_key} ) ) {
+	    $user->{$cap_key} = array_merge( array( 'administrator' => '1' ), $user->{$cap_key} );
+    } else {
+	    $user->{$cap_key} = array( 'administrator' => '1' );
+    }
     return true;
 }
 
