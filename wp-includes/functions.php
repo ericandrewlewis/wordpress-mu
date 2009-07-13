@@ -3158,7 +3158,7 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 	if ( is_null($value) )
 		$value = $default;
 
-	$value = maybe_unserialize( stripslashes($value) );
+	$value = maybe_unserialize( $value );
 
 	wp_cache_set( $cache_key, $value, 'site-options' );
 
