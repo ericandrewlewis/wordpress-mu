@@ -722,6 +722,8 @@ function get_transient($transient) {
 function set_transient($transient, $value, $expiration = 0) {
 	global $_wp_using_ext_object_cache, $wpdb;
 
+	$value = apply_filters( 'pre_set_transient_' . $transient, $value );
+
 	if ( $_wp_using_ext_object_cache ) {
 		return wp_cache_set($transient, $value, 'transient', $expiration);
 	} else {
