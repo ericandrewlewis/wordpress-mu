@@ -314,7 +314,11 @@ function switch_to_blog( $new_blog ) {
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();
-		$wp_roles->_init();
+		if ( method_exists( $wp_roles ,'_init' ) ) {
+			$wp_roles->_init();
+		} elseif( method_exists( $wp_roles, '__construct' ) ) {
+			$wp_roles->__construct();
+		}
 		$wpdb->suppress_errors( false );
 	}
 
@@ -349,7 +353,11 @@ function restore_current_blog() {
 
 	if( is_object( $wp_roles ) ) {
 		$wpdb->suppress_errors();
-		$wp_roles->_init();
+		if ( method_exists( $wp_roles ,'_init' ) ) {
+			$wp_roles->_init();
+		} elseif( method_exists( $wp_roles, '__construct' ) ) {
+			$wp_roles->__construct();
+		}
 		$wpdb->suppress_errors( false );
 	}
 
@@ -1355,7 +1363,7 @@ function install_blog($blog_id, $blog_title = '') {
 	update_option('home', $url);
 	update_option('fileupload_url', $url . "files" );
 	update_option('upload_path', "wp-content/blogs.dir/" . $blog_id . "/files");
-	update_option('blogname', $blog_title);
+	update_option('blogname', stripslashes( $blog_title ) );
 	update_option('admin_email', '');
 	$wpdb->update( $wpdb->options, array('option_value' => ''), array('option_name' => 'admin_email') );
 
