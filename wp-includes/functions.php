@@ -655,6 +655,8 @@ function delete_option( $name ) {
 function delete_transient($transient) {
 	global $_wp_using_ext_object_cache, $wpdb;
 
+	do_action( 'delete_transient_' . $transient );
+
 	if ( $_wp_using_ext_object_cache ) {
 		return wp_cache_delete($transient, 'transient');
 	} else {

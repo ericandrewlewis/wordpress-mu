@@ -2032,6 +2032,11 @@ function strtolower_usernames( $username, $raw, $strict ) {
 /* Short circuit the update checks. Make sure update informtion is 
    stored in wp_sitemeta rather than the options table of individual blogs */
 // update_plugins
+function site_delete_plugins() {
+	return update_site_option( 'update_plugins', false );
+}
+add_action( 'delete_transient_update_plugins', 'site_delete_plugins' );
+
 function site_pre_update_plugins() {
 	return get_site_option( 'update_plugins' );
 }
