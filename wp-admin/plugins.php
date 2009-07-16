@@ -305,6 +305,10 @@ foreach ( (array)$all_plugins as $plugin_file => $plugin_data) {
         $upgrade_plugins[ $plugin_file ] = $plugin_data;
 }
 
+if ( !is_site_admin() ) {
+	$upgrade_plugins = false;
+}
+
 $total_all_plugins = count($all_plugins);
 $total_inactive_plugins = count($inactive_plugins);
 $total_active_plugins = count($active_plugins);

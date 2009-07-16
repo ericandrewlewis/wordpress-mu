@@ -543,6 +543,8 @@ function wpmu_menu() {
 			$message = str_replace( "'", "\'", "<div class='error'><p>$message</p></div>" );
 			add_action( 'admin_notices', create_function( '', "echo '$message';" ) );
 		}
+	} elseif ( !is_site_admin() ) {
+		$menu[65] = array( sprintf( __('Plugins %s'), "" ), 'activate_plugins', 'plugins.php', '', 'menu-top', 'menu-plugins', 'div' );
 	}
 	if( !get_site_option( 'add_new_users' ) ) {
 		if( !is_site_admin() ) {
@@ -1202,17 +1204,22 @@ function disable_some_pages() {
 }
 add_action( 'admin_init', 'disable_some_pages' );
 
+function blogs_listing_post() {
+	if ( !isset( $_POST[ 'action' ] ) ) {
+		return false;
+	}
+	switch( $_POST[ 'action' ] ) {
+		case "updateblogsettings":
+			do_action( 'myblogs_update' );
+		wp_redirect( admin_url( 'index.php?page=myblogs&updated=1' ) );
+		die();
+		break;
+	}
+}
+add_action( 'admin_init', 'blogs_listing_post' );
+
 function blogs_listing() {
 	global $current_user;
-	if ( isset( $_POST[ 'action' ] ) ) {
-		switch( $_POST[ 'action' ] ) {
-			case "update":
-				do_action( 'myblogs_update' );
-			wp_redirect( admin_url( 'blogs.php?updated=1' ) );
-			die();
-			break;
-		}
-	}
 
 	$blogs = get_blogs_of_user( $current_user->ID );
 	if( !$blogs || ( is_array( $blogs ) && empty( $blogs ) ) ) {
@@ -1250,7 +1257,7 @@ function blogs_listing() {
 	}
 	?>
 	</table>
-	<input type="hidden" name="action" value="update" />
+	<input type="hidden" name="action" value="updateblogsettings" />
 	<input type="submit" class="button-primary" value="<?php _e('Update Options') ?>" name="submit" />
 	</form>
 	</div>
@@ -1262,7 +1269,7 @@ function blogs_page_init() {
 	$all_blogs = get_blogs_of_user( $current_user->ID );
 	if ( $all_blogs != false && !empty( $all_blogs ) ) {
 		$title = apply_filters( 'my_blogs_title', __( 'My Blogs' ) );
-		add_submenu_page( 'index.php', $title, $title, 'subscriber', 'myblogs', 'blogs_listing' );
+		add_submenu_page( 'index.php', $title, $title, 'read', 'myblogs', 'blogs_listing' );
 	}
 }
 add_action('admin_menu', 'blogs_page_init');

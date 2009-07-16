@@ -1402,8 +1402,8 @@ function install_blog_defaults($blog_id, $user_id) {
 	$blog_id = (int) $blog_id;
 
 	// Default links
-	$wpdb->insert( $wpdb->links,  array('link_url' => 'http://wordpress.com/', 'link_name' => 'WordPress.com', 'link_category' => '1356', 'link_owner' => $user_id, 'link_rss' => 'http://wordpress.com/feed/') );
-	$wpdb->insert( $wpdb->links,  array('link_url' => 'http://wordpress.org/', 'link_name' => 'WordPress.org', 'link_category' => '1356', 'link_owner' => $user_id, 'link_rss' => 'http://wordpress.org/development/feed/') );
+	$wpdb->insert( $wpdb->links,  array('link_url' => 'http://wordpress.com/', 'link_name' => 'WordPress.com', 'link_owner' => $user_id, 'link_rss' => 'http://wordpress.com/feed/') );
+	$wpdb->insert( $wpdb->links,  array('link_url' => 'http://wordpress.org/', 'link_name' => 'WordPress.org', 'link_owner' => $user_id, 'link_rss' => 'http://wordpress.org/development/feed/') );
 	$wpdb->insert( $wpdb->term_relationships, array('object_id' => 1, 'term_taxonomy_id' => 2));
 	$wpdb->insert( $wpdb->term_relationships, array('object_id' => 2, 'term_taxonomy_id' => 2));
 
