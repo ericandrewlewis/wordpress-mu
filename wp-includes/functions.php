@@ -3185,6 +3185,7 @@ function add_site_option( $key, $value ) {
 
 	$wpdb->insert( $wpdb->sitemeta, array('site_id' => $wpdb->siteid, 'meta_key' => $key, 'meta_value' => $value) );
 
+	do_action( "add_site_option_{$key}", $key, $value );
 	return $wpdb->insert_id;
 }
 
@@ -3192,6 +3193,9 @@ function add_site_option( $key, $value ) {
 function update_site_option( $key, $value ) {
 	global $wpdb;
 
+
+	$oldvalue == get_site_option( $key );
+	$value = apply_filters( 'pre_update_site_option_' . $key, $value, $oldvalue );
 	if ( $value == get_site_option( $key ) )
 	 	return false;
 
