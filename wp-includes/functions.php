@@ -3196,7 +3196,7 @@ function update_site_option( $key, $value ) {
 
 	$oldvalue == get_site_option( $key );
 	$value = apply_filters( 'pre_update_site_option_' . $key, $value, $oldvalue );
-	if ( $value == get_site_option( $key ) )
+	if ( $value ==  $oldvalue )
 	 	return false;
 
 	$cache_key = "{$wpdb->siteid}:$key";
