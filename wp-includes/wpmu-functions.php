@@ -377,7 +377,11 @@ function restore_current_blog() {
 }
 
 function get_blogs_of_user( $id, $all = false ) {
-	global $wpdb;
+	global $wpdb, $blogs_of_user;
+
+	if ( isset( $blogs_of_user[ $id ] ) ) {
+		return $blogs_of_user[ $id ];
+	}
 
 	$user = get_userdata( (int) $id );
 	if ( !$user )
@@ -398,6 +402,7 @@ function get_blogs_of_user( $id, $all = false ) {
 		}
 	}
 
+	$blogs_of_user[ $id ] = $blogs;
 	return $blogs;
 }
 
@@ -2057,7 +2062,7 @@ function site_pre_set_transient_update_plugins( $value ) {
 }
 add_filter( 'pre_set_transient_update_plugins', 'site_pre_set_transient_update_plugins' );
 
-add_action( 'set_transient_update_plugins', 'site_set_transient_update');
+add_action( 'add_option__transient_update_plugins', 'site_add_option__transient_update');
 
 // update_themes (transient)
 function site_delete_update_themes() {
@@ -2076,7 +2081,7 @@ function site_pre_set_transient_update_themes( $value ) {
 }
 add_filter( 'pre_set_transient_update_themes', 'site_pre_set_transient_update_themes' );
 
-add_action( 'set_transient_update_themes', 'site_set_transient_update');
+add_action( 'add_option__transient_update_themes', 'site_add_option__transient_update');
 
 // update_core (transient)
 function site_delete_update_core() {
@@ -2095,7 +2100,7 @@ function site_pre_set_transient_update_core( $value ) {
 }
 add_filter( 'pre_set_transient_update_core', 'site_pre_set_transient_update_core' );
 
-add_action( 'set_transient_update_core', 'site_set_transient_update');
+add_action( 'add_option__transient_update_core', 'site_add_option__transient_update');
 
 // dismissed_update_core (option, not a transient)
 function site_pre_dismissed_update_core() {
@@ -2113,7 +2118,7 @@ add_filter( 'pre_update_option_dismissed_update_core', 'site_pre_update_option_d
 
 
 
-function site_set_transient_update($name) {
+function site_add_option__transient_update($name) {
 	delete_option($name);
 }
 
