@@ -379,8 +379,9 @@ function restore_current_blog() {
 function get_blogs_of_user( $id, $all = false ) {
 	global $wpdb, $blogs_of_user;
 
-	if ( isset( $blogs_of_user[ $id ] ) ) {
-		return $blogs_of_user[ $id ];
+	$cache_suffix = $all ? '_all' : '_short';
+	if ( isset( $blogs_of_user[ $id . $cache_suffix ] ) ) {
+		return $blogs_of_user[ $id . $cache_suffix ];
 	}
 
 	$user = get_userdata( (int) $id );
@@ -402,7 +403,7 @@ function get_blogs_of_user( $id, $all = false ) {
 		}
 	}
 
-	$blogs_of_user[ $id ] = $blogs;
+	$blogs_of_user[ $id . $cache_suffix ] = $blogs;
 	return $blogs;
 }
 
