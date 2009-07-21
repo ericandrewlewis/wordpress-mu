@@ -3166,7 +3166,7 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 
 	wp_cache_set( $cache_key, $value, 'site-options' );
 
-	return apply_filters( 'site_option_' . $key, maybe_unserialize( $value ) );
+	return apply_filters( 'site_option_' . $key, $value );
 }
 
 // expects $key, $value not to be SQL escaped
@@ -3210,6 +3210,7 @@ function update_site_option( $key, $value ) {
 	$value = maybe_serialize($value);
 	$wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
 
+	do_action( "update_site_option_{$key}", $key, $value );
 	return true;
 }
 
