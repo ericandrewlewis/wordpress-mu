@@ -497,15 +497,24 @@ add_filter( 'get_term', 'sync_category_tag_slugs', 10, 2 );
 function redirect_user_to_blog() {
 	global $current_user, $current_site;
 	$details = get_active_blog_for_user( $current_user->ID );
+	$c = 0;
+	if ( isset( $_GET[ 'c' ] ) )
+		$c = (int)$_GET[ 'c' ];
+	
+	if ( $c >= 5 ) {
+		wp_die( __( "You don&#8217;t have permission to view this blog. Please contact the system administrator." ) );
+	}
+	$c ++;
+
 	if( $details == "username only" ) {
 		add_user_to_blog( get_blog_id_from_url( $current_site->domain, $current_site->path ), $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
-		wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/' );
+		wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/?c=' . $c );
 		exit();
 	} elseif( is_object( $details ) ) {
-		wp_redirect( "http://" . $details->domain . $details->path . 'wp-admin/' );
+		wp_redirect( "http://" . $details->domain . $details->path . 'wp-admin/?c=' . $c );
 		exit;
 	} else {
-		wp_redirect( "http://" . $current_site->domain . $current_site->path );
+		wp_redirect( "http://" . $current_site->domain . $current_site->path . '?c=' . $c );
 		exit;
 	}
 	wp_die( __('You do not have sufficient permissions to access this page.') );
