@@ -1181,7 +1181,7 @@ add_action ( 'myblogs_allblogs_options', 'choose_primary_blog' );
 if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
 	add_action( 'admin_init', 'update_profile_email' );
 	add_action( 'admin_init', 'profile_page_email_warning_ob_start' );
-} elseif( strpos( $_SERVER['PHP_SELF'], 'wp-admin/page.php' ) ) {
+} elseif( strpos( $_SERVER['PHP_SELF'], 'wp-admin/page.php' ) && is_object( $wp_rewrite ) && method_exists( $wp_rewrite, 'flush_rules' ) ) {
 	$wp_rewrite->flush_rules();
 }
 
