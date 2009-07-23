@@ -3193,8 +3193,7 @@ function add_site_option( $key, $value ) {
 function update_site_option( $key, $value ) {
 	global $wpdb;
 
-
-	$oldvalue == get_site_option( $key );
+	$oldvalue = get_site_option( $key );
 	$value = apply_filters( 'pre_update_site_option_' . $key, $value, $oldvalue );
 	if ( $value ==  $oldvalue )
 	 	return false;
