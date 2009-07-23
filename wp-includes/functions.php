@@ -3173,6 +3173,8 @@ function get_site_option( $key, $default = false, $use_cache = true ) {
 function add_site_option( $key, $value ) {
 	global $wpdb;
 
+	$value = apply_filters( 'pre_add_site_option_' . $key, $value );
+
 	$cache_key = "{$wpdb->siteid}:$key";
 
 	if ( $wpdb->get_row( $wpdb->prepare( "SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) ) )
