@@ -304,8 +304,14 @@ function switch_to_blog( $new_blog ) {
 
 	$switched_stack[] = $blog_id;
 
-	if ( $blog_id == $new_blog )
-		return false;
+	/* If we're switching to the same blog id that we're on, 
+	* set the right vars, do the associated actions, but skip 
+	* the extra unnecessary work */
+	if ( $blog_id == $new_blog ) {
+		do_action( 'switch_blog', $blog_id, $blog_id );
+		$switched = true;
+		return true;
+	}
 
 	$wpdb->set_blog_id($new_blog);
 	$table_prefix = $wpdb->prefix;
@@ -342,9 +348,16 @@ function restore_current_blog() {
 	if ( !$switched )
 		return false;
 
-	$blog = array_pop($switched_stack);
-	if ( $blog_id == $blog )
+	if ( !is_array( $switched_stack ) )
 		return false;
+
+	$blog = array_pop( $switched_stack );
+	if ( $blog_id == $blog ) {
+		do_action( 'switch_blog', $blog, $blog );
+		/* If we still have items in the switched stack, consider ourselves still 'switched' */ 
+		$switched = ( is_array( $switched_stack ) && count( $switched_stack ) > 0 );
+		return true;
+	}
 
 	$wpdb->set_blog_id($blog);
 	$prev_blog_id = $blog_id;
@@ -372,7 +385,8 @@ function restore_current_blog() {
 
 	do_action('switch_blog', $blog_id, $prev_blog_id);
 
-	$switched = false;
+	/* If we still have items in the switched stack, consider ourselves still 'switched' */ 
+	$switched = ( is_array( $switched_stack ) && count( $switched_stack ) > 0 );
 	return true;
 }
 
