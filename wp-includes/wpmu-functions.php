@@ -395,7 +395,7 @@ function get_blogs_of_user( $id, $all = false ) {
 
 	$cache_suffix = $all ? '_all' : '_short';
 	if ( isset( $blogs_of_user[ $id . $cache_suffix ] ) ) {
-		return $blogs_of_user[ $id . $cache_suffix ];
+		return apply_filters( 'get_blogs_of_user', $blogs_of_user[ $id . $cache_suffix ], $id, $all );
 	}
 
 	$user = get_userdata( (int) $id );
@@ -418,44 +418,66 @@ function get_blogs_of_user( $id, $all = false ) {
 	}
 
 	$blogs_of_user[ $id . $cache_suffix ] = $blogs;
-	return $blogs;
+	return apply_filters( 'get_blogs_of_user', $blogs, $id, $all );
 }
 
 function get_active_blog_for_user( $user_id ) { // get an active blog for user - either primary blog or from blogs list
 	global $wpdb;
-	$primary_blog = get_usermeta( $user_id, "primary_blog" );
-	if( $primary_blog == false ) {
-		$details = false;
-	} else {
-		$details = get_blog_details( $primary_blog );
+	$blogs = get_blogs_of_user( $user_id );
+	if ( empty( $blogs ) ) {
+		$details = get_dashboard_blog();
+		add_user_to_blog( $details->blog_id, $user_id, 'subscriber' );
+		update_usermeta( $user_id, 'primary_blog', $details->blog_id );
+		wp_cache_delete( $user_id, 'users' );
+		return $details;
 	}
 
-	if( ( is_object( $details ) == false ) || ( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) ) {
+	$primary_blog = get_usermeta( $user_id, "primary_blog" );
+	$details = get_dashboard_blog();
+	if ( $primary_blog ) {
+		$blogs = get_blogs_of_user( $user_id );
+		if ( isset( $blogs[ $primary_blog ] ) == false ) {
+			add_user_to_blog( $details->blog_id, $user_id, 'subscriber' );
+			update_usermeta( $user_id, 'primary_blog', $details->blog_id );
+			wp_cache_delete( $user_id, 'users' );
+		} else {
+			$details = get_blog_details( $primary_blog );
+		}
+	} else {
+		add_user_to_blog( $details->blog_id, $user_id, 'subscriber' ); // Add subscriber permission for dashboard blog
+		update_usermeta( $user_id, 'primary_blog', $details->blog_id );
+	}
+
+	if ( ( is_object( $details ) == false ) || ( is_object( $details ) && $details->archived == 1 || $details->spam == 1 || $details->deleted == 1 ) ) {
 		$blogs = get_blogs_of_user( $user_id, true ); // if a user's primary blog is shut down, check their other blogs.
 		$ret = false;
-		if( is_array( $blogs ) && count( $blogs ) > 0 ) {
+		if ( is_array( $blogs ) && count( $blogs ) > 0 ) {
 			foreach( (array) $blogs as $blog_id => $blog ) {
 				if ( $blog->site_id != $wpdb->siteid )
 					continue;
 				$details = get_blog_details( $blog_id );
-				if( is_object( $details ) && $details->archived == 0 && $details->spam == 0 && $details->deleted == 0 ) {
+				if ( is_object( $details ) && $details->archived == 0 && $details->spam == 0 && $details->deleted == 0 ) {
 					$ret = $blog;
 					$changed = false;
-					if( !get_usermeta($user_id , 'primary_blog') ) {
-						update_usermeta($user_id, 'primary_blog', $blog->userblog_id);
+					if ( get_usermeta( $user_id , 'primary_blog' ) != $blog_id ) {
+						update_usermeta( $user_id, 'primary_blog', $blog_id );
 						$changed = true;
 					}
-					if( !get_usermeta($user_id , 'source_domain') ) {
-						update_usermeta($user_id, 'source_domain', $blog->domain);
+					if ( !get_usermeta($user_id , 'source_domain') ) {
+						update_usermeta( $user_id, 'source_domain', $blog->domain );
 						$changed = true;
 					}
-					if( $changed )
+					if ( $changed )
 						wp_cache_delete( $user_id, 'users' );
 					break;
 				}
 			}
 		} else {
-			$ret = "username only"; // user has no blogs.
+			// Should never get here
+			$dashboard_blog = get_dashboard_blog();
+			add_user_to_blog( $dashboard_blog->blog_id, $user_id, 'subscriber' ); // Add subscriber permission for dashboard blog
+			update_usermeta( $user_id, 'primary_blog', $dashboard_blog->blog_id );
+			return $dashboard_blog;
 		}
 		return $ret;
 	} else {
@@ -1924,26 +1946,6 @@ function attach_wpmu_xmlrpc($methods) {
 	return $methods;
 }
 
-/*
-Users
-*/
-function promote_if_site_admin(&$user) {
-    if ( !is_site_admin( $user->user_login ) )
-        return false;
-
-    global $wpdb;
-    $level = $wpdb->prefix . 'user_level';
-    $user->{$level} = 10;
-    $user->user_level = 10;
-    $cap_key = $wpdb->prefix . 'capabilities';
-    if ( is_array( $user->{$cap_key} ) ) {
-	    $user->{$cap_key} = array_merge( array( 'administrator' => '1' ), $user->{$cap_key} );
-    } else {
-	    $user->{$cap_key} = array( 'administrator' => '1' );
-    }
-    return true;
-}
-
 function mu_locale( $locale ) {
 	if( defined('WP_INSTALLING') == false ) {
 		$mu_locale = get_option('WPLANG');
@@ -2137,19 +2139,28 @@ function site_add_option__transient_update($name) {
 	delete_option($name);
 }
 
+/* Redirect all hits to "dashboard" blog to wp-admin/ Dashboard. */
 function redirect_mu_dashboard() {
 	global $current_site, $current_blog;
 
-	$dashboard_blog = get_site_option( 'dashboard_blog' );
-	if ( false != $dashboard_blog && $current_blog->blog_id == $dashboard_blog && $dashboard_blog != $current_site->blog_id ) { 
-		$details = get_blog_details( $dashboard_blog );
+	$dashboard_blog = get_dashboard_blog();
+	if ( $current_blog->blog_id == $dashboard_blog->blog_id && $dashboard_blog->blog_id != $current_site->blog_id ) { 
 		$protocol = ( is_ssl() ? 'https://' : 'http://' ); 
-		if( $details )
-			wp_redirect( $protocol . $details->domain . trailingslashit( $details->path ) . 'wp-admin/' );
+		wp_redirect( $protocol . $dashboard_blog->domain . trailingslashit( $dashboard_blog->path ) . 'wp-admin/' );
 		die();
 	}
 }
 add_action( 'template_redirect', 'redirect_mu_dashboard' );
+
+function get_dashboard_blog() {
+	global $current_site;
+
+	if ( get_site_option( 'dashboard_blog' ) == false ) {
+		return get_blog_details( $current_site->blog_id );
+	} else {
+		return get_blog_details( get_site_option( 'dashboard_blog' ) );
+	}
+}
 
 function is_user_option_local( $key, $user_id = 0, $blog_id = 0 ) {
 	global $current_user, $wpdb;

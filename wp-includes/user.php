@@ -597,8 +597,6 @@ function _fill_user( &$user ) {
 	if ( isset($user->description) )
 		$user->user_description = $user->description;
 
-	promote_if_site_admin($user);
-
 	wp_cache_add($user->ID, $user, 'users');
 	wp_cache_add($user->user_login, $user->ID, 'userlogins');
 	wp_cache_add($user->user_email, $user->ID, 'useremail');

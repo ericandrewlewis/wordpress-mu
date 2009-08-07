@@ -496,7 +496,6 @@ add_filter( 'get_term', 'sync_category_tag_slugs', 10, 2 );
 
 function redirect_user_to_blog() {
 	global $current_user, $current_site;
-	$details = get_active_blog_for_user( $current_user->ID );
 	$c = 0;
 	if ( isset( $_GET[ 'c' ] ) )
 		$c = (int)$_GET[ 'c' ];
@@ -506,18 +505,33 @@ function redirect_user_to_blog() {
 	}
 	$c ++;
 
-	if( $details == "username only" ) {
-		add_user_to_blog( get_blog_id_from_url( $current_site->domain, $current_site->path ), $current_user->ID, 'subscriber'); // Add subscriber permission for first blog.
-		wp_redirect( 'http://' . $current_site->domain . $current_site->path. 'wp-admin/?c=' . $c );
-		exit();
-	} elseif( is_object( $details ) ) {
-		wp_redirect( "http://" . $details->domain . $details->path . 'wp-admin/?c=' . $c );
-		exit;
-	} else {
-		wp_redirect( "http://" . $current_site->domain . $current_site->path . '?c=' . $c );
+	$blog = get_active_blog_for_user( $current_user->ID );
+	$dashboard_blog = get_dashboard_blog();
+	if( is_object( $blog ) ) {
+		$protocol = ( is_ssl() ? 'https://' : 'http://' ); 
+		wp_redirect( $protocol . $blog->domain . $blog->path . 'wp-admin/?c=' . $c ); // redirect and count to 5, "just in case"
 		exit;
 	}
-	wp_die( __('You do not have sufficient permissions to access this page.') );
+
+	/* 
+	   If the user is a member of only 1 blog and the user's primary_blog isn't set to that blog, 
+	   then update the primary_blog record to match the user's blog
+	 */
+	$blogs = get_blogs_of_user( $current_user->ID );
+
+	if ( !empty( $blogs ) ) {
+		foreach( $blogs as $blogid => $blog ) {
+			if ( $blogid != $dashboard_blog->blog_id && get_usermeta( $current_user->ID , 'primary_blog' ) == $dashboard_blog->blog_id ) {
+				update_usermeta( $current_user->ID, 'primary_blog', $blogid );
+				continue;
+			}
+		}
+		$blog = get_blog_details( get_usermeta( $current_user->ID , 'primary_blog' ) );
+		$protocol = ( is_ssl() ? 'https://' : 'http://' ); 
+		wp_redirect( $protocol . $blog->domain . $blog->path . 'wp-admin/?c=' . $c ); // redirect and count to 5, "just in case"
+		exit;
+	}
+	wp_die( __( 'You do not have sufficient permissions to access this page.' ) );
 }
 add_action( 'admin_page_access_denied', 'redirect_user_to_blog', 99 );
 
@@ -687,6 +701,11 @@ add_action( 'wp_dashboard_setup', 'mu_dashboard' );
 
 function profile_update_primary_blog() {
 	global $current_user;
+
+	$blogs = get_blogs_of_user( $current_user->id );
+	if ( isset( $blogs[ $_POST[ 'primary_blog' ] ] ) == false ) {
+		return false;
+	}
 
 	if ( isset( $_POST['primary_blog'] ) ) {
 		update_user_option( $current_user->id, 'primary_blog', (int) $_POST['primary_blog'], true );
@@ -1181,8 +1200,6 @@ add_action ( 'myblogs_allblogs_options', 'choose_primary_blog' );
 if( strpos( $_SERVER['PHP_SELF'], 'profile.php' ) ) {
 	add_action( 'admin_init', 'update_profile_email' );
 	add_action( 'admin_init', 'profile_page_email_warning_ob_start' );
-} elseif( strpos( $_SERVER['PHP_SELF'], 'wp-admin/page.php' ) && is_object( $wp_rewrite ) && method_exists( $wp_rewrite, 'flush_rules' ) ) {
-	$wp_rewrite->flush_rules();
 }
 
 function disable_some_pages() {
