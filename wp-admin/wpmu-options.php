@@ -88,7 +88,7 @@ if (isset($_GET['updated'])) {
 					<?php 
 					if ( $dashboard_blog = get_site_option( 'dashboard_blog' ) ) { 
 						$details = get_blog_details( $dashboard_blog );
-						$blogname = str_replace( '.', '', str_replace( $current_site->domain . $current_site->path, '', $details->domain . $details->path ) );
+						$blogname = untrailingslashit( sanitize_user( str_replace( '.', '', str_replace( $current_site->domain . $current_site->path, '', $details->domain . $details->path ) ) ) );
 					} else {
 						$blogname = '';
 					}?>
