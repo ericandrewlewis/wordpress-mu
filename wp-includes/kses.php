@@ -166,6 +166,7 @@ if (!CUSTOM_TAGS) {
 			'vspace' => array (),
 			'src' => array (),
 			'style' => array (),
+			'title' => array (),
 			'width' => array ()),
 		'ins' => array(
 			'datetime' => array (),

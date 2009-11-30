@@ -86,6 +86,9 @@ switch( $_GET['action'] ) {
 				$dashboard_blog_id = $blog_details->blog_id;
 			}
 		}
+		if ( is_wp_error( $dashboard_blog_id ) ) {
+			wp_die( __( 'Problem creating dashboard blog: ' ) . $dashboard_blog_id->get_error_message() );
+		}
 		if( $_POST[ 'dashboard_blog_orig' ] != $_POST[ 'dashboard_blog' ] ) {
 			$users = get_users_of_blog( get_site_option( 'dashboard_blog' ) );
 			$move_users = array();
@@ -102,7 +105,7 @@ switch( $_GET['action'] ) {
 			}
 		}
 		update_site_option( "dashboard_blog", $dashboard_blog_id );
-		$options = array( 'menu_items', 'mu_media_buttons', 'blog_upload_space', 'upload_filetypes', 'site_name', 'first_post', 'welcome_email', 'fileupload_maxk', 'admin_notice_feed' );
+		$options = array( 'menu_items', 'mu_media_buttons', 'blog_upload_space', 'upload_filetypes', 'site_name', 'first_post', 'first_page', 'first_comment', 'first_comment_url', 'first_comment_author', 'welcome_email', 'welcome_user_email', 'fileupload_maxk', 'admin_notice_feed' );
 		foreach( $options as $option_name ) {
 			$value = stripslashes_deep( $_POST[ $option_name ] );
 			update_site_option( $option_name, $value );
@@ -125,7 +128,7 @@ switch( $_GET['action'] ) {
 		// Update more options here
 		do_action( 'update_wpmu_options' );
 
-		wp_redirect( add_query_arg( "updated", "true", $_SERVER['HTTP_REFERER'] ) );
+		wp_redirect( add_query_arg( "updated", "true", 'wpmu-options.php' ) );
 		exit();
 	break;
 
@@ -197,6 +200,7 @@ switch( $_GET['action'] ) {
 			$c = 1;
 			$count = count( $_POST['option'] );
 			foreach ( (array) $_POST['option'] as $key => $val ) {
+				$val = stripslashes_deep( $val );
 				if( $c == $count ) {
 					update_option( $key, $val );
 				} else {
@@ -290,7 +294,7 @@ switch( $_GET['action'] ) {
 
 	case "deleteblog":
 		check_admin_referer('deleteblog');
-		if( $id != '0' && $id != '1' )
+		if( $id != '0' && $id != $current_site->blog_id )
 			wpmu_delete_blog( $id, true );
 
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'delete'), $_POST[ 'ref' ] ) );
@@ -300,7 +304,7 @@ switch( $_GET['action'] ) {
 	case "allblogs":
 		check_admin_referer('allblogs');
 		foreach ( (array) $_POST['allblogs'] as $key => $val ) {
-			if( $val != '0' && $val != '1' ) {
+			if( $val != '0' && $val != $current_site->blog_id ) {
 				if ( isset($_POST['allblog_delete']) ) {
 					$blogfunction = 'all_delete';
 					wpmu_delete_blog( $val, true );
@@ -430,7 +434,7 @@ switch( $_GET['action'] ) {
 		<?php
 	break;
 
-	// Users
+	// Users (not used any more)
 	case "deleteuser":
 		check_admin_referer('deleteuser');
 		if( $id != '0' && $id != '1' )
@@ -451,7 +455,7 @@ switch( $_GET['action'] ) {
 			if( is_array( $_POST[ 'blog' ] ) && !empty( $_POST[ 'blog' ] ) ) {
 				foreach( $_POST[ 'blog' ] as $id => $users ) {
 					foreach( $users as $blogid => $user_id ) {
-						$wpdb->query( "UPDATE {$wpdb->base_prefix}{$blogid}_posts SET post_author = '{$user_id}' WHERE post_author = '{$id}'" );
+						remove_user_from_blog( $id, $blogid, $user_id );
 					}
 				}
 			}
@@ -461,14 +465,19 @@ switch( $_GET['action'] ) {
 
 			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'all_delete'), 'wpmu-users.php' ) );
 		} else {
-		foreach ( (array) $_POST['allusers'] as $key => $val ) {
-			if( $val != '' && $val != '0' && $val != '1' ) {
-				$user_details = get_userdata( $val );
+			foreach ( (array) $_POST['allusers'] as $key => $val ) {
+				if( $val == '' || $val == '0' ) {
+					continue;
+				}
+				$user = new WP_User( $val );
+				if ( in_array( $user->user_login, get_site_option( 'site_admins', array( 'admin' ) ) ) ) {
+					wp_die( sprintf( __( 'Warning! User cannot be modified. The user %s is a site admnistrator.' ), $user->user_login ) );
+				}
 				if ( isset($_POST['alluser_spam']) ) {
 					$userfunction = 'all_spam';
 					$blogs = get_blogs_of_user( $val, true );
 					foreach ( (array) $blogs as $key => $details ) {
-						if ( $details->userblog_id == 1 ) { continue; } // main blog not a spam !
+						if ( $details->userblog_id == $current_site->blog_id ) { continue; } // main blog not a spam !
 						update_blog_status( $details->userblog_id, "spam", '1' );
 						do_action( "make_spam_blog", $details->userblog_id );
 					}
@@ -482,8 +491,7 @@ switch( $_GET['action'] ) {
 					update_user_status( $val, "spam", '0', 1 );
 				}
 			}
-		}
-		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => $userfunction), $_SERVER['HTTP_REFERER'] ) );
+			wp_redirect( add_query_arg( array('updated' => 'true', 'action' => $userfunction), $_SERVER['HTTP_REFERER'] ) );
 		}
 		exit();
 	break;
@@ -509,7 +517,7 @@ switch( $_GET['action'] ) {
 			wp_new_user_notification($user_id, $password);
 		}
 		if ( get_site_option( 'dashboard_blog' ) == false ) {
-			add_user_to_blog( '1', $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
+			add_user_to_blog( $current_site->blog_id, $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
 		} else {
 			add_user_to_blog( get_site_option( 'dashboard_blog' ), $user_id, get_site_option( 'default_user_role', 'subscriber' ) );
 		}
