@@ -801,18 +801,6 @@ if ( file_exists(TEMPLATEPATH . '/functions.php') )
 // Load in support for template functions which the theme supports
 require_if_theme_supports( 'post-thumbnails', ABSPATH . WPINC . '/post-image-template.php' );
 
-/**
- * Runs just before PHP shuts down execution.
- *
- * @access private
- * @since 1.2.0
- */
-function shutdown_action_hook() {
-	do_action('shutdown');
-	wp_cache_close();
-}
-register_shutdown_function('shutdown_action_hook');
-
 $wp->init();  // Sets up current user.
 
 // Everything is loaded and initialized.
