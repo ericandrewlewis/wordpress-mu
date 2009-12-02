@@ -31,4 +31,4 @@ $tinymce_version = '327-1235d';
  */
 $manifest_version = '20090616';
 
-$wpmu_version = '2.8.6';
+$wpmu_version = '2.9-beta-1';
