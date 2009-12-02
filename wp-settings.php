@@ -356,8 +356,6 @@ register_shutdown_function('shutdown_action_hook');
 if( defined( "SHORTINIT" ) && constant( "SHORTINIT" ) == true ) // stop most of WP being loaded, we just want the basics
 	return false;
 
-include_once(ABSPATH . WPINC . '/streams.php');
-include_once(ABSPATH . WPINC . '/gettext.php');
 require_once (ABSPATH . WPINC . '/l10n.php');
 
 if ( !is_blog_installed() && !defined('WP_INSTALLING') ) {
