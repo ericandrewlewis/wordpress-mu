@@ -3232,6 +3232,49 @@ function update_site_option( $key, $value ) {
 }
 
 /**
+ * Delete WordPress Mu site option 
+ *
+ * @package WordPress
+ *
+ * @param string $key key name, expects $ney not to be SQL escaped.
+ * 
+ */
+function delete_site_option( $key ) {
+	global $wpdb;
+
+	wpmu_protect_special_option( $key );
+	
+	do_action( 'pre_delete_site_option_' . $key );
+
+	$option = $wpdb->get_row( $wpdb->prepare( "SELECT option_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) );
+	if ( is_null( $option ) || !$option->option_id )
+		return false;
+	
+	$cache_key = "{$wpdb->siteid}:$key";
+	wp_cache_delete( $cache_key, 'site-options');
+
+	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name = %s", $name ) );
+	
+	do_action( "delete_site_option_{$key}");
+	return true;
+}
+
+/**
+ * Protect WordPress Mu special option from being modified.
+ *
+ * Will die if $option is in protected list. 
+ *
+ * @package WordPress
+ *
+ * @param string $option Option name.
+ */
+function wpmu_protect_special_option( $option ) {
+	$protected = array( '' );
+	if ( in_array( $option, $protected ) )
+		die( sprintf( __( '%s is a protected WPMU option and may not be modified' ), esc_html( $option ) ) );
+}
+
+/**
  * gmt_offset modification for smart timezone handling
  *
  * Overrides the gmt_offset option if we have a timezone_string available
