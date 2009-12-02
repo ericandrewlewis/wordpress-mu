@@ -539,6 +539,9 @@ function wp_validate_auth_cookie($cookie = '', $scheme = '') {
 		return false;
 	}
 
+	if ( $expiration < time() ) // AJAX/POST grace period set above
+		$GLOBALS['login_grace_period'] = 1;
+
 	do_action('auth_cookie_valid', $cookie_elements, $user);
 
 	return $user->ID;
@@ -750,7 +753,7 @@ function auth_redirect() {
 		}
 	}
 
-	if ( $user_id = wp_validate_auth_cookie() ) {
+	if ( $user_id = wp_validate_auth_cookie( '', apply_filters( 'auth_redirect_scheme', '' ) ) ) {
 		do_action('auth_redirect', $user_id);
 
 		// If the user wants ssl but the session is not ssl, redirect.
@@ -821,7 +824,7 @@ function check_ajax_referer( $action = -1, $query_arg = false, $die = true ) {
 	if ( $query_arg )
 		$nonce = $_REQUEST[$query_arg];
 	else
-		$nonce = $_REQUEST['_ajax_nonce'] ? $_REQUEST['_ajax_nonce'] : $_REQUEST['_wpnonce'];
+		$nonce = isset($_REQUEST['_ajax_nonce']) ? $_REQUEST['_ajax_nonce'] : $_REQUEST['_wpnonce'];
 
 	$result = wp_verify_nonce( $nonce, $action );
 
@@ -998,7 +1001,7 @@ function wp_notify_postauthor($comment_id, $comment_type='') {
 		$notify_message .= sprintf( __('URL    : %s'), $comment->comment_author_url ) . "\r\n";
 		$notify_message .= __('Excerpt: ') . "\r\n" . $comment->comment_content . "\r\n\r\n";
 		$notify_message .= __('You can see all trackbacks on this post here: ') . "\r\n";
-		/* translators: 1: blog name, 2: post title */		
+		/* translators: 1: blog name, 2: post title */
 		$subject = sprintf( __('[%1$s] Trackback: "%2$s"'), $blogname, $post->post_title );
 	} elseif ('pingback' == $comment_type) {
 		/* translators: 1: post id, 2: post title */
@@ -1767,4 +1770,3 @@ function wp_text_diff( $left_string, $right_string, $args = null ) {
 }
 endif;
 
-?>

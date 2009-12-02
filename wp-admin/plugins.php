@@ -68,7 +68,7 @@ if ( !empty($action) ) {
 		case 'activate-selected':
 			if ( ! current_user_can('activate_plugins') )
 				wp_die(__('You do not have sufficient permissions to activate plugins for this blog.'));
-			
+
 			check_admin_referer('bulk-manage-plugins');
 
 			$plugins = (array) $_POST['checked'];
@@ -282,7 +282,7 @@ if ( !empty($invalid) )
 
 <div class="wrap">
 <?php screen_icon(); ?>
-<h2><?php echo esc_html( $title ); ?></h2>
+<h2><?php echo esc_html( $title ); if ( is_site_admin() ) { ?> <a href="plugin-install.php" class="button add-new-h2"><?php echo esc_html_x('Add New', 'plugin'); ?></a><?php } ?></h2>
 
 <?php
 

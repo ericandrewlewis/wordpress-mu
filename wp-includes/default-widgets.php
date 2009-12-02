@@ -376,8 +376,8 @@ class WP_Widget_Text extends WP_Widget {
 
 	function widget( $args, $instance ) {
 		extract($args);
-		$title = apply_filters('widget_title', empty($instance['title']) ? '' : $instance['title']);
-		$text = apply_filters( 'widget_text', $instance['text'] );
+		$title = apply_filters( 'widget_title', empty($instance['title']) ? '' : $instance['title'], $instance );
+		$text = apply_filters( 'widget_text', $instance['text'], $instance );
 		echo $before_widget;
 		if ( !empty( $title ) ) { echo $before_title . $title . $after_title; } ?>
 			<div class="textwidget"><?php echo $instance['filter'] ? wpautop($text) : $text; ?></div>
@@ -406,7 +406,7 @@ class WP_Widget_Text extends WP_Widget {
 
 		<textarea class="widefat" rows="16" cols="20" id="<?php echo $this->get_field_id('text'); ?>" name="<?php echo $this->get_field_name('text'); ?>"><?php echo $text; ?></textarea>
 
-		<p><input id="<?php echo $this->get_field_id('filter'); ?>" name="<?php echo $this->get_field_name('filter'); ?>" type="checkbox" <?php checked($instance['filter']); ?> />&nbsp;<label for="<?php echo $this->get_field_id('filter'); ?>"><?php _e('Automatically add paragraphs.'); ?></label></p>
+		<p><input id="<?php echo $this->get_field_id('filter'); ?>" name="<?php echo $this->get_field_name('filter'); ?>" type="checkbox" <?php checked(isset($instance['filter']) ? $instance['filter'] : 0); ?> />&nbsp;<label for="<?php echo $this->get_field_id('filter'); ?>"><?php _e('Automatically add paragraphs.'); ?></label></p>
 <?php
 	}
 }
@@ -483,9 +483,9 @@ class WP_Widget_Categories extends WP_Widget {
 		//Defaults
 		$instance = wp_parse_args( (array) $instance, array( 'title' => '') );
 		$title = esc_attr( $instance['title'] );
-		$count = (bool) $instance['count'];
-		$hierarchical = (bool) $instance['hierarchical'];
-		$dropdown = (bool) $instance['dropdown'];
+		$count = isset($instance['count']) ? (bool) $instance['count'] :false;
+		$hierarchical = isset( $instance['hierarchical'] ) ? (bool) $instance['hierarchical'] : false;
+		$dropdown = isset( $instance['dropdown'] ) ? (bool) $instance['dropdown'] : false;
 ?>
 		<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e( 'Title:' ); ?></label>
 		<input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></p>
@@ -579,8 +579,8 @@ class WP_Widget_Recent_Posts extends WP_Widget {
 	}
 
 	function form( $instance ) {
-		$title = esc_attr($instance['title']);
-		if ( !$number = (int) $instance['number'] )
+		$title = isset($instance['title']) ? esc_attr($instance['title']) : '';
+		if ( !isset($instance['number']) || !$number = (int) $instance['number'] )
 			$number = 5;
 ?>
 		<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?></label>
@@ -609,7 +609,7 @@ class WP_Widget_Recent_Comments extends WP_Widget {
 			add_action( 'wp_head', array(&$this, 'recent_comments_style') );
 
 		add_action( 'comment_post', array(&$this, 'flush_widget_cache') );
-		add_action( 'wp_set_comment_status', array(&$this, 'flush_widget_cache') );
+		add_action( 'transition_comment_status', array(&$this, 'flush_widget_cache') );
 	}
 
 	function recent_comments_style() { ?>
@@ -732,6 +732,8 @@ class WP_Widget_RSS extends WP_Widget {
 			echo $before_title . $title . $after_title;
 		wp_widget_rss_output( $rss, $instance );
 		echo $after_widget;
+		$rss->__destruct(); 
+		unset($rss);
 	}
 
 	function update($new_instance, $old_instance) {
@@ -770,7 +772,6 @@ function wp_widget_rss_output( $rss, $args = array() ) {
 	if ( is_wp_error($rss) ) {
 		if ( is_admin() || current_user_can('manage_options') )
 			echo '<p>' . sprintf( __('<strong>RSS Error</strong>: %s'), $rss->get_error_message() ) . '</p>';
-
 		return;
 	}
 
@@ -787,6 +788,8 @@ function wp_widget_rss_output( $rss, $args = array() ) {
 
 	if ( !$rss->get_item_quantity() ) {
 		echo '<ul><li>' . __( 'An error has occurred; the feed is probably down. Try again later.' ) . '</li></ul>';
+		$rss->__destruct(); 
+		unset($rss);
 		return;
 	}
 
@@ -838,6 +841,8 @@ function wp_widget_rss_output( $rss, $args = array() ) {
 		}
 	}
 	echo '</ul>';
+	$rss->__destruct(); 
+	unset($rss);
 }
 
 
@@ -946,6 +951,9 @@ function wp_widget_rss_process( $widget_rss, $check_feed = true ) {
 			$link = esc_url(strip_tags($rss->get_permalink()));
 			while ( stristr($link, 'http') != $link )
 				$link = substr($link, 1);
+
+			$rss->__destruct();
+			unset($rss);
 		}
 	}
 
@@ -985,7 +993,7 @@ class WP_Widget_Tag_Cloud extends WP_Widget {
 	function form( $instance ) {
 ?>
 	<p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:') ?></label>
-	<input type="text" class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php echo esc_attr( $instance['title'] ); ?>" /></p>
+	<input type="text" class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" value="<?php if (isset ( $instance['title'])) {echo esc_attr( $instance['title'] );} ?>" /></p>
 <?php
 	}
 }

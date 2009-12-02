@@ -532,7 +532,7 @@ function get_comments_number( $post_id = 0 ) {
 	else
 		$count = $post->comment_count;
 
-	return apply_filters('get_comments_number', $count);
+	return apply_filters('get_comments_number', $count, $post_id);
 }
 
 /**
@@ -813,7 +813,7 @@ function wp_comment_form_unfiltered_html_nonce() {
 function comments_template( $file = '/comments.php', $separate_comments = false ) {
 	global $wp_query, $withcomments, $post, $wpdb, $id, $comment, $user_login, $user_ID, $user_identity, $overridden_cpage;
 
-	if ( ! (is_single() || is_page() || $withcomments) )
+	if ( !(is_single() || is_page() || $withcomments) || empty($post) )
 		return;
 
 	if ( empty($file) )
@@ -835,12 +835,12 @@ function comments_template( $file = '/comments.php', $separate_comments = false 
 
 	/**
 	 * The email address of the current comment author escaped for use in attributes.
-	 */	
+	 */
 	$comment_author_email = $commenter['comment_author_email'];  // Escaped by sanitize_comment_cookies()
 
 	/**
 	 * The url of the current comment author escaped for use in attributes.
-	 */	
+	 */
 	$comment_author_url = esc_url($commenter['comment_author_url']);
 
 	/** @todo Use API instead of SELECTs. */

@@ -1486,8 +1486,12 @@ class WP_Query {
 			}
 		}
 
-		if ( !empty($qv['post_type']) )
-			$qv['post_type'] = sanitize_user($qv['post_type'], true);
+		if ( !empty($qv['post_type']) )	{
+			if(is_array($qv['post_type']))
+				$qv['post_type'] = array_map('sanitize_user', $qv['post_type'], array(true));
+			else
+				$qv['post_type'] = sanitize_user($qv['post_type'], true);
+		}
 
 		if ( !empty($qv['post_status']) )
 			$qv['post_status'] = preg_replace('|[^a-z0-9_,-]|', '', $qv['post_status']);
@@ -1596,7 +1600,7 @@ class WP_Query {
 			if ( $this->is_search )
 				$q['post_type'] = 'any';
 			else
-				$q['post_type'] = 'post';
+				$q['post_type'] = '';
 		}
 		$post_type = $q['post_type'];
 		if ( !isset($q['posts_per_page']) || $q['posts_per_page'] == 0 )
@@ -1747,7 +1751,7 @@ class WP_Query {
 				$q['search_terms'] = array($q['s']);
 			} else {
 				preg_match_all('/".*?("|$)|((?<=[\\s",+])|^)[^\\s",+]+/', $q['s'], $matches);
-				$q['search_terms'] = array_map(create_function('$a', 'return trim($a, "\\"\'\\n\\r ");'), $matches[0]);
+				$q['search_terms'] = array_map('_search_terms_tidy', $matches[0]);
 			}
 			$n = !empty($q['exact']) ? '' : '%';
 			$searchand = '';
@@ -1756,7 +1760,7 @@ class WP_Query {
 				$search .= "{$searchand}(($wpdb->posts.post_title LIKE '{$n}{$term}{$n}') OR ($wpdb->posts.post_content LIKE '{$n}{$term}{$n}'))";
 				$searchand = ' AND ';
 			}
-			$term = $wpdb->escape($q['s']);
+			$term = esc_sql($q['s']);
 			if (empty($q['sentence']) && count($q['search_terms']) > 1 && $q['search_terms'][0] != $q['s'] )
 				$search .= " OR ($wpdb->posts.post_title LIKE '{$n}{$term}{$n}') OR ($wpdb->posts.post_content LIKE '{$n}{$term}{$n}')";
 
@@ -2029,7 +2033,7 @@ class WP_Query {
 			$q['orderby'] = '';
 		} else {
 			// Used to filter values
-			$allowed_keys = array('author', 'date', 'title', 'modified', 'menu_order', 'parent', 'ID', 'rand');
+			$allowed_keys = array('author', 'date', 'title', 'modified', 'menu_order', 'parent', 'ID', 'rand', 'comment_count');
 			if ( !empty($q['meta_key']) ) {
 				$allowed_keys[] = $q['meta_key'];
 				$allowed_keys[] = 'meta_value';
@@ -2056,6 +2060,9 @@ class WP_Query {
 					case 'meta_value':
 						$orderby = "$wpdb->postmeta.meta_value";
 						break;
+					case 'comment_count':
+						$orderby = "$wpdb->posts.comment_count";
+						break;
 					default:
 						$orderby = "$wpdb->posts.post_" . $orderby;
 				}
@@ -2070,16 +2077,30 @@ class WP_Query {
 				$q['orderby'] = "$wpdb->posts.post_date ".$q['order'];
 		}
 
+		if ( is_array($post_type) )
+			$post_type_cap = 'multiple_post_type';
+		else
+			$post_type_cap = $post_type;
+
+		$exclude_post_types = '';
+		foreach ( get_post_types( array('exclude_from_search' => true) ) as $_wp_post_type )
+			$exclude_post_types .= $wpdb->prepare(" AND $wpdb->posts.post_type != %s", $_wp_post_type);
+
 		if ( 'any' == $post_type ) {
-			$where .= " AND $wpdb->posts.post_type != 'revision'";
+			$where .= $exclude_post_types;
+		} elseif ( !empty( $post_type ) && is_array( $post_type ) ) {
+			$where .= " AND $wpdb->posts.post_type IN ('" . join("', '", $post_type) . "')"; 
+		} elseif ( ! empty( $post_type ) ) {
+			$where .= " AND $wpdb->posts.post_type = '$post_type'";
 		} elseif ( $this->is_attachment ) {
 			$where .= " AND $wpdb->posts.post_type = 'attachment'";
+			$post_type_cap = 'post';
 		} elseif ($this->is_page) {
 			$where .= " AND $wpdb->posts.post_type = 'page'";
-		} elseif ($this->is_single) {
-			$where .= " AND $wpdb->posts.post_type = 'post'";
+			$post_type_cap = 'page';
 		} else {
-			$where .= " AND $wpdb->posts.post_type = '$post_type'";
+			$where .= " AND $wpdb->posts.post_type = 'post'";
+			$post_type_cap = 'post';
 		}
 
 		if ( isset($q['post_status']) && '' != $q['post_status'] ) {
@@ -2099,6 +2120,8 @@ class WP_Query {
 				$p_status[] = "$wpdb->posts.post_status = 'private'";
 			if ( in_array( 'publish', $q_status ) )
 				$r_status[] = "$wpdb->posts.post_status = 'publish'";
+			if ( in_array( 'trash', $q_status ) )
+				$r_status[] = "$wpdb->posts.post_status = 'trash'";
 
 			if ( empty($q['perm'] ) || 'readable' != $q['perm'] ) {
 				$r_status = array_merge($r_status, $p_status);
@@ -2106,13 +2129,13 @@ class WP_Query {
 			}
 
 			if ( !empty($r_status) ) {
-				if ( !empty($q['perm'] ) && 'editable' == $q['perm'] && !current_user_can("edit_others_{$post_type}s") )
+				if ( !empty($q['perm'] ) && 'editable' == $q['perm'] && !current_user_can("edit_others_{$post_type_cap}s") )
 					$statuswheres[] = "($wpdb->posts.post_author = $user_ID " .  "AND (" . join( ' OR ', $r_status ) . "))";
 				else
 					$statuswheres[] = "(" . join( ' OR ', $r_status ) . ")";
 			}
 			if ( !empty($p_status) ) {
-				if ( !empty($q['perm'] ) && 'readable' == $q['perm'] && !current_user_can("read_private_{$post_type}s") )
+				if ( !empty($q['perm'] ) && 'readable' == $q['perm'] && !current_user_can("read_private_{$post_type_cap}s") )
 					$statuswheres[] = "($wpdb->posts.post_author = $user_ID " .  "AND (" . join( ' OR ', $p_status ) . "))";
 				else
 					$statuswheres[] = "(" . join( ' OR ', $p_status ) . ")";
@@ -2131,7 +2154,7 @@ class WP_Query {
 				$where .= " OR $wpdb->posts.post_status = 'future' OR $wpdb->posts.post_status = 'draft' OR $wpdb->posts.post_status = 'pending'";
 
 			if ( is_user_logged_in() ) {
-				$where .= current_user_can( "read_private_{$post_type}s" ) ? " OR $wpdb->posts.post_status = 'private'" : " OR $wpdb->posts.post_author = $user_ID AND $wpdb->posts.post_status = 'private'";
+				$where .= current_user_can( "read_private_{$post_type_cap}s" ) ? " OR $wpdb->posts.post_status = 'private'" : " OR $wpdb->posts.post_author = $user_ID AND $wpdb->posts.post_status = 'private'";
 			}
 
 			$where .= ')';
@@ -2289,7 +2312,7 @@ class WP_Query {
 				} else {
 					if  (in_array($status, array('draft', 'pending')) ) {
 						// User must have edit permissions on the draft to preview.
-						if (! current_user_can('edit_post', $this->posts[0]->ID)) {
+						if (! current_user_can("edit_$post_type_cap", $this->posts[0]->ID)) {
 							$this->posts = array();
 						} else {
 							$this->is_preview = true;
@@ -2297,17 +2320,17 @@ class WP_Query {
 						}
 					}  else if ('future' == $status) {
 						$this->is_preview = true;
-						if (!current_user_can('edit_post', $this->posts[0]->ID)) {
+						if (!current_user_can("edit_$post_type_cap", $this->posts[0]->ID)) {
 							$this->posts = array ( );
 						}
 					} else {
-						if (! current_user_can('read_post', $this->posts[0]->ID))
+						if (! current_user_can("read_$post_type_cap", $this->posts[0]->ID))
 							$this->posts = array();
 					}
 				}
 			}
 
-			if ( $this->is_preview && current_user_can( "edit_{$post_type}", $this->posts[0]->ID ) )
+			if ( $this->is_preview && current_user_can( "edit_{$post_type_cap}", $this->posts[0]->ID ) )
 				$this->posts[0] = apply_filters('the_preview', $this->posts[0]);
 		}
 
@@ -2335,7 +2358,17 @@ class WP_Query {
 			// Fetch sticky posts that weren't in the query results
 			if ( !empty($sticky_posts) ) {
 				$stickies__in = implode(',', array_map( 'absint', $sticky_posts ));
-				$stickies = $wpdb->get_results( "SELECT * FROM $wpdb->posts WHERE $wpdb->posts.ID IN ($stickies__in)" );
+				// honor post type(s) if not set to any
+				$stickies_where = '';
+				if ( 'any' != $post_type && '' != $post_type ) {
+					if ( is_array( $post_type ) ) {
+						$post_types = join( "', '", $post_type );
+					} else {
+						$post_types = $post_type;
+					}
+					$stickies_where = "AND $wpdb->posts.post_type IN ('" . $post_types . "')";
+				}
+				$stickies = $wpdb->get_results( "SELECT * FROM $wpdb->posts WHERE $wpdb->posts.ID IN ($stickies__in) $stickies_where" );
 				/** @todo Make sure post is published or viewable by the current user */
 				foreach ( $stickies as $sticky_post ) {
 					if ( 'publish' != $sticky_post->post_status )
@@ -2349,9 +2382,15 @@ class WP_Query {
 		if ( !$q['suppress_filters'] )
 			$this->posts = apply_filters('the_posts', $this->posts);
 
+		$this->post_count = count($this->posts);
+
+		// Sanitize before caching so it'll only get done once
+		for ($i = 0; $i < $this->post_count; $i++) {
+			$this->posts[$i] = sanitize_post($this->posts[$i], 'raw');
+		}
+
 		update_post_caches($this->posts);
 
-		$this->post_count = count($this->posts);
 		if ($this->post_count > 0) {
 			$this->post = $this->posts[0];
 		}
@@ -2694,7 +2733,7 @@ function setup_postdata($post) {
 	}
 
 	do_action_ref_array('the_post', array(&$post));
-	
+
 	return true;
 }
 

@@ -217,6 +217,15 @@ class wpdb {
 	var $postmeta;
 
 	/**
+	 * WordPress Comment Metadata table
+	 *
+	 * @since 2.9
+	 * @access public
+	 * @var string
+	 */
+	var $commentmeta;
+
+	/**
 	 * WordPress User Metadata table
 	 *
 	 * @since 2.3.0
@@ -260,7 +269,17 @@ class wpdb {
 	 * @var array
 	 */
 	var $tables = array('posts', 'categories', 'post2cat', 'comments', 'links', 'link2cat', 'options',
-			'postmeta', 'terms', 'term_taxonomy', 'term_relationships');
+			'postmeta', 'terms', 'term_taxonomy', 'term_relationships', 'commentmeta');
+
+	/**
+	 * List of deprecated WordPress tables
+	 *
+	 * @since 2.9.0
+	 * @access private
+	 * @var array
+	 */
+	var $old_tables = array('categories', 'post2cat', 'link2cat');
+
 
 	/**
 	 * Format specifiers for DB columns. Columns not listed here default to %s.  Initialized in wp-settings.php.
@@ -304,6 +323,15 @@ class wpdb {
 	var $real_escape = false;
 
 	/**
+	 * Database Username
+	 *
+	 * @since 2.9.0
+	 * @access private
+	 * @var string
+	 */
+	var $dbuser;
+
+	/**
 	 * Connects to the database server and selects a database
 	 *
 	 * PHP4 compatibility layer for calling the PHP5 constructor.
@@ -339,7 +367,7 @@ class wpdb {
 	function __construct($dbuser, $dbpassword, $dbname, $dbhost) {
 		register_shutdown_function(array(&$this, "__destruct"));
 
-		if ( defined('WP_DEBUG') and WP_DEBUG == true )
+		if ( WP_DEBUG )
 			$this->show_errors();
 
 		$this->charset = 'utf8';
@@ -354,6 +382,8 @@ class wpdb {
 
 		if ( defined('DB_COLLATE') )
 			$this->collate = DB_COLLATE;
+
+		$this->dbuser = $dbuser;
 
 		$this->dbh = @mysql_connect($dbhost, $dbuser, $dbpassword, true);
 		if (!$this->dbh) {
@@ -1104,13 +1134,14 @@ class wpdb {
 	 *
 	 * @since 1.5.0
 	 *
-	 * @param string $message
+	 * @param string $message The Error message
+	 * @param string $error_code (optional) A Computer readable string to identify the error.
 	 * @return false|void
 	 */
-	function bail($message) {
+	function bail($message, $error_code = '500') {
 		if ( !$this->show_errors ) {
 			if ( class_exists('WP_Error') )
-				$this->error = new WP_Error('500', $message);
+				$this->error = new WP_Error($error_code, $message);
 			else
 				$this->error = $message;
 			return false;
@@ -1143,8 +1174,7 @@ class wpdb {
 	 *
 	 * @return bool True if collation is supported, false if version does not
 	 */
-	function supports_collation()
-	{
+	function supports_collation() {
 		return $this->has_cap( 'collation' );
 	}
 

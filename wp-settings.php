@@ -50,9 +50,6 @@ wp_unregister_GLOBALS();
 
 unset( $wp_filter, $cache_lastcommentmodified, $cache_lastpostdate );
 
-// Force REQUEST to be GET + POST.  If SERVER, COOKIE, or ENV are needed, use those superglobals directly.
-$_REQUEST = array_merge($_GET, $_POST);
-
 /**
  * The $blog_id global, which you can change in the config allows you to create a simple
  * multiple blog installation using just one WordPress and changing $blog_id around.
@@ -125,6 +122,7 @@ if ( file_exists(ABSPATH . '.maintenance') && !defined('WP_INSTALLING') ) {
 			$protocol = 'HTTP/1.0';
 		header( "$protocol 503 Service Unavailable", true, 503 );
 		header( 'Content-Type: text/html; charset=utf-8' );
+		header( 'Retry-After: 600' );
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -200,9 +198,18 @@ function timer_stop($display = 0, $precision = 3) { //if called like timer_stop(
 timer_start();
 
 // Add define('WP_DEBUG',true); to wp-config.php to enable display of notices during development.
-if (defined('WP_DEBUG') and WP_DEBUG == true) {
+if ( defined('WP_DEBUG') && WP_DEBUG == true ) {
 	error_reporting(E_ALL);
+	// Add define('WP_DEBUG_DISPLAY', false); to wp-config.php to use the globally configured setting for display_errors and not force it to On
+	if ( ! defined('WP_DEBUG_DISPLAY') || WP_DEBUG_DISPLAY == true )
+		ini_set('display_errors', 1);
+	// Add define('WP_DEBUG_LOG', true); to enable php debug logging to WP_CONTENT_DIR/debug.log
+	if ( defined('WP_DEBUG_LOG') && WP_DEBUG_LOG == true ) {
+		ini_set('log_errors', 1);
+		ini_set('error_log', WP_CONTENT_DIR . '/debug.log');
+	}
 } else {
+	define('WP_DEBUG', false);
 	if ( defined('E_RECOVERABLE_ERROR') )
 		error_reporting(E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR);
 	else
@@ -210,7 +217,7 @@ if (defined('WP_DEBUG') and WP_DEBUG == true) {
 }
 
 // For an advanced caching plugin to use, static because you would only want one
-if ( defined('WP_CACHE') )
+if ( defined('WP_CACHE') && WP_CACHE )
 	@include WP_CONTENT_DIR . '/advanced-cache.php';
 
 /**
@@ -297,7 +304,7 @@ if ( file_exists(WP_CONTENT_DIR . '/object-cache.php') ) {
 
 wp_cache_init();
 if ( function_exists('wp_cache_add_global_groups') ) {
-	wp_cache_add_global_groups(array ('users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss'));
+	wp_cache_add_global_groups(array ('users', 'userlogins', 'usermeta', 'site-transient', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss'));
 	wp_cache_add_non_persistent_groups(array( 'comment', 'counts', 'plugins' ));
 }
 
@@ -362,6 +369,7 @@ require (ABSPATH . WPINC . '/capabilities.php');
 require (ABSPATH . WPINC . '/query.php');
 require (ABSPATH . WPINC . '/theme.php');
 require (ABSPATH . WPINC . '/user.php');
+require (ABSPATH . WPINC . '/meta.php');
 require (ABSPATH . WPINC . '/general-template.php');
 require (ABSPATH . WPINC . '/link-template.php');
 require (ABSPATH . WPINC . '/author-template.php');
@@ -642,6 +650,12 @@ force_ssl_login(FORCE_SSL_LOGIN);
 if ( !defined( 'AUTOSAVE_INTERVAL' ) )
 	define( 'AUTOSAVE_INTERVAL', 60 );
 
+/**
+ * It is possible to define this in wp-config.php
+ * @since 2.9.0
+ */
+if ( !defined( 'EMPTY_TRASH_DAYS' ) )
+	define( 'EMPTY_TRASH_DAYS', 30 );
 
 require (ABSPATH . WPINC . '/vars.php');
 
@@ -700,6 +714,9 @@ $_GET    = add_magic_quotes($_GET   );
 $_POST   = add_magic_quotes($_POST  );
 $_COOKIE = add_magic_quotes($_COOKIE);
 $_SERVER = add_magic_quotes($_SERVER);
+
+// Force REQUEST to be GET + POST.  If SERVER, COOKIE, or ENV are needed, use those superglobals directly.
+$_REQUEST = array_merge($_GET, $_POST);
 
 do_action('sanitize_comment_cookies');
 
@@ -780,6 +797,21 @@ if ( TEMPLATEPATH !== STYLESHEETPATH && file_exists(STYLESHEETPATH . '/functions
 	include(STYLESHEETPATH . '/functions.php');
 if ( file_exists(TEMPLATEPATH . '/functions.php') )
 	include(TEMPLATEPATH . '/functions.php');
+
+// Load in support for template functions which the theme supports
+require_if_theme_supports( 'post-thumbnails', ABSPATH . WPINC . '/post-image-template.php' );
+
+/**
+ * Runs just before PHP shuts down execution.
+ *
+ * @access private
+ * @since 1.2.0
+ */
+function shutdown_action_hook() {
+	do_action('shutdown');
+	wp_cache_close();
+}
+register_shutdown_function('shutdown_action_hook');
 
 $wp->init();  // Sets up current user.
 

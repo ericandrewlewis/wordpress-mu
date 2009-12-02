@@ -8,10 +8,14 @@
 
 /** WordPress Administration Bootstrap */
 require_once('admin.php');
+
+if ( !current_user_can('edit_themes') )
+	wp_die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
+
 $title = __("Edit Themes");
 $parent_file = 'themes.php';
 
-wp_reset_vars(array('action', 'redirect', 'profile', 'error', 'warning', 'a', 'file', 'theme'));
+wp_reset_vars(array('action', 'redirect', 'profile', 'error', 'warning', 'a', 'file', 'theme', 'dir'));
 
 wp_admin_css( 'theme-editor' );
 
@@ -30,10 +34,16 @@ $allowed_files = array_merge($themes[$theme]['Stylesheet Files'], $themes[$theme
 
 if (empty($file)) {
 	$file = $allowed_files[0];
+} else {
+	if ( 'theme' == $dir ) {
+		$file = dirname(dirname($themes[$theme]['Template Dir'])) . $file ; 
+	} else if ( 'style' == $dir) {
+		$file = dirname(dirname($themes[$theme]['Stylesheet Dir'])) . $file ; 
+	}
 }
 
-$file = validate_file_to_edit($file, $allowed_files);
-$real_file = get_real_file_to_edit($file);
+$real_file = validate_file_to_edit($file, $allowed_files);
+$scrollto = isset($_REQUEST['scrollto']) ? (int) $_REQUEST['scrollto'] : 0;
 
 $file_show = basename( $file );
 
@@ -43,9 +53,6 @@ case 'update':
 
 	check_admin_referer('edit-theme_' . $file . $theme);
 
-	if ( !current_user_can('edit_themes') )
-		wp_die('<p>'.__('You do not have sufficient permissions to edit templates for this blog.').'</p>');
-
 	$newcontent = stripslashes($_POST['newcontent']);
 	$theme = urlencode($theme);
 	if (is_writeable($real_file)) {
@@ -54,12 +61,12 @@ case 'update':
 		if ($f !== FALSE) {
 			fwrite($f, $newcontent);
 			fclose($f);
-			$location = "theme-editor.php?file=$file&theme=$theme&a=te";
+			$location = "theme-editor.php?file=$file&theme=$theme&a=te&scrollto=$scrollto";
 		} else {
-			$location = "theme-editor.php?file=$file&theme=$theme";
+			$location = "theme-editor.php?file=$file&theme=$theme&scrollto=$scrollto";
 		}
 	} else {
-		$location = "theme-editor.php?file=$file&theme=$theme";
+		$location = "theme-editor.php?file=$file&theme=$theme&scrollto=$scrollto";
 	}
 
 	$location = wp_kses_no_null($location);
@@ -71,9 +78,6 @@ case 'update':
 break;
 
 default:
-
-	if ( !current_user_can('edit_themes') )
-		wp_die('<p>'.__('You do not have sufficient permissions to edit themes for this blog.').'</p>');
 
 	require_once('admin-header.php');
 
@@ -136,8 +140,8 @@ $desc_header = ( $description != $file_show ) ? "<strong>$description</strong> (
 </div>
 <br class="clear" />
 </div>
-
-<div id="templateside">
+<br class="clear" />
+	<div id="templateside">
 	<h3><?php _e("Theme Files"); ?></h3>
 
 <?php
@@ -158,45 +162,46 @@ if ($allowed_files) :
 		// This means that we display the correct files for child themes which overload Templates as well as Styles
 		if( array_key_exists($description, $template_mapping ) ) {
 			if ( false !== strpos( $template_file, $template_dir ) )  {
-				$template_mapping[ $description ] = array( $template_file, $filedesc );
+				$template_mapping[ $description ] = array( _get_template_edit_filename($template_file, $template_dir), $filedesc );
 			}
 		} else {
-			$template_mapping[ $description ] = array( $template_file, $filedesc );
+			$template_mapping[ $description ] = array( _get_template_edit_filename($template_file, $template_dir), $filedesc );
 		}
 	}
 	ksort( $template_mapping );
 	while ( list( $template_sorted_key, list( $template_file, $filedesc ) ) = each( $template_mapping ) ) :
 	?>
-		<li><a href="theme-editor.php?file=<?php echo "$template_file"; ?>&amp;theme=<?php echo urlencode($theme) ?>"><?php echo $filedesc ?></a></li>
+		<li><a href="theme-editor.php?file=<?php echo "$template_file"; ?>&amp;theme=<?php echo urlencode($theme) ?>&amp;dir=theme"><?php echo $filedesc ?></a></li>
 <?php endwhile; ?>
 	</ul>
 	<h4><?php /* translators: Theme stylesheets in theme editor */ echo _x('Styles', 'Theme stylesheets in theme editor'); ?></h4>
 	<ul>
 <?php
 	$template_mapping = array();
+	$stylesheet_dir = $themes[$theme]['Stylesheet Dir'];
 	foreach ( $themes[$theme]['Stylesheet Files'] as $style_file ) {
 		$description = trim( get_file_description($style_file) );
 		$style_show = basename($style_file);
 		$filedesc = ( $description != $style_file ) ? "$description <span class='nonessential'>($style_show)</span>" : "$description";
 		$filedesc = ( $style_file == $file ) ? "<span class='highlight'>$description <span class='nonessential'>($style_show)</span></span>" : $filedesc;
-		$template_mapping[ $description ] = array( $style_file, $filedesc );
+		$template_mapping[ $description ] = array( _get_template_edit_filename($style_file, $stylesheet_dir), $filedesc );
 	}
 	ksort( $template_mapping );
 	while ( list( $template_sorted_key, list( $style_file, $filedesc ) ) = each( $template_mapping ) ) :
 		?>
-		<li><a href="theme-editor.php?file=<?php echo "$style_file"; ?>&amp;theme=<?php echo urlencode($theme) ?>"><?php echo $filedesc ?></a></li>
+		<li><a href="theme-editor.php?file=<?php echo "$style_file"; ?>&amp;theme=<?php echo urlencode($theme) ?>&amp;dir=style"><?php echo $filedesc ?></a></li>
 <?php endwhile; ?>
 	</ul>
 <?php endif; ?>
 </div>
-
 <?php if (!$error) { ?>
-<form name="template" id="template" action="theme-editor.php" method="post">
+	<form name="template" id="template" action="theme-editor.php" method="post">
 	<?php wp_nonce_field('edit-theme_' . $file . $theme) ?>
 		 <div><textarea cols="70" rows="25" name="newcontent" id="newcontent" tabindex="1" class="codepress <?php echo $codepress_lang ?>"><?php echo $content ?></textarea>
 		 <input type="hidden" name="action" value="update" />
 		 <input type="hidden" name="file" value="<?php echo esc_attr($file) ?>" />
 		 <input type="hidden" name="theme" value="<?php echo esc_attr($theme) ?>" />
+		 <input type="hidden" name="scrollto" id="scrollto" value="<?php echo $scrollto; ?>" />
 		 </div>
 	<?php if ( isset($functions ) && count($functions) ) { ?>
 		<div id="documentation">
@@ -217,7 +222,7 @@ if ($allowed_files) :
 <p><em><?php _e('You need to make this file writable before you can save your changes. See <a href="http://codex.wordpress.org/Changing_File_Permissions">the Codex</a> for more information.'); ?></em></p>
 <?php endif; ?>
 		</div>
-</form>
+	</form>
 <?php
 	} else {
 		echo '<div class="error"><p>' . __('Oops, no such file exists! Double check the name and try again, merci.') . '</p></div>';
@@ -225,6 +230,14 @@ if ($allowed_files) :
 ?>
 <br class="clear" />
 </div>
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(document).ready(function($){
+	$('#template').submit(function(){ $('#scrollto').val( $('#newcontent').scrollTop() ); });
+	$('#newcontent').scrollTop( $('#scrollto').val() );
+});
+/* ]]> */
+</script>
 <?php
 break;
 }

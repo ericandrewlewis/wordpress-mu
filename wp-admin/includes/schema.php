@@ -56,6 +56,15 @@ CREATE TABLE $wpdb->term_relationships (
  PRIMARY KEY  (object_id,term_taxonomy_id),
  KEY term_taxonomy_id (term_taxonomy_id)
 ) $charset_collate;
+CREATE TABLE $wpdb->commentmeta (
+  meta_id bigint(20) unsigned NOT NULL auto_increment,
+  comment_id bigint(20) unsigned NOT NULL default '0',
+  meta_key varchar(255) default NULL,
+  meta_value longtext,
+  PRIMARY KEY  (meta_id),
+  KEY comment_id (comment_id),
+  KEY meta_key (meta_key)
+) $charset_collate;
 CREATE TABLE $wpdb->comments (
   comment_ID bigint(20) unsigned NOT NULL auto_increment,
   comment_post_ID bigint(20) unsigned NOT NULL default '0',
@@ -101,8 +110,9 @@ CREATE TABLE $wpdb->options (
   option_name varchar(64) NOT NULL default '',
   option_value longtext NOT NULL,
   autoload varchar(20) NOT NULL default 'yes',
-  PRIMARY KEY  (option_id,blog_id,option_name),
-  KEY option_name (option_name)
+  PRIMARY KEY  (option_id),
+  UNIQUE option_name (option_name),
+  UNIQUE autoloaded_options (autoload, option_name)
 ) $charset_collate;
 CREATE TABLE $wpdb->postmeta (
   meta_id bigint(20) unsigned NOT NULL auto_increment,
@@ -387,7 +397,13 @@ function populate_options() {
 	'widget_rss' => array(),
 
 	// 2.8
-	'timezone_string' => ''
+	'timezone_string' => '',
+
+	// 2.9
+	'embed_autourls' => 1,
+	'embed_oembed_discover' => 1,
+	'embed_size_w' => '',
+	'embed_size_h' => 600,
 	);
 
 	// Set autoload to no for these options
@@ -421,9 +437,12 @@ function populate_options() {
 
 	// Delete unused options
 	$unusedoptions = array ('blodotgsping_url', 'bodyterminator', 'emailtestonly', 'phoneemail_separator', 'smilies_directory', 'subjectprefix', 'use_bbcode', 'use_blodotgsping', 'use_phoneemail', 'use_quicktags', 'use_weblogsping', 'weblogs_cache_file', 'use_preview', 'use_htmltrans', 'smilies_directory', 'fileupload_allowedusers', 'use_phoneemail', 'default_post_status', 'default_post_category', 'archive_mode', 'time_difference', 'links_minadminlevel', 'links_use_adminlevels', 'links_rating_type', 'links_rating_char', 'links_rating_ignore_zero', 'links_rating_single_image', 'links_rating_image0', 'links_rating_image1', 'links_rating_image2', 'links_rating_image3', 'links_rating_image4', 'links_rating_image5', 'links_rating_image6', 'links_rating_image7', 'links_rating_image8', 'links_rating_image9', 'weblogs_cacheminutes', 'comment_allowed_tags', 'search_engine_friendly_urls', 'default_geourl_lat', 'default_geourl_lon', 'use_default_geourl', 'weblogs_xml_url', 'new_users_can_blog', '_wpnonce', '_wp_http_referer', 'Update', 'action', 'rich_editing', 'autosave_interval', 'deactivated_plugins', 'can_compress_scripts',
-		'page_uris', 'rewrite_rules', 'update_core', 'update_plugins', 'update_themes', 'doing_cron', 'random_seed');
+		'page_uris', 'update_core', 'update_plugins', 'update_themes', 'doing_cron', 'random_seed', 'rss_excerpt_length');
 	foreach ($unusedoptions as $option)
 		delete_option($option);
+	
+	// delete obsolete magpie stuff
+	$wpdb->query("DELETE FROM $wpdb->options WHERE option_name REGEXP '^rss_[0-9a-f]{32}(_ts)?$'");
 }
 
 /**

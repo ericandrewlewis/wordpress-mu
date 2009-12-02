@@ -162,11 +162,38 @@ function wp_install_defaults($user_id) {
 								'post_author' => $user_id,
 								'post_date' => $now,
 								'post_date_gmt' => $now_gmt,
-								'post_content' => __('Welcome to WordPress. This is your first post. Edit or delete it, then start blogging!'),
+								'post_content' => sprintf(__('
+Welcome to WordPress!  This post contains important information.  After you read it, you can make it private to hide it from visitors but still have the information handy for future reference.
+
+First things first:
+<ul>
+<li><a href="%1$s" title="Subscribe to the WordPress mailing list for Release Notifications">Subscribe to the WordPress mailing list for release notifications</a></li>
+</ul>
+As a subscriber, you will receive an email every time an update is available (and only then).  This will make it easier to keep your site up to date, and secure from evildoers.
+When a new version is released, <a href="%2$s" title="If you are already logged in, this will take you directly to the Dashboard">log in to the Dashboard</a> and follow the instructions.
+Upgrading is a couple of clicks!
+
+Then you can start enjoying the WordPress experience:
+<ul>
+<li>Edit your personal information at <a href="%3$s" title="Edit settings like your password, your display name and your contact information">Users &#8250; Your Profile</a></li>
+<li>Start publishing at <a href="%4$s" title="Create a new post">Posts &#8250; Add New</a> and at <a href="%5$s" title="Create a new page">Pages &#8250; Add New</a></li>
+<li>Browse and install plugins at <a href="%6$s" title="Browse and install plugins at the official WordPress repository directly from your Dashboard">Plugins &#8250; Add New</a></li>
+<li>Browse and install themes at <a href="%7$s" title="Browse and install themes at the official WordPress repository directly from your Dashboard">Appearance &#8250; Add New Themes</a></li>
+<li>Modify and prettify your website&#8217;s links at <a href="%8$s" title="For example, select a link structure like: http://example.com/1999/12/post-name">Settings &#8250; Permalinks</a></li>
+<li>Import content from another system or WordPress site at <a href="%9$s" title="WordPress comes with importers for the most common publishing systems">Tools &#8250; Import</a></li>
+<li>Find answers to your questions at the <a href="%10$s" title="The official WordPress documentation, maintained by the WordPress community">WordPress Codex</a></li>
+</ul>
+To keep this post for reference, <a href="%11$s" title="Click to edit the content and settings of this post">click to edit it</a>, go to the Publish box and change its Visibility from Public to Private.
+
+Thank you for selecting WordPress.  We wish you happy publishing!
+
+PS.  Not yet subscribed for update notifications?  <a href="%1$s" title="Subscribe to the WordPress mailing list for Release Notifications">Do it now!</a>
+'), esc_attr_x('http://wordpress.org/download/','url for release notification mailing list subscription.'), admin_url(''), admin_url('profile.php'), admin_url('post-new.php'), admin_url('page-new.php'),
+admin_url('plugin-install.php'), admin_url('theme-install.php'), admin_url('options-permalink.php'), admin_url('import.php'), esc_attr_x('http://codex.wordpress.org','url for codex documentation.'), admin_url('post.php?action=edit&post=1')),
 								'post_excerpt' => '',
-								'post_title' => __('Hello world!'),
+								'post_title' => __('Welcome!'),
 								/* translators: Default post slug */
-								'post_name' => _x('hello-world', 'Default post slug'),
+								'post_name' => _x('welcome', 'Default post slug'),
 								'post_modified' => $now,
 								'post_modified_gmt' => $now_gmt,
 								'guid' => $first_post_guid,
@@ -269,6 +296,7 @@ function wp_upgrade() {
 
 	wp_check_mysql_version();
 	wp_cache_flush();
+	pre_schema_upgrade();
 	make_db_current_silent();
 	upgrade_all();
 	wp_cache_flush();
@@ -342,8 +370,11 @@ function upgrade_all() {
 	if ( $wp_current_db_version < 8989 )
 		upgrade_270();
 
-	if ( $wp_current_db_version < 11549 )
+	if ( $wp_current_db_version < 10360 )
 		upgrade_280();
+
+	if ( $wp_current_db_version < 11958 )
+		upgrade_290();
 
 	maybe_disable_automattic_widgets();
 
@@ -556,8 +587,10 @@ function upgrade_130() {
 		if ( 1 != $option->dupes ) { // Could this be done in the query?
 			$limit = $option->dupes - 1;
 			$dupe_ids = $wpdb->get_col( $wpdb->prepare("SELECT option_id FROM $wpdb->options WHERE option_name = %s LIMIT %d", $option->option_name, $limit) );
-			$dupe_ids = join($dupe_ids, ',');
-			$wpdb->query("DELETE FROM $wpdb->options WHERE option_id IN ($dupe_ids)");
+			if ( $dupe_ids ) {
+				$dupe_ids = join($dupe_ids, ',');
+				$wpdb->query("DELETE FROM $wpdb->options WHERE option_id IN ($dupe_ids)");
+			}
 		}
 	}
 
@@ -1002,6 +1035,23 @@ function upgrade_280() {
 		}
 		update_site_option( 'wpmu_sitewide_plugins', '' );
 		update_site_option( 'deactivated_sitewide_plugins', '' );
+	}
+}
+
+/**
+ * Execute changes made in WordPress 2.9.
+ *
+ * @since 2.9.0
+ */
+function upgrade_290() {
+	global $wp_current_db_version;
+
+	if ( $wp_current_db_version < 11958 ) {
+		// Previously, setting depth to 1 would redundantly disable threading, but now 2 is the minimum depth to avoid confusion
+		if ( get_option( 'thread_comments_depth' ) == '1' ) {
+			update_option( 'thread_comments_depth', 2 );
+			update_option( 'thread_comments', 0 );
+		}
 	}
 }
 
@@ -1680,6 +1730,41 @@ function maybe_disable_automattic_widgets() {
 			break;
 		}
 	}
+}
+
+/**
+ * Runs before the schema is upgraded.
+ */
+function pre_schema_upgrade() {
+	global $wp_current_db_version, $wp_db_version, $wpdb;
+
+	// Upgrade 2.9 development versions
+	if ( ( $wp_current_db_version >= 11557 ) && ( $wp_current_db_version < 12217 ) ) {
+		// Drop the option_id index. dbDelta() doesn't do the drop.
+		$wpdb->query("ALTER TABLE $wpdb->options DROP INDEX option_id");
+
+		// Drop the old primary key and add the new.
+		$wpdb->query("ALTER TABLE $wpdb->options DROP PRIMARY KEY, ADD PRIMARY KEY(option_id)");
+
+		return;
+	}
+
+	// Upgrade versions prior to 2.9
+	if ( $wp_current_db_version < 11557 ) {
+		// Delete duplicate options.  Keep the option with the highest option_id.
+		$delete_options = $wpdb->get_col("SELECT o1.option_id FROM $wpdb->options AS o1 JOIN $wpdb->options AS o2 ON o2.option_name = o1.option_name AND o2.option_id > o1.option_id");
+		if ( !empty($delete_options) ) {
+			$delete_options = implode(',', $delete_options);
+			$wpdb->query("DELETE FROM $wpdb->options WHERE option_id IN ($delete_options)");
+		}
+
+		// Drop the old primary key and add the new.
+		$wpdb->query("ALTER TABLE $wpdb->options DROP PRIMARY KEY, ADD PRIMARY KEY(option_id)");
+
+		// Drop the old option_name index. dbDelta() doesn't do the drop.
+		$wpdb->query("ALTER TABLE $wpdb->options DROP INDEX option_name");
+	}
+
 }
 
 ?>
