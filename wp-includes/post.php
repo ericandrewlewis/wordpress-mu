@@ -1186,8 +1186,7 @@ function wp_delete_post( $postid = 0, $force_delete = false ) {
 	delete_post_meta($postid,'_wp_trash_meta_status');
 	delete_post_meta($postid,'_wp_trash_meta_time');
 
-	/** @todo delete for pluggable post taxonomies too */
-	wp_delete_object_term_relationships($postid, array('category', 'post_tag'));
+	wp_delete_object_term_relationships($postid, get_object_taxonomies($post->post_type));
 
 	$parent_data = array( 'post_parent' => $post->post_parent );
 	$parent_where = array( 'post_parent' => $postid );
@@ -2804,6 +2803,9 @@ function wp_insert_attachment($object, $file = false, $parent = 0) {
 
 	clean_post_cache($post_ID);
 
+	if ( isset($post_parent) && $post_parent < 0 )
+		add_post_meta($post_ID, '_wp_attachment_temp_parent', $post_parent, true);
+
 	if ( $update) {
 		do_action('edit_attachment', $post_ID);
 	} else {
@@ -2849,8 +2851,8 @@ function wp_delete_attachment( $post_id, $force_delete = false ) {
 
 	do_action('delete_attachment', $post_id);
 
-	/** @todo Delete for pluggable post taxonomies too */
 	wp_delete_object_term_relationships($post_id, array('category', 'post_tag'));
+	wp_delete_object_term_relationships($post_id, get_object_taxonomies($post->post_type));
 
 	$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->postmeta WHERE meta_key = '_thumbnail_id' AND meta_value = %d", $post_id ));
 
@@ -2975,7 +2977,8 @@ function wp_get_attachment_url( $post_id = 0 ) {
 			elseif ( false !== strpos($file, 'wp-content/uploads') )
 				$url = $uploads['baseurl'] . substr( $file, strpos($file, 'wp-content/uploads') + 18 );
 			else
-				$url = $uploads['baseurl'] . "/$file"; //Its a newly uploaded file, therefor $file is relative to the basedir.*/
+				$url = $uploads['baseurl'] . "/$file"; //Its a newly uploaded file, therefor $file is relative to the basedir.
+			*/
 		}
 	}
 

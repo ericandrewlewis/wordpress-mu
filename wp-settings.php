@@ -18,6 +18,9 @@ if ( function_exists('memory_get_usage') && ( (int) @ini_get('memory_limit') < a
 set_magic_quotes_runtime(0);
 @ini_set('magic_quotes_sybase', 0);
 
+if ( function_exists('date_default_timezone_set') )
+	date_default_timezone_set('UTC');
+
 if ( defined( 'VHOST' ) && ( constant( 'VHOST' ) != 'yes' && constant( 'VHOST' ) != 'no' ) )
 	die( "Warning! VHOST must be 'yes' or 'no' in wp-config.php" );
 

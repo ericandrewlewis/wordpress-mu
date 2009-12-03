@@ -254,14 +254,7 @@ function is_tax( $slug = '' ) {
 	if ( empty($slug) )
 		return true;
 
-	$term = $wp_query->get_queried_object();
-
-	$slug = (array) $slug;
-
-	if ( in_array( $term->slug, $slug ) )
-		return true;
-
-	return false;
+	return in_array( get_query_var('taxonomy'), (array) $slug );
 }
 
 /**
@@ -2108,20 +2101,25 @@ class WP_Query {
 			$q_status = explode(',', $q['post_status']);
 			$r_status = array();
 			$p_status = array();
-			if ( in_array( 'draft'  , $q_status ) )
-				$r_status[] = "$wpdb->posts.post_status = 'draft'";
-			if ( in_array( 'pending', $q_status ) )
-				$r_status[] = "$wpdb->posts.post_status = 'pending'";
-			if ( in_array( 'future' , $q_status ) )
-				$r_status[] = "$wpdb->posts.post_status = 'future'";
-			if ( in_array( 'inherit' , $q_status ) )
-				$r_status[] = "$wpdb->posts.post_status = 'inherit'";
-			if ( in_array( 'private', $q_status ) )
-				$p_status[] = "$wpdb->posts.post_status = 'private'";
-			if ( in_array( 'publish', $q_status ) )
-				$r_status[] = "$wpdb->posts.post_status = 'publish'";
-			if ( in_array( 'trash', $q_status ) )
-				$r_status[] = "$wpdb->posts.post_status = 'trash'";
+			if ( $q['post_status'] == 'any' ) {
+				// @todo Use register_post_status() data to determine which states should be excluded.
+				$r_status[] = "$wpdb->posts.post_status <> 'trash'";
+			} else {
+				if ( in_array( 'draft'  , $q_status ) )
+					$r_status[] = "$wpdb->posts.post_status = 'draft'";
+				if ( in_array( 'pending', $q_status ) )
+					$r_status[] = "$wpdb->posts.post_status = 'pending'";
+				if ( in_array( 'future' , $q_status ) )
+					$r_status[] = "$wpdb->posts.post_status = 'future'";
+				if ( in_array( 'inherit' , $q_status ) )
+					$r_status[] = "$wpdb->posts.post_status = 'inherit'";
+				if ( in_array( 'private', $q_status ) )
+					$p_status[] = "$wpdb->posts.post_status = 'private'";
+				if ( in_array( 'publish', $q_status ) )
+					$r_status[] = "$wpdb->posts.post_status = 'publish'";
+				if ( in_array( 'trash', $q_status ) )
+					$r_status[] = "$wpdb->posts.post_status = 'trash'";
+			}
 
 			if ( empty($q['perm'] ) || 'readable' != $q['perm'] ) {
 				$r_status = array_merge($r_status, $p_status);
