@@ -86,7 +86,7 @@ if ( current_theme_supports( 'post-thumbnails' ) )
 $authors = get_editable_user_ids( $current_user->id, true, 'page' ); // TODO: ROLE SYSTEM
 if ( $post->post_author && !in_array($post->post_author, $authors) )
 	$authors[] = $post->post_author;
-if ( $authors && count( $authors ) > 1 )
+if ( is_site_admin() || $authors && count( $authors ) > 1 )
 	add_meta_box('pageauthordiv', __('Page Author'), 'post_author_meta_box', 'page', 'normal', 'core');
 
 if ( 0 < $post_ID && wp_get_post_revisions( $post_ID ) )
