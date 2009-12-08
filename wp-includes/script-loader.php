@@ -61,7 +61,7 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'utils', "/wp-admin/js/utils$suffix.js", false, '20090102' );
 
-	$scripts->add( 'common', "/wp-admin/js/common$suffix.js", array('jquery', 'hoverIntent', 'utils'), '20091119' );
+	$scripts->add( 'common', "/wp-admin/js/common$suffix.js", array('jquery', 'hoverIntent', 'utils'), '20091207' );
 	$scripts->add_data( 'common', 'group', 1 );
 	$scripts->localize( 'common', 'commonL10n', array(
 		'warnDelete' => __("You are about to permanently delete the selected items.\n  'Cancel' to stop, 'OK' to delete."),
@@ -425,7 +425,7 @@ function wp_default_styles( &$styles ) {
 	$rtl_styles = array( 'global', 'colors', 'dashboard', 'ie', 'install', 'login', 'media', 'theme-editor', 'upload', 'widgets', 'press-this', 'plugin-install', 'farbtastic' );
 
 	// all colors stylesheets need to have the same query strings (cache manifest compat)
-	$colors_version = '20091202';
+	$colors_version = '20091207';
 
 	$styles->add( 'wp-admin', "/wp-admin/wp-admin$suffix.css", array(), '20091202' );
 	$styles->add_data( 'wp-admin', 'rtl', "/wp-admin/rtl$suffix.css" );

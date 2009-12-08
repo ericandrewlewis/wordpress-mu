@@ -158,8 +158,8 @@ endforeach;
 
 
 <?php
+include('admin-footer.php');
 break;
 } // end switch
 
-include('admin-footer.php');
 ?>

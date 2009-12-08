@@ -111,8 +111,7 @@ CREATE TABLE $wpdb->options (
   option_value longtext NOT NULL,
   autoload varchar(20) NOT NULL default 'yes',
   PRIMARY KEY  (option_id),
-  UNIQUE option_name (option_name),
-  UNIQUE autoloaded_options (autoload, option_name)
+  UNIQUE KEY option_name (option_name)
 ) $charset_collate;
 CREATE TABLE $wpdb->postmeta (
   meta_id bigint(20) unsigned NOT NULL auto_increment,
@@ -292,7 +291,6 @@ function populate_options() {
 	'require_name_email' => 1,
 	'comments_notify' => 1,
 	'posts_per_rss' => 10,
-	'rss_excerpt_length' => 50,
 	'rss_use_excerpt' => 0,
 	'mailserver_url' => 'mail.example.com',
 	'mailserver_login' => 'login@example.com',
