@@ -345,6 +345,7 @@ function deactivate_plugins($plugins, $silent= false) {
 			do_action( 'deactivate_' . trim( $plugin ) );
 			do_action( 'deactivated_plugin', trim( $plugin ) );
 		}
+		deactivate_sitewide_plugin( trim( $plugin ) );
 	}
 
 	update_option('active_plugins', $current);
