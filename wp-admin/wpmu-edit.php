@@ -359,7 +359,6 @@ switch( $_GET['action'] ) {
 	case "unspamblog":
 		check_admin_referer('unspamblog');
 		update_blog_status( $id, "spam", '0' );
-		do_action( "unspam_blog", $id );
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'unspam'), $_POST['ref'] ) );
 		exit();
 	break;
@@ -367,7 +366,6 @@ switch( $_GET['action'] ) {
 	case "spamblog":
 		check_admin_referer('spamblog');
 		update_blog_status( $id, "spam", '1' );
-		do_action( 'make_spam_blog', $id );
 		wp_redirect( add_query_arg( array('updated' => 'true', 'action' => 'spam'), $_POST['ref'] ) );
 		exit();
 	break;
@@ -479,7 +477,6 @@ switch( $_GET['action'] ) {
 					foreach ( (array) $blogs as $key => $details ) {
 						if ( $details->userblog_id == $current_site->blog_id ) { continue; } // main blog not a spam !
 						update_blog_status( $details->userblog_id, "spam", '1' );
-						do_action( "make_spam_blog", $details->userblog_id );
 					}
 					update_user_status( $val, "spam", '1', 1 );
 				} elseif ( isset($_POST['alluser_notspam']) ) {
