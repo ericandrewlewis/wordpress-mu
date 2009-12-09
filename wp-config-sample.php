@@ -105,7 +105,7 @@ define( "WP_USE_MULTIPLE_DB", false );
 
 /* That's all, stop editing! Happy blogging. */
 
-/** WordPress absolute path to the Wordpress directory. */
+/** Absolute path to the WordPress directory. */
 if ( !defined('ABSPATH') )
 	define('ABSPATH', dirname(__FILE__) . '/');
 

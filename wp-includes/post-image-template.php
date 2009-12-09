@@ -2,8 +2,8 @@
 /**
  * WordPress Post Image Template Functions.
  *
- * Support for post thumbnails
- * Themes function.php must call add_theme_support( 'post-thumbnails' ) to use these.
+ * Support for post images
+ * Themes function.php must call add_theme_support( 'post-images' ) to use these.
  *
  * @package WordPress
  * @subpackage Template
@@ -42,10 +42,10 @@ function get_post_image_id( $post_id = NULL ) {
  * 
  * @since 2.9.0
  *
- * @param int $size Optional. Image size.  Defaults to 'thumbnail'.
+ * @param int $size Optional. Image size.  Defaults to 'post-image', which theme sets using set_post_image_size( $width, $height, $crop_flag );.
  * @param string|array $attr Optional. Query string or array of attributes.
  */
-function the_post_image( $size = 'thumbnail', $attr = '' ) {
+function the_post_image( $size = 'post-image', $attr = '' ) {
 	echo get_the_post_image( NULL, $size, $attr );
 }
 
@@ -58,7 +58,7 @@ function the_post_image( $size = 'thumbnail', $attr = '' ) {
  * @param string $size Optional. Image size.  Defaults to 'thumbnail'.
  * @param string|array $attr Optional. Query string or array of attributes.
   */
-function get_the_post_image( $post_id = NULL, $size = 'thumbnail', $attr = '' ) {
+function get_the_post_image( $post_id = NULL, $size = 'post-image', $attr = '' ) {
 	global $id;
 	$post_id = ( NULL === $post_id ) ? $id : $post_id;
 	$post_image_id = get_post_image_id( $post_id );

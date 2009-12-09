@@ -800,7 +800,7 @@ if ( file_exists(TEMPLATEPATH . '/functions.php') )
 	include(TEMPLATEPATH . '/functions.php');
 
 // Load in support for template functions which the theme supports
-require_if_theme_supports( 'post-thumbnails', ABSPATH . WPINC . '/post-image-template.php' );
+require_if_theme_supports( 'post-images', ABSPATH . WPINC . '/post-image-template.php' );
 
 $wp->init();  // Sets up current user.
 
