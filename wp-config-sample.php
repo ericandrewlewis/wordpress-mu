@@ -43,6 +43,9 @@ define('PATH_CURRENT_SITE', 'current_site_path' );
 define('SITE_ID_CURRENT_SITE', 1);
 define('BLOGID_CURRENT_SITE', '1' );
 
+/* Uncomment to allow blog admins to edit their users. See http://trac.mu.wordpress.org/ticket/1169 */
+//define( "EDIT_ANY_USER", true );
+
 /**#@+
  * Authentication Unique Keys.
  *
