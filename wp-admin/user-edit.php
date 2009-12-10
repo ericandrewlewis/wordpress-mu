@@ -61,7 +61,7 @@ function use_ssl_preference($user) {
 }
 
 // Only allow site admins to edit every user. 
-if ( !is_site_admin() && ($user_id != $current_user->ID) ) 
+if ( defined( "EDIT_ANY_USER" ) == false && !is_site_admin() && $user_id != $current_user->ID ) 
 	wp_die( __( 'You do not have permission to edit this user.' ) ); 
 	
 switch ($action) {
