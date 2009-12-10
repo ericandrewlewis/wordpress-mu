@@ -2336,4 +2336,11 @@ function filter_SSL( $url) {
 	return $url;
 }
 
+function maybe_cancel_post_by_email() {
+	if ( false == defined( 'POST_BY_EMAIL' ) ) {
+		die( __( 'This action has been disabled by the administrator' ) );
+	}
+}
+add_action( 'wp-mail.php', 'maybe_cancel_post_by_email' );
+
 ?>

@@ -587,10 +587,15 @@ function wpmu_menu() {
 add_action( '_admin_menu', 'wpmu_menu' );
 
 function mu_options( $options ) {
+	if ( defined( 'POST_BY_EMAIL' ) ) {
+		$writing = array( 'ping_sites' );
+	} else {
+		$writing = array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' );
+	}
 	$removed = array( 
 		'general' => array( 'siteurl', 'home', 'admin_email', 'users_can_register', 'default_role' ),
 		'reading' => array( 'gzipcompression' ),
-		'writing' => array( 'ping_sites', 'mailserver_login', 'mailserver_pass', 'default_email_category', 'mailserver_port', 'mailserver_url' ),
+		'writing' => $writing,
 	);
 
 	$added = array( 'general' => array( 'new_admin_email', 'WPLANG', 'language' ) );
