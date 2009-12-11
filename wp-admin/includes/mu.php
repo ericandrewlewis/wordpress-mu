@@ -1258,9 +1258,7 @@ function stripslashes_from_options( $blog_id ) {
 				if ( !@unserialize( $value ) ) 
 					$value = stripslashes( $value ); 
 				if ( $value !== $row->meta_value ) {
-					error_log( "sitemeta update: {$row->meta_value} to $value" );
 					update_site_option( $row->meta_key, $value );
-					//$wpdb->update( $wpdb->sitemeta, array( 'meta_value' => $value ), array( 'meta_key' => $row->meta_key ) );
 				}
 			}
 			$start += 20;
@@ -1274,9 +1272,7 @@ function stripslashes_from_options( $blog_id ) {
 			if ( !@unserialize( $value ) ) 
 				$value = stripslashes( $value ); 
 			if ( $value !== $row->option_value ) {
-				error_log( "$blog_id options update: {$row->option_value} to $value" );
 				update_blog_option( $blog_id, $row->option_name, $value );
-				//$wpdb->update( $options_table, array( 'option_value' => $value ), array( 'option_name' => $row->option_name ) );
 			}
 		}
 		$start += 20;
@@ -1295,4 +1291,5 @@ function show_post_thumbnail_warning() {
 	}
 }
 add_action( 'admin_notices', 'show_post_thumbnail_warning' );
+
 ?>
