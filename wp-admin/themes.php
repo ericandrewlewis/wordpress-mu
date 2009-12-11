@@ -262,7 +262,7 @@ foreach ( $cols as $col => $theme_name ) {
 	printf(__('%1$s %2$s by %3$s'), $title, $version, $author) ; ?></h3>
 <p class="description"><?php echo $description; ?></p>
 <span class='action-links'><?php echo $actions ?></span>
-	<?php if( is_site_admin() ) { if ($parent_theme) { ?>
+	<?php if( is_site_admin() ) { if ($parent_theme) {
 	/* translators: 1: theme title, 2:  template dir, 3: stylesheet_dir, 4: theme title, 5: parent_theme */ ?>
 	<p><?php printf(__('The template files are located in <code>%2$s</code>.  The stylesheet files are located in <code>%3$s</code>.  <strong>%4$s</strong> uses templates from <strong>%5$s</strong>.  Changes made to the templates will affect both themes.'), $title, str_replace( WP_CONTENT_DIR, '', $template_dir ), str_replace( WP_CONTENT_DIR, '', $stylesheet_dir ), $title, $parent_theme); ?></p>
 <?php } else { ?>
