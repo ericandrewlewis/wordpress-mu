@@ -1660,7 +1660,29 @@ function fix_upload_details( $uploads ) {
 	return $uploads;
 }
 
-function get_dirsize($directory) {
+function get_dirsize( $directory ) {
+	$dirsize = get_option( 'dirsize_cache' );
+	if ( is_array( $dirsize ) && isset( $dirsize[ $directory ][ 'size' ] ) && $dirsize[ $directory ][ 'age' ] > time() - 3600 ) {
+		return $dirsize[ $directory ][ 'size' ];
+	}
+	if ( false == is_array( $dirsize ) ) {
+		$dirsize = array();
+	}
+	$dirsize[ $directory ][ 'size' ] = recurse_dirsize( $directory );
+	$dirsize[ $directory ][ 'age' ] = time();
+
+	update_option( 'dirsize_cache', $dirsize );
+	return $dirsize[ $directory ][ 'size' ];
+}
+
+function clear_dirsize_cache( $file = true ) {
+	delete_option( 'dirsize_cache' );
+	return $file;
+}
+add_filter( 'wp_handle_upload', 'clear_dirsize_cache' );
+add_action( 'delete_attachment', 'clear_dirsize_cache' );
+
+function recurse_dirsize( $directory ) {
 	$size = 0;
 	if(substr($directory,-1) == '/') $directory = substr($directory,0,-1);
 	if(!file_exists($directory) || !is_dir($directory) || !is_readable($directory)) return false;
@@ -1671,7 +1693,7 @@ function get_dirsize($directory) {
 				if(is_file($path)) {
 					$size += filesize($path);
 				} elseif(is_dir($path)) {
-					$handlesize = get_dirsize($path);
+					$handlesize = recurse_dirsize($path);
 					if($handlesize >= 0) {
 						$size += $handlesize;
 					} else {
