@@ -1708,6 +1708,9 @@ function recurse_dirsize( $directory ) {
 }
 
 function upload_is_user_over_quota( $echo = true ) {
+	if ( get_site_option( 'upload_space_check_disabled' ) ) {
+		return true;
+	}
 	$spaceAllowed = get_space_allowed();
 	if(empty($spaceAllowed) || !is_numeric($spaceAllowed))
 		$spaceAllowed = 10;	// Default space allowed is 10 MB 

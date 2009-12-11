@@ -1,5 +1,8 @@
 <?php
 function check_upload_size( $file ) {
+	if ( get_site_option( 'upload_space_check_disabled' ) ) {
+		return $file;
+	}
 	if( $file['error'] != '0' ) // there's already an error
 		return $file;
 
@@ -379,6 +382,9 @@ function display_space_usage() {
 
 // Display File upload quota on dashboard
 function dashboard_quota() {	
+	if ( get_site_option( 'upload_space_check_disabled' ) ) {
+		return true;
+	}
 	$quota = get_space_allowed();
 	$used = get_dirsize( BLOGUPLOADDIR )/1024/1024;
 
@@ -452,6 +458,9 @@ function refresh_user_details($id) {
   Determines if the available space defined by the admin has been exceeded by the user
 */
 function wpmu_checkAvailableSpace() {
+	if ( get_site_option( 'upload_space_check_disabled' ) ) {
+		return true;
+	}
 	$spaceAllowed = get_space_allowed();
 
 	$dirName = trailingslashit( BLOGUPLOADDIR );
@@ -474,11 +483,10 @@ function wpmu_checkAvailableSpace() {
 	$size = $size / 1024 / 1024;
 
 	if( ($spaceAllowed - $size) <= 0 ) {
-		define( 'DISABLE_UPLOADS', true );
-		define( 'DISABLE_UPLOADS_MESSAGE', __('Sorry, you must delete files before you can upload any more.') );
+		wp_die( __('Sorry, you must delete files before you can upload any more.') );
 	}
 }
-add_action('upload_files_upload','wpmu_checkAvailableSpace');
+add_action('pre-upload-ui','wpmu_checkAvailableSpace');
 
 function format_code_lang( $code = '' ) {
 	$code = strtolower(substr($code, 0, 2));

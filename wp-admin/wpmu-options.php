@@ -205,6 +205,13 @@ if (isset($_GET['updated'])) {
 				<?php _e( 'The media upload buttons to display on the "Write Post" page. Make sure you update the "Upload File Types" below as well.' ); ?></td>
 			</tr>
 			<tr valign="top"> 
+				<th scope="row"><?php _e('Blog upload space check') ?></th> 
+				<td>
+				<label><input type='radio' id="upload_space_check_disabled" name="upload_space_check_disabled" value='0' <?php if( !get_site_option( 'upload_space_check_disabled' ) ) { echo 'checked=checked '; } ?>/> <?php _e( 'Enabled' ); ?></label><br />
+				<label><input type='radio' id="upload_space_check_disabled" name="upload_space_check_disabled" value='1' <?php if( get_site_option( 'upload_space_check_disabled' ) ) { echo 'checked=checked '; } ?>/> <?php _e( 'Disabled' ); ?></label><br />
+				<?php _e( 'By default there is a limit on the total size of files uploaded but it can be disabled here.' ); ?></td>
+			</tr>
+			<tr valign="top"> 
 				<th scope="row"><?php _e('Blog upload space') ?></th> 
 				<td><input name="blog_upload_space" type="text" id="blog_upload_space" value="<?php echo get_site_option('blog_upload_space', 10) ?>" size="3" /> MB</td>
 			</tr>

@@ -36,10 +36,6 @@ switch( $_GET['action'] ) {
 		}
 		update_site_option( "illegal_names", $names );
 
-		update_site_option( "registration", $_POST['registration'] );
-		update_site_option( "registrationnotification", $_POST['registrationnotification'] );
-		update_site_option( "add_new_users", $_POST['add_new_users'] );
-
 		if( $_POST['limited_email_domains'] != '' ) {
 			$limited_email_domains = str_replace( ' ', "\n", $_POST[ 'limited_email_domains' ] );
 			$limited_email_domains = split( "\n", stripslashes( $limited_email_domains ) );
@@ -105,7 +101,7 @@ switch( $_GET['action'] ) {
 			}
 		}
 		update_site_option( "dashboard_blog", $dashboard_blog_id );
-		$options = array( 'menu_items', 'mu_media_buttons', 'blog_upload_space', 'upload_filetypes', 'site_name', 'first_post', 'first_page', 'first_comment', 'first_comment_url', 'first_comment_author', 'welcome_email', 'welcome_user_email', 'fileupload_maxk', 'admin_notice_feed' );
+		$options = array( 'registrationnotification', 'registration', 'add_new_users', 'menu_items', 'mu_media_buttons', 'upload_space_check_disabled', 'blog_upload_space', 'upload_filetypes', 'site_name', 'first_post', 'first_page', 'first_comment', 'first_comment_url', 'first_comment_author', 'welcome_email', 'welcome_user_email', 'fileupload_maxk', 'admin_notice_feed' );
 		foreach( $options as $option_name ) {
 			$value = stripslashes_deep( $_POST[ $option_name ] );
 			update_site_option( $option_name, $value );
