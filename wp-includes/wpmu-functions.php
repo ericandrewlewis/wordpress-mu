@@ -1661,22 +1661,21 @@ function fix_upload_details( $uploads ) {
 }
 
 function get_dirsize( $directory ) {
-	$dirsize = get_option( 'dirsize_cache' );
-	if ( is_array( $dirsize ) && isset( $dirsize[ $directory ][ 'size' ] ) && $dirsize[ $directory ][ 'age' ] > time() - 3600 ) {
+	$dirsize = get_transient( 'dirsize_cache' );
+	if ( is_array( $dirsize ) && isset( $dirsize[ $directory ][ 'size' ] ) ) {
 		return $dirsize[ $directory ][ 'size' ];
 	}
 	if ( false == is_array( $dirsize ) ) {
 		$dirsize = array();
 	}
 	$dirsize[ $directory ][ 'size' ] = recurse_dirsize( $directory );
-	$dirsize[ $directory ][ 'age' ] = time();
 
-	update_option( 'dirsize_cache', $dirsize );
+	set_transient( 'dirsize_cache', $dirsize, 3600 );
 	return $dirsize[ $directory ][ 'size' ];
 }
 
 function clear_dirsize_cache( $file = true ) {
-	delete_option( 'dirsize_cache' );
+	delete_transient( 'dirsize_cache' );
 	return $file;
 }
 add_filter( 'wp_handle_upload', 'clear_dirsize_cache' );
