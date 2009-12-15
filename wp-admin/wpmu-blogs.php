@@ -11,6 +11,7 @@ if( is_site_admin() == false ) {
     wp_die( __('You do not have permission to access this page.') );
 }
 $id = intval( $_GET['id'] );
+$protocol = is_ssl() ? 'https://' : 'http://';
 
 if ( $_GET['updated'] == 'true' ) {
 	?>
@@ -469,10 +470,8 @@ switch( $_GET['action'] ) {
 									<br/>
 									<?php
 									$controlActions	= array();
-									
 									$controlActions[]	= '<a href="wpmu-blogs.php?action=editblog&amp;id=' . $blog['blog_id'] . '" class="edit">' . __('Edit') . '</a>';
-									
-									$controlActions[]	= "<a href='http://{$blog['domain']}{$blog['path']}wp-admin/' class='edit'>" . __('Backend') . '</a>';
+									$controlActions[]	= "<a href='{$protocol}{$blog['domain']}{$blog['path']}wp-admin/' class='edit'>" . __('Backend') . '</a>';
 									
 									if( get_blog_status( $blog['blog_id'], "deleted" ) == '1' )
 										$controlActions[]	= '<a class="delete" href="wpmu-edit.php?action=confirm&amp;action2=activateblog&amp;ref=' . urlencode( $_SERVER['REQUEST_URI'] ) . '&amp;id=' . $blog['blog_id'] . '&amp;msg=' . urlencode( sprintf( __( "You are about to activate the blog %s" ), $blogname ) ) . '">' . __('Activate') . '</a>';
@@ -524,7 +523,7 @@ switch( $_GET['action'] ) {
 										$blogusers_warning = '';
 										if ( count( $blogusers ) > 5 ) {
 											$blogusers = array_slice( $blogusers, 0, 5 );
-											$blogusers_warning = __( 'Only showing first 5 users.' ) . ' <a href="http://' . $blog[ 'domain' ] . $blog[ 'path' ] . 'wp-admin/users.php">' . __( 'More' ) . '</a>';
+											$blogusers_warning = __( 'Only showing first 5 users.' ) . ' <a href="' . $protocol . $blog[ 'domain' ] . $blog[ 'path' ] . 'wp-admin/users.php">' . __( 'More' ) . '</a>';
 										}
 										foreach ( $blogusers as $key => $val ) {
 											echo '<a href="user-edit.php?user_id=' . $val->user_id . '">' . $val->user_login . '</a> ('.$val->user_email.')<br />'; 
