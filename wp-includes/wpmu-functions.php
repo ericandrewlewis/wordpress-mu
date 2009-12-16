@@ -297,7 +297,7 @@ function switch_to_blog( $new_blog ) {
 	global $wpdb, $table_prefix, $blog_id, $switched, $switched_stack, $wp_roles, $current_user, $wp_object_cache;
 
 	if ( empty($new_blog) )
-		return false;
+		$new_blog = $blog_id;
 
 	if ( empty($switched_stack) )
 		$switched_stack = array();
