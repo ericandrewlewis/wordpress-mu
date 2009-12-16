@@ -787,14 +787,14 @@ function create_empty_blog( $domain, $path, $weblog_title, $site_id = 1 ) {
 	return $blog_id;
 }
 
-function get_blog_permalink( $blog_id, $post_id ) {
-	$key = "{$blog_id}-{$post_id}-blog_permalink";
+function get_blog_permalink( $_blog_id, $post_id ) {
+	$key = "{$_blog_id}-{$post_id}-blog_permalink";
 	$link = wp_cache_get( $key, 'site-options' );
 	if( $link == false ) {
-		switch_to_blog( $blog_id );
+		switch_to_blog( $_blog_id );
 		$link = get_permalink( $post_id );
 		restore_current_blog();
-		wp_cache_add( $key, $link, "site-options", 30 );
+		wp_cache_add( $key, $link, 'site-options', 360 );
 	}
 	return $link;
 }
@@ -947,7 +947,7 @@ function wpmu_validate_user_signup($user_name, $user_email) {
 	    $errors->add('user_name',  __("That username is not allowed"));
 	}
 
-	if( is_email_address_unsafe( $user_email ) ) 
+	if( is_email_address_unsafe( $user_email ) )
 		$errors->add('user_email',  __("You cannot use that email address to signup. We are having problems with them blocking some of our email. Please use another email provider."));
 
 	if( strlen( $user_name ) < 4 ) {
