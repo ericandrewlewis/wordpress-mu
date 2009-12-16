@@ -409,11 +409,12 @@ function restore_current_blog() {
 }
 
 function get_blogs_of_user( $id, $all = false ) {
-	global $wpdb, $blogs_of_user;
+	global $wpdb;
 
 	$cache_suffix = $all ? '_all' : '_short';
-	if ( isset( $blogs_of_user[ $id . $cache_suffix ] ) ) {
-		return apply_filters( 'get_blogs_of_user', $blogs_of_user[ $id . $cache_suffix ], $id, $all );
+	$return = wp_cache_get( 'blogs_of_user_' . $id . $cache_suffix, 'users' );
+	if ( $return ) {
+		return apply_filters( 'get_blogs_of_user', $return, $id, $all );
 	}
 
 	$user = get_userdata( (int) $id );
@@ -435,7 +436,7 @@ function get_blogs_of_user( $id, $all = false ) {
 		}
 	}
 
-	$blogs_of_user[ $id . $cache_suffix ] = $blogs;
+	wp_cache_add( 'blogs_of_user_' . $id . $cache_suffix, $blogs, 'users', 5 );
 	return apply_filters( 'get_blogs_of_user', $blogs, $id, $all );
 }
 
