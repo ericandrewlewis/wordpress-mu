@@ -341,7 +341,7 @@ function switch_to_blog( $new_blog ) {
 		if ( is_array( $global_groups ) ) {
 			wp_cache_add_global_groups( $global_groups );
 		} else {
-			wp_cache_add_global_groups( array( 'users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss', 'site-transient' ) );
+			wp_cache_add_global_groups( array( 'users', 'userlogins', 'usermeta', 'site-options', 'site-lookup', 'blog-lookup', 'blog-details', 'rss', 'site-transient', 'global-posts' ) );
 		}
 		wp_cache_add_non_persistent_groups(array( 'comment', 'counts', 'plugins' ));
 	}
@@ -678,16 +678,23 @@ function get_blog_count( $id = 0 ) {
 function get_blog_post( $blog_id, $post_id ) {
 	global $wpdb;
 
-	$key = $blog_id."-".$post_id."-blog_post";
-	$post = wp_cache_get( $key, "site-options" );
+	$key = $blog_id . "-" . $post_id;
+	$post = wp_cache_get( $key, "global-posts" );
 	if( $post == false ) {
-		$post = $wpdb->get_row( $wpdb->prepare("SELECT * FROM {$wpdb->base_prefix}{$blog_id}_posts WHERE ID = %d", $post_id) );
-		wp_cache_add( $key, $post, "site-options", 120 );
+		$post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->base_prefix}{$blog_id}_posts WHERE ID = %d", $post_id ) );
+		wp_cache_add( $key, $post, "global-posts" );
 	}
 
 	return $post;
-
 }
+
+function clear_global_post_cache( $post_id ) {
+	global $wpdb;
+
+	wp_cache_delete( $wpdb->blogid . '-' . $post_id, 'global-posts' );
+}
+add_action( 'publish_post', 'clear_global_post_cache' );
+add_action( 'delete_post', 'clear_global_post_cache' );
 
 function add_user_to_blog( $blog_id, $user_id, $role ) {
 	switch_to_blog($blog_id);
