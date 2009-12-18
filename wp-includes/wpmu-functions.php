@@ -533,6 +533,9 @@ function update_archived( $id, $archived ) {
 function update_blog_status( $id, $pref, $value, $refresh = 1 ) {
 	global $wpdb;
 
+	if ( !in_array( $pref, array( 'site_id', 'domain', 'path', 'registered', 'last_updated', 'public', 'archived', 'mature', 'spam', 'deleted', 'lang_id') ) )
+		return $value;
+
 	$wpdb->update( $wpdb->blogs, array($pref => $value, 'last_updated' => current_time('mysql', true)), array('blog_id' => $id) );
 	if( $refresh == 1 )
 		refresh_blog_details($id);
