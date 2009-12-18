@@ -1,7 +1,7 @@
 <?php
 require_once('admin.php');
 if( is_site_admin() == false ) {
-    wp_die( __('You do not have permission to access this page.') );
+	wp_die( __('You do not have permission to access this page.') );
 }
 
 do_action('wpmuadminedit', '');
@@ -17,7 +17,6 @@ if( isset( $_POST['ref'] ) == false && !empty($_SERVER['HTTP_REFERER']) ) {
 }
 
 switch( $_GET['action'] ) {
-	// Options
 	case "siteoptions":
 		check_admin_referer('siteoptions');
 		if( empty( $_POST ) )
@@ -127,11 +126,12 @@ switch( $_GET['action'] ) {
 		wp_redirect( add_query_arg( "updated", "true", 'wpmu-options.php' ) );
 		exit();
 	break;
-
-	// Blogs
 	case "addblog":
 		check_admin_referer('add-blog');
 
+		if( is_array( $_POST[ 'blog' ] ) == false ) {
+			wp_die( "Can't create an empty blog." );
+		}
 		$blog = $_POST['blog'];
 		$domain = sanitize_user( str_replace( '/', '', $blog[ 'domain' ] ) );
 		$email = sanitize_email( $blog[ 'email' ] );
@@ -142,7 +142,7 @@ switch( $_GET['action'] ) {
 		if( !is_email( $email ) ) 
 			wp_die( __('Invalid email address') ); 
 
-		if( constant('VHOST') == 'yes' ) {
+		if( constant( 'VHOST' ) == 'yes' ) {
 			$newdomain = $domain.".".$current_site->domain;
 			$path = $base;
 		} else {
@@ -152,7 +152,7 @@ switch( $_GET['action'] ) {
 
 		$password = 'N/A';
 		$user_id = email_exists($email);
-		if( !$user_id ) {
+		if( !$user_id ) { // Create a new user with a random password
 			$password = generate_random_password();
 			$user_id = wpmu_create_user( $domain, $password, $email );
 			if(false == $user_id) {
@@ -185,18 +185,19 @@ switch( $_GET['action'] ) {
 			wp_die( __('You probably need to go back to the <a href="wpmu-blogs.php">blogs page</a>') );
 
 		// themes
-		if( is_array( $_POST['theme'] ) ) {
-			$_POST['option']['allowedthemes'] = $_POST['theme'];
+		if( is_array( $_POST[ 'theme' ] ) ) {
+			$_POST[ 'option' ][ 'allowedthemes' ] = $_POST[ 'theme' ];
 		} else {
-			$_POST['option']['allowedthemes'] = '';
+			$_POST[ 'option' ][ 'allowedthemes' ] = '';
 		}
 
 		switch_to_blog( $id );
-		if( is_array( $_POST['option'] ) ) {
+		if( is_array( $_POST[ 'option' ] ) ) {
 			$c = 1;
-			$count = count( $_POST['option'] );
+			$count = count( $_POST[ 'option' ] );
 			foreach ( (array) $_POST['option'] as $key => $val ) {
-				$val = stripslashes_deep( $val );
+				if( $key === 0 )
+					continue; // Avoids "0 is a protected WP option and may not be modified" error when edit blog options
 				if( $c == $count ) {
 					update_option( $key, $val );
 				} else {
@@ -217,23 +218,23 @@ switch( $_GET['action'] ) {
 		$wp_rewrite->flush_rules();
 
 		// update blogs table
-		$result = $wpdb->query("UPDATE {$wpdb->blogs} SET
-				domain       = '".$_POST['blog']['domain']."',
-				path         = '".$_POST['blog']['path']."',
-				registered   = '".$_POST['blog']['registered']."',
-				public       = '".$_POST['blog']['public']."',
-				archived     = '".$_POST['blog']['archived']."',
-				mature       = '".$_POST['blog']['mature']."',
-				deleted      = '".$_POST['blog']['deleted']."',
-				spam         = '".$_POST['blog']['spam']."' 
-			WHERE  blog_id = '$id'");
+		$result = $wpdb->query( "UPDATE {$wpdb->blogs} SET
+				domain       = '".$_POST[ 'blog' ][ 'domain' ]."',
+				path         = '".$_POST[ 'blog' ][ 'path' ]."',
+				registered   = '".$_POST[ 'blog' ][ 'registered' ]."',
+				public       = '".$_POST[ 'blog' ][ 'public' ]."',
+				archived     = '".$_POST[ 'blog' ][ 'archived' ]."',
+				mature       = '".$_POST[ 'blog' ][ 'mature' ]."',
+				deleted      = '".$_POST[ 'blog' ][ 'deleted' ]."',
+				spam         = '".$_POST[ 'blog' ][ 'spam' ]."'
+			WHERE  blog_id = '$id'" );
 
-		update_blog_status( $id, 'spam', $_POST['blog']['spam'] );
-		update_option( 'blog_public', $_POST['blog']['public'] );
+		update_blog_status( $id, 'spam', $_POST[ 'blog' ][ 'spam' ] );
+		update_option( 'blog_public', $_POST[ 'blog' ][ 'public' ] );
 
 		// user roles
-		if( is_array( $_POST['role'] ) == true ) {
-			$newroles = $_POST['role'];
+		if( is_array( $_POST[ 'role' ] ) == true ) {
+			$newroles = $_POST[ 'role' ];
 			reset( $newroles );
 			foreach ( (array) $newroles as $userid => $role ) {
 				$role_len = strlen( $role );
@@ -248,40 +249,43 @@ switch( $_GET['action'] ) {
 		}
 
 		// remove user
-		if( is_array( $_POST['blogusers'] ) ) {
-			reset( $_POST['blogusers'] );
-			foreach ( (array) $_POST['blogusers'] as $key => $val )
+		if( is_array( $_POST[ 'blogusers' ] ) ) {
+			reset( $_POST[ 'blogusers' ] );
+			foreach ( (array) $_POST[ 'blogusers' ] as $key => $val )
 				remove_user_from_blog( $key, $id );
 		}
 
 		// change password
-		if( is_array( $_POST['user_password'] ) ) {
-			reset( $_POST['user_password'] );
-			$newroles = $_POST['role'];
-			foreach ( (array) $_POST['user_password'] as $userid => $pass ) {
-				unset( $_POST['role'] );
-				$_POST['role'] = $newroles[ $userid ];
+		if( is_array( $_POST[ 'user_password' ] ) ) {
+			reset( $_POST[ 'user_password' ] );
+			$newroles = $_POST[ 'role' ];
+			foreach ( (array) $_POST[ 'user_password' ] as $userid => $pass ) {
+				unset( $_POST[ 'role' ] );
+				$_POST[ 'role' ] = $newroles[ $userid ];
 				if( $pass != '' ) {
 					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 					$userdata = get_userdata($userid);
-					$_POST['pass1'] = $_POST['pass2'] = $pass;
-					$_POST['email'] = $userdata->user_email;
-					$_POST['rich_editing'] = $userdata->rich_editing;
+					$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
+					$_POST[ 'email' ] = $userdata->user_email;
+					$_POST[ 'rich_editing' ] = $userdata->rich_editing;
 					edit_user( $userid );
 					if( $cap == null )
 						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
 				}
 			}
-			unset( $_POST['role'] );
-			$_POST['role'] = $newroles;
+			unset( $_POST[ 'role' ] );
+			$_POST[ 'role' ] = $newroles;
 		}
 
 		// add user?
-		if( $_POST['newuser'] != '' ) {
-			$newuser = $_POST['newuser'];
+		if( $_POST[ 'newuser' ] != '' ) {
+			$newuser = $_POST[ 'newuser' ];
 			$userid = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM " . $wpdb->users . " WHERE user_login = %s", $newuser ) );
-			if( $userid )
-				add_user_to_blog( $id, $userid, $_POST['new_role'] );
+			if( $userid ) {
+				$user = $wpdb->get_var( "SELECT user_id FROM " . $wpdb->usermeta . " WHERE user_id='$userid' AND meta_key='wp_" . $id . "_capabilities'" );
+				if( $user == false )
+					add_user_to_blog($id, $userid, $_POST[ 'new_role' ]);
+			}
 		}
 		do_action( 'wpmu_update_blog_options' );
 		restore_current_blog();
@@ -492,6 +496,9 @@ switch( $_GET['action'] ) {
 	case "adduser":
 		check_admin_referer('add-user');
 
+		if( is_array( $_POST[ 'user' ] ) == true ) {
+			wp_die( __( "Cannot create an empty user." ) );
+		}
 		$user = $_POST['user'];
 		if ( empty($user['username']) && empty($user['email']) ) {
 			wp_die( __('Missing username and email.') );
