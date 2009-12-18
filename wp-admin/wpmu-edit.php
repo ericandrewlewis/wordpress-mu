@@ -303,7 +303,7 @@ switch( $_GET['action'] ) {
 
 	case "allblogs":
 		check_admin_referer('allblogs');
-		foreach ( (array) $_POST['allblogs'] as $key => $val ) {
+		foreach ( (array) $_POST[ 'allblogs' ] as $key => $val ) {
 			if( $val != '0' && $val != $current_site->blog_id ) {
 				if ( isset($_POST['allblog_delete']) ) {
 					$blogfunction = 'all_delete';
@@ -496,7 +496,7 @@ switch( $_GET['action'] ) {
 	case "adduser":
 		check_admin_referer('add-user');
 
-		if( is_array( $_POST[ 'user' ] ) == true ) {
+		if( is_array( $_POST[ 'user' ] ) == false ) {
 			wp_die( __( "Cannot create an empty user." ) );
 		}
 		$user = $_POST['user'];
@@ -530,5 +530,4 @@ switch( $_GET['action'] ) {
 		wpmu_admin_do_redirect( "wpmu-admin.php" );
 	break;
 }
-
 ?>
