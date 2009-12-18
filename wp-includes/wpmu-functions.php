@@ -1107,7 +1107,6 @@ function wpmu_validate_blog_signup($blogname, $blog_title, $user = '') {
 function wpmu_signup_blog($domain, $path, $title, $user, $user_email, $meta = '') {
 	global $wpdb;
 
-	// Format data
 	$key = substr( md5( time() . rand() . $domain ), 0, 16 );
 	$meta = serialize($meta);
 	$domain = $wpdb->escape($domain);
@@ -1172,7 +1171,7 @@ function wpmu_signup_blog_notification($domain, $path, $title, $user, $user_emai
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 	$message = sprintf( apply_filters( 'wpmu_signup_blog_notification_email', __( "To activate your blog, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\nAfter you activate, you can visit your blog here:\n\n%s" ) ), $activate_url, clean_url( "http://{$domain}{$path}" ), $key );
 	// TODO: Don't hard code activation link.
-	$subject = sprintf( apply_filters( 'wpmu_signup_blog_notification_subject', __( '[%s] Activate %s' ) ), $from_name, clean_url( 'http://' . $domain . $path ) );
+	$subject = sprintf( apply_filters( 'wpmu_signup_blog_notification_subject', __( '[%1s] Activate %2s' ) ), $from_name, clean_url( 'http://' . $domain . $path ) );
 	wp_mail($user_email, $subject, $message, $message_headers);
 	return true;
 }
@@ -1191,7 +1190,7 @@ function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 	$message = sprintf( apply_filters( 'wpmu_signup_user_notification_email', __( "To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n" ) ), site_url( "wp-activate.php?key=$key" ), $key );
 	// TODO: Don't hard code activation link.
-	$subject = sprintf( __( apply_filters( 'wpmu_signup_user_notification_subject', 'Activate %s' ) ), $user);
+	$subject = sprintf( __( apply_filters( 'wpmu_signup_user_notification_subject', '[%1s] Activate %2s' ) ), $from_name, $user);
 	wp_mail($user_email, $subject, $message, $message_headers);
 	return true;
 }
@@ -1227,8 +1226,8 @@ function wpmu_activate_signup($key) {
 
 	if ( empty($signup->domain) ) {
 		$wpdb->update( $wpdb->signups, array('active' => 1, 'activated' => $now), array('activation_key' => $key) );
-		if ( isset($user_already_exists) )
-			return new WP_Error('user_already_exists', __('That username is already activated.'), $signup);
+		if ( isset( $user_already_exists ) )
+			return new WP_Error( 'user_already_exists', __( 'That username is already activated.' ), $signup);
 		wpmu_welcome_user_notification($user_id, $password, $meta);
 		$user_site = get_site_option( 'dashboard_blog', $current_site->blog_id );
 		if ( $user_site == false ) {
@@ -1242,15 +1241,15 @@ function wpmu_activate_signup($key) {
 	}
 
 	wpmu_validate_blog_signup($signup->domain, $signup->title);
-	$blog_id = wpmu_create_blog($signup->domain, $signup->path, $signup->title, $user_id, $meta, $wpdb->siteid);
+	$blog_id = wpmu_create_blog( $signup->domain, $signup->path, $signup->title, $user_id, $meta, $wpdb->siteid );
 
 	// TODO: What to do if we create a user but cannot create a blog?
 	if ( is_wp_error($blog_id) ) {
 		// If blog is taken, that means a previous attempt to activate this blog failed in between creating the blog and
 		// setting the activation flag.  Let's just set the active flag and instruct the user to reset their password.
 		if ( 'blog_taken' == $blog_id->get_error_code() ) {
-			$blog_id->add_data($signup);
-			$wpdb->update( $wpdb->signups, array('active' => 1, 'activated' => $now), array('activation_key' => $key) );
+			$blog_id->add_data( $signup );
+			$wpdb->update( $wpdb->signups, array( 'active' => 1, 'activated' => $now ), array( 'activation_key' => $key ) );
 		}
 
 		return $blog_id;
@@ -1282,7 +1281,7 @@ function wpmu_create_user( $user_name, $password, $email) {
 
 	$user_id = wp_create_user( $user_name, $password, $email );
 	$user = new WP_User($user_id);
-	
+
 	// Newly created users have no roles or caps until they are added to a blog.
 	update_user_option($user_id, 'capabilities', '');
 	update_user_option($user_id, 'user_level', '');
@@ -1334,7 +1333,6 @@ function wpmu_create_blog($domain, $path, $title, $user_id, $meta = '', $site_id
 
 	if ( !is_site_admin() && get_usermeta( $user_id, 'primary_blog' ) == get_site_option( 'dashboard_blog', 1 ) )
 		update_usermeta( $user_id, 'primary_blog', $blog_id );
-
 
 	restore_current_blog();
 
@@ -1639,12 +1637,21 @@ function get_current_site() {
 
 function get_user_id_from_string( $string ) {
 	global $wpdb;
-	if( is_email( $string ) ) {
-		return $wpdb->get_var( $wpdb->prepare("SELECT ID FROM {$wpdb->users} WHERE user_email = %s", $string) );
+
+	$user_id = 0;
+	if ( is_email( $string ) ) {
+		$user = get_user_by_email($string);
+		if ( $user )
+			$user_id = $user->ID;
 	} elseif ( is_numeric( $string ) ) {
-		return $string;
+		$user_id = $string;
+	} else {
+		$user = get_userdatabylogin($string);
+		if ( $user )
+			$user_id = $user->ID;
 	}
-	return $wpdb->get_var( $wpdb->prepare("SELECT ID FROM {$wpdb->users} WHERE user_login = %s", $string) );
+
+	return $user_id;
 }
 
 function get_most_recent_post_of_user( $user_id ) {
