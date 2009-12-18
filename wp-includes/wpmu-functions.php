@@ -1188,7 +1188,7 @@ function wpmu_signup_user_notification($user, $user_email, $key, $meta = '') {
 	$message_headers = "MIME-Version: 1.0\n" . "From: \"{$from_name}\" <{$admin_email}>\n" . "Content-Type: text/plain; charset=\"" . get_option('blog_charset') . "\"\n";
 	$message = sprintf( apply_filters( 'wpmu_signup_user_notification_email', __( "To activate your user, please click the following link:\n\n%s\n\nAfter you activate, you will receive *another email* with your login.\n\n" ) ), site_url( "wp-activate.php?key=$key" ), $key );
 	// TODO: Don't hard code activation link.
-	$subject = sprintf(__( apply_filters( 'wpmu_signup_user_notification_subject', 'Activate %s' )), $user);
+	$subject = sprintf( __( apply_filters( 'wpmu_signup_user_notification_subject', 'Activate %s' ) ), $user);
 	wp_mail($user_email, $subject, $message, $message_headers);
 	return true;
 }
@@ -1395,12 +1395,12 @@ function domain_exists($domain, $path, $site_id = 1) {
 
 function insert_blog($domain, $path, $site_id) {
 	global $wpdb;
-	
+
 	$path = trailingslashit($path);
 	$site_id = (int) $site_id;
-	
-	$wpdb->insert( $wpdb->blogs, array('site_id' => $site_id, 'domain' => $domain, 'path' => $path, 'registered' => current_time('mysql')) );
-	if ( !$wpdb->insert_id )
+
+	$result = $wpdb->insert( $wpdb->blogs, array('site_id' => $site_id, 'domain' => $domain, 'path' => $path, 'registered' => current_time('mysql')) );
+	if ( ! $result )
 		return false;
 
 	refresh_blog_details($wpdb->insert_id);
@@ -1459,10 +1459,10 @@ function install_blog($blog_id, $blog_title = '') {
 	$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key = %s", $table_prefix.'user_level') );
 	$wpdb->query( $wpdb->prepare("DELETE FROM $wpdb->usermeta WHERE meta_key = %s", $table_prefix.'capabilities') );
 
-
 	$wpdb->suppress_errors( false );
 }
 
+// should be switched already as $blog_id is ignored.
 function install_blog_defaults($blog_id, $user_id) {
 	global $wpdb, $wp_rewrite, $current_site, $table_prefix;
 
@@ -1473,7 +1473,7 @@ function install_blog_defaults($blog_id, $user_id) {
 	$blog_id = (int) $blog_id;
 
 	// Default links
-	$wpdb->insert( $wpdb->links, array( 'link_url' => 'http://wordpress.com/', 'link_name' => 'WordPress.com', 'link_owner' => $user_id, 'link_rss' => 'http://wordpress.com/feed/', 'link_notes' => '' ) );
+	$wpdb->insert( $wpdb->links, array( 'link_url' => 'http://wordpress.com/', 'link_name' => 'WordPress.com', 'link_owner' => $user_id, 'link_rss' => 'http://en.blog.wordpress.com/feed/', 'link_notes' => '' ) );
 	$wpdb->insert( $wpdb->links, array( 'link_url' => 'http://wordpress.org/', 'link_name' => 'WordPress.org', 'link_owner' => $user_id, 'link_rss' => 'http://wordpress.org/development/feed/', 'link_notes' => '' ) );
 	$wpdb->insert( $wpdb->term_relationships, array('object_id' => 1, 'term_taxonomy_id' => 2));
 	$wpdb->insert( $wpdb->term_relationships, array('object_id' => 2, 'term_taxonomy_id' => 2));
@@ -1501,7 +1501,7 @@ function install_blog_defaults($blog_id, $user_id) {
 		'to_ping' => '',
 		'pinged' => '',
 		'post_content_filtered' => ''
-	) );	
+	) );
 	$wpdb->insert( $wpdb->term_relationships, array('object_id' => 1, 'term_taxonomy_id' => 1));
 	update_option( "post_count", 1 );
 
