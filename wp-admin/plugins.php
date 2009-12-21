@@ -103,7 +103,11 @@ if ( !empty($action) ) {
 			if ( is_wp_error($valid) )
 				wp_die($valid);
 
-			error_reporting( E_ALL ^ E_NOTICE );
+			if ( defined('E_RECOVERABLE_ERROR') )
+				error_reporting(E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING | E_RECOVERABLE_ERROR);
+			else
+				error_reporting(E_ERROR | E_WARNING | E_PARSE | E_USER_ERROR | E_USER_WARNING);
+
 			@ini_set('display_errors', true); //Ensure that Fatal errors are displayed.
 			include(WP_PLUGIN_DIR . '/' . $plugin);
 			do_action('activate_' . $plugin);
@@ -366,10 +370,10 @@ $plugins = &$$plugin_array_name;
 //Paging.
 $total_this_page = "total_{$status}_plugins";
 $total_this_page = $$total_this_page;
-$plugins_per_page = get_user_option('plugins_per_page');
-if ( empty($plugins_per_page) )
+$plugins_per_page = (int) get_user_option( 'plugins_per_page', 0, false );
+if ( empty( $plugins_per_page ) || $plugins_per_page < 1 )
 	$plugins_per_page = 999;
-$plugins_per_page = apply_filters('plugins_per_page', $plugins_per_page);
+$plugins_per_page = apply_filters( 'plugins_per_page', $plugins_per_page );
 
 $start = ($page - 1) * $plugins_per_page;
 
@@ -519,8 +523,6 @@ function print_plugin_actions($context, $field_name = 'action' ) {
 	<input type="submit" value="<?php esc_attr_e( 'Search Plugins' ); ?>" class="button" />
 </p>
 </form>
-
-<?php do_action( 'pre_current_active_plugins', $all_plugins ) ?>
 
 <form method="post" action="<?php echo admin_url('plugins.php') ?>">
 <?php wp_nonce_field('bulk-manage-plugins') ?>

@@ -8,7 +8,7 @@
  *
  * @global string $wp_version
  */
-$wp_version = '2.9-beta-2';
+$wp_version = '2.9-rc-1';
 
 /**
  * Holds the WordPress DB revision, increments when changes are made to the WordPress DB schema.
@@ -31,4 +31,18 @@ $tinymce_version = '327-1235';
  */
 $manifest_version = '20090616';
 
-$wpmu_version = '2.9-beta-2';
+/**
+ * Holds the required PHP version
+ *
+ * @global string $required_php_version
+ */
+$required_php_version = '4.3';
+
+/**
+ * Holds the required MySQL version
+ *
+ * @global string $required_mysql_version
+ */
+$required_mysql_version = '4.1.2';
+
+$wpmu_version = '2.9-rc-1';

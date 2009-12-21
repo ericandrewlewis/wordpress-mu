@@ -325,6 +325,10 @@ div#dashboard-widgets {
 	margin-top: 2px;
 }
 
+.tablenav .actions select {
+	width: 155px;
+}
+
 table.ie-fixed {
 	table-layout: fixed;
 }
@@ -431,3 +435,10 @@ table.ie-fixed {
 	background-color: #ffffe0;
 }
 
+.imgedit-submit {
+	width: 300px;
+}
+
+* html input {
+	border: 1px solid #dfdfdf;
+}

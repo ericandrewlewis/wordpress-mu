@@ -1193,6 +1193,7 @@ function get_media_item( $attachment_id, $args = null ) {
 	$meta = wp_get_attachment_metadata($post->ID);
 	if ( is_array($meta) && array_key_exists('width', $meta) && array_key_exists('height', $meta) )
 		$media_dims .= "<span id='media-dims-{$post->ID}'>{$meta['width']}&nbsp;&times;&nbsp;{$meta['height']}</span> ";
+	$media_dims = apply_filters('media_meta', $media_dims, $post);
 
 	$image_edit_button = '';
 	if ( gd_edit_image_support($post->post_mime_type) ) {
@@ -1212,8 +1213,12 @@ function get_media_item( $attachment_id, $args = null ) {
 			<td><strong>" . __('File name:') . "</strong> $filename</td>
 		</tr>
 		<tr><td><strong>" . __('File type:') . "</strong> $post->post_mime_type</td></tr>
-		<tr><td><strong>" . __('Upload date:') . "</strong> " . mysql2date( get_option('date_format'), $post->post_date ) . "</td></tr>
-		<tr><td><strong>" . __('Dimensions:') . "</strong> " . apply_filters('media_meta', $media_dims, $post) . "</td></tr>
+		<tr><td><strong>" . __('Upload date:') . "</strong> " . mysql2date( get_option('date_format'), $post->post_date ) . "</td></tr>\n";
+
+	if ( !empty($media_dims) )
+		$item .= "<tr><td><strong>" . __('Dimensions:') . "</strong> $media_dims</td></tr>\n";
+
+	$item .= "
 		<tr><td class='A1B1'>$image_edit_button</td></tr>
 		</thead>
 		<tbody>
@@ -1230,17 +1235,25 @@ function get_media_item( $attachment_id, $args = null ) {
 	if ( $send )
 		$send = "<input type='submit' class='button' name='send[$attachment_id]' value='" . esc_attr__( 'Insert into Post' ) . "' />";
 	if ( $delete && current_user_can('delete_post', $attachment_id) ) {
-		if ( !EMPTY_TRASH_DAYS )
+		if ( !EMPTY_TRASH_DAYS ) {
 			$delete = "<a href=\"" . wp_nonce_url("post.php?action=delete&amp;post=$attachment_id", 'delete-post_' . $attachment_id) . "\" id=\"del[$attachment_id]\" class=\"delete\">" . __('Delete Permanently') . "</a>";
-		else
+		} elseif ( !MEDIA_TRASH ) {
+			$delete = "<a href=\"#\" class=\"del-link\" onclick=\"document.getElementById('del_attachment_$attachment_id').style.display='block';return false;\">" . __('Delete') . "</a> <div id=\"del_attachment_$attachment_id\" class=\"del-attachment\" style=\"display:none;\">" . sprintf(__("You are about to delete <strong>%s</strong>."), $filename) . " <a href=\"" . wp_nonce_url("post.php?action=delete&amp;post=$attachment_id", 'delete-post_' . $attachment_id) . "\" id=\"del[$attachment_id]\" class=\"button\">" . __('Continue') . "</a> <a href=\"#\" class=\"button\" onclick=\"this.parentNode.style.display='none';return false;\">" . __('Cancel') . "</a></div>";
+		} else {
 			$delete = "<a href=\"" . wp_nonce_url("post.php?action=trash&amp;post=$attachment_id", 'trash-post_' . $attachment_id) . "\" id=\"del[$attachment_id]\" class=\"delete\">" . __('Move to Trash') . "</a> <a href=\"" . wp_nonce_url("post.php?action=untrash&amp;post=$attachment_id", 'untrash-post_' . $attachment_id) . "\" id=\"undo[$attachment_id]\" class=\"undo hidden\">" . __('Undo') . "</a>";
+		}
 	} else {
 		$delete = '';
 	}
 
 	$thumbnail = '';
-	if ( 'image' == $type && current_theme_supports( 'post-images' ) && get_post_image_id($_GET['post_id']) != $attachment_id )
-		$thumbnail = "<a class='wp-post-thumbnail' href='#' onclick='WPSetAsThumbnail(\"$attachment_id\");return false;'>" . esc_html__( "Use as post image" ) . "</a>";
+	$calling_post_id = 0;
+	if ( isset( $_GET['post_id'] ) )
+		$calling_post_id = $_GET['post_id'];
+	elseif ( isset( $_POST ) && count( $_POST ) ) // Like for async-upload where $_GET['post_id'] isn't set
+		$calling_post_id = $post->post_parent;
+	if ( 'image' == $type && $calling_post_id && current_theme_supports( 'post-thumbnails', get_post_type( $calling_post_id ) ) && get_post_thumbnail_id( $calling_post_id ) != $attachment_id )
+		$thumbnail = "<a class='wp-post-thumbnail' id='wp-post-thumbnail-" . $attachment_id . "' href='#' onclick='WPSetAsThumbnail(\"$attachment_id\");return false;'>" . esc_html__( "Use as thumbnail" ) . "</a>";
 
 	if ( ( $send || $thumbnail || $delete ) && !isset($form_fields['buttons']) )
 		$form_fields['buttons'] = array('tr' => "\t\t<tr class='submit'><td></td><td class='savesend'>$send $thumbnail $delete</td></tr>\n");

@@ -87,22 +87,6 @@ function wp_reset_query() {
  */
 
 /**
- * Whether the current request is in WordPress admin Panel
- *
- * Does not inform on whether the user is an admin! Use capability checks to
- * tell if the user should be accessing a section or not.
- *
- * @since 1.5.1
- *
- * @return bool True if inside WordPress administration pages.
- */
-function is_admin () {
-	if ( defined('WP_ADMIN') )
-		return WP_ADMIN;
-	return false;
-}
-
-/**
  * Is query requesting an archive page.
  *
  * @since 1.5.0
@@ -1424,7 +1408,7 @@ class WP_Query {
 		if ( '' != $qv['tb'] )
 			$this->is_trackback = true;
 
-		if ( '' != $qv['paged'] )
+		if ( '' != $qv['paged'] && ( intval($qv['paged']) > 1 ) )
 			$this->is_paged = true;
 
 		if ( '' != $qv['comments_popup'] )
@@ -1800,14 +1784,8 @@ class WP_Query {
 		}
 
 		if ( !empty($q['category__not_in']) ) {
-			if ( $wpdb->has_cap( 'subqueries' ) ) {
-				$cat_string = "'" . implode("', '", $q['category__not_in']) . "'";
-				$whichcat .= " AND $wpdb->posts.ID NOT IN ( SELECT tr.object_id FROM $wpdb->term_relationships AS tr INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id WHERE tt.taxonomy = 'category' AND tt.term_id IN ($cat_string) )";
-			} else {
-				$ids = get_objects_in_term($q['category__not_in'], 'category');
-				if ( !is_wp_error($ids) && is_array($ids) && count($ids) > 0 )
-					$whichcat .= " AND $wpdb->posts.ID NOT IN ('" . implode("', '", $ids) . "')";
-			}
+			$cat_string = "'" . implode("', '", $q['category__not_in']) . "'";
+			$whichcat .= " AND $wpdb->posts.ID NOT IN ( SELECT tr.object_id FROM $wpdb->term_relationships AS tr INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id WHERE tt.taxonomy = 'category' AND tt.term_id IN ($cat_string) )";
 		}
 
 		// Category stuff for nice URLs
@@ -1890,14 +1868,8 @@ class WP_Query {
 		}
 
 		if ( !empty($q['tag__not_in']) ) {
-			if ( $wpdb->has_cap( 'subqueries' ) ) {
-				$tag_string = "'" . implode("', '", $q['tag__not_in']) . "'";
-				$whichcat .= " AND $wpdb->posts.ID NOT IN ( SELECT tr.object_id FROM $wpdb->term_relationships AS tr INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id WHERE tt.taxonomy = 'post_tag' AND tt.term_id IN ($tag_string) )";
-			} else {
-				$ids = get_objects_in_term($q['tag__not_in'], 'post_tag');
-				if ( !is_wp_error($ids) && is_array($ids) && count($ids) > 0 )
-					$whichcat .= " AND $wpdb->posts.ID NOT IN ('" . implode("', '", $ids) . "')";
-			}
+			$tag_string = "'" . implode("', '", $q['tag__not_in']) . "'";
+			$whichcat .= " AND $wpdb->posts.ID NOT IN ( SELECT tr.object_id FROM $wpdb->term_relationships AS tr INNER JOIN $wpdb->term_taxonomy AS tt ON tr.term_taxonomy_id = tt.term_taxonomy_id WHERE tt.taxonomy = 'post_tag' AND tt.term_id IN ($tag_string) )";
 		}
 
 		// Tag and slug intersections.

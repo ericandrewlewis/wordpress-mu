@@ -26,7 +26,7 @@ if ( isset($_GET['message']) ) {
 
 	switch ( $_GET['message'] ) {
 		case 1:
-			$message = sprintf( __('Page updated. <a target="_blank" href="%s">View page</a>'), get_permalink($post_ID) );
+			$message = sprintf( __('Page updated. <a href="%s">View page</a>'), get_permalink($post_ID) );
 			break;
 		case 2:
 			$message = __('Custom field updated.');
@@ -35,7 +35,7 @@ if ( isset($_GET['message']) ) {
 			$message = __('Custom field deleted.');
 			break;
 		case 4:
-			$message = sprintf( __('Page published. <a target="_blank" href="%s">View page</a>'), get_permalink($post_ID) );
+			$message = sprintf( __('Page published. <a href="%s">View page</a>'), get_permalink($post_ID) );
 			break;
 		case 5:
 			if ( isset($_GET['revision']) )
@@ -80,8 +80,8 @@ add_meta_box('pageparentdiv', __('Attributes'), 'page_attributes_meta_box', 'pag
 add_meta_box('postcustom', __('Custom Fields'), 'post_custom_meta_box', 'page', 'normal', 'core');
 add_meta_box('commentstatusdiv', __('Discussion'), 'post_comment_status_meta_box', 'page', 'normal', 'core');
 add_meta_box('slugdiv', __('Page Slug'), 'post_slug_meta_box', 'page', 'normal', 'core');
-if ( current_theme_supports( 'post-images' ) )
-	add_meta_box('postimagediv', __('Page Image'), 'post_image_meta_box', 'page', 'side', 'low');
+if ( current_theme_supports( 'post-thumbnails', 'page' ) )
+	add_meta_box('postimagediv', __('Page Image'), 'post_thumbnail_meta_box', 'page', 'side', 'low');
 
 $authors = get_editable_user_ids( $current_user->id, true, 'page' ); // TODO: ROLE SYSTEM
 if ( $post->post_author && !in_array($post->post_author, $authors) )

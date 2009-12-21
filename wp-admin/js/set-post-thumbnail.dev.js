@@ -1,5 +1,5 @@
 function WPSetAsThumbnail(id){
-	var $link = jQuery('#media-item-' + id + ' a.wp-post-thumbnail');
+	var $link = jQuery('a#wp-post-thumbnail-' + id);
 
 	$link.text( setPostThumbnailL10n.saving );
 	jQuery.post(ajaxurl, {
@@ -11,7 +11,8 @@ function WPSetAsThumbnail(id){
 			alert( setPostThumbnailL10n.error );
 		} else {
 			jQuery('a.wp-post-thumbnail').show();
-			$link.hide();
+			$link.text( setPostThumbnailL10n.done );
+			$link.fadeOut( 2000 );
 			win.WPSetThumbnailID(id);
 			win.WPSetThumbnailHTML(str);
 		}

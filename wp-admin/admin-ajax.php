@@ -162,15 +162,18 @@ function _wp_ajax_delete_comment_response( $comment_id ) {
 	if ( 0 != $total % $per_page && 1 != mt_rand( 1, $per_page ) ) // Only do the expensive stuff on a page-break, and about 1 other time per page
 		die( (string) time() );
 
+	$post_id = 0;
 	$status = 'total_comments'; // What type of comment count are we looking for?
 	$parsed = parse_url( $url );
 	if ( isset( $parsed['query'] ) ) {
 		parse_str( $parsed['query'], $query_vars );
 		if ( !empty( $query_vars['comment_status'] ) )
 			$status = $query_vars['comment_status'];
+		if ( !empty( $query_vars['p'] ) )
+			$post_id = (int) $query_vars['p'];
 	}
 
-	$comment_count = wp_count_comments();
+	$comment_count = wp_count_comments($post_id);
 	$time = time(); // The time since the last comment count
 
 	if ( isset( $comment_count->$status ) ) // We're looking for a known type of comment count
@@ -633,7 +636,7 @@ case 'get-tagcloud' :
 	break;
 case 'add-comment' :
 	check_ajax_referer( $action );
-	if ( !current_user_can( 'edit_post', $id ) )
+	if ( !current_user_can( 'edit_posts' ) )
 		die('-1');
 	$search = isset($_POST['s']) ? $_POST['s'] : false;
 	$status = isset($_POST['comment_status']) ? $_POST['comment_status'] : 'all';
@@ -708,7 +711,7 @@ case 'replyto-comment' :
 
 	if ( empty($status) )
 		die('1');
-	elseif ( in_array($status, array('draft', 'pending') ) )
+	elseif ( in_array($status, array('draft', 'pending', 'trash') ) )
 		die( __('Error: you are replying to a comment on a draft post.') );
 
 	$user = wp_get_current_user();
@@ -1410,14 +1413,14 @@ case 'set-post-thumbnail':
 
 	if ( $thumbnail_id == '-1' ) {
 		delete_post_meta( $post_id, '_thumbnail_id' );
-		die( _wp_post_image_html() );
+		die( _wp_post_thumbnail_html() );
 	}
 
 	if ( $thumbnail_id && get_post( $thumbnail_id ) ) {
 		$thumbnail_html = wp_get_attachment_image( $thumbnail_id, 'thumbnail' );
 		if ( !empty( $thumbnail_html ) ) {
 			update_post_meta( $post_id, '_thumbnail_id', $thumbnail_id );
-			die( _wp_post_image_html( $thumbnail_id ) );
+			die( _wp_post_thumbnail_html( $thumbnail_id ) );
 		}
 	}
 	die( '0' );

@@ -25,7 +25,7 @@ if ( isset($_GET['message']) ) {
 
 	switch ( $_GET['message'] ) {
 		case 1:
-			$message = sprintf( __('Post updated. <a target="_blank" href="%s">View post</a>'), get_permalink($post_ID) );
+			$message = sprintf( __('Post updated. <a href="%s">View post</a>'), get_permalink($post_ID) );
 			break;
 		case 2:
 			$message = __('Custom field updated.');
@@ -41,7 +41,7 @@ if ( isset($_GET['message']) ) {
 				$message = sprintf( __('Post restored to revision from %s'), wp_post_revision_title( (int) $_GET['revision'], false ) );
 			break;
 		case 6:
-			$message = sprintf( __('Post published. <a target="_blank" href="%s">View post</a>'), get_permalink($post_ID) );
+			$message = sprintf( __('Post published. <a href="%s">View post</a>'), get_permalink($post_ID) );
 			break;
 		case 7:
 			$message = __('Post saved.');
@@ -98,8 +98,8 @@ foreach ( get_object_taxonomies('post') as $tax_name ) {
 }
 
 add_meta_box('categorydiv', __('Categories'), 'post_categories_meta_box', 'post', 'side', 'core');
-if ( current_theme_supports( 'post-images' ) )
-	add_meta_box('postimagediv', __('Post Image'), 'post_image_meta_box', 'post', 'side', 'low');
+if ( current_theme_supports( 'post-thumbnails', 'post' ) )
+	add_meta_box('postimagediv', __('Post Thumbnail'), 'post_thumbnail_meta_box', 'post', 'side', 'low');
 add_meta_box('postexcerpt', __('Excerpt'), 'post_excerpt_meta_box', 'post', 'normal', 'core');
 add_meta_box('trackbacksdiv', __('Send Trackbacks'), 'post_trackback_meta_box', 'post', 'normal', 'core');
 add_meta_box('postcustom', __('Custom Fields'), 'post_custom_meta_box', 'post', 'normal', 'core');

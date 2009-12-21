@@ -61,7 +61,7 @@ function wp_default_scripts( &$scripts ) {
 
 	$scripts->add( 'utils', "/wp-admin/js/utils$suffix.js", false, '20090102' );
 
-	$scripts->add( 'common', "/wp-admin/js/common$suffix.js", array('jquery', 'hoverIntent', 'utils'), '20091208' );
+	$scripts->add( 'common', "/wp-admin/js/common$suffix.js", array('jquery', 'hoverIntent', 'utils'), '20091212' );
 	$scripts->add_data( 'common', 'group', 1 );
 	$scripts->localize( 'common', 'commonL10n', array(
 		'warnDelete' => __("You are about to permanently delete the selected items.\n  'Cancel' to stop, 'OK' to delete."),
@@ -382,12 +382,13 @@ function wp_default_scripts( &$scripts ) {
 		$scripts->add( 'image-edit', "/wp-admin/js/image-edit$suffix.js", array('jquery', 'json2', 'imgareaselect'), '20091111' );
 		$scripts->add_data( 'image-edit', 'group', 1 );
 
-		$scripts->add( 'set-post-thumbnail', "/wp-admin/js/set-post-thumbnail$suffix.js", array( 'jquery' ), '20091021' );
+		$scripts->add( 'set-post-thumbnail', "/wp-admin/js/set-post-thumbnail$suffix.js", array( 'jquery' ), '20091210b' );
 		$scripts->add_data( 'set-post-thumbnail', 'group', 1 );
 		$scripts->localize( 'set-post-thumbnail', 'setPostThumbnailL10n', array(
-			'setThumbnail' => __( 'Use as post image' ),
+			'setThumbnail' => __( 'Use as thumbnail' ),
 			'saving' => __( 'Saving...' ),
-			'error' => __( 'Could not set that as the thumbnail image. Try a different attachment.' )
+			'error' => __( 'Could not set that as the thumbnail image. Try a different attachment.' ),
+			'done' => __( 'Done' )
 		) );
 
 	}
@@ -425,12 +426,12 @@ function wp_default_styles( &$styles ) {
 	$rtl_styles = array( 'global', 'colors', 'dashboard', 'ie', 'install', 'login', 'media', 'theme-editor', 'upload', 'widgets', 'press-this', 'plugin-install', 'farbtastic' );
 
 	// all colors stylesheets need to have the same query strings (cache manifest compat)
-	$colors_version = '20091207';
+	$colors_version = '20091217';
 
-	$styles->add( 'wp-admin', "/wp-admin/wp-admin$suffix.css", array(), '20091202' );
+	$styles->add( 'wp-admin', "/wp-admin/wp-admin$suffix.css", array(), '20091217' );
 	$styles->add_data( 'wp-admin', 'rtl', "/wp-admin/rtl$suffix.css" );
 
-	$styles->add( 'ie', '/wp-admin/css/ie.css', array(), '20091128' );
+	$styles->add( 'ie', '/wp-admin/css/ie.css', array(), '20091217' );
 	$styles->add_data( 'ie', 'conditional', 'lte IE 7' );
 
 	// Register "meta" stylesheet for admin colors. All colors-* style sheets should have the same version string.
@@ -442,10 +443,10 @@ function wp_default_styles( &$styles ) {
 	$styles->add( 'colors-classic', "/wp-admin/css/colors-classic$suffix.css", array(), $colors_version);
 	$styles->add_data( 'colors-classic', 'rtl', true );
 
-	$styles->add( 'global', "/wp-admin/css/global$suffix.css", array(), '20090630' );
+	$styles->add( 'global', "/wp-admin/css/global$suffix.css", array(), '20091217' );
 	$styles->add( 'media', "/wp-admin/css/media$suffix.css", array(), '20091029' );
 	$styles->add( 'widgets', "/wp-admin/css/widgets$suffix.css", array(), '20091118' );
-	$styles->add( 'dashboard', "/wp-admin/css/dashboard$suffix.css", array(), '20090514' );
+	$styles->add( 'dashboard', "/wp-admin/css/dashboard$suffix.css", array(), '20091211' );
 	$styles->add( 'install', "/wp-admin/css/install$suffix.css", array(), '20090514' );
 	$styles->add( 'theme-editor', "/wp-admin/css/theme-editor$suffix.css", array(), '20090625' );
 	$styles->add( 'press-this', "/wp-admin/css/press-this$suffix.css", array(), '20091022' );

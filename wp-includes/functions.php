@@ -604,7 +604,7 @@ function add_option( $name, $value = '', $deprecated = '', $autoload = 'yes' ) {
 		wp_cache_set( 'notoptions', $notoptions, 'options' );
 	}
 
-	$wpdb->insert($wpdb->options, array('option_name' => $name, 'option_value' => $value, 'autoload' => $autoload) );
+	$wpdb->query( $wpdb->prepare( "INSERT INTO `$wpdb->options` (`option_name`, `option_value`, `autoload`) VALUES (%s, %s, %s) ON DUPLICATE KEY UPDATE `option_name` = VALUES(`option_name`), `option_value` = VALUES(`option_value`), `autoload` = VALUES(`autoload`)", $name, $value, $autoload ) );
 
 	do_action( "add_option_{$name}", $name, $value );
 	do_action( 'added_option', $name, $value );
@@ -1844,7 +1844,7 @@ function wp_nonce_field( $action = -1, $name = "_wpnonce", $referer = true , $ec
 		echo $nonce_field;
 
 	if ( $referer )
-		wp_original_referer_field( $echo, 'previous' );
+		wp_referer_field( $echo, 'previous' );
 
 	return $nonce_field;
 }
@@ -1862,7 +1862,7 @@ function wp_nonce_field( $action = -1, $name = "_wpnonce", $referer = true , $ec
  * @param bool $echo Whether to echo or return the referer field.
  * @return string Referer field.
  */
-function wp_referer_field( $echo = true ) {
+function wp_referer_field( $echo = true) {
 	$ref = esc_attr( $_SERVER['REQUEST_URI'] );
 	$referer_field = '<input type="hidden" name="_wp_http_referer" value="'. $ref . '" />';
 
@@ -2043,16 +2043,20 @@ function wp_upload_dir( $time = null ) {
 	$siteurl = get_option( 'siteurl' );
 	$upload_path = get_option( 'upload_path' );
 	$upload_path = trim($upload_path);
-	if ( empty($upload_path) )
+	if ( empty($upload_path) ) {
 		$dir = WP_CONTENT_DIR . '/uploads';
-	else
+	} else {
 		$dir = $upload_path;
-
-	// $dir is absolute, $path is (maybe) relative to ABSPATH
-	$dir = path_join( ABSPATH, $dir );
+		if ( 'wp-content/uploads' == $upload_path ) {
+			$dir = WP_CONTENT_DIR . '/uploads';
+		} elseif ( 0 !== strpos($dir, ABSPATH) ) {
+			// $dir is absolute, $upload_path is (maybe) relative to ABSPATH
+			$dir = path_join( ABSPATH, $dir );
+		}
+	}
 
 	if ( !$url = get_option( 'upload_url_path' ) ) {
-		if ( empty($upload_path) or ( $upload_path == $dir ) )
+		if ( empty($upload_path) || ( 'wp-content/uploads' == $upload_path ) || ( $upload_path == $dir ) )
 			$url = WP_CONTENT_URL . '/uploads';
 		else
 			$url = trailingslashit( $siteurl ) . $upload_path;
@@ -3238,30 +3242,6 @@ function add_site_option( $key, $value ) {
 	return $wpdb->insert_id;
 }
 
-// expects $key, $value not to be SQL escaped
-function update_site_option( $key, $value ) {
-	global $wpdb;
-
-	$oldvalue = get_site_option( $key );
-	$value = apply_filters( 'pre_update_site_option_' . $key, $value, $oldvalue );
-	if ( $value ==  $oldvalue )
-	 	return false;
-
-	$cache_key = "{$wpdb->siteid}:$key";
-
-	if ( $value && !$wpdb->get_row( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) ) )
-		return add_site_option( $key, $value );
-
-	$value = sanitize_option( $key, $value );
-	wp_cache_set( $cache_key, $value, 'site-options');
-
-	$value = maybe_serialize($value);
-	$result = $wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
-
-	do_action( "update_site_option_{$key}", $key, $value );
-	return $result;
-}
-
 /**
  * Delete WordPress Mu site option 
  *
@@ -3284,10 +3264,34 @@ function delete_site_option( $key ) {
 	$cache_key = "{$wpdb->siteid}:$key";
 	wp_cache_delete( $cache_key, 'site-options');
 
-	$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name = %s", $name ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name = %s", $name ) );
 	
-	do_action( "delete_site_option_{$key}");
-	return true;
+	do_action( "delete_site_option_{$key}", $key );
+	return $result;
+}
+
+// expects $key, $value not to be SQL escaped
+function update_site_option( $key, $value ) {
+	global $wpdb;
+
+	$oldvalue = get_site_option( $key );
+	$value = apply_filters( 'pre_update_site_option_' . $key, $value, $oldvalue );
+	if ( $value ==  $oldvalue )
+	 	return false;
+
+	$cache_key = "{$wpdb->siteid}:$key";
+
+	if ( $value && !$wpdb->get_row( $wpdb->prepare("SELECT meta_value FROM $wpdb->sitemeta WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid) ) )
+		return add_site_option( $key, $value );
+
+	$value = sanitize_option( $key, $value );
+	wp_cache_set( $cache_key, $value, 'site-options');
+
+	$value = maybe_serialize($value);
+	$result = $wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
+
+	do_action( "update_site_option_{$key}", $key, $value );
+	return $result;
 }
 
 /**
@@ -3609,13 +3613,35 @@ function wp_scheduled_delete() {
 	$posts_to_delete = $wpdb->get_results($wpdb->prepare("SELECT post_id FROM $wpdb->postmeta WHERE meta_key = '_wp_trash_meta_time' AND meta_value < '%d'", $delete_timestamp), ARRAY_A);
 
 	foreach ( (array) $posts_to_delete as $post ) {
-		wp_delete_post($post['post_id']);
+		$post_id = (int) $post['post_id'];
+		if ( !$post_id )
+			continue;
+
+		$del_post = get_post($post_id);
+
+		if ( !$del_post || 'trash' != $del_post->post_status ) {
+			delete_post_meta($post_id, '_wp_trash_meta_status');
+			delete_post_meta($post_id, '_wp_trash_meta_time');
+		} else {
+			wp_delete_post($post_id);
+		}
 	}
 
 	$comments_to_delete = $wpdb->get_results($wpdb->prepare("SELECT comment_id FROM $wpdb->commentmeta WHERE meta_key = '_wp_trash_meta_time' AND meta_value < '%d'", $delete_timestamp), ARRAY_A);
 
 	foreach ( (array) $comments_to_delete as $comment ) {
-		wp_delete_comment($comment['comment_id']);
+		$comment_id = (int) $comment['comment_id'];
+		if ( !$comment_id )
+			continue;
+
+		$del_comment = get_comment($comment_id);
+
+		if ( !$del_comment || 'trash' != $del_comment->comment_approved ) {
+			delete_comment_meta($comment_id, '_wp_trash_meta_time');
+			delete_comment_meta($comment_id, '_wp_trash_meta_status');
+		} else {
+			wp_delete_comment($comment_id);
+		}
 	}
 }
 
