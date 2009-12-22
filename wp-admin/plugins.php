@@ -524,6 +524,8 @@ function print_plugin_actions($context, $field_name = 'action' ) {
 </p>
 </form>
 
+<?php do_action( 'pre_current_active_plugins', $all_plugins ) ?>
+
 <form method="post" action="<?php echo admin_url('plugins.php') ?>">
 <?php wp_nonce_field('bulk-manage-plugins') ?>
 <input type="hidden" name="plugin_status" value="<?php echo esc_attr($status) ?>" />
