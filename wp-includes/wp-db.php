@@ -402,7 +402,7 @@ class wpdb {
 
 		$this->ready = true;
 
-		if ( !empty($this->charset) ) {
+		if ( $this->has_cap( 'collation' ) && !empty($this->charset) ) {
 			if ( function_exists('mysql_set_charset') ) {
 				mysql_set_charset($this->charset, $this->dbh);
 				$this->real_escape = true;
@@ -513,7 +513,7 @@ class wpdb {
 <li>Does the user <code>%2$s</code> have permission to use the <code>%1$s</code> database?</li>
 <li>On some systems the name of your database is prefixed with your username, so it would be like <code>username_%1$s</code>. Could that be the problem?</li>
 </ul>
-<p>If you don\'t know how to setup a database you should <strong>contact your host</strong>. If all else fails you may find help at the <a href="http://wordpress.org/support/">WordPress Support Forums</a>.</p>'/*/WP_I18N_DB_SELECT_DB*/, $db, DB_USER));
+<p>If you don\'t know how to setup a database you should <strong>contact your host</strong>. If all else fails you may find help at the <a href="http://wordpress.org/support/">WordPress Support Forums</a>.</p>'/*/WP_I18N_DB_SELECT_DB*/, $db, $this->dbuser), 'db_select_fail');
 			return;
 		}
 	}

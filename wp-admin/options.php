@@ -64,9 +64,8 @@ case 'update':
 		wp_die( __( 'Error! Options page not found.' ) );
 
 	if ( 'options' == $option_page ) {
-		if( is_site_admin() ) {
-			$options = explode(',', stripslashes( $_POST[ 'page_options' ] ));
-		} else {
+		$options = explode(',', stripslashes( $_POST[ 'page_options' ] ));
+		if( false == is_site_admin() ) {
 			wp_die( __( 'Not allowed here' ) );
 		}
 	} else {
@@ -79,6 +78,12 @@ case 'update':
 			$_POST['date_format'] = $_POST['date_format_custom'];
 		if ( !empty($_POST['time_format']) && isset($_POST['time_format_custom']) && '\c\u\s\t\o\m' == stripslashes( $_POST['time_format'] ) )
 			$_POST['time_format'] = $_POST['time_format_custom'];
+		// Map UTC+- timezones to gmt_offsets and set timezone_string to empty.
+		if ( !empty($_POST['timezone_string']) && preg_match('/^UTC[+-]/', $_POST['timezone_string']) ) {
+			$_POST['gmt_offset'] = $_POST['timezone_string'];
+			$_POST['gmt_offset'] = preg_replace('/UTC\+?/', '', $_POST['gmt_offset']);
+			$_POST['timezone_string'] = '';
+		}
 	}
 
 	if ( $options ) {
