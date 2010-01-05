@@ -3239,6 +3239,7 @@ function add_site_option( $key, $value ) {
 	$wpdb->insert( $wpdb->sitemeta, array('site_id' => $wpdb->siteid, 'meta_key' => $key, 'meta_value' => $value) );
 
 	do_action( "add_site_option_{$key}", $key, $value );
+	do_action( "add_site_option", $key, $value );
 	return $wpdb->insert_id;
 }
 
@@ -3257,16 +3258,18 @@ function delete_site_option( $key ) {
 	
 	do_action( 'pre_delete_site_option_' . $key );
 
-	$option = $wpdb->get_row( $wpdb->prepare( "SELECT option_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) );
-	if ( is_null( $option ) || !$option->option_id )
+	$option = $wpdb->get_row( $wpdb->prepare( "SELECT meta_id FROM {$wpdb->sitemeta} WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) );
+	if ( is_null( $option ) || !$option->meta_id )
 		return false;
 	
 	$cache_key = "{$wpdb->siteid}:$key";
-	wp_cache_delete( $cache_key, 'site-options');
+	wp_cache_delete( $cache_key, 'site-options' );
 
-	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->options} WHERE option_name = %s", $name ) );
+	$result = $wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->sitemeta} WHERE meta_key = %s AND site_id = %d", $key, $wpdb->siteid ) );
 	
 	do_action( "delete_site_option_{$key}", $key );
+	do_action( "delete_site_option", $key );
+
 	return $result;
 }
 
@@ -3285,12 +3288,13 @@ function update_site_option( $key, $value ) {
 		return add_site_option( $key, $value );
 
 	$value = sanitize_option( $key, $value );
-	wp_cache_set( $cache_key, $value, 'site-options');
+	wp_cache_set( $cache_key, $value, 'site-options' );
 
 	$value = maybe_serialize($value);
 	$result = $wpdb->update( $wpdb->sitemeta, array('meta_value' => $value), array('site_id' => $wpdb->siteid, 'meta_key' => $key) );
 
 	do_action( "update_site_option_{$key}", $key, $value );
+	do_action( "update_site_option", $key, $value );
 	return $result;
 }
 
