@@ -408,6 +408,16 @@ switch( $_GET['action'] ) {
 			nocache_headers();
 			header( 'Content-Type: text/html; charset=utf-8' );
 		}
+		$blog_details = get_blog_details( $_GET[ 'id' ] );
+		$confirmation_messages = array( "activateblog" => __( "You are about to activate the blog %s" ),
+						"deactivateblog" => __( "You are about to deactivate the blog %s" ),
+						"unarchiveblog" => __( "You are about to unarchive the blog %s" ),
+						"archiveblog" => __( "You are about to archive the blog %s" ),
+						"unspamblog" => __( "You are about to unspam the blog %s" ),
+						"spamblog" => __( "You are about to mark the blog %s as spam" ),
+						"deleteblog" => __( "You are about to delete the blog %s" ),
+				);
+
 		?>
 		<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 		<html xmlns="http://www.w3.org/1999/xhtml" <?php if ( function_exists('language_attributes') ) language_attributes(); ?>>
@@ -420,11 +430,11 @@ switch( $_GET['action'] ) {
 			<body id="error-page">
 				<h1 id="logo"><img alt="WordPress" src="images/wordpress-logo.png" /></h1>
 				<form action='wpmu-edit.php?action=<?php echo wp_specialchars( $_GET[ 'action2' ] ) ?>' method='post'>
-					<input type='hidden' name='action' value='<?php echo wp_specialchars( $_GET['action2'] ) ?>' />
-					<input type='hidden' name='id' value='<?php echo wp_specialchars( $id ); ?>' />
+					<input type='hidden' name='action' value='<?php echo esc_attr( $_GET['action2'] ) ?>' />
+					<input type='hidden' name='id' value='<?php echo intval( $id ); ?>' />
 					<input type='hidden' name='ref' value='<?php echo $referrer; ?>' />
 					<?php wp_nonce_field( $_GET['action2'] ) ?>
-					<p><?php echo wp_specialchars( stripslashes($_GET['msg']) ); ?></p>
+					<p><?php printf( __( $confirmation_messages[ $_GET[ 'action2' ] ] ), $blog_details->siteurl ); ?></p>
 					<p class="submit"><input class="button" type='submit' value='<?php _e("Confirm"); ?>' /></p>						
 				</form>
 			</body>
