@@ -322,6 +322,17 @@ function is_admin() {
 	return false;
 }
 
+/**
+ * Whether Multisite support is enabled (stub from WP 3.0)
+ * 
+ * @since 2.9.1
+ *
+ * @return bool True always.
+ */
+function is_multisite() {
+	return true;
+}
+
 if ( file_exists(WP_CONTENT_DIR . '/object-cache.php') ) {
 	require_once (WP_CONTENT_DIR . '/object-cache.php');
 	$_wp_using_ext_object_cache = true;
