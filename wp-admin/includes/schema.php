@@ -20,7 +20,6 @@ $charset_collate = '';
 
 // Declare these as global in case schema.php is included from a function.
 global $wpdb, $wp_queries;
-error_log( "posts: " . $wpdb->posts );
 
 if ( ! empty($wpdb->charset) )
 	$charset_collate = "DEFAULT CHARACTER SET $wpdb->charset";
