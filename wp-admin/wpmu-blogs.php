@@ -69,9 +69,10 @@ if ( $_GET['updated'] == 'true' ) {
 switch( $_GET['action'] ) {
 	// Edit blog
 	case "editblog":
-		$options = $wpdb->get_results( "SELECT * FROM {$wpdb->base_prefix}{$id}_options WHERE option_name NOT LIKE 'rss%' AND option_name NOT LIKE '%user_roles'", ARRAY_A );
+		$blog_prefix = $wpdb->get_blog_prefix( $id );
+		$options = $wpdb->get_results( "SELECT * FROM {$blog_prefix}options WHERE option_name NOT LIKE '_transient_rss%' AND option_name NOT LIKE '%user_roles'", ARRAY_A );
 		$details = $wpdb->get_row( "SELECT * FROM {$wpdb->blogs} WHERE blog_id = '{$id}'", ARRAY_A );
-		$editblog_roles = get_blog_option( $id, "{$wpdb->base_prefix}{$id}_user_roles" );
+		$editblog_roles = get_blog_option( $id, "{$blog_prefix}user_roles" );
 		?>
 		<div class="wrap">
 		<h2><?php _e('Edit Blog'); ?> - <a href='http://<?php echo $details['domain'].$details['path']; ?>'>http://<?php echo $details['domain'].$details['path']; ?></a></h2>

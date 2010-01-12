@@ -232,17 +232,19 @@ switch( $_GET['action'] ) {
 		update_blog_status( $id, 'spam', $_POST[ 'blog' ][ 'spam' ] );
 		update_option( 'blog_public', $_POST[ 'blog' ][ 'public' ] );
 
+		// get blog prefix
+		$blog_prefix = $wpdb->get_blog_prefix( $id );
 		// user roles
 		if( is_array( $_POST[ 'role' ] ) == true ) {
 			$newroles = $_POST[ 'role' ];
 			reset( $newroles );
 			foreach ( (array) $newroles as $userid => $role ) {
 				$role_len = strlen( $role );
-				$existing_role = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$userid'  AND meta_key = '" . $wpdb->base_prefix . $id . "_capabilities'" );
+				$existing_role = $wpdb->get_var( "SELECT meta_value FROM $wpdb->usermeta WHERE user_id = '$userid'  AND meta_key = '" . $blog_prefix. "capabilities'" );
 				if( false == $existing_role ) {
-					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $wpdb->base_prefix . $id . "_capabilities', 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}')" );
+					$wpdb->query( "INSERT INTO " . $wpdb->usermeta . "( `umeta_id` , `user_id` , `meta_key` , `meta_value` ) VALUES ( NULL, '$userid', '" . $blog_prefix . "capabilities', 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}')" );
 				} elseif( $existing_role != "a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}" ) {
-					$wpdb->query( "UPDATE $wpdb->usermeta SET meta_value = 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}' WHERE user_id = '$userid'  AND meta_key = '" . $wpdb->base_prefix . $id . "_capabilities'" );
+					$wpdb->query( "UPDATE $wpdb->usermeta SET meta_value = 'a:1:{s:" . strlen( $role ) . ":\"" . $role . "\";b:1;}' WHERE user_id = '$userid'  AND meta_key = '" . $blog_prefix . "capabilities'" );
 				}
 
 			}
@@ -263,14 +265,14 @@ switch( $_GET['action'] ) {
 				unset( $_POST[ 'role' ] );
 				$_POST[ 'role' ] = $newroles[ $userid ];
 				if( $pass != '' ) {
-					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
+					$cap = $wpdb->get_var( "SELECT meta_value FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$blog_prefix}capabilities' AND meta_value = 'a:0:{}'" );
 					$userdata = get_userdata($userid);
 					$_POST[ 'pass1' ] = $_POST[ 'pass2' ] = $pass;
 					$_POST[ 'email' ] = $userdata->user_email;
 					$_POST[ 'rich_editing' ] = $userdata->rich_editing;
 					edit_user( $userid );
 					if( $cap == null )
-						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$wpdb->base_prefix}{$wpdb->blogid}_capabilities' AND meta_value = 'a:0:{}'" );
+						$wpdb->query( "DELETE FROM {$wpdb->usermeta} WHERE user_id = '{$userid}' AND meta_key = '{$blog_prefix}capabilities' AND meta_value = 'a:0:{}'" );
 				}
 			}
 			unset( $_POST[ 'role' ] );

@@ -233,7 +233,8 @@ function get_blog_option( $blog_id, $setting, $default = false ) {
 	$key = $blog_id."-".$setting."-blog_option";
 	$value = wp_cache_get( $key, "site-options" );
 	if ( $value == null ) {
-		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->base_prefix}{$blog_id}_options WHERE option_name = %s", $setting ) );
+		$blog_prefix = $wpdb->get_blog_prefix( $blog_id );
+		$row = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$blog_prefix}options WHERE option_name = %s", $setting ) );
 		if ( is_object( $row ) ) { // Has to be get_row instead of get_var because of funkiness with 0, false, null values
 			$value = $row->option_value;
 			if ( $value == false ) {
@@ -684,7 +685,7 @@ function get_blog_post( $blog_id, $post_id ) {
 	$key = $blog_id . "-" . $post_id;
 	$post = wp_cache_get( $key, "global-posts" );
 	if( $post == false ) {
-		$post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM {$wpdb->base_prefix}{$blog_id}_posts WHERE ID = %d", $post_id ) );
+		$post = $wpdb->get_row( $wpdb->prepare( "SELECT * FROM " . $wpdb->get_blog_prefix( $blog_id ) . "posts WHERE ID = %d", $post_id ) );
 		wp_cache_add( $key, $post, "global-posts" );
 	}
 
