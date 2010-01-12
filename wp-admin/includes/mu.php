@@ -1300,4 +1300,28 @@ function show_post_thumbnail_warning() {
 }
 add_action( 'admin_notices', 'show_post_thumbnail_warning' );
 
+function anti_spam_nag() {
+	if ( is_site_admin() == false || get_site_option( 'no_anti_spam_nag' ) ) {
+		return false;
+	}
+
+	if ( !get_site_option( 'registration' ) || get_site_option( 'registration' ) != 'all' )
+		return false;
+
+	if ( $_POST[ 'no_anti_spam_nag' ] ) {
+		check_admin_referer( 'spam_nag' );
+		update_site_option( 'no_anti_spam_nag', 1 );
+		return false;
+	}
+
+	if ( function_exists( 'cfc_stylesheet_html' ) == false && function_exists( 'wphc_option' ) == false ) {
+		echo "<div id='update-nag'><p>" . sprintf( __( "Warning! People can create blogs on your site. Please consider using <a href='%1s'>Cookies for Comments</a> or <a href='%2s'>WP-Hashcash</a> to fight the spammers." ), 'http://wordpress.org/extend/plugins/cookies-for-comments/', 'http://wordpress.org/extend/plugins/wp-hashcash/' );
+		echo "<form action='index.php' method='POST'>";
+		echo "<input type='hidden' name='no_anti_spam_nag' value='1' />";
+		wp_nonce_field( 'spam_nag' );
+		echo "<input type='submit' value='" . __( 'Hide' ) . "' />";
+		echo "</p></div>";
+	}
+}
+add_action( 'admin_notices', 'anti_spam_nag' );
 ?>
