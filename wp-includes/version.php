@@ -8,7 +8,7 @@
  *
  * @global string $wp_version
  */
-$wp_version = '2.9-rc-1';
+$wp_version = '2.9.1';
 
 /**
  * Holds the WordPress DB revision, increments when changes are made to the WordPress DB schema.
@@ -45,4 +45,4 @@ $required_php_version = '4.3';
  */
 $required_mysql_version = '4.1.2';
 
-$wpmu_version = '2.9-rc-1';
+$wpmu_version = '2.9.1';
